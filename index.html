@@ -2629,6 +2629,28 @@ function openEditModal(id) {
       } else {
         showLogin();
       }
+      async function pruebaSupabase() {
+  const { error } = await supabaseClient
+    .from('operaciones')
+    .insert([
+      {
+        tipo: "Prueba",
+        estado: "Pendiente",
+        agencia: "Agencia Test",
+        responsable: "Oscar",
+        descripcion: "Conectando sistema",
+        fecha: new Date()
+      }
+    ]);
+
+  if (error) {
+    console.error("Error:", error);
+  } else {
+    console.log("🔥 Guardado en Supabase");
+  }
+}
+
+pruebaSupabase();
     });
   </script>
 </body>
