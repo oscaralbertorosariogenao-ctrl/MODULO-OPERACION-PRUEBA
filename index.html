@@ -1,0 +1,2629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Operaciones</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --primary: #2f8de4;
+      --primary-dark: #1f6fbf;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success-bg: #e8f3ee;
+      --success: #2f7d57;
+      --warning-bg: #eef4fb;
+      --warning: #4c6f93;
+      --danger-bg: #fef2f2;
+      --danger: #b42318;
+      --shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .hidden { display: none !important; }
+
+    .login-shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top right, rgba(220,38,38,0.08), transparent 25%),
+        radial-gradient(circle at bottom left, rgba(16,24,40,0.08), transparent 28%),
+        var(--bg);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 800;
+      box-shadow: 0 10px 24px rgba(47,141,228,0.26);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      border: 1px solid #c9d9e8;
+      border-radius: 12px;
+      padding: 11px 13px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      transition: 0.2s ease;
+      color: #475467;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(47,141,228,0.12);
+    }
+
+    .textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .multi-select { position: relative; }
+
+    .multi-select-trigger {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #c9d9e8;
+      border-radius: 12px;
+      padding: 11px 13px;
+      font-size: 14px;
+      background: #fff;
+      color: #475467;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .multi-select-trigger.open {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(47,141,228,0.12);
+    }
+
+    .multi-select-value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 10px;
+    }
+
+    .multi-select-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #c9d9e8;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(15,23,42,0.12);
+      padding: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 30;
+      display: none;
+    }
+
+    .multi-select-menu.open { display: block; }
+
+    .multi-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #475467;
+    }
+
+    .multi-option:hover { background: #f8fafc; }
+    .multi-option input { margin: 0; }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .image-card {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border: none;
+      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      background: rgba(15,23,42,0.78);
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #9cb6c9, #88a6bb);
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 18px;
+      box-shadow: 0 6px 16px rgba(95,122,143,0.18);
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-sm { padding: 9px 12px; border-radius: 12px; font-size: 12px; }
+
+    .helper {
+      margin-top: 16px;
+      background: #f9fafb;
+      border: 1px dashed #d0d5dd;
+      border-radius: 16px;
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .helper b { color: var(--text); }
+    .error { color: var(--danger); font-size: 13px; margin-top: 12px; font-weight: 600; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar {
+      background: #ffffff;
+      color: #475467;
+      padding: 22px 18px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    .sidebar .brand { margin-bottom: 28px; align-items: flex-start; }
+    .sidebar .brand p { color: #667085; }
+
+    .menu-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #344054;
+      margin: 18px 0 12px;
+      font-weight: 800;
+    }
+
+    .menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: none;
+      background: transparent;
+      color: #475467;
+      font-weight: 600;
+      margin-bottom: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .menu-item.active {
+      background: #ffffff;
+      color: var(--primary);
+      font-weight: 700;
+      border: 1px solid #d8e4f0;
+    }
+
+    .sidebar-bottom {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .content { padding: 24px; }
+    .view.hidden { display: none !important; }
+
+    .topbar, .catalog-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .topbar h2, .catalog-topbar h2 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .topbar p, .catalog-topbar p { margin: 0; color: var(--muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #dbe7f3;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .stat-card strong { font-size: 28px; line-height: 1; }
+
+    .panel {
+      background: #ffffff;
+      border: 1px solid #dbe7f3;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-header h3 { margin: 0; font-size: 18px; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #fbfdff;
+    }
+
+    .catalog-panel-body { padding: 18px 20px; }
+    .catalog-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .catalog-search { max-width: 280px; width: 100%; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 980px; }
+
+    th, td {
+      text-align: left;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: #fcfcfd;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge-proceso { background: var(--warning-bg); color: var(--warning); }
+    .badge-completado { background: var(--success-bg); color: var(--success); }
+    .badge-pendiente { background: #f3f6fa; color: #5b7088; }
+
+    .chip {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f2f4f7;
+      color: #344054;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .priority-baja { background: #eef2f6; color: #475467; }
+    .priority-media { background: #fef9c3; color: #854d0e; }
+    .priority-alta { background: #fee2e2; color: #991b1b; }
+    .priority-urgente { background: #fecaca; color: #7f1d1d; }
+    .chip.averia { background: #eef5fb; color: #3f6d98; }
+    .chip.trabajo { background: #eaf3fe; color: #2f6fb0; }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(16,24,40,0.52);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 780px;
+      max-height: 90vh;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(16,24,40,0.25);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header h3 { margin: 0; font-size: 20px; }
+    .modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+    .detail-box {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fcfcfd;
+      margin-top: 14px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-item span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .detail-item strong, .detail-item p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .footer-actions {
+      padding: 18px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #fcfcfd;
+      flex-shrink: 0;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .report-box {
+      background: #ffffff;
+      border: 1px solid #dbe7f3;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .report-box-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .report-box-header h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .report-box-body { padding: 0; }
+    .report-box table { min-width: 100%; }
+    .report-box th, .report-box td { padding: 12px 14px; }
+    .report-helper {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .mini-stat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid #dbe7f3;
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .mini-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .mini-stat strong {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .history-highlight {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .muted-empty {
+      text-align:center;
+      color: var(--muted);
+      padding: 28px;
+      font-size: 14px;
+    }
+
+
+    @media (max-width: 1180px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mini-stats, .history-highlight, .report-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 920px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    @media (max-width: 680px) {
+      .stats, .filters, .grid-2, .detail-grid, .mini-stats, .history-highlight, .report-grid { grid-template-columns: 1fr; }
+      .content { padding: 16px; }
+      .topbar h2, .catalog-topbar h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login-shell">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-logo">OP</div>
+        <div>
+          <h1>Sistema de Operaciones</h1>
+          <p>Sistema de gestión de operaciones</p>
+        </div>
+      </div>
+      <div class="field"><label for="email">Correo</label><input id="email" class="input" type="email" placeholder="admin@empresa.com" /></div>
+      <div class="field"><label for="password">Contraseña</label><input id="password" class="input" type="password" placeholder="••••••••" /></div>
+      <button id="loginBtn" class="btn btn-primary" style="width:100%;">Iniciar sesión</button>
+      <div id="loginError" class="error hidden"></div>
+      <div class="helper"><b>Credenciales de acceso:</b><br />Correo: admin@empresa.com<br />Contraseña: 1234</div>
+    </div>
+  </section>
+
+  <main id="appView" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-logo">OP</div><div><h1 style="font-size:20px; margin:0;">Operaciones</h1><p>Sistema de Operaciones</p></div></div>
+      <p class="menu-title">Módulo principal</p>
+      <button id="navOperations" class="menu-item active">🔧 Gestión de Operaciones</button>
+      <button id="navHistory" class="menu-item">🕘 Historial</button>
+      <button id="navReports" class="menu-item">📊 Reportes de Operaciones</button>
+      <button id="navReportsAgency" class="menu-item">🏢 Reportes por Agencia</button>
+      <button id="navReportsOwner" class="menu-item">🧰 Reportes por Responsable</button>
+      <button id="navReportsSpecific" class="menu-item">🗂️ Reportes por Tipos Específicos</button>
+      <p class="menu-title">Configuración</p>
+      <button id="navUsers" class="menu-item">👤 Usuarios</button>
+      <button id="navSuppliers" class="menu-item">🏢 Suplidores</button>
+      <button id="navWorks" class="menu-item">🧰 Trabajos</button>
+      <button id="navIssues" class="menu-item">⚠️ Averías</button>
+      <div class="sidebar-bottom"><div><b>Usuario:</b> <span id="userEmailLabel">admin@empresa.com</span></div><div style="margin-top:14px;">Este sistema fue diseñado para registrar <b>Averías</b> y <b>Trabajos</b>, con prioridad, técnico o suplidor, estado, agencia y evidencias.</div><button id="logoutBtn" class="btn btn-secondary" style="width:100%; margin-top:18px;">Cerrar sesión</button></div>
+    </aside>
+
+    <section class="content">
+      <div id="operationsView" class="view">
+        <div class="topbar"><div><h2>Módulo de Operaciones</h2><p>Registro, seguimiento y control de averías y trabajos por agencia.</p></div><button id="openCreateModalBtn" class="btn btn-primary">+ Nueva operación</button></div>
+        <div class="stats"><div class="stat-card"><span>Total de operaciones</span><strong id="statTotal">0</strong></div><div class="stat-card"><span>En proceso</span><strong id="statProceso">0</strong></div><div class="stat-card"><span>Completadas</span><strong id="statCompletado">0</strong></div><div class="stat-card"><span>Pendientes</span><strong id="statPendiente">0</strong></div></div>
+        <div class="panel"><div class="panel-header"><h3>Listado de operaciones</h3><button id="resetDataBtn" class="btn btn-secondary">Restablecer datos</button></div><div class="filters"><select id="filterType" class="select"><option value="">Todos los tipos</option><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select><select id="filterStatus" class="select"><option value="">Todos los estados</option><option value="Pendiente">Pendiente</option><option value="Asignada">Asignada</option><option value="En proceso">En proceso</option><option value="Completado">Completado</option></select><input id="filterAgency" class="input" placeholder="Filtrar por agencia" /><input id="filterTech" class="input" placeholder="Filtrar por técnico / suplidor" /><input id="filterDateFrom" class="input" type="date" /><input id="filterDateTo" class="input" type="date" /></div><div class="table-wrap"><table><thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Asignado</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="operationsTableBody"></tbody></table></div></div>
+      </div>
+
+
+      <div id="historyView" class="view hidden">
+        <div class="topbar">
+          <div>
+            <h2>Historial de Operaciones</h2>
+            <p>Seguimiento cronológico de acciones, cambios de estado, asignaciones y evidencias.</p>
+          </div>
+        </div>
+        <div class="history-highlight">
+          <div class="mini-stat"><div><span>Total de movimientos</span><strong id="historyStatTotal">0</strong></div><div>🗂️</div></div>
+          <div class="mini-stat"><div><span>Asignaciones</span><strong id="historyStatAssignments">0</strong></div><div>👤</div></div>
+          <div class="mini-stat"><div><span>Cierres / finalizaciones</span><strong id="historyStatClosures">0</strong></div><div>✅</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Registro de actividad</h3>
+            <div class="actions">
+              <button id="historyExportBtn" class="btn btn-secondary btn-sm">Exportar CSV</button>
+            </div>
+          </div>
+          <div class="filters">
+            <input id="historyFilterSearch" class="input" placeholder="Buscar por código, agencia o título" />
+            <select id="historyFilterAction" class="select">
+              <option value="">Todas las acciones</option>
+              <option value="Creación">Creación</option>
+              <option value="Asignación">Asignación</option>
+              <option value="Estado">Estado</option>
+              <option value="Finalización">Finalización</option>
+              <option value="Cierre">Cierre</option>
+              <option value="Evidencia">Evidencia</option>
+            </select>
+            <input id="historyFilterUser" class="input" placeholder="Filtrar por usuario" />
+            <input id="historyFilterFrom" class="input" type="date" />
+            <input id="historyFilterTo" class="input" type="date" />
+            <button id="historyClearBtn" class="btn btn-secondary">Limpiar filtros</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha y hora</th>
+                  <th>Código</th>
+                  <th>Acción</th>
+                  <th>Referencia</th>
+                  <th>Agencia</th>
+                  <th>Usuario</th>
+                  <th>Detalle</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportsView" class="view hidden">
+        <div class="topbar">
+          <div>
+            <h2>Reportes de Operaciones</h2>
+            <p>Consulta general de operaciones con filtros operativos y métricas principales.</p>
+          </div>
+          <div class="actions">
+            <button id="reportExportBtn" class="btn btn-primary">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat-card"><span>Total filtrado</span><strong id="reportStatTotal">0</strong></div>
+          <div class="stat-card"><span>Completadas</span><strong id="reportStatDone">0</strong></div>
+          <div class="stat-card"><span>Pendientes / en proceso</span><strong id="reportStatPending">0</strong></div>
+          <div class="stat-card"><span>Tiempo promedio</span><strong id="reportStatAvgResolution">0 min</strong></div>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><div><span>% cumplimiento</span><strong id="reportCompliance">0%</strong></div><div>📈</div></div>
+          <div class="mini-stat"><div><span>Promedio asignación</span><strong id="reportAssignAvg">0 min</strong></div><div>⏱️</div></div>
+          <div class="mini-stat"><div><span>Agencia más cargada</span><strong id="reportTopAgency">-</strong></div><div>🏢</div></div>
+          <div class="mini-stat"><div><span>Responsable más cargado</span><strong id="reportTopOwner">-</strong></div><div>🧰</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Filtros del reporte</h3>
+            <button id="reportClearBtn" class="btn btn-secondary btn-sm">Limpiar filtros</button>
+          </div>
+          <div class="filters">
+            <select id="reportFilterType" class="select">
+              <option value="">Todos los tipos</option>
+              <option value="Avería">Avería</option>
+              <option value="Trabajo">Trabajo</option>
+            </select>
+            <select id="reportFilterStatus" class="select">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Asignada">Asignada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completado">Completado</option>
+            </select>
+            <select id="reportFilterSpecificType" class="select">
+              <option value="">Todos los tipos específicos</option>
+            </select>
+            <input id="reportFilterAgency" class="input" placeholder="Filtrar por agencia" />
+            <input id="reportFilterOwner" class="input" placeholder="Filtrar por técnico / suplidor" />
+            <input id="reportFilterFrom" class="input" type="date" />
+            <input id="reportFilterTo" class="input" type="date" />
+          </div>
+        </div>
+
+        <div class="report-box" style="margin-top:18px;">
+          <div class="report-box-header"><h4>Detalle de operaciones</h4><div class="report-helper">Listado completo según los filtros aplicados.</div></div>
+          <div class="report-box-body table-wrap">
+            <table>
+              <thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Responsable</th><th>Estado</th><th>Tiempo</th><th>Acciones</th></tr></thead>
+              <tbody id="reportDetailBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportsAgencyView" class="view hidden">
+        <div class="topbar">
+          <div>
+            <h2>Reportes por Agencia</h2>
+            <p>Consulta dedicada para revisar carga, cumplimiento y tiempos por agencia.</p>
+          </div>
+          <div class="actions">
+            <button id="agencyReportExportBtn" class="btn btn-primary">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Filtros por agencia</h3>
+            <button id="agencyReportClearBtn" class="btn btn-secondary btn-sm">Limpiar filtros</button>
+          </div>
+          <div class="filters">
+            <select id="agencyReportFilterType" class="select">
+              <option value="">Todos los tipos</option>
+              <option value="Avería">Avería</option>
+              <option value="Trabajo">Trabajo</option>
+            </select>
+            <select id="agencyReportFilterStatus" class="select">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Asignada">Asignada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completado">Completado</option>
+            </select>
+            <input id="agencyReportFilterAgency" class="input" placeholder="Filtrar por agencia" />
+            <input id="agencyReportFilterFrom" class="input" type="date" />
+            <input id="agencyReportFilterTo" class="input" type="date" />
+          </div>
+        </div>
+        <div class="report-box" style="margin-top:18px;">
+          <div class="report-box-header"><h4>Resumen por agencia</h4><div class="report-helper">Carga, completadas, pendientes y tiempo promedio.</div></div>
+          <div class="report-box-body table-wrap">
+            <table>
+              <thead><tr><th>Agencia</th><th>Total</th><th>Completadas</th><th>Pendientes</th><th>Asignación prom.</th><th>Resolución prom.</th></tr></thead>
+              <tbody id="reportAgencyBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportsOwnerView" class="view hidden">
+        <div class="topbar">
+          <div>
+            <h2>Reportes por Responsable</h2>
+            <p>Consulta dedicada para técnicos y suplidores con su carga y desempeño.</p>
+          </div>
+          <div class="actions">
+            <button id="ownerReportExportBtn" class="btn btn-primary">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Filtros por responsable</h3>
+            <button id="ownerReportClearBtn" class="btn btn-secondary btn-sm">Limpiar filtros</button>
+          </div>
+          <div class="filters">
+            <select id="ownerReportFilterType" class="select">
+              <option value="">Todos los tipos</option>
+              <option value="Avería">Avería</option>
+              <option value="Trabajo">Trabajo</option>
+            </select>
+            <select id="ownerReportFilterStatus" class="select">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Asignada">Asignada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completado">Completado</option>
+            </select>
+            <input id="ownerReportFilterOwner" class="input" placeholder="Filtrar por técnico / suplidor" />
+            <input id="ownerReportFilterFrom" class="input" type="date" />
+            <input id="ownerReportFilterTo" class="input" type="date" />
+          </div>
+        </div>
+        <div class="report-box" style="margin-top:18px;">
+          <div class="report-box-header"><h4>Resumen por responsable</h4><div class="report-helper">Total asignado, completadas, activas y tiempo promedio.</div></div>
+          <div class="report-box-body table-wrap">
+            <table>
+              <thead><tr><th>Responsable</th><th>Total</th><th>Completadas</th><th>Activas</th><th>Asignación prom.</th><th>Resolución prom.</th></tr></thead>
+              <tbody id="reportOwnerBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportsSpecificView" class="view hidden">
+        <div class="topbar">
+          <div>
+            <h2>Reportes por Tipos Específicos</h2>
+            <p>Consulta dedicada para los tipos específicos de averías y trabajos.</p>
+          </div>
+          <div class="actions">
+            <button id="specificReportExportBtn" class="btn btn-primary">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Filtros por tipo específico</h3>
+            <button id="specificReportClearBtn" class="btn btn-secondary btn-sm">Limpiar filtros</button>
+          </div>
+          <div class="filters">
+            <select id="specificReportFilterType" class="select">
+              <option value="">Todos los tipos</option>
+              <option value="Avería">Avería</option>
+              <option value="Trabajo">Trabajo</option>
+            </select>
+            <select id="specificReportFilterSpecificType" class="select">
+              <option value="">Todos los tipos específicos</option>
+            </select>
+            <select id="specificReportFilterStatus" class="select">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Asignada">Asignada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completado">Completado</option>
+            </select>
+            <input id="specificReportFilterFrom" class="input" type="date" />
+            <input id="specificReportFilterTo" class="input" type="date" />
+          </div>
+        </div>
+        <div class="report-box" style="margin-top:18px;">
+          <div class="report-box-header"><h4>Resumen por tipo específico</h4><div class="report-helper">Frecuencia, completadas, pendientes y tiempo promedio.</div></div>
+          <div class="report-box-body table-wrap">
+            <table>
+              <thead><tr><th>Tipo específico</th><th>Total</th><th>Completadas</th><th>Pendientes</th><th>Asignación prom.</th><th>Resolución prom.</th></tr></thead>
+              <tbody id="reportCategoryBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="usersView" class="view hidden">
+        <div class="catalog-topbar"><div><h2>Administración de Usuarios</h2><p>Gestión de técnicos disponibles para averías.</p></div><button id="addUserBtn" class="btn btn-primary">+ Crear Usuario</button></div>
+        <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input id="userSearch" class="input catalog-search" placeholder="Buscar" /></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
+      </div>
+
+      <div id="suppliersView" class="view hidden">
+        <div class="catalog-topbar"><div><h2>Administración de Suplidores</h2><p>Gestión de suplidores de servicios para trabajos.</p></div><button id="addSupplierBtn" class="btn btn-primary">+ Crear Suplidor</button></div>
+        <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input id="supplierSearch" class="input catalog-search" placeholder="Buscar" /></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Servicio</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="suppliersCatalogTableBody"></tbody></table></div></div></div>
+      </div>
+
+      <div id="worksView" class="view hidden">
+        <div class="catalog-topbar"><div><h2>Administración de Trabajos</h2><p>Gestión de tipos de trabajos disponibles para operaciones.</p></div><button id="addWorkTypeBtn" class="btn btn-primary">+ Crear Trabajo</button></div>
+        <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input id="workSearch" class="input catalog-search" placeholder="Buscar" /></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="worksCatalogTableBody"></tbody></table></div></div></div>
+      </div>
+
+      <div id="issuesView" class="view hidden">
+        <div class="catalog-topbar"><div><h2>Administración de Averías</h2><p>Gestión de tipos de averías disponibles para operaciones.</p></div><button id="addIssueTypeBtn" class="btn btn-primary">+ Crear Avería</button></div>
+        <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input id="issueSearch" class="input catalog-search" placeholder="Buscar" /></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="issuesCatalogTableBody"></tbody></table></div></div></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="createModalBackdrop" class="modal-backdrop hidden"><div class="modal"><div class="modal-header"><h3>Nueva operación</h3><button class="btn btn-secondary" onclick="closeCreateModal()">Cerrar</button></div><div class="modal-body"><div class="grid-2"><div class="field"><label for="operationType">Tipo</label><select id="operationType" class="select"><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select></div><div class="field"><label for="operationStatus">Estado</label><select id="operationStatus" class="select">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Asignada">Asignada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completado">Completado</option>
+              
+            </select></div><div class="field"><label for="operationTitle">Título</label><input id="operationTitle" class="input" placeholder="Ej. Cambio de printer en caja" /></div><div class="field"><label for="operationAgency">Agencia</label><input id="operationAgency" class="input" placeholder="Ej. Agencia 0335" /></div><div class="field"><label id="labelTechnician" for="operationTechnician">Técnico asignado</label><select id="operationTechnician" class="select"></select></div><div class="field"><label for="operationPriority">Prioridad</label><select id="operationPriority" class="select"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea id="operationDescription" class="textarea" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button type="button" id="operationTypeOptionsBtn" class="multi-select-trigger"><span id="operationTypeOptionsValue" class="multi-select-value">Seleccionar opciones</span><span>▾</span></button><div id="operationTypeOptionsMenu" class="multi-select-menu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label>Imágenes reportadas (opcional)</label><input id="operationImage" type="file" accept="image/*" class="input" multiple /></div><div id="createError" class="error hidden"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button id="saveOperationBtn" class="btn btn-primary">Guardar operación</button></div></div></div>
+
+  <div id="detailModalBackdrop" class="modal-backdrop hidden"><div class="modal"><div class="modal-header"><h3>Detalle de la operación</h3><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div><div id="detailContent" class="modal-body"></div><div class="footer-actions"><button id="detailPrintBtn" class="btn btn-primary" type="button">Imprimir operación</button><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div></div></div>
+
+  <div id="editModalBackdrop" class="modal-backdrop hidden"><div class="modal"><div class="modal-header"><h3>Editar operación</h3><button class="btn btn-secondary" onclick="closeEditModal()">Cerrar</button></div><div class="modal-body"><input id="editOperationId" type="hidden" /><div class="grid-2"><div class="field"><label for="editOperationType">Tipo</label><select id="editOperationType" class="select"><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select></div><div class="field"><label for="editOperationStatus">Estado</label><select id="editOperationStatus" class="select">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Asignada">Asignada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Completado">Completado</option>
+              
+            </select></div><div class="field"><label for="editOperationTitle">Título</label><input id="editOperationTitle" class="input" /></div><div class="field"><label for="editOperationAgency">Agencia</label><input id="editOperationAgency" class="input" /></div><div class="field"><label id="editLabelTechnician" for="editOperationTechnician">Técnico asignado</label><select id="editOperationTechnician" class="select"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select id="editOperationPriority" class="select"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea id="editOperationDescription" class="textarea"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button type="button" id="editOperationTypeOptionsBtn" class="multi-select-trigger"><span id="editOperationTypeOptionsValue" class="multi-select-value">Seleccionar opciones</span><span>▾</span></button><div id="editOperationTypeOptionsMenu" class="multi-select-menu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Fotos de resultado / evidencia</label><input id="editResultImage" type="file" accept="image/*" class="input" multiple /></div><div id="editImagesPreview" class="hidden" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div id="editImagesPreviewGrid" class="image-grid"></div></div><div id="editResultPreview" class="hidden" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div id="editResultPreviewGrid" class="image-grid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
+
+  <script>
+    const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
+
+    const DEFAULT_USERS = [
+      { name: 'Luis Martínez', area: 'Redes', phone: '809-555-1111' },
+      { name: 'Carlos Peña', area: 'Hardware', phone: '809-555-2222' },
+      { name: 'José Rosario', area: 'Soporte', phone: '809-555-3333' }
+    ];
+
+    const DEFAULT_SUPPLIERS = [
+      { name: 'E-Gret Servicios', service: 'Publicidad', phone: '809-555-4444' },
+      { name: 'Toldos RD', service: 'Toldos', phone: '809-555-5555' },
+      { name: 'AC Solutions', service: 'Aire acondicionado', phone: '809-555-6666' }
+    ];
+
+    const DEFAULT_WORK_TYPES = [
+      { name: 'Pintura', description: 'Realización de pintura en las agencias' },
+      { name: 'Mantenimiento de Aire Acondicionado', description: 'Limpieza preventiva y reparación de avería' },
+      { name: 'Instalación de Aire Acondicionado', description: 'Instalación de consola y compresor' },
+      { name: 'Reparación de Filtraciones y Renovación', description: 'Solución de filtraciones y renovación general' },
+      { name: 'Renovación de Pintura y Corrección de Piso y Mocheta', description: 'Remodelación' },
+      { name: 'Renovación y Pintura', description: 'En agencia' },
+      { name: 'Fabricación de Letrero (ACM)', description: 'Toldo nuevo en ACM' },
+      { name: 'Instalación de publicidad en pecho (ACM)', description: 'Publicidad en mostrador' },
+      { name: 'Fabricación de toldo', description: 'Fabricación de toldo desde 0' },
+      { name: 'Reparación de toldo', description: 'Reparación de toldo' }
+    ];
+
+    const DEFAULT_ISSUE_TYPES = [
+      { name: 'Falla de internet', description: 'Interrupción o lentitud en la conectividad' },
+      { name: 'Printer dañado', description: 'Impresora con falla o sin imprimir' },
+      { name: 'Escáner dañado', description: 'Escáner sin funcionamiento correcto' },
+      { name: 'TV dañada', description: 'Pantalla o televisor con avería' },
+      { name: 'POS con falla', description: 'Terminal POS con errores o inoperante' },
+      { name: 'Cable de red dañado', description: 'Cableado de red defectuoso' },
+      { name: 'Cámara averiada', description: 'Sistema de cámara con falla' },
+      { name: 'Teléfono averiado', description: 'Teléfono interno con fallo' },
+      { name: 'Punto eléctrico con falla', description: 'Problema eléctrico en punto de conexión' },
+      { name: 'Aire acondicionado averiado', description: 'Unidad de aire con falla' }
+    ];
+
+    function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
+      if (!Array.isArray(arr)) return deepClone(fallback);
+      const normalized = arr.map(item => {
+        if (typeof item === 'string') {
+          const name = item.trim();
+          return name ? { name, [descriptionKey]: '' } : null;
+        }
+        if (item && typeof item === 'object') {
+          const name = typeof item.name === 'string' ? item.name.trim() : '';
+          const extra = typeof item[descriptionKey] === 'string' ? item[descriptionKey].trim() : '';
+          return name ? { name, [descriptionKey]: extra } : null;
+        }
+        return null;
+      }).filter(Boolean);
+      const deduped = [];
+      const seen = new Set();
+      for (const item of normalized) {
+        const key = item.name.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(item);
+      }
+      return deduped.length ? deduped : deepClone(fallback);
+    }
+
+    function loadCatalogs() {
+      const users = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_users') || 'null'), DEFAULT_USERS, 'area');
+      const suppliers = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_suppliers') || 'null'), DEFAULT_SUPPLIERS, 'service');
+      const works = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_work_types') || 'null'), DEFAULT_WORK_TYPES, 'description');
+      const issues = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_issue_types') || 'null'), DEFAULT_ISSUE_TYPES, 'description');
+      localStorage.setItem('operations_catalog_users', JSON.stringify(users));
+      localStorage.setItem('operations_catalog_suppliers', JSON.stringify(suppliers));
+      localStorage.setItem('operations_catalog_work_types', JSON.stringify(works));
+      localStorage.setItem('operations_catalog_issue_types', JSON.stringify(issues));
+      return { users, suppliers, works, issues };
+    }
+
+    let { users: USERS, suppliers: SUPPLIERS, works: WORK_TYPES, issues: ISSUE_TYPES } = loadCatalogs();
+
+    function saveCatalogs() {
+      localStorage.setItem('operations_catalog_users', JSON.stringify(USERS));
+      localStorage.setItem('operations_catalog_suppliers', JSON.stringify(SUPPLIERS));
+      localStorage.setItem('operations_catalog_work_types', JSON.stringify(WORK_TYPES));
+      localStorage.setItem('operations_catalog_issue_types', JSON.stringify(ISSUE_TYPES));
+    }
+
+    function nowIso() { return new Date().toISOString(); }
+
+    function getCurrentUserEmail() {
+      const session = getSession();
+      return session?.email || 'admin@empresa.com';
+    }
+
+    function createHistoryEntry(actionOrConfig, detail = '', user = 'admin@empresa.com') {
+      const config = typeof actionOrConfig === 'object' && actionOrConfig !== null
+        ? actionOrConfig
+        : { action: actionOrConfig, detail, user };
+      return {
+        id: crypto.randomUUID(),
+        action: config.action || '',
+        detail: config.detail || '',
+        user: config.user || 'admin@empresa.com',
+        prevStatus: config.prevStatus ?? null,
+        newStatus: config.newStatus ?? null,
+        timestamp: config.timestamp || nowIso()
+      };
+    }
+
+    const demoOperations = [
+      {
+        id: crypto.randomUUID(),
+        code: 'OP-0001',
+        type: 'Trabajo',
+        title: 'Toldo y publicidad de cambio',
+        agency: 'Agencia 1268',
+        technician: 'E-Gret Servicios',
+        priority: 'Baja',
+        status: 'Completado',
+        description: 'Instalación de publicidad y toldo nuevo',
+        selectedTypes: ['Instalación de publicidad en pecho (ACM)', 'Fabricación de toldo'],
+        createdAt: new Date().toISOString(),
+        images: [],
+        resultImages: [],
+        assignedAt: nowIso(),
+        startedAt: nowIso(),
+        completedAt: nowIso(),
+        resolutionTime: '',
+        history: [
+          createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'admin@empresa.com', newStatus: 'Pendiente' }),
+          createHistoryEntry({ action: 'Asignación', detail: 'Asignada a E-Gret Servicios', user: 'admin@empresa.com' }),
+          createHistoryEntry({ action: 'Finalización', detail: 'Operación completada', user: 'admin@empresa.com', prevStatus: 'Asignada', newStatus: 'Completado' })
+        ],
+        closedAt: null
+      }
+    ];
+
+    const loginView = document.getElementById('loginView');
+    const appView = document.getElementById('appView');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userEmailLabel = document.getElementById('userEmailLabel');
+    const operationsTableBody = document.getElementById('operationsTableBody');
+    const createModalBackdrop = document.getElementById('createModalBackdrop');
+    const detailModalBackdrop = document.getElementById('detailModalBackdrop');
+    const editModalBackdrop = document.getElementById('editModalBackdrop');
+    const detailContent = document.getElementById('detailContent');
+    const detailPrintBtn = document.getElementById('detailPrintBtn');
+    let currentDetailOperationId = null;
+    const createError = document.getElementById('createError');
+    const filterType = document.getElementById('filterType');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterAgency = document.getElementById('filterAgency');
+    const filterTech = document.getElementById('filterTech');
+    const filterDateFrom = document.getElementById('filterDateFrom');
+    const filterDateTo = document.getElementById('filterDateTo');
+    const reportFilterType = document.getElementById('reportFilterType');
+    const reportFilterStatus = document.getElementById('reportFilterStatus');
+    const reportFilterSpecificType = document.getElementById('reportFilterSpecificType');
+    const reportFilterAgency = document.getElementById('reportFilterAgency');
+    const reportFilterOwner = document.getElementById('reportFilterOwner');
+    const reportFilterFrom = document.getElementById('reportFilterFrom');
+    const reportFilterTo = document.getElementById('reportFilterTo');
+    const agencyReportFilterType = document.getElementById('agencyReportFilterType');
+    const agencyReportFilterStatus = document.getElementById('agencyReportFilterStatus');
+    const agencyReportFilterAgency = document.getElementById('agencyReportFilterAgency');
+    const agencyReportFilterFrom = document.getElementById('agencyReportFilterFrom');
+    const agencyReportFilterTo = document.getElementById('agencyReportFilterTo');
+    const ownerReportFilterType = document.getElementById('ownerReportFilterType');
+    const ownerReportFilterStatus = document.getElementById('ownerReportFilterStatus');
+    const ownerReportFilterOwner = document.getElementById('ownerReportFilterOwner');
+    const ownerReportFilterFrom = document.getElementById('ownerReportFilterFrom');
+    const ownerReportFilterTo = document.getElementById('ownerReportFilterTo');
+    const specificReportFilterType = document.getElementById('specificReportFilterType');
+    const specificReportFilterSpecificType = document.getElementById('specificReportFilterSpecificType');
+    const specificReportFilterStatus = document.getElementById('specificReportFilterStatus');
+    const specificReportFilterFrom = document.getElementById('specificReportFilterFrom');
+    const specificReportFilterTo = document.getElementById('specificReportFilterTo');
+    const historyFilterSearch = document.getElementById('historyFilterSearch');
+    const historyFilterAction = document.getElementById('historyFilterAction');
+    const historyFilterUser = document.getElementById('historyFilterUser');
+    const historyFilterFrom = document.getElementById('historyFilterFrom');
+    const historyFilterTo = document.getElementById('historyFilterTo');
+    const userSearch = document.getElementById('userSearch');
+    const supplierSearch = document.getElementById('supplierSearch');
+    const workSearch = document.getElementById('workSearch');
+    const issueSearch = document.getElementById('issueSearch');
+
+    function loadOperations() {
+      const saved = localStorage.getItem('operations_records');
+      if (saved) return JSON.parse(saved);
+      const initial = deepClone(demoOperations);
+      localStorage.setItem('operations_records', JSON.stringify(initial));
+      return initial;
+    }
+
+    function saveOperations(operations) {
+      localStorage.setItem('operations_records', JSON.stringify(operations));
+    }
+
+    function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
+    function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
+    function clearSession() { localStorage.removeItem('operations_session'); }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('es-DO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getCatalogNames(type) {
+      return (type === 'Trabajo' ? WORK_TYPES : ISSUE_TYPES).map(item => item.name).filter(Boolean);
+    }
+
+    function getSelectedValues(selectId) {
+      const menu = document.getElementById(selectId + 'Menu');
+      if (!menu) return [];
+      return Array.from(menu.querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value);
+    }
+
+    function renderTypeOptions(selectId, operationType, selectedValues = []) {
+      const menu = document.getElementById(selectId + 'Menu');
+      const valueLabel = document.getElementById(selectId + 'Value');
+      const options = getCatalogNames(operationType);
+      if (!menu || !valueLabel) return;
+      menu.innerHTML = options.map((item, index) => `
+        <label class="multi-option" for="${selectId}_${index}">
+          <input type="checkbox" id="${selectId}_${index}" value="${item}" ${selectedValues.includes(item) ? 'checked' : ''} />
+          <span>${item}</span>
+        </label>
+      `).join('');
+      const refreshValue = () => {
+        const selected = Array.from(menu.querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value);
+        valueLabel.textContent = selected.length ? selected.join(', ') : 'Seleccionar opciones';
+      };
+      menu.querySelectorAll('input[type="checkbox"]').forEach(input => input.addEventListener('change', refreshValue));
+      refreshValue();
+    }
+
+    function renderSelectedTypeChips(selectedTypes = []) {
+      if (!selectedTypes || !selectedTypes.length) return '<span style="color: var(--muted);">Sin tipo específico</span>';
+      return selectedTypes.map(type => `<span class="chip">${type}</span>`).join('');
+    }
+
+    function renderEditableImageGrid(containerId, images = [], onRemoveName, id) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (!images.length) { container.innerHTML = ''; return; }
+      container.innerHTML = images.map((img, index) => `
+        <div class="image-card">
+          <img src="${img}" alt="Imagen" />
+          <button type="button" class="image-remove" onclick="${onRemoveName}('${id}', ${index})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function statusBadge(status) {
+      if (status === 'Completado') return '<span class="badge badge-completado">Completado</span>';
+      if (status === 'En proceso') return '<span class="badge badge-proceso">En proceso</span>';
+      if (status === 'Asignada') return '<span class="badge badge-proceso">Asignada</span>';
+      return '<span class="badge badge-pendiente">Pendiente</span>';
+    }
+
+    function renderStats(operations) {
+      document.getElementById('statTotal').textContent = operations.length;
+      document.getElementById('statProceso').textContent = operations.filter(op => op.status === 'En proceso' || op.status === 'Asignada').length;
+      document.getElementById('statCompletado').textContent = operations.filter(op => op.status === 'Completado').length;
+      document.getElementById('statPendiente').textContent = operations.filter(op => op.status === 'Pendiente').length;
+    }
+
+    function resolutionMinutesFromText(text) {
+      if (!text || typeof text !== 'string') return null;
+      const dayMatch = text.match(/(\d+)\s*día/);
+      const hourMatch = text.match(/(\d+)\s*hora/);
+      const minuteMatch = text.match(/(\d+)\s*minuto/);
+      let total = 0;
+      if (dayMatch) total += Number(dayMatch[1]) * 1440;
+      if (hourMatch) total += Number(hourMatch[1]) * 60;
+      if (minuteMatch) total += Number(minuteMatch[1]);
+      return total || null;
+    }
+
+    function formatMinutesHuman(minutes) {
+      if (!minutes || minutes < 1) return '0 min';
+      if (minutes >= 1440) return `${Math.round(minutes / 1440)} día(s)`;
+      if (minutes >= 60) return `${Math.round(minutes / 60)} h`;
+      return `${Math.round(minutes)} min`;
+    }
+
+    function minutesBetween(startValue, endValue) {
+      if (!startValue || !endValue) return null;
+      const start = new Date(startValue).getTime();
+      const end = new Date(endValue).getTime();
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+      return (end - start) / 60000;
+    }
+
+    function getAssignmentMinutes(op) {
+      return minutesBetween(op.createdAt, op.assignedAt);
+    }
+
+    function getResolutionMinutes(op) {
+      const direct = minutesBetween(op.assignedAt, op.completedAt);
+      if (direct !== null) return direct;
+      return resolutionMinutesFromText(op.resolutionTime);
+    }
+
+    function averageFromOperations(operations, keyGetter) {
+      const map = new Map();
+      operations.forEach(op => {
+        const key = keyGetter(op);
+        if (!key) return;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(op);
+      });
+      return map;
+    }
+
+    function getSpecificTypeOptionsForReports(baseType = '') {
+      if (baseType === 'Trabajo') return WORK_TYPES.map(item => item.name).filter(Boolean);
+      if (baseType === 'Avería') return ISSUE_TYPES.map(item => item.name).filter(Boolean);
+      return [...WORK_TYPES.map(item => item.name), ...ISSUE_TYPES.map(item => item.name)]
+        .filter(Boolean)
+        .filter((value, index, array) => array.indexOf(value) === index)
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    function populateSpecificTypeSelect(selectEl, baseType = '', previousValue = '') {
+      if (!selectEl) return;
+      const options = getSpecificTypeOptionsForReports(baseType);
+      selectEl.innerHTML = '<option value="">Todos los tipos específicos</option>' +
+        options.map(name => `<option value="${name}">${name}</option>`).join('');
+      selectEl.value = options.includes(previousValue) ? previousValue : '';
+    }
+
+    function populateReportSpecificTypeOptions() {
+      if (!reportFilterSpecificType) return;
+      populateSpecificTypeSelect(reportFilterSpecificType, reportFilterType.value, reportFilterSpecificType.value);
+    }
+
+    function populateDedicatedSpecificTypeOptions() {
+      if (specificReportFilterSpecificType) {
+        populateSpecificTypeSelect(specificReportFilterSpecificType, specificReportFilterType.value, specificReportFilterSpecificType.value);
+      }
+    }
+
+    function getOperationsByFilters({ typeValue = '', statusValue = '', specificTypeValue = '', agencyValue = '', ownerValue = '', fromValue = '', toValue = '' } = {}) {
+      const operations = loadOperations();
+      return operations.filter(op => {
+        const matchType = !typeValue || op.type === typeValue;
+        const matchStatus = !statusValue || op.status === statusValue;
+        const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
+        const matchAgency = !agencyValue || op.agency.toLowerCase().includes(agencyValue.toLowerCase());
+        const matchOwner = !ownerValue || op.technician.toLowerCase().includes(ownerValue.toLowerCase());
+        const createdDate = new Date(op.createdAt);
+        const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
+        const toOk = !toValue || createdDate <= new Date(toValue + 'T23:59:59');
+        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && fromOk && toOk;
+      });
+    }
+
+    function getReportFilteredOperations() {
+      return getOperationsByFilters({
+        typeValue: reportFilterType.value,
+        statusValue: reportFilterStatus.value,
+        specificTypeValue: reportFilterSpecificType.value,
+        agencyValue: reportFilterAgency.value,
+        ownerValue: reportFilterOwner.value,
+        fromValue: reportFilterFrom.value,
+        toValue: reportFilterTo.value
+      });
+    }
+
+    function buildAgencyGroups(operations) {
+      return Array.from(averageFromOperations(operations, op => op.agency).entries()).map(([agency, items]) => {
+        const completed = items.filter(op => op.status === 'Completado').length;
+        const stillOpen = items.length - completed;
+        const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
+        const resolutionValues = items.map(getResolutionMinutes).filter(value => value !== null);
+        const avgAssign = assignValues.length ? assignValues.reduce((a,b)=>a+b,0)/assignValues.length : 0;
+        const avgResolution = resolutionValues.length ? resolutionValues.reduce((a,b)=>a+b,0)/resolutionValues.length : 0;
+        return { agency, total: items.length, completed, stillOpen, avgAssign, avgResolution };
+      }).sort((a,b) => b.total - a.total || a.agency.localeCompare(b.agency));
+    }
+
+    function buildOwnerGroups(operations) {
+      return Array.from(averageFromOperations(operations, op => op.technician || 'Sin asignar').entries()).map(([owner, items]) => {
+        const completed = items.filter(op => op.status === 'Completado').length;
+        const inProgress = items.filter(op => ['Pendiente','Asignada','En proceso'].includes(op.status)).length;
+        const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
+        const resolutionValues = items.map(getResolutionMinutes).filter(value => value !== null);
+        const avgAssign = assignValues.length ? assignValues.reduce((a,b)=>a+b,0)/assignValues.length : 0;
+        const avgResolution = resolutionValues.length ? resolutionValues.reduce((a,b)=>a+b,0)/resolutionValues.length : 0;
+        return { owner, total: items.length, completed, inProgress, avgAssign, avgResolution };
+      }).sort((a,b) => b.total - a.total || a.owner.localeCompare(b.owner));
+    }
+
+    function buildCategoryGroups(operations) {
+      const categoryMap = new Map();
+      operations.forEach(op => {
+        const cats = Array.isArray(op.selectedTypes) && op.selectedTypes.length ? op.selectedTypes : ['Sin tipo específico'];
+        cats.forEach(cat => {
+          if (!categoryMap.has(cat)) categoryMap.set(cat, []);
+          categoryMap.get(cat).push(op);
+        });
+      });
+      return Array.from(categoryMap.entries()).map(([category, items]) => {
+        const completed = items.filter(op => op.status === 'Completado').length;
+        const stillOpen = items.length - completed;
+        const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
+        const resolutionValues = items.map(getResolutionMinutes).filter(value => value !== null);
+        const avgAssign = assignValues.length ? assignValues.reduce((a,b)=>a+b,0)/assignValues.length : 0;
+        const avgResolution = resolutionValues.length ? resolutionValues.reduce((a,b)=>a+b,0)/resolutionValues.length : 0;
+        return { category, total: items.length, completed, stillOpen, avgAssign, avgResolution };
+      }).sort((a,b) => b.total - a.total || a.category.localeCompare(b.category));
+    }
+
+    function getAllHistoryEntries() {
+      const operations = loadOperations();
+      return operations.flatMap(op => {
+        const history = Array.isArray(op.history) ? op.history : [];
+        return history.map(item => ({
+          operationId: op.id,
+          code: op.code,
+          title: op.title,
+          agency: op.agency,
+          type: op.type,
+          technician: op.technician,
+          action: item.action || '',
+          detail: item.detail || '',
+          user: item.user || 'admin@empresa.com',
+          prevStatus: item.prevStatus ?? null,
+          newStatus: item.newStatus ?? null,
+          timestamp: item.timestamp || op.createdAt
+        }));
+      }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+
+    function getFilteredHistoryEntries() {
+      return getAllHistoryEntries().filter(item => {
+        const searchText = `${item.code} ${item.title} ${item.agency}`.toLowerCase();
+        const matchSearch = !historyFilterSearch.value || searchText.includes(historyFilterSearch.value.toLowerCase());
+        const matchAction = !historyFilterAction.value || item.action === historyFilterAction.value;
+        const matchUser = !historyFilterUser.value || item.user.toLowerCase().includes(historyFilterUser.value.toLowerCase());
+        const itemDate = new Date(item.timestamp);
+        const fromOk = !historyFilterFrom.value || itemDate >= new Date(historyFilterFrom.value + 'T00:00:00');
+        const toOk = !historyFilterTo.value || itemDate <= new Date(historyFilterTo.value + 'T23:59:59');
+        return matchSearch && matchAction && matchUser && fromOk && toOk;
+      });
+    }
+
+    function renderSimpleSummaryRows(targetId, rows, emptyMessage = 'Sin datos disponibles.') {
+      const tbody = document.getElementById(targetId);
+      if (!tbody) return;
+      if (!rows.length) {
+        const colspan = tbody.parentElement.querySelectorAll('thead th').length || 5;
+        tbody.innerHTML = `<tr><td colspan="${colspan}" class="muted-empty">${emptyMessage}</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.join('');
+    }
+
+    function renderOperationDetailRows(targetBodyId, operations, emptyMessage = 'No hay operaciones para este reporte.') {
+      renderSimpleSummaryRows(targetBodyId, operations.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(op => `
+        <tr>
+          <td><strong>${op.code}</strong></td>
+          <td>${op.type}</td>
+          <td>${op.title}</td>
+          <td>${op.agency}</td>
+          <td>${op.technician}</td>
+          <td>${statusBadge(op.status)}</td>
+          <td>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</td>
+          <td>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="showDetail('${op.id}')">Ver</button></td>
+        </tr>
+      `), emptyMessage);
+    }
+
+    function renderReports() {
+      populateReportSpecificTypeOptions();
+      const operations = getReportFilteredOperations();
+      const done = operations.filter(op => op.status === 'Completado');
+      const pending = operations.filter(op => op.status !== 'Completado');
+      const resolutionValues = done.map(getResolutionMinutes).filter(value => value !== null);
+      const avgResolution = resolutionValues.length ? resolutionValues.reduce((a,b) => a+b, 0) / resolutionValues.length : 0;
+      const assignedValues = operations.map(getAssignmentMinutes).filter(value => value !== null);
+      const avgAssigned = assignedValues.length ? assignedValues.reduce((a,b) => a+b, 0) / assignedValues.length : 0;
+      const compliance = operations.length ? (done.length / operations.length) * 100 : 0;
+
+      document.getElementById('reportStatTotal').textContent = operations.length;
+      document.getElementById('reportStatDone').textContent = done.length;
+      document.getElementById('reportStatPending').textContent = pending.length;
+      document.getElementById('reportStatAvgResolution').textContent = formatMinutesHuman(avgResolution);
+      document.getElementById('reportCompliance').textContent = `${Math.round(compliance)}%`;
+      document.getElementById('reportAssignAvg').textContent = formatMinutesHuman(avgAssigned);
+
+      const agencyGroups = buildAgencyGroups(operations);
+      const ownerGroups = buildOwnerGroups(operations);
+      document.getElementById('reportTopAgency').textContent = agencyGroups[0] ? agencyGroups[0].agency : '-';
+      document.getElementById('reportTopOwner').textContent = ownerGroups[0] ? ownerGroups[0].owner : '-';
+
+      renderOperationDetailRows('reportDetailBody', operations);
+    }
+
+    function renderAgencyReports() {
+      const operations = getOperationsByFilters({
+        typeValue: agencyReportFilterType.value,
+        statusValue: agencyReportFilterStatus.value,
+        agencyValue: agencyReportFilterAgency.value,
+        fromValue: agencyReportFilterFrom.value,
+        toValue: agencyReportFilterTo.value
+      });
+      const agencyGroups = buildAgencyGroups(operations);
+      renderSimpleSummaryRows('reportAgencyBody', agencyGroups.map(row => `
+        <tr>
+          <td>${row.agency}</td>
+          <td>${row.total}</td>
+          <td>${row.completed}</td>
+          <td>${row.stillOpen}</td>
+          <td>${formatMinutesHuman(row.avgAssign)}</td>
+          <td>${formatMinutesHuman(row.avgResolution)}</td>
+        </tr>
+      `), 'No hay agencias para este reporte.');
+    }
+
+    function renderOwnerReports() {
+      const operations = getOperationsByFilters({
+        typeValue: ownerReportFilterType.value,
+        statusValue: ownerReportFilterStatus.value,
+        ownerValue: ownerReportFilterOwner.value,
+        fromValue: ownerReportFilterFrom.value,
+        toValue: ownerReportFilterTo.value
+      });
+      const ownerGroups = buildOwnerGroups(operations);
+      renderSimpleSummaryRows('reportOwnerBody', ownerGroups.map(row => `
+        <tr>
+          <td>${row.owner}</td>
+          <td>${row.total}</td>
+          <td>${row.completed}</td>
+          <td>${row.inProgress}</td>
+          <td>${formatMinutesHuman(row.avgAssign)}</td>
+          <td>${formatMinutesHuman(row.avgResolution)}</td>
+        </tr>
+      `), 'No hay responsables para este reporte.');
+    }
+
+    function renderSpecificReports() {
+      populateDedicatedSpecificTypeOptions();
+      const operations = getOperationsByFilters({
+        typeValue: specificReportFilterType.value,
+        statusValue: specificReportFilterStatus.value,
+        specificTypeValue: specificReportFilterSpecificType.value,
+        fromValue: specificReportFilterFrom.value,
+        toValue: specificReportFilterTo.value
+      });
+      const categoryGroups = buildCategoryGroups(operations);
+      renderSimpleSummaryRows('reportCategoryBody', categoryGroups.map(row => `
+        <tr>
+          <td>${row.category}</td>
+          <td>${row.total}</td>
+          <td>${row.completed}</td>
+          <td>${row.stillOpen}</td>
+          <td>${formatMinutesHuman(row.avgAssign)}</td>
+          <td>${formatMinutesHuman(row.avgResolution)}</td>
+        </tr>
+      `), 'No hay tipos específicos para este reporte.');
+    }
+
+    function renderHistory() {
+      const entries = getFilteredHistoryEntries();
+      document.getElementById('historyStatTotal').textContent = entries.length;
+      document.getElementById('historyStatAssignments').textContent = entries.filter(item => item.action === 'Asignación').length;
+      document.getElementById('historyStatClosures').textContent = entries.filter(item => ['Finalización'].includes(item.action)).length;
+      const tbody = document.getElementById('historyTableBody');
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="muted-empty">No hay movimientos que coincidan con los filtros.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = entries.map(item => `
+        <tr>
+          <td>${formatDate(item.timestamp)}</td>
+          <td><strong>${item.code}</strong></td>
+          <td>${item.action}</td>
+          <td><div><strong>${item.title}</strong></div><div style="margin-top:6px;"><span class="chip ${item.type === 'Avería' ? 'averia' : 'trabajo'}">${item.type}</span></div></td>
+          <td>${item.agency}</td>
+          <td>${item.user}</td>
+          <td>
+            <div>${item.detail}</div>
+            ${(item.prevStatus || item.newStatus) ? `<div style="margin-top:6px; color: var(--muted); font-size:12px;"><strong>${item.prevStatus || '-'}</strong> → <strong>${item.newStatus || '-'}</strong></div>` : ''}
+          </td>
+          <td><button class="btn btn-secondary btn-sm" onclick="showDetail('${item.operationId}')">Ver</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function exportRowsToCsv(filename, headers, rows) {
+      const escapeCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+      const content = [headers.map(escapeCell).join(','), ...rows.map(row => row.map(escapeCell).join(','))].join('\n');
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function getFilteredOperations() {
+      const operations = loadOperations();
+      return operations.filter(op => {
+        const matchType = !filterType.value || op.type === filterType.value;
+        const matchStatus = !filterStatus.value || op.status === filterStatus.value;
+        const matchAgency = !filterAgency.value || op.agency.toLowerCase().includes(filterAgency.value.toLowerCase());
+        const matchTech = !filterTech.value || op.technician.toLowerCase().includes(filterTech.value.toLowerCase());
+        const createdDate = new Date(op.createdAt);
+        const fromOk = !filterDateFrom.value || createdDate >= new Date(filterDateFrom.value + 'T00:00:00');
+        const toOk = !filterDateTo.value || createdDate <= new Date(filterDateTo.value + 'T23:59:59');
+        return matchType && matchStatus && matchAgency && matchTech && fromOk && toOk;
+      });
+    }
+
+    function renderOperations() {
+      const operations = getFilteredOperations();
+      renderStats(loadOperations());
+      operationsTableBody.innerHTML = '';
+      if (!operations.length) {
+        operationsTableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--muted); padding: 32px;">No hay operaciones que coincidan con los filtros.</td></tr>`;
+        return;
+      }
+      operations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(op => {
+        const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${op.code}</strong></td>
+          <td><span class="chip ${op.type === 'Avería' ? 'averia' : 'trabajo'}">${op.type}</span></td>
+          <td><strong>${op.title}</strong><div style="margin-top:6px; color: var(--muted); font-size:12px;">${op.description.slice(0, 60)}${op.description.length > 60 ? '...' : ''}</div><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></td>
+          <td>${op.agency}</td>
+          <td><strong style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">${assignedLabel}</strong>${op.technician}</td>
+          <td><span class="chip priority-${op.priority.toLowerCase()}">${op.priority}</span></td>
+          <td>${statusBadge(op.status)}</td>
+          <td>${formatDate(op.createdAt)}</td>
+          <td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="showDetail('${op.id}')">Ver</button>${op.status !== 'Completado' ? `<button class="btn btn-secondary btn-sm" onclick="openEditModal('${op.id}')">Editar</button><button class="btn btn-secondary btn-sm" onclick="deleteOperation('${op.id}')">Eliminar</button>` : ''}</div></td>
+        `;
+        operationsTableBody.appendChild(row);
+      });
+    }
+
+    function renderGenericTable(type, search = '') {
+      let items = [];
+      let tbody = null;
+      let columns = [];
+      if (type === 'users') {
+        items = USERS;
+        tbody = document.getElementById('usersCatalogTableBody');
+        columns = ['name', 'area', 'phone'];
+      } else if (type === 'suppliers') {
+        items = SUPPLIERS;
+        tbody = document.getElementById('suppliersCatalogTableBody');
+        columns = ['name', 'service', 'phone'];
+      } else if (type === 'work') {
+        items = WORK_TYPES;
+        tbody = document.getElementById('worksCatalogTableBody');
+        columns = ['name', 'description'];
+      } else {
+        items = ISSUE_TYPES;
+        tbody = document.getElementById('issuesCatalogTableBody');
+        columns = ['name', 'description'];
+      }
+
+      const text = (search || '').toLowerCase().trim();
+      const filtered = items.filter(item => columns.some(col => (item[col] || '').toLowerCase().includes(text)));
+      tbody.innerHTML = '';
+      if (!filtered.length) {
+        const colspan = type === 'users' || type === 'suppliers' ? 5 : 4;
+        tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; color: var(--muted); padding: 32px;">No hay registros.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const realIndex = items.findIndex(x => JSON.stringify(x) === JSON.stringify(item));
+        const row = document.createElement('tr');
+        if (type === 'users') {
+          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.area || ''}</td><td>${item.phone || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('users', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('users', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('users', ${realIndex})">Eliminar</button></div></td>`;
+        } else if (type === 'suppliers') {
+          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.service || ''}</td><td>${item.phone || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('suppliers', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('suppliers', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('suppliers', ${realIndex})">Eliminar</button></div></td>`;
+        } else {
+          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.description || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('${type}', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('${type}', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('${type}', ${realIndex})">Eliminar</button></div></td>`;
+        }
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderAssigneeOptions(selectId, type, selected = '') {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const items = type === 'Trabajo' ? SUPPLIERS : USERS;
+      select.innerHTML = '<option value="">Sin asignar</option>' + items.map(item => `<option value="${item.name}" ${selected === item.name ? 'selected' : ''}>${item.name}</option>`).join('');
+    }
+
+    function showView(viewName) {
+      ['operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues'].forEach(id => document.getElementById(id).classList.remove('active'));
+      if (viewName === 'operations') {
+        document.getElementById('operationsView').classList.remove('hidden');
+        document.getElementById('navOperations').classList.add('active');
+      } else if (viewName === 'history') {
+        document.getElementById('historyView').classList.remove('hidden');
+        document.getElementById('navHistory').classList.add('active');
+        renderHistory();
+      } else if (viewName === 'reports') {
+        document.getElementById('reportsView').classList.remove('hidden');
+        document.getElementById('navReports').classList.add('active');
+        renderReports();
+      } else if (viewName === 'reportsAgency') {
+        document.getElementById('reportsAgencyView').classList.remove('hidden');
+        document.getElementById('navReportsAgency').classList.add('active');
+        renderAgencyReports();
+      } else if (viewName === 'reportsOwner') {
+        document.getElementById('reportsOwnerView').classList.remove('hidden');
+        document.getElementById('navReportsOwner').classList.add('active');
+        renderOwnerReports();
+      } else if (viewName === 'reportsSpecific') {
+        document.getElementById('reportsSpecificView').classList.remove('hidden');
+        document.getElementById('navReportsSpecific').classList.add('active');
+        renderSpecificReports();
+      } else if (viewName === 'users') {
+        document.getElementById('usersView').classList.remove('hidden');
+        document.getElementById('navUsers').classList.add('active');
+        renderGenericTable('users', userSearch.value || '');
+      } else if (viewName === 'suppliers') {
+        document.getElementById('suppliersView').classList.remove('hidden');
+        document.getElementById('navSuppliers').classList.add('active');
+        renderGenericTable('suppliers', supplierSearch.value || '');
+      } else if (viewName === 'works') {
+        document.getElementById('worksView').classList.remove('hidden');
+        document.getElementById('navWorks').classList.add('active');
+        renderGenericTable('work', workSearch.value || '');
+      } else if (viewName === 'issues') {
+        document.getElementById('issuesView').classList.remove('hidden');
+        document.getElementById('navIssues').classList.add('active');
+        renderGenericTable('issue', issueSearch.value || '');
+      }
+    }
+
+    function refreshOpenTypeSelectors() {
+      renderTypeOptions('operationTypeOptions', document.getElementById('operationType')?.value || 'Avería', getSelectedValues('operationTypeOptions'));
+      renderTypeOptions('editOperationTypeOptions', document.getElementById('editOperationType')?.value || 'Avería', getSelectedValues('editOperationTypeOptions'));
+      renderAssigneeOptions('operationTechnician', document.getElementById('operationType')?.value || 'Avería', document.getElementById('operationTechnician')?.value || '');
+      renderAssigneeOptions('editOperationTechnician', document.getElementById('editOperationType')?.value || 'Avería', document.getElementById('editOperationTechnician')?.value || '');
+    }
+
+    function createCatalogItem(type) {
+      if (type === 'users') {
+        const name = prompt('Nombre del técnico/usuario:');
+        if (!name || !name.trim()) return;
+        const area = prompt('Área o especialidad:') || '';
+        const phone = prompt('Teléfono:') || '';
+        if (USERS.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        USERS.push({ name: name.trim(), area: area.trim(), phone: phone.trim() });
+      } else if (type === 'suppliers') {
+        const name = prompt('Nombre del suplidor:');
+        if (!name || !name.trim()) return;
+        const service = prompt('Servicio que ofrece:') || '';
+        const phone = prompt('Teléfono:') || '';
+        if (SUPPLIERS.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        SUPPLIERS.push({ name: name.trim(), service: service.trim(), phone: phone.trim() });
+      } else if (type === 'work') {
+        const name = prompt('Nombre del trabajo:');
+        if (!name || !name.trim()) return;
+        const description = prompt('Descripción:') || '';
+        if (WORK_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        WORK_TYPES.push({ name: name.trim(), description: description.trim() });
+      } else {
+        const name = prompt('Nombre de la avería:');
+        if (!name || !name.trim()) return;
+        const description = prompt('Descripción:') || '';
+        if (ISSUE_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        ISSUE_TYPES.push({ name: name.trim(), description: description.trim() });
+      }
+      saveCatalogs();
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
+      renderCurrentCatalogView();
+    }
+
+    function editCatalogItem(type, index) {
+      let list = [];
+      if (type === 'users') list = USERS;
+      else if (type === 'suppliers') list = SUPPLIERS;
+      else if (type === 'work') list = WORK_TYPES;
+      else list = ISSUE_TYPES;
+      const item = list[index];
+      if (!item) return;
+
+      if (type === 'users') {
+        const name = prompt('Editar nombre:', item.name);
+        if (!name || !name.trim()) return;
+        const area = prompt('Editar área:', item.area || '') || '';
+        const phone = prompt('Editar teléfono:', item.phone || '') || '';
+        list[index] = { name: name.trim(), area: area.trim(), phone: phone.trim() };
+      } else if (type === 'suppliers') {
+        const name = prompt('Editar nombre:', item.name);
+        if (!name || !name.trim()) return;
+        const service = prompt('Editar servicio:', item.service || '') || '';
+        const phone = prompt('Editar teléfono:', item.phone || '') || '';
+        list[index] = { name: name.trim(), service: service.trim(), phone: phone.trim() };
+      } else {
+        const name = prompt('Editar nombre:', item.name);
+        if (!name || !name.trim()) return;
+        const description = prompt('Editar descripción:', item.description || '') || '';
+        list[index] = { name: name.trim(), description: description.trim() };
+      }
+
+      saveCatalogs();
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
+      renderCurrentCatalogView();
+    }
+
+    function deleteCatalogItem(type, index) {
+      if (type === 'users') USERS.splice(index, 1);
+      else if (type === 'suppliers') SUPPLIERS.splice(index, 1);
+      else if (type === 'work') WORK_TYPES.splice(index, 1);
+      else ISSUE_TYPES.splice(index, 1);
+      saveCatalogs();
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
+      renderCurrentCatalogView();
+    }
+
+    function viewCatalogItem(type, index) {
+      let item = null;
+      if (type === 'users') item = USERS[index];
+      else if (type === 'suppliers') item = SUPPLIERS[index];
+      else if (type === 'work') item = WORK_TYPES[index];
+      else item = ISSUE_TYPES[index];
+      if (!item) return;
+      const lines = Object.entries(item).map(([key, value]) => `${key}: ${value || ''}`);
+      alert(lines.join('\n'));
+    }
+
+    function renderCurrentCatalogView() {
+      if (!document.getElementById('usersView').classList.contains('hidden')) renderGenericTable('users', userSearch.value || '');
+      if (!document.getElementById('suppliersView').classList.contains('hidden')) renderGenericTable('suppliers', supplierSearch.value || '');
+      if (!document.getElementById('worksView').classList.contains('hidden')) renderGenericTable('work', workSearch.value || '');
+      if (!document.getElementById('issuesView').classList.contains('hidden')) renderGenericTable('issue', issueSearch.value || '');
+    }
+
+    function openCreateModal() {
+      createModalBackdrop.classList.remove('hidden');
+      createError.classList.add('hidden');
+      createError.textContent = '';
+      renderTypeOptions('operationTypeOptions', document.getElementById('operationType').value, []);
+      updateTechnicianLabel('operationType', 'labelTechnician', 'operationTechnician');
+      renderAssigneeOptions('operationTechnician', document.getElementById('operationType').value, '');
+    }
+
+    function closeCreateModal() {
+      createModalBackdrop.classList.add('hidden');
+      document.getElementById('operationType').value = 'Avería';
+      document.getElementById('operationStatus').value = 'Pendiente';
+      document.getElementById('operationTitle').value = '';
+      document.getElementById('operationAgency').value = '';
+      document.getElementById('operationPriority').value = 'Baja';
+      document.getElementById('operationDescription').value = '';
+      document.getElementById('operationImage').value = '';
+      renderTypeOptions('operationTypeOptions', 'Avería', []);
+      updateTechnicianLabel('operationType', 'labelTechnician', 'operationTechnician');
+      renderAssigneeOptions('operationTechnician', 'Avería', '');
+    }
+
+    function closeDetailModal() {
+      detailModalBackdrop.classList.add('hidden');
+      detailContent.innerHTML = '';
+    }
+
+    function closeEditModal() {
+      editModalBackdrop.classList.add('hidden');
+    }
+
+    function nextCode(operations) {
+      return `OP-${String(operations.length + 1).padStart(4, '0')}`;
+    }
+
+    document.getElementById('saveOperationBtn').addEventListener('click', () => {
+      const type = document.getElementById('operationType').value;
+      const status = document.getElementById('operationStatus').value;
+      const title = document.getElementById('operationTitle').value.trim();
+      const agency = document.getElementById('operationAgency').value.trim();
+      const technician = document.getElementById('operationTechnician').value.trim() || 'Sin asignar';
+      const priority = document.getElementById('operationPriority').value;
+      const description = document.getElementById('operationDescription').value.trim();
+      const imageFiles = Array.from(document.getElementById('operationImage').files || []);
+      const selectedTypes = getSelectedValues('operationTypeOptions');
+
+      if (!title || !agency || !description) {
+        createError.textContent = 'Completa título, agencia y descripción.';
+        createError.classList.remove('hidden');
+        return;
+      }
+
+      if ((status === 'Asignada' || status === 'En proceso' || status === 'Completado') && technician === 'Sin asignar') {
+        createError.textContent = 'Debes asignar un técnico o suplidor antes de pasar la operación a ese estado.';
+        createError.classList.remove('hidden');
+        return;
+      }
+
+      if (status === 'Completado') {
+        createError.textContent = 'No puedes crear una operación directamente como completada. Primero créala, asígnala y luego sube la evidencia al completarla.';
+        createError.classList.remove('hidden');
+        return;
+      }
+
+      const operations = loadOperations();
+      const newOperation = {
+        id: crypto.randomUUID(),
+        code: nextCode(operations),
+        type,
+        title,
+        agency,
+        technician,
+        priority,
+        status,
+        description,
+        selectedTypes,
+        createdAt: nowIso(),
+        images: [],
+        resultImages: [],
+        assignedAt: technician && technician !== 'Sin asignar' ? nowIso() : null,
+        startedAt: null,
+        completedAt: null,
+        resolutionTime: '',
+        closedAt: null,
+        history: [
+          createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: getCurrentUserEmail(), newStatus: 'Pendiente' }),
+          ...(technician && technician !== 'Sin asignar' ? [createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${technician}`, user: getCurrentUserEmail() })] : []),
+          ...(status === 'Asignada' ? [createHistoryEntry({ action: 'Estado', detail: 'Estado inicial establecido en Asignada', user: getCurrentUserEmail(), prevStatus: 'Pendiente', newStatus: 'Asignada' })] : []),
+          ...(status === 'En proceso' ? [createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: getCurrentUserEmail(), prevStatus: technician && technician !== 'Sin asignar' ? 'Asignada' : 'Pendiente', newStatus: 'En proceso' })] : []),
+          ...(status === 'Completado' ? [createHistoryEntry({ action: 'Finalización', detail: 'Operación completada', user: getCurrentUserEmail(), prevStatus: technician && technician !== 'Sin asignar' ? 'Asignada' : 'Pendiente', newStatus: 'Completado' })] : [])
+        ]
+      };
+
+      if (imageFiles.length) {
+        let loaded = 0;
+        const results = [];
+        imageFiles.forEach((file, idx) => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            results[idx] = e.target.result;
+            loaded++;
+            if (loaded === imageFiles.length) {
+              newOperation.images = results.filter(Boolean);
+              operations.push(newOperation);
+              saveOperations(operations);
+              renderOperations();
+              renderHistory();
+              renderReports();
+              closeCreateModal();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        operations.push(newOperation);
+        saveOperations(operations);
+        renderOperations();
+        renderHistory();
+        renderReports();
+        closeCreateModal();
+      }
+    });
+
+    function showDetail(id) {
+      currentDetailOperationId = id;
+      if (detailPrintBtn) detailPrintBtn.onclick = () => printOperation(id);
+      const op = loadOperations().find(item => item.id === id);
+      if (!op) return;
+      const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico asignado';
+      const allowedActions = ['Creación', 'Asignación', 'Inicio', 'Estado', 'Finalización', 'Evidencia'];
+      const historyHtml = Array.isArray(op.history) && op.history.length
+        ? op.history
+            .filter(item => allowedActions.includes(item.action))
+            .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .map(item => `
+              <div style="padding:10px 0; border-bottom:1px solid var(--border);">
+                <strong style="display:block; font-size:13px;">${item.action}</strong>
+                <div style="font-size:13px; color:var(--text); margin-top:4px;">${item.detail}</div>
+                ${(item.prevStatus || item.newStatus) ? `<div style="font-size:12px; color:var(--muted); margin-top:4px;"><strong>${item.prevStatus || '-'}</strong> → <strong>${item.newStatus || '-'}</strong></div>` : ''}
+                <div style="font-size:12px; color:var(--muted); margin-top:4px;">${formatDate(item.timestamp)} · ${item.user}</div>
+              </div>
+            `).join('')
+        : '<div style="color:var(--muted);">Sin historial disponible.</div>';
+      detailContent.innerHTML = `
+        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${op.technician}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
+        <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
+        ${op.images && op.images.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Imágenes reportadas</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.images.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
+        ${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Evidencias de resultado</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.resultImages.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
+        <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
+        <div class="detail-box"><div class="detail-item"><span>Historial de la operación</span><div style="margin-top:8px;">${historyHtml}</div></div></div>
+      `;
+      detailModalBackdrop.classList.remove('hidden');
+    }
+
+    
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function renderPrintImages(images, title) {
+      if (!Array.isArray(images) || !images.length) return '';
+      return `
+        <div class="print-section">
+          <h3>${escapeHtml(title)}</h3>
+          <div class="print-image-grid">
+            ${images.map(img => `<div class="print-image-card"><img src="${img}" alt="${escapeHtml(title)}" /></div>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function printOperation(id) {
+      const op = loadOperations().find(item => item.id === id);
+      if (!op) return;
+      const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico asignado';
+      const historyItems = Array.isArray(op.history) ? op.history : [];
+      const historyHtml = historyItems
+        .filter(item => ['Creación','Asignación','Inicio','Estado','Finalización','Evidencia'].includes(item.action))
+        .sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp))
+        .map(item => `
+          <tr>
+            <td>${escapeHtml(formatDate(item.timestamp))}</td>
+            <td>${escapeHtml(item.action || '')}</td>
+            <td>${escapeHtml(item.detail || '')}${(item.prevStatus || item.newStatus) ? `<div style="margin-top:4px; color:#667085; font-size:11px;"><strong>${escapeHtml(item.prevStatus || '-')}</strong> → <strong>${escapeHtml(item.newStatus || '-')}</strong></div>` : ''}</td>
+            <td>${escapeHtml(item.user || '')}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">Sin historial disponible.</td></tr>';
+      const reportedPhotos = renderPrintImages(op.images, 'Fotos reportadas');
+      const evidencePhotos = renderPrintImages(op.resultImages, 'Fotos de evidencia');
+      const mediaSections = reportedPhotos || evidencePhotos
+        ? `<div class="media-row">${reportedPhotos}${evidencePhotos}</div>`
+        : '';
+      const printWindow = window.open('', '_blank', 'width=960,height=900');
+      if (!printWindow) return;
+      printWindow.document.write(`<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Operación ${escapeHtml(op.code)}</title>
+<style>
+  *{box-sizing:border-box} body{font-family:Arial,sans-serif;color:#111827;margin:0;background:#fff;font-size:12px}
+  .sheet{max-width:900px;margin:0 auto;padding:24px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid #cbd5e1;padding-bottom:12px;margin-bottom:18px}
+  .header h1{margin:0;font-size:22px}.header p{margin:4px 0 0;color:#475467}
+  .code-box{text-align:right;white-space:nowrap}.code-box span{display:block;font-size:10px;color:#6b7280;text-transform:uppercase;font-weight:700;letter-spacing:.04em}.code-box strong{display:block;font-size:18px;margin-top:4px}
+  .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin-bottom:18px}
+  .meta-item{border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+  .meta-item span{display:block;font-size:10px;color:#6b7280;text-transform:uppercase;font-weight:700;margin-bottom:4px;letter-spacing:.04em}
+  .meta-item strong,.meta-item div{font-size:12px;line-height:1.45}
+  .print-section{margin-top:18px}
+  .print-section h3{font-size:14px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:6px}
+  .description{border:1px solid #e5e7eb;border-radius:10px;padding:12px;line-height:1.6;white-space:pre-wrap}
+  .types{display:flex;flex-wrap:wrap;gap:6px}.type-chip{border:1px solid #cbd5e1;border-radius:999px;padding:5px 9px;font-size:11px;background:#f8fafc}
+  .media-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  .print-image-grid{display:grid;grid-template-columns:1fr;gap:12px}
+  .print-image-card{border:1px solid #dbe2ea;border-radius:10px;padding:8px;display:flex;align-items:center;justify-content:center;min-height:200px;overflow:hidden;background:#fff}
+  .print-image-card img{max-width:100%;max-height:260px;width:auto;height:auto;object-fit:contain;display:block}
+  table{width:100%;border-collapse:collapse} th,td{border:1px solid #e5e7eb;padding:8px;text-align:left;vertical-align:top} th{background:#f8fafc;font-size:11px}
+  @media print { body{print-color-adjust:exact;-webkit-print-color-adjust:exact} .sheet{padding:0 10px} }
+</style></head><body>
+<div class="sheet">
+  <div class="header"><div><h1>Reporte de Operación</h1><p>Sistema de Operaciones</p></div><div class="code-box"><span>Código</span><strong>${escapeHtml(op.code)}</strong></div></div>
+  <div class="meta">
+    <div class="meta-item"><span>Estado</span><div>${escapeHtml(op.status)}</div></div>
+    <div class="meta-item"><span>Fecha</span><div>${escapeHtml(formatDate(op.createdAt))}</div></div>
+    <div class="meta-item"><span>Título</span><div>${escapeHtml(op.title)}</div></div>
+    <div class="meta-item"><span>Agencia</span><div>${escapeHtml(op.agency)}</div></div>
+    <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(op.technician)}</div></div>
+    <div class="meta-item"><span>Prioridad</span><div>${escapeHtml(op.priority)}</div></div>
+    <div class="meta-item"><span>Tiempo de asignación</span><div>${escapeHtml(formatMinutesHuman(getAssignmentMinutes(op) || 0))}</div></div>
+    <div class="meta-item"><span>Tiempo de resolución</span><div>${escapeHtml(formatMinutesHuman(getResolutionMinutes(op) || 0))}</div></div>
+    <div class="meta-item"><span>Tipos específicos</span><div class="types">${(Array.isArray(op.selectedTypes)&&op.selectedTypes.length?op.selectedTypes:['Sin tipo específico']).map(t=>`<span class="type-chip">${escapeHtml(t)}</span>`).join('')}</div></div>
+  </div>
+  <div class="print-section"><h3>Descripción</h3><div class="description">${escapeHtml(op.description || '')}</div></div>
+  ${mediaSections}
+  <div class="print-section"><h3>Historial principal</h3><table><thead><tr><th>Fecha</th><th>Acción</th><th>Detalle</th><th>Usuario</th></tr></thead><tbody>${historyHtml}</tbody></table></div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();},200);};<\/script>
+</body></html>`);
+      printWindow.document.close();
+    }
+
+function openEditModal(id) {
+      const op = loadOperations().find(item => item.id === id);
+      if (!op) return;
+      if (op.status === 'Completado') {
+        alert('Esta operación ya está completada y no se puede editar.');
+        return;
+      }
+      document.getElementById('editOperationId').value = op.id;
+      document.getElementById('editOperationType').value = op.type;
+      document.getElementById('editOperationStatus').value = op.status;
+      document.getElementById('editOperationTitle').value = op.title;
+      document.getElementById('editOperationAgency').value = op.agency;
+      document.getElementById('editOperationPriority').value = op.priority;
+      document.getElementById('editOperationDescription').value = op.description;
+      document.getElementById('editResultImage').value = '';
+      renderTypeOptions('editOperationTypeOptions', op.type, op.selectedTypes || []);
+      updateTechnicianLabel('editOperationType', 'editLabelTechnician', 'editOperationTechnician');
+      renderAssigneeOptions('editOperationTechnician', op.type, op.technician || '');
+      if (op.images && op.images.length) {
+        renderEditableImageGrid('editImagesPreviewGrid', op.images, 'removeReportedImage', op.id);
+        document.getElementById('editImagesPreview').classList.remove('hidden');
+      } else {
+        document.getElementById('editImagesPreviewGrid').innerHTML = '';
+        document.getElementById('editImagesPreview').classList.add('hidden');
+      }
+      if (op.resultImages && op.resultImages.length) {
+        renderEditableImageGrid('editResultPreviewGrid', op.resultImages, 'removeEvidenceImage', op.id);
+        document.getElementById('editResultPreview').classList.remove('hidden');
+      } else {
+        document.getElementById('editResultPreviewGrid').innerHTML = '';
+        document.getElementById('editResultPreview').classList.add('hidden');
+      }
+      editModalBackdrop.classList.remove('hidden');
+    }
+
+    function saveEditedOperation() {
+      const id = document.getElementById('editOperationId').value;
+      const operations = loadOperations();
+      const index = operations.findIndex(item => item.id === id);
+      if (index === -1) return;
+      if (operations[index].status === 'Completado') {
+        alert('Esta operación ya está completada y no se puede editar.');
+        closeEditModal();
+        return;
+      }
+      const actor = getCurrentUserEmail();
+      const previousStatus = operations[index].status;
+      const previousAssignee = operations[index].technician;
+      const newType = document.getElementById('editOperationType').value;
+      const newStatus = document.getElementById('editOperationStatus').value;
+      const newTitle = document.getElementById('editOperationTitle').value.trim();
+      const newAgency = document.getElementById('editOperationAgency').value.trim();
+      const newTechnician = document.getElementById('editOperationTechnician').value.trim() || 'Sin asignar';
+      const newPriority = document.getElementById('editOperationPriority').value;
+      const newDescription = document.getElementById('editOperationDescription').value.trim();
+      const newSelectedTypes = getSelectedValues('editOperationTypeOptions');
+      const resultImageFiles = Array.from(document.getElementById('editResultImage').files || []);
+      const currentEvidence = Array.isArray(operations[index].resultImages) ? operations[index].resultImages : [];
+
+      if ((newStatus === 'En proceso' || newStatus === 'Completado') && newTechnician === 'Sin asignar') {
+        alert('Debes asignar un técnico o suplidor antes de pasar la operación a ese estado.');
+        return;
+      }
+
+      if (newStatus === 'Completado' && !currentEvidence.length && !resultImageFiles.length) {
+        alert('Debes subir al menos una foto de evidencia para completar la operación.');
+        return;
+      }
+
+      if (previousStatus !== 'Completado' && newStatus === 'Completado') {
+        const confirmed = window.confirm('Esta operación pasará a Completado y luego no se podrá editar más. ¿Deseas continuar?');
+        if (!confirmed) return;
+      }
+
+      operations[index].type = newType;
+      operations[index].status = newStatus;
+      operations[index].title = newTitle;
+      operations[index].agency = newAgency;
+      operations[index].technician = newTechnician;
+      operations[index].priority = newPriority;
+      operations[index].description = newDescription;
+      operations[index].selectedTypes = newSelectedTypes;
+
+      if (!Array.isArray(operations[index].history)) operations[index].history = [];
+
+      if (previousAssignee !== operations[index].technician && operations[index].technician !== 'Sin asignar') {
+        if (!operations[index].assignedAt) operations[index].assignedAt = nowIso();
+        operations[index].history.push(createHistoryEntry({
+          action: 'Asignación',
+          detail: `Asignada a ${operations[index].technician}`,
+          user: actor
+        }));
+      }
+
+      if (previousStatus !== operations[index].status) {
+        if (operations[index].status === 'Asignada' && !operations[index].assignedAt) {
+          operations[index].assignedAt = nowIso();
+        }
+        if (operations[index].status === 'En proceso' && !operations[index].startedAt) {
+          operations[index].startedAt = nowIso();
+        }
+        if (operations[index].status === 'Completado') {
+          if (!operations[index].completedAt) operations[index].completedAt = nowIso();
+          if (operations[index].assignedAt) {
+            operations[index].resolutionTime = formatMinutesHuman(getResolutionMinutes(operations[index]) || 0);
+          }
+        }
+
+        if (operations[index].status === 'En proceso') {
+          operations[index].history.push(createHistoryEntry({
+            action: 'Inicio',
+            detail: 'Operación iniciada',
+            user: actor,
+            prevStatus: previousStatus,
+            newStatus: operations[index].status
+          }));
+        } else if (operations[index].status === 'Completado') {
+          const detail = operations[index].resolutionTime ? `Operación completada en ${operations[index].resolutionTime}` : 'Operación completada';
+          operations[index].history.push(createHistoryEntry({
+            action: 'Finalización',
+            detail,
+            user: actor,
+            prevStatus: previousStatus,
+            newStatus: operations[index].status
+          }));
+        } else {
+          operations[index].history.push(createHistoryEntry({
+            action: 'Estado',
+            detail: `Estado cambiado de ${previousStatus} a ${operations[index].status}`,
+            user: actor,
+            prevStatus: previousStatus,
+            newStatus: operations[index].status
+          }));
+        }
+      }
+
+      if (resultImageFiles.length) {
+        let loaded = 0;
+        const results = [];
+        resultImageFiles.forEach((file, idx) => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            results[idx] = e.target.result;
+            loaded++;
+            if (loaded === resultImageFiles.length) {
+              const current = Array.isArray(operations[index].resultImages) ? operations[index].resultImages : [];
+              operations[index].resultImages = current.concat(results.filter(Boolean));
+              operations[index].history.push(createHistoryEntry({
+                action: 'Evidencia',
+                detail: `${results.filter(Boolean).length} evidencia(s) agregada(s)`,
+                user: actor,
+                prevStatus: operations[index].status,
+                newStatus: operations[index].status
+              }));
+              saveOperations(operations);
+              closeEditModal();
+              renderOperations();
+              renderHistory();
+              renderReports();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        saveOperations(operations);
+        closeEditModal();
+        renderOperations();
+        renderHistory();
+        renderReports();
+      }
+    }
+
+    function deleteOperation(id) {
+      const operations = loadOperations().filter(item => item.id !== id);
+      saveOperations(operations);
+      renderOperations();
+      renderHistory();
+      renderReports();
+    }
+
+    function removeReportedImage(id, imageIndex) {
+      const operations = loadOperations();
+      const index = operations.findIndex(item => item.id === id);
+      if (index === -1) return;
+      operations[index].images = Array.isArray(operations[index].images) ? operations[index].images.filter((_, i) => i !== imageIndex) : [];
+      saveOperations(operations);
+      openEditModal(id);
+      renderOperations();
+      renderHistory();
+      renderReports();
+    }
+
+    function removeEvidenceImage(id, imageIndex) {
+      const operations = loadOperations();
+      const index = operations.findIndex(item => item.id === id);
+      if (index === -1) return;
+      operations[index].resultImages = Array.isArray(operations[index].resultImages) ? operations[index].resultImages.filter((_, i) => i !== imageIndex) : [];
+      saveOperations(operations);
+      openEditModal(id);
+      renderOperations();
+      renderHistory();
+      renderReports();
+    }
+
+    function showApp(session) {
+      userEmailLabel.textContent = session.email;
+      loginView.classList.add('hidden');
+      appView.classList.remove('hidden');
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
+      renderOperations();
+      renderGenericTable('users', userSearch.value || '');
+      renderGenericTable('suppliers', supplierSearch.value || '');
+      renderGenericTable('work', workSearch.value || '');
+      renderGenericTable('issue', issueSearch.value || '');
+      renderHistory();
+      renderReports();
+      showView('operations');
+    }
+
+    function showLogin() {
+      appView.classList.add('hidden');
+      loginView.classList.remove('hidden');
+    }
+
+    function updateTechnicianLabel(selectId, labelId, inputId) {
+      const type = document.getElementById(selectId).value;
+      const label = document.getElementById(labelId);
+      if (type === 'Trabajo') {
+        label.textContent = 'Suplidor';
+      } else {
+        label.textContent = 'Técnico asignado';
+      }
+      renderAssigneeOptions(inputId, type, document.getElementById(inputId).value || '');
+    }
+
+    loginBtn.addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (email === DEMO_USER.email && password === DEMO_USER.password) {
+        setSession({ email });
+        loginError.classList.add('hidden');
+        showApp({ email });
+      } else {
+        loginError.textContent = 'Credenciales incorrectas. Usa el usuario de acceso.';
+        loginError.classList.remove('hidden');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      clearSession();
+      showLogin();
+    });
+
+    document.getElementById('navOperations').addEventListener('click', () => showView('operations'));
+    document.getElementById('navHistory').addEventListener('click', () => showView('history'));
+    document.getElementById('navReports').addEventListener('click', () => showView('reports'));
+    document.getElementById('navReportsAgency').addEventListener('click', () => showView('reportsAgency'));
+    document.getElementById('navReportsOwner').addEventListener('click', () => showView('reportsOwner'));
+    document.getElementById('navReportsSpecific').addEventListener('click', () => showView('reportsSpecific'));
+    document.getElementById('navUsers').addEventListener('click', () => showView('users'));
+    document.getElementById('navSuppliers').addEventListener('click', () => showView('suppliers'));
+    document.getElementById('navWorks').addEventListener('click', () => showView('works'));
+    document.getElementById('navIssues').addEventListener('click', () => showView('issues'));
+    document.getElementById('openCreateModalBtn').addEventListener('click', openCreateModal);
+    document.getElementById('addUserBtn').addEventListener('click', () => createCatalogItem('users'));
+    document.getElementById('addSupplierBtn').addEventListener('click', () => createCatalogItem('suppliers'));
+    document.getElementById('addWorkTypeBtn').addEventListener('click', () => createCatalogItem('work'));
+    document.getElementById('addIssueTypeBtn').addEventListener('click', () => createCatalogItem('issue'));
+    userSearch.addEventListener('input', () => renderGenericTable('users', userSearch.value));
+    supplierSearch.addEventListener('input', () => renderGenericTable('suppliers', supplierSearch.value));
+    workSearch.addEventListener('input', () => renderGenericTable('work', workSearch.value));
+    issueSearch.addEventListener('input', () => renderGenericTable('issue', issueSearch.value));
+
+    document.getElementById('operationType').addEventListener('change', (e) => {
+      renderTypeOptions('operationTypeOptions', e.target.value, []);
+      updateTechnicianLabel('operationType', 'labelTechnician', 'operationTechnician');
+    });
+
+    document.getElementById('editOperationType').addEventListener('change', (e) => {
+      renderTypeOptions('editOperationTypeOptions', e.target.value, []);
+      updateTechnicianLabel('editOperationType', 'editLabelTechnician', 'editOperationTechnician');
+    });
+
+    document.getElementById('operationTypeOptionsBtn').addEventListener('click', () => {
+      document.getElementById('operationTypeOptionsMenu').classList.toggle('open');
+      document.getElementById('operationTypeOptionsBtn').classList.toggle('open');
+    });
+
+    document.getElementById('editOperationTypeOptionsBtn').addEventListener('click', () => {
+      document.getElementById('editOperationTypeOptionsMenu').classList.toggle('open');
+      document.getElementById('editOperationTypeOptionsBtn').classList.toggle('open');
+    });
+
+    document.getElementById('resetDataBtn').addEventListener('click', () => {
+      localStorage.removeItem('operations_records');
+      localStorage.removeItem('operations_catalog_users');
+      localStorage.removeItem('operations_catalog_suppliers');
+      localStorage.removeItem('operations_catalog_work_types');
+      localStorage.removeItem('operations_catalog_issue_types');
+      USERS = deepClone(DEFAULT_USERS);
+      SUPPLIERS = deepClone(DEFAULT_SUPPLIERS);
+      WORK_TYPES = deepClone(DEFAULT_WORK_TYPES);
+      ISSUE_TYPES = deepClone(DEFAULT_ISSUE_TYPES);
+      saveCatalogs();
+      saveOperations(deepClone(demoOperations));
+      userSearch.value = '';
+      supplierSearch.value = '';
+      workSearch.value = '';
+      issueSearch.value = '';
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
+      renderOperations();
+      renderHistory();
+      renderReports();
+      renderAgencyReports();
+      renderOwnerReports();
+      renderSpecificReports();
+      renderGenericTable('users', '');
+      renderGenericTable('suppliers', '');
+      renderGenericTable('work', '');
+      renderGenericTable('issue', '');
+    });
+
+    [filterType, filterStatus, filterAgency, filterTech, filterDateFrom, filterDateTo].forEach(el => {
+      el.addEventListener('input', renderOperations);
+      el.addEventListener('change', renderOperations);
+    });
+
+    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterFrom, reportFilterTo].forEach(el => {
+      el.addEventListener('input', renderReports);
+      el.addEventListener('change', renderReports);
+    });
+
+    [agencyReportFilterType, agencyReportFilterStatus, agencyReportFilterAgency, agencyReportFilterFrom, agencyReportFilterTo].forEach(el => {
+      el.addEventListener('input', renderAgencyReports);
+      el.addEventListener('change', renderAgencyReports);
+    });
+
+    [ownerReportFilterType, ownerReportFilterStatus, ownerReportFilterOwner, ownerReportFilterFrom, ownerReportFilterTo].forEach(el => {
+      el.addEventListener('input', renderOwnerReports);
+      el.addEventListener('change', renderOwnerReports);
+    });
+
+    [specificReportFilterType, specificReportFilterSpecificType, specificReportFilterStatus, specificReportFilterFrom, specificReportFilterTo].forEach(el => {
+      el.addEventListener('input', renderSpecificReports);
+      el.addEventListener('change', renderSpecificReports);
+    });
+
+    [historyFilterSearch, historyFilterAction, historyFilterUser, historyFilterFrom, historyFilterTo].forEach(el => {
+      el.addEventListener('input', renderHistory);
+      el.addEventListener('change', renderHistory);
+    });
+
+    document.getElementById('reportClearBtn').addEventListener('click', () => {
+      reportFilterType.value = '';
+      reportFilterStatus.value = '';
+      reportFilterSpecificType.value = '';
+      reportFilterAgency.value = '';
+      reportFilterOwner.value = '';
+      reportFilterFrom.value = '';
+      reportFilterTo.value = '';
+      populateReportSpecificTypeOptions();
+      renderReports();
+    });
+
+    document.getElementById('agencyReportClearBtn').addEventListener('click', () => {
+      agencyReportFilterType.value = '';
+      agencyReportFilterStatus.value = '';
+      agencyReportFilterAgency.value = '';
+      agencyReportFilterFrom.value = '';
+      agencyReportFilterTo.value = '';
+      renderAgencyReports();
+    });
+
+    document.getElementById('ownerReportClearBtn').addEventListener('click', () => {
+      ownerReportFilterType.value = '';
+      ownerReportFilterStatus.value = '';
+      ownerReportFilterOwner.value = '';
+      ownerReportFilterFrom.value = '';
+      ownerReportFilterTo.value = '';
+      renderOwnerReports();
+    });
+
+    document.getElementById('specificReportClearBtn').addEventListener('click', () => {
+      specificReportFilterType.value = '';
+      specificReportFilterSpecificType.value = '';
+      specificReportFilterStatus.value = '';
+      specificReportFilterFrom.value = '';
+      specificReportFilterTo.value = '';
+      populateDedicatedSpecificTypeOptions();
+      renderSpecificReports();
+    });
+
+    document.getElementById('historyClearBtn').addEventListener('click', () => {
+      historyFilterSearch.value = '';
+      historyFilterAction.value = '';
+      historyFilterUser.value = '';
+      historyFilterFrom.value = '';
+      historyFilterTo.value = '';
+      renderHistory();
+    });
+
+    document.getElementById('reportExportBtn').addEventListener('click', () => {
+      const operations = getReportFilteredOperations();
+      exportRowsToCsv(
+        'reportes_operaciones.csv',
+        ['Código', 'Tipo', 'Título', 'Agencia', 'Responsable', 'Prioridad', 'Estado', 'Fecha', 'Tipos específicos', 'Tiempo de resolución'],
+        operations.map(op => [
+          op.code,
+          op.type,
+          op.title,
+          op.agency,
+          op.technician,
+          op.priority,
+          op.status,
+          formatDate(op.createdAt),
+          (op.selectedTypes || []).join(' | '),
+          op.resolutionTime || ''
+        ])
+      );
+    });
+
+    document.getElementById('agencyReportExportBtn').addEventListener('click', () => {
+      const operations = getOperationsByFilters({
+        typeValue: agencyReportFilterType.value,
+        statusValue: agencyReportFilterStatus.value,
+        agencyValue: agencyReportFilterAgency.value,
+        fromValue: agencyReportFilterFrom.value,
+        toValue: agencyReportFilterTo.value
+      });
+      const rows = buildAgencyGroups(operations);
+      exportRowsToCsv(
+        'reportes_por_agencia.csv',
+        ['Agencia', 'Total', 'Completadas', 'Pendientes', 'Asignación promedio', 'Resolución promedio'],
+        rows.map(row => [row.agency, row.total, row.completed, row.stillOpen, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResolution)])
+      );
+    });
+
+    document.getElementById('ownerReportExportBtn').addEventListener('click', () => {
+      const operations = getOperationsByFilters({
+        typeValue: ownerReportFilterType.value,
+        statusValue: ownerReportFilterStatus.value,
+        ownerValue: ownerReportFilterOwner.value,
+        fromValue: ownerReportFilterFrom.value,
+        toValue: ownerReportFilterTo.value
+      });
+      const rows = buildOwnerGroups(operations);
+      exportRowsToCsv(
+        'reportes_por_responsable.csv',
+        ['Responsable', 'Total', 'Completadas', 'Activas', 'Asignación promedio', 'Resolución promedio'],
+        rows.map(row => [row.owner, row.total, row.completed, row.inProgress, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResolution)])
+      );
+    });
+
+    document.getElementById('specificReportExportBtn').addEventListener('click', () => {
+      const operations = getOperationsByFilters({
+        typeValue: specificReportFilterType.value,
+        statusValue: specificReportFilterStatus.value,
+        specificTypeValue: specificReportFilterSpecificType.value,
+        fromValue: specificReportFilterFrom.value,
+        toValue: specificReportFilterTo.value
+      });
+      const rows = buildCategoryGroups(operations);
+      exportRowsToCsv(
+        'reportes_por_tipos_especificos.csv',
+        ['Tipo específico', 'Total', 'Completadas', 'Pendientes', 'Asignación promedio', 'Resolución promedio'],
+        rows.map(row => [row.category, row.total, row.completed, row.stillOpen, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResolution)])
+      );
+    });
+
+    document.getElementById('historyExportBtn').addEventListener('click', () => {
+      const entries = getFilteredHistoryEntries();
+      exportRowsToCsv(
+        'historial_operaciones.csv',
+        ['Fecha y hora', 'Código', 'Acción', 'Título', 'Tipo', 'Agencia', 'Usuario', 'Estado anterior', 'Estado nuevo', 'Detalle'],
+        entries.map(item => [
+          formatDate(item.timestamp),
+          item.code,
+          item.action,
+          item.title,
+          item.type,
+          item.agency,
+          item.user,
+          item.prevStatus || '',
+          item.newStatus || '',
+          item.detail
+        ])
+      );
+    });
+
+    document.addEventListener('click', (e) => {
+      const createWrap = document.getElementById('operationTypeOptionsBtn')?.closest('.multi-select');
+      const editWrap = document.getElementById('editOperationTypeOptionsBtn')?.closest('.multi-select');
+      if (createWrap && !createWrap.contains(e.target)) {
+        document.getElementById('operationTypeOptionsMenu')?.classList.remove('open');
+        document.getElementById('operationTypeOptionsBtn')?.classList.remove('open');
+      }
+      if (editWrap && !editWrap.contains(e.target)) {
+        document.getElementById('editOperationTypeOptionsMenu')?.classList.remove('open');
+        document.getElementById('editOperationTypeOptionsBtn')?.classList.remove('open');
+      }
+    });
+
+    window.closeCreateModal = closeCreateModal;
+    window.closeDetailModal = closeDetailModal;
+    window.closeEditModal = closeEditModal;
+    window.showDetail = showDetail;
+    window.openEditModal = openEditModal;
+    window.saveEditedOperation = saveEditedOperation;
+    window.deleteOperation = deleteOperation;
+    window.removeReportedImage = removeReportedImage;
+    window.removeEvidenceImage = removeEvidenceImage;
+    window.viewCatalogItem = viewCatalogItem;
+    window.editCatalogItem = editCatalogItem;
+    window.deleteCatalogItem = deleteCatalogItem;
+
+    window.addEventListener('load', () => {
+      const operations = loadOperations();
+      let changed = false;
+      operations.forEach(op => {
+        if (op.status === 'Cerrado') {
+          op.status = 'Completado';
+          changed = true;
+        }
+        if (!Array.isArray(op.history)) {
+          op.history = [createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'admin@empresa.com', newStatus: 'Pendiente' })];
+          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${op.technician}`, user: 'admin@empresa.com' }));
+          if (op.status === 'En proceso') op.history.push(createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: 'admin@empresa.com', prevStatus: 'Asignada', newStatus: 'En proceso' }));
+          if (op.status === 'Completado') op.history.push(createHistoryEntry({ action: 'Finalización', detail: op.resolutionTime ? `Operación completada en ${op.resolutionTime}` : 'Operación completada', user: 'admin@empresa.com', prevStatus: op.assignedAt ? 'Asignada' : 'Pendiente', newStatus: 'Completado' }));
+          changed = true;
+        }
+        if (Array.isArray(op.history) && op.history.some(item => item && typeof item === 'object' && (!Object.prototype.hasOwnProperty.call(item, 'prevStatus') || !Object.prototype.hasOwnProperty.call(item, 'newStatus')))) {
+          op.history = op.history.map(item => ({
+            id: item.id || crypto.randomUUID(),
+            action: item.action || '',
+            detail: item.detail || '',
+            user: item.user || 'admin@empresa.com',
+            prevStatus: Object.prototype.hasOwnProperty.call(item, 'prevStatus') ? item.prevStatus : null,
+            newStatus: Object.prototype.hasOwnProperty.call(item, 'newStatus') ? item.newStatus : null,
+            timestamp: item.timestamp || op.createdAt
+          }));
+          changed = true;
+        }
+        if (typeof op.closedAt === 'undefined') {
+          op.closedAt = null;
+          changed = true;
+        }
+        if (typeof op.assignedAt === 'undefined') {
+          op.assignedAt = op.technician && op.technician !== 'Sin asignar' ? op.createdAt : null;
+          changed = true;
+        }
+        if (typeof op.startedAt === 'undefined') {
+          op.startedAt = op.status === 'En proceso' || op.status === 'Completado' ? (op.assignedAt || op.createdAt) : null;
+          changed = true;
+        }
+        if (typeof op.completedAt === 'undefined') {
+          op.completedAt = op.status === 'Completado' ? (op.completedAt || nowIso()) : null;
+          changed = true;
+        }
+        if (typeof op.resolutionTime === 'undefined' || !op.resolutionTime) {
+          op.resolutionTime = op.status === 'Completado' ? formatMinutesHuman(getResolutionMinutes(op) || 0) : '';
+          changed = true;
+        }
+      });
+      if (changed) saveOperations(operations);
+      populateReportSpecificTypeOptions();
+      const session = getSession();
+      if (session) {
+        showApp(session);
+      } else {
+        showLogin();
+      }
+    });
+  </script>
+</body>
+</html>
