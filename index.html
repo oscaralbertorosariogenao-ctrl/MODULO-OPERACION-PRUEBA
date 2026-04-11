@@ -959,9 +959,15 @@
               
             </select></div><div class="field"><label for="editOperationTitle">Título</label><input id="editOperationTitle" class="input" /></div><div class="field"><label for="editOperationAgency">Agencia</label><input id="editOperationAgency" class="input" /></div><div class="field"><label id="editLabelTechnician" for="editOperationTechnician">Técnico asignado</label><select id="editOperationTechnician" class="select"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select id="editOperationPriority" class="select"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea id="editOperationDescription" class="textarea"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button type="button" id="editOperationTypeOptionsBtn" class="multi-select-trigger"><span id="editOperationTypeOptionsValue" class="multi-select-value">Seleccionar opciones</span><span>▾</span></button><div id="editOperationTypeOptionsMenu" class="multi-select-menu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Fotos de resultado / evidencia</label><input id="editResultImage" type="file" accept="image/*" class="input" multiple /></div><div id="editImagesPreview" class="hidden" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div id="editImagesPreviewGrid" class="image-grid"></div></div><div id="editResultPreview" class="hidden" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div id="editResultPreviewGrid" class="image-grid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
 
-  <script>
-    const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+const supabaseClient = supabase.createClient(
+  'https://oqaofwufskrbukhkyxdq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xYW9md3Vmc2tyYnVraGt5eGRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTA5MTgsImV4cCI6MjA5MTQ4NjkxOH0.Qs1F8284BmwlFq93qsGhu51nvVa4Zmo2XZYWB-WNN8w'
+);
+
+const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
     const DEFAULT_USERS = [
       { name: 'Luis Martínez', area: 'Redes', phone: '809-555-1111' },
       { name: 'Carlos Peña', area: 'Hardware', phone: '809-555-2222' },
