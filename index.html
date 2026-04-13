@@ -2632,7 +2632,7 @@ function openEditModal(id) {
 
 async function pruebaSupabase() {
   const { error } = await supabaseClient
-    .from('operaciones')
+    .from('actividades')
     .insert([
       {
         tipo: "Prueba",
