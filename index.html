@@ -2625,11 +2625,12 @@ function openEditModal(id) {
       populateReportSpecificTypeOptions();
       const session = getSession();
       if (session) {
-        showApp(session);
-      } else {
-        showLogin();
-      }
-      async function pruebaSupabase() {
+  showApp(session);
+} else {
+  showLogin();
+}
+
+async function pruebaSupabase() {
   const { error } = await supabaseClient
     .from('operaciones')
     .insert([
@@ -2646,12 +2647,11 @@ function openEditModal(id) {
   if (error) {
     console.error("Error:", error);
   } else {
-    console.log("🔥 Guardado en Supabase");
+    console.log("Guardado en Supabase");
   }
 }
 
 pruebaSupabase();
-    });
   </script>
 </body>
 </html>
