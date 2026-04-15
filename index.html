@@ -4529,15 +4529,36 @@ async function saveSingleOperation(op) {
     console.error('❌ Error general en saveSingleOperation:', error);
   }
 }
+
+async function deleteSingleOperation(id) {
+  try {
+    const { error } = await supabaseClient
+      .from('reportes_operaciones')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('❌ Error eliminando en Supabase:', error);
+    } else {
+      console.log('🗑️ Operación eliminada en Supabase:', id);
+    }
+  } catch (error) {
+    console.error('❌ Error general eliminando operación:', error);
+  }
+}
+
 async function saveOperations(operations) {
   try {
     localStorage.setItem('operations_records', JSON.stringify(operations));
 
-    const lastOperation = operations[operations.length - 1];
+    const dirtyOperations = operations.filter(op => op && op.__dirty === true);
 
-    if (lastOperation) {
-      await saveSingleOperation(lastOperation);
+    for (const op of dirtyOperations) {
+      await saveSingleOperation(op);
+      delete op.__dirty;
     }
+
+    localStorage.setItem('operations_records', JSON.stringify(operations));
 
     if (typeof renderWorkshop === 'function') {
       renderWorkshop();
@@ -4546,6 +4567,7 @@ async function saveOperations(operations) {
   } catch (error) {
     console.error('❌ Error general:', error);
   }
+}
 }
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
