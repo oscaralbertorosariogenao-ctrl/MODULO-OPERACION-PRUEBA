@@ -2,35 +2,56 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Reportes de Operaciones</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>App móvil de reportes</title>
   <style>
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
 
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --line: #d9e0e7;
+      --text: #22313f;
+      --muted: #6b7b8a;
+      --primary: #c91717;
+      --primary-dark: #a30f0f;
+      --secondary: #e9edf2;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --success-text: #065f46;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --error-text: #991b1b;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
     }
 
     .app {
-      max-width: 520px;
+      max-width: 560px;
       margin: 0 auto;
       min-height: 100vh;
-      background: #ffffff;
       display: flex;
       flex-direction: column;
     }
 
     .header {
-      background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+      background: linear-gradient(135deg, #c91717, #8f1111);
       color: #fff;
-      padding: 22px 16px 18px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      padding: 24px 18px 20px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
     }
 
     .header h1 {
@@ -43,7 +64,8 @@
     .header p {
       margin: 6px 0 0;
       font-size: 13px;
-      opacity: 0.95;
+      opacity: 0.96;
+      line-height: 1.45;
     }
 
     .content {
@@ -52,34 +74,35 @@
     }
 
     .card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 16px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 18px;
     }
 
     .field {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
 
     label {
       display: block;
       margin-bottom: 8px;
       font-size: 14px;
-      font-weight: 700;
-      color: #111827;
+      font-weight: 800;
+      color: #0f1720;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      padding: 13px 14px;
-      font-size: 15px;
+      border: 1px solid #cfd7df;
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 16px;
       background: #fff;
+      color: var(--text);
       outline: none;
       transition: 0.2s ease;
     }
@@ -87,8 +110,8 @@
     input:focus,
     select:focus,
     textarea:focus {
-      border-color: #b91c1c;
-      box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.10);
+      border-color: #c91717;
+      box-shadow: 0 0 0 3px rgba(201, 23, 23, 0.12);
     }
 
     textarea {
@@ -97,102 +120,144 @@
     }
 
     input[type="file"] {
-      background: #f9fafb;
       padding: 10px;
+      background: #fafbfc;
     }
 
     .preview {
       display: none;
-      margin-top: 10px;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
     }
 
     .preview img {
+      display: block;
       width: 100%;
-      max-height: 260px;
+      max-height: 340px;
       object-fit: cover;
-      border-radius: 14px;
-      border: 1px solid #e5e7eb;
     }
 
     .actions {
       display: flex;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 8px;
     }
 
     button {
       border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 15px;
+      border-radius: 14px;
+      padding: 15px 16px;
+      font-size: 17px;
       font-weight: 800;
       cursor: pointer;
+      transition: 0.2s ease;
       flex: 1;
     }
 
     .btn-primary {
-      background: #b91c1c;
+      background: var(--primary);
       color: #fff;
     }
 
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
     .btn-primary:disabled {
-      opacity: 0.7;
+      opacity: 0.75;
       cursor: not-allowed;
     }
 
     .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
+      background: var(--secondary);
+      color: #0f1720;
+    }
+
+    .btn-secondary:hover {
+      filter: brightness(0.98);
     }
 
     .status {
       display: none;
-      margin-top: 14px;
-      padding: 12px 14px;
-      border-radius: 12px;
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
+      line-height: 1.45;
     }
 
     .status.ok {
       display: block;
-      background: #ecfdf5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
     }
 
     .status.error {
       display: block;
-      background: #fef2f2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
     }
 
     .small-note {
-      margin-top: 14px;
-      font-size: 12px;
-      color: #6b7280;
+      margin-top: 12px;
       text-align: center;
-      line-height: 1.5;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
     }
 
-    .loading-text {
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .spinner-wrap {
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      justify-content: center;
     }
 
     .spinner {
-      width: 15px;
-      height: 15px;
-      border: 2px solid rgba(255,255,255,0.45);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .row-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      input,
+      select,
+      textarea {
+        font-size: 15px;
+      }
+
+      button {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -200,50 +265,90 @@
   <div class="app">
     <div class="header">
       <h1>Nuevo reporte</h1>
-      <p>Registrar averías y trabajos desde el celular</p>
+      <p>Registrar averías y trabajos desde el celular y enviarlos al sistema principal.</p>
     </div>
 
     <div class="content">
       <div class="card">
         <form id="reporteForm">
-          <div class="field">
-            <label for="tipo">Tipo de reporte</label>
-            <select id="tipo" required>
-              <option value="">Seleccionar</option>
-              <option value="Avería">Avería</option>
-              <option value="Trabajo">Trabajo</option>
-            </select>
+          <div class="row-2">
+            <div class="field">
+              <label for="tipo">Tipo de reporte</label>
+              <select id="tipo" required>
+                <option value="">Seleccionar</option>
+                <option value="Avería">Avería</option>
+                <option value="Trabajo">Trabajo</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="prioridad">Prioridad</label>
+              <select id="prioridad" required>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+            </div>
           </div>
 
           <div class="field">
             <label for="agencia">Agencia / Grupo</label>
-            <input type="text" id="agencia" placeholder="Ej: Agencia 0335 / Grupo 06" />
+            <input
+              type="text"
+              id="agencia"
+              placeholder="Ej: Agencia 1000 / Grupo 44"
+              required
+            />
           </div>
 
           <div class="field">
             <label for="titulo">Título o asunto</label>
-            <input type="text" id="titulo" placeholder="Ej: Printer no enciende" required />
+            <input
+              type="text"
+              id="titulo"
+              placeholder="Ej: Máquina POS con fallas"
+              required
+            />
           </div>
 
           <div class="field">
             <label for="descripcion">Descripción</label>
-            <textarea id="descripcion" placeholder="Describe aquí la avería o el trabajo requerido..." required></textarea>
+            <textarea
+              id="descripcion"
+              placeholder="Describe aquí la avería o el trabajo requerido..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label for="encargado">Nombre del reportante</label>
+            <input
+              type="text"
+              id="encargado"
+              placeholder="Ej: Encargado de agencia"
+            />
           </div>
 
           <div class="field">
             <label for="imagen">Imagen</label>
             <input type="file" id="imagen" accept="image/*" capture="environment" />
             <div class="preview" id="previewContainer">
-              <img id="previewImg" alt="Vista previa de imagen" />
+              <img id="previewImg" alt="Vista previa" />
             </div>
           </div>
 
           <div class="actions">
-            <button type="submit" class="btn-primary" id="btnGuardar">Guardar reporte</button>
-            <button type="button" class="btn-secondary" id="btnLimpiar">Limpiar</button>
+            <button type="submit" class="btn-primary" id="btnGuardar">
+              Guardar reporte
+            </button>
+            <button type="button" class="btn-secondary" id="btnLimpiar">
+              Limpiar
+            </button>
           </div>
 
           <div id="statusBox" class="status"></div>
+
           <div class="small-note">
             El reporte se guarda en Supabase y debe reflejarse automáticamente en tu sistema web.
           </div>
@@ -258,13 +363,18 @@
     const SUPABASE_URL = "https://cvmkfzagrtwygmwsqomb.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0";
 
+    const BUCKET_NAME = "reportes-operaciones";
+    const TABLE_NAME = "reportes_operaciones";
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById("reporteForm");
     const tipo = document.getElementById("tipo");
+    const prioridad = document.getElementById("prioridad");
     const agencia = document.getElementById("agencia");
     const titulo = document.getElementById("titulo");
     const descripcion = document.getElementById("descripcion");
+    const encargado = document.getElementById("encargado");
     const imagen = document.getElementById("imagen");
     const previewContainer = document.getElementById("previewContainer");
     const previewImg = document.getElementById("previewImg");
@@ -287,10 +397,64 @@
       previewContainer.style.display = "none";
       previewImg.src = "";
       clearStatus();
+      prioridad.value = "Media";
+    }
+
+    function generarCodigo() {
+      const ahora = new Date();
+      const y = ahora.getFullYear();
+      const m = String(ahora.getMonth() + 1).padStart(2, "0");
+      const d = String(ahora.getDate()).padStart(2, "0");
+      const h = String(ahora.getHours()).padStart(2, "0");
+      const min = String(ahora.getMinutes()).padStart(2, "0");
+      const s = String(ahora.getSeconds()).padStart(2, "0");
+      return `REP-${y}${m}${d}-${h}${min}${s}`;
+    }
+
+    function crearHistorialInicial({ fechaISO, agenciaTexto, reportante }) {
+      return [
+        {
+          action: "Creación",
+          date: fechaISO,
+          user: reportante || "App móvil",
+          detail: agenciaTexto
+            ? `Reporte creado desde app móvil para ${agenciaTexto}`
+            : "Reporte creado desde app móvil",
+          source: "app_movil"
+        }
+      ];
+    }
+
+    async function subirImagen(file) {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const safeExt = ext.replace(/[^a-z0-9]/gi, "") || "jpg";
+      const fileName = `reporte_${Date.now()}_${Math.random().toString(36).slice(2)}.${safeExt}`;
+      const filePath = `reportes/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type || "image/jpeg"
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+
+      if (!data?.publicUrl) {
+        throw new Error("No se pudo obtener la URL pública de la imagen.");
+      }
+
+      return data.publicUrl;
     }
 
     imagen.addEventListener("change", () => {
       const file = imagen.files?.[0];
+
       if (!file) {
         previewContainer.style.display = "none";
         previewImg.src = "";
@@ -307,47 +471,30 @@
 
     btnLimpiar.addEventListener("click", resetForm);
 
-    async function subirImagen(file) {
-      const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `reporte_${Date.now()}_${Math.random().toString(36).slice(2)}.${extension}`;
-      const filePath = `reportes/${fileName}`;
-
-      const { error: uploadError } = await supabase
-        .storage
-        .from("reportes-operaciones")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase
-        .storage
-        .from("reportes-operaciones")
-        .getPublicUrl(filePath);
-
-      return data.publicUrl;
-    }
-
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       clearStatus();
 
       const tipoValue = tipo.value.trim();
+      const prioridadValue = prioridad.value.trim();
       const agenciaValue = agencia.value.trim();
       const tituloValue = titulo.value.trim();
       const descripcionValue = descripcion.value.trim();
+      const encargadoValue = encargado.value.trim() || "App móvil";
       const imageFile = imagen.files?.[0] || null;
 
-      if (!tipoValue || !tituloValue || !descripcionValue) {
+      if (!tipoValue || !agenciaValue || !tituloValue || !descripcionValue) {
         showStatus("Completa todos los campos obligatorios.", "error");
         return;
       }
 
       btnGuardar.disabled = true;
-      btnGuardar.innerHTML = '<span class="loading-text"><span class="spinner"></span>Guardando...</span>';
+      btnGuardar.innerHTML = `
+        <span class="spinner-wrap">
+          <span class="spinner"></span>
+          Guardando...
+        </span>
+      `;
 
       try {
         let imagenUrl = null;
@@ -357,42 +504,52 @@
         }
 
         const now = new Date().toISOString();
+        const code = generarCodigo();
 
         const payload = {
-          code: "REP-" + Date.now(),
-          type: tipoValue,
-          description: tituloValue + " - " + descripcionValue,
-          status: "Pendiente",
-          technician: null,
+          code: code,
+          tipo_reporte: tipoValue,
+          categoria: tituloValue,
+          descripcion: descripcionValue,
+          agencia: agenciaValue,
+          grupo: "",
+          nombre_encargado: encargadoValue,
+          fecha_reporte: now,
+          estado: "Pendiente",
+          prioridad: prioridadValue,
+          asignado_a: "Sin asignar",
           selected_types: [],
           images: imagenUrl ? [imagenUrl] : [],
           result_images: [],
           assigned_at: null,
           started_at: null,
           completed_at: null,
-          resolution_time: null,
+          resolution_time: "",
           closed_at: null,
           source: "app_movil",
-          history: [
-            {
-              action: "Creado desde app móvil",
-              date: now,
-              detail: agenciaValue ? "Ubicación: " + agenciaValue : "Sin ubicación especificada"
-            }
-          ]
+          history: crearHistorialInicial({
+            fechaISO: now,
+            agenciaTexto: agenciaValue,
+            reportante: encargadoValue
+          })
         };
 
         const { error } = await supabase
-          .from("reportes_operaciones")
+          .from(TABLE_NAME)
           .insert([payload]);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         showStatus("Reporte guardado correctamente.", "ok");
         resetForm();
       } catch (err) {
         console.error("Error guardando reporte:", err);
-        showStatus("Error al guardar el reporte: " + (err.message || "desconocido"), "error");
+        showStatus(
+          "Error al guardar el reporte: " + (err?.message || "desconocido"),
+          "error"
+        );
       } finally {
         btnGuardar.disabled = false;
         btnGuardar.textContent = "Guardar reporte";
