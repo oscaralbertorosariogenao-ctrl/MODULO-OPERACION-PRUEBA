@@ -6159,16 +6159,7 @@ function openEditModal(id) {
       editModalBackdrop.classList.remove('hidden');
     }
 
-    function saveEditedOperation() {
-      const id = document.getElementById('editOperationId').value;
-      const operations = loadOperations();
-      const index = operations.findIndex(item => item.id === id);
-      if (index === -1) return;
-      if (operations[index].status === 'Completado') {
-        alert('Esta operación ya está completada y no se puede editar.');
-        closeEditModal();
-        return;
-      }
+   function saveEditedOperation() {
 
       const actor = getCurrentUserEmail();
       const previousStatus = operations[index].status;
