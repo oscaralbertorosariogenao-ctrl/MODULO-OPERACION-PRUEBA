@@ -4486,22 +4486,62 @@ renderTransferencias();
       return initial;
     }
 
-    function saveOperations(operations) {
-      const previousOperations = (() => {
-        try {
-          return JSON.parse(localStorage.getItem('operations_records') || '[]');
-        } catch (error) {
-          return [];
-        }
-      })();
-      localStorage.setItem('operations_records', JSON.stringify(operations));
-      if (typeof syncOperationNotifications === 'function') {
-        syncOperationNotifications(previousOperations, operations);
-      }
-      if (typeof renderWorkshop === 'function') {
-        renderWorkshop();
+    async function saveOperations(operations) {
+  try {
+    console.log('🔥 saveOperations ejecutándose');
+
+    localStorage.setItem('operations_records', JSON.stringify(operations));
+
+    for (const op of operations) {
+
+      const payload = {
+        id: op.id,
+        code: op.code,
+        tipo_reporte: op.type,
+        categoria: op.title,
+        descripcion: op.description,
+        agencia: op.agency,
+        grupo: op.grupo || '',
+        nombre_encargado: op.nombre_encargado || 'Sistema web',
+        fecha_reporte: op.createdAt || new Date().toISOString(),
+        estado: op.status,
+        prioridad: op.priority,
+        asignado_a: op.technician || 'Sin asignar',
+        technician: op.technician || 'Sin asignar',
+        selected_types: op.selectedTypes || [],
+        images: op.images || [],
+        result_images: op.resultImages || [],
+        assigned_at: op.assignedAt || null,
+        started_at: op.startedAt || null,
+        completed_at: op.completedAt || null,
+        resolution_time: op.resolutionTime || '',
+        closed_at: op.closedAt || null,
+        history: op.history || [],
+        source: 'web'
+      };
+
+      console.log('📦 Enviando a Supabase:', payload);
+
+      const { data, error } = await supabaseClient
+        .from('reportes_operaciones')
+        .upsert(payload)
+        .select();
+
+      if (error) {
+        console.error('❌ Error Supabase:', error);
+      } else {
+        console.log('✅ Guardado en Supabase:', data);
       }
     }
+
+    if (typeof renderWorkshop === 'function') {
+      renderWorkshop();
+    }
+
+  } catch (error) {
+    console.error('❌ Error general:', error);
+  }
+}
 
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
