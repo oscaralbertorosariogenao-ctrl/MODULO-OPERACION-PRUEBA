@@ -4479,12 +4479,13 @@ renderTransferencias();
     const workshopRepairBackdrop = document.getElementById('workshopRepairBackdrop');
 
     function loadOperations() {
-      const saved = localStorage.getItem('operations_records');
-      if (saved) return JSON.parse(saved);
-      const initial = deepClone(demoOperations);
-      localStorage.setItem('operations_records', JSON.stringify(initial));
-      return initial;
-    }
+  const saved = localStorage.getItem('operations_records');
+  if (saved) return JSON.parse(saved);
+  const initial = deepClone(demoOperations);
+  localStorage.setItem('operations_records', JSON.stringify(initial));
+  return initial;
+}
+
 async function saveSingleOperation(op) {
   try {
     const payload = {
@@ -4513,8 +4514,6 @@ async function saveSingleOperation(op) {
       source: 'web'
     };
 
-    console.log('📦 Enviando UNA operación a Supabase:', payload);
-
     const { data, error } = await supabaseClient
       .from('reportes_operaciones')
       .upsert(payload)
@@ -4527,23 +4526,6 @@ async function saveSingleOperation(op) {
     }
   } catch (error) {
     console.error('❌ Error general en saveSingleOperation:', error);
-  }
-}
-
-async function deleteSingleOperation(id) {
-  try {
-    const { error } = await supabaseClient
-      .from('reportes_operaciones')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('❌ Error eliminando en Supabase:', error);
-    } else {
-      console.log('🗑️ Operación eliminada en Supabase:', id);
-    }
-  } catch (error) {
-    console.error('❌ Error general eliminando operación:', error);
   }
 }
 
@@ -4563,11 +4545,9 @@ async function saveOperations(operations) {
     if (typeof renderWorkshop === 'function') {
       renderWorkshop();
     }
-
   } catch (error) {
     console.error('❌ Error general:', error);
   }
-}
 }
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
