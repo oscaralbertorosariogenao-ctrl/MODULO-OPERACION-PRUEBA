@@ -5240,16 +5240,15 @@ async function saveOperations(operations) {
         op.closedAt = op.completedAt;
         op.resolutionTime = formatMinutesHuman(getResolutionMinutes(op) || 0);
       }
-
-      saveOperations(operations);
-      closeWorkshopRepairModal();
-      renderOperations();
-      renderHistory();
-      renderReports();
-      renderAgencyReports();
-      renderOwnerReports();
-      renderSpecificReports();
-      renderWorkshop();
+operations[index].__dirty = true;
+saveOperations(operations);
+closeEditModal();
+renderOperations();
+renderHistory();
+renderReports();
+renderAgencyReports();
+renderOwnerReports();
+renderSpecificReports();
     }
 
     function getWorkshopOperations() {
@@ -5648,8 +5647,9 @@ async function saveOperations(operations) {
             loaded++;
             if (loaded === imageFiles.length) {
               newOperation.images = results.filter(Boolean);
-              operations.push(newOperation);
-              saveOperations(operations);
+              newOperation.__dirty = true;
+operations.push(newOperation);
+saveOperations(operations);
               renderOperations();
               renderHistory();
               renderReports();
@@ -6309,16 +6309,19 @@ function openEditModal(id) {
       }
     }
 
-    function deleteOperation(id) {
-      const operations = loadOperations().filter(item => item.id !== id);
-      saveOperations(operations);
-      renderOperations();
-      renderHistory();
-      renderReports();
-      renderAgencyReports();
-      renderOwnerReports();
-      renderSpecificReports();
-    }
+   async function deleteOperation(id) {
+  const operations = loadOperations().filter(item => item.id !== id);
+
+  localStorage.setItem('operations_records', JSON.stringify(operations));
+  await deleteSingleOperation(id);
+
+  renderOperations();
+  renderHistory();
+  renderReports();
+  renderAgencyReports();
+  renderOwnerReports();
+  renderSpecificReports();
+}
 
     function removeReportedImage(id, imageIndex) {
       const operations = loadOperations();
