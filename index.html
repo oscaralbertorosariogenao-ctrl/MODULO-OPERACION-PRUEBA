@@ -4517,12 +4517,16 @@ async function saveOperations(operations) {
         source: 'web'
       };
 
-      const { error } = await supabaseClient
+      const { data, error } = await supabaseClient
         .from('reportes_operaciones')
-        .upsert(payload);
+        .upsert(payload)
+        .select();
 
       if (error) {
-        console.error('Error guardando operación en Supabase:', payload, error);
+        console.error('❌ Error guardando operación en Supabase:', error);
+        console.log('Payload enviado:', payload);
+      } else {
+        console.log('✅ Guardado en Supabase:', data);
       }
     }
 
@@ -4531,7 +4535,7 @@ async function saveOperations(operations) {
     }
 
   } catch (error) {
-    console.error('Error general guardando en Supabase:', error);
+    console.error('❌ Error general guardando en Supabase:', error);
   }
 }
 
