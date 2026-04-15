@@ -5707,8 +5707,31 @@ saveOperations(operations);
       detailContent.innerHTML = `
         <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${op.technician}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
         <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
-        ${op.images && op.images.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Imágenes reportadas</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.images.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
-        ${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Evidencias de resultado</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.resultImages.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
+${op.images && op.images.length ? `<div style="margin:12px 0;">
+  <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">
+    Imágenes reportadas
+  </label>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;">
+    ${op.images.map(img => `
+      <div style="border:1px solid var(--border); border-radius:14px; padding:8px; background:#fff; display:flex; align-items:center; justify-content:center; min-height:220px; overflow:hidden;">
+        <img src="${img}" style="max-width:100%; max-height:320px; width:auto; height:auto; object-fit:contain; border-radius:10px; display:block;" />
+      </div>
+    `).join('')}
+  </div>
+</div>` : ''}
+
+${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;">
+  <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">
+    Evidencias de resultado
+  </label>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;">
+    ${op.resultImages.map(img => `
+      <div style="border:1px solid var(--border); border-radius:14px; padding:8px; background:#fff; display:flex; align-items:center; justify-content:center; min-height:220px; overflow:hidden;">
+        <img src="${img}" style="max-width:100%; max-height:320px; width:auto; height:auto; object-fit:contain; border-radius:10px; display:block;" />
+      </div>
+    `).join('')}
+  </div>
+</div>` : ''}
         ${op.type === 'Avería' ? (() => { const workshop = ensureWorkshopData(op); const total = Number(workshop.partsCost || 0) + Number(workshop.laborCost || 0); return `<div class="detail-box"><div class="detail-item"><span>Ficha técnica de taller</span><div class="detail-grid" style="margin-top:12px;"><div><strong>Equipo:</strong> ${workshop.equipmentName || 'No registrado'}</div><div><strong>Serial:</strong> ${workshop.equipmentSerial || 'No registrado'}</div><div><strong>Estado técnico:</strong> ${workshop.technicalStatus || 'Pendiente de diagnóstico'}</div><div><strong>Piezas desde:</strong> ${workshop.pieceSource || 'No registrado'}</div><div><strong>Costo piezas:</strong> RD$ ${formatMoney(workshop.partsCost || 0)}</div><div><strong>Mano de obra:</strong> RD$ ${formatMoney(workshop.laborCost || 0)}</div><div><strong>Total:</strong> RD$ ${formatMoney(total)}</div><div><strong>Última actualización:</strong> ${workshop.updatedAt ? formatDate(workshop.updatedAt) : 'Sin actualizar'}</div></div>${workshop.diagnostic ? `<p style="margin-top:10px;"><strong>Diagnóstico:</strong> ${workshop.diagnostic}</p>` : ''}${workshop.partsUsed ? `<p style="margin-top:10px;"><strong>Piezas cambiadas:</strong> ${workshop.partsUsed}</p>` : ''}${workshop.solution ? `<p style="margin-top:10px;"><strong>Trabajo realizado:</strong> ${workshop.solution}</p>` : ''}${workshop.recommendation ? `<p style="margin-top:10px;"><strong>Recomendación:</strong> ${workshop.recommendation}</p>` : ''}</div></div>`; })() : ''}
         <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
         <div class="detail-box"><div class="detail-item"><span>Historial de la operación</span><div style="margin-top:8px;">${historyHtml}</div></div></div>
