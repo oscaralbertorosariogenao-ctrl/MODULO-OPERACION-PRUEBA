@@ -22,6 +22,7 @@
       --primary: #c91717;
       --primary-dark: #a30f0f;
       --secondary: #e9edf2;
+      --secondary-text: #22313f;
       --success-bg: #ecfdf5;
       --success-border: #a7f3d0;
       --success-text: #065f46;
@@ -30,6 +31,21 @@
       --error-text: #991b1b;
       --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
       --radius: 18px;
+
+      --badge-pendiente-bg: #eef2f6;
+      --badge-pendiente-text: #475467;
+
+      --badge-asignada-bg: #eaf3fe;
+      --badge-asignada-text: #2f6fb0;
+
+      --badge-proceso-bg: #fef3c7;
+      --badge-proceso-text: #92400e;
+
+      --badge-completado-bg: #e8f3ee;
+      --badge-completado-text: #2f7d57;
+
+      --badge-cancelado-bg: #fee2e2;
+      --badge-cancelado-text: #991b1b;
     }
 
     body {
@@ -40,7 +56,7 @@
     }
 
     .app {
-      max-width: 560px;
+      max-width: 620px;
       margin: 0 auto;
       min-height: 100vh;
       display: flex;
@@ -68,9 +84,40 @@
       line-height: 1.45;
     }
 
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px 16px 0;
+    }
+
+    .tab-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 12px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      background: var(--secondary);
+      color: var(--secondary-text);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
     .content {
       padding: 16px;
       flex: 1;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
     }
 
     .card {
@@ -147,19 +194,25 @@
     }
 
     button {
+      transition: 0.2s ease;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-refresh,
+    .btn-detail-close {
       border: none;
       border-radius: 14px;
       padding: 15px 16px;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 800;
       cursor: pointer;
-      transition: 0.2s ease;
-      flex: 1;
     }
 
     .btn-primary {
       background: var(--primary);
       color: #fff;
+      flex: 1;
     }
 
     .btn-primary:hover {
@@ -174,10 +227,20 @@
     .btn-secondary {
       background: var(--secondary);
       color: #0f1720;
+      flex: 1;
     }
 
-    .btn-secondary:hover {
-      filter: brightness(0.98);
+    .btn-refresh {
+      background: #5b7287;
+      color: #fff;
+      width: 100%;
+    }
+
+    .btn-detail-close {
+      background: var(--secondary);
+      color: #0f1720;
+      width: 100%;
+      margin-top: 14px;
     }
 
     .status {
@@ -234,6 +297,326 @@
       animation: spin 0.8s linear infinite;
     }
 
+    .report-toolbar {
+      margin-bottom: 14px;
+    }
+
+    .report-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .report-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .report-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .report-code {
+      font-size: 12px;
+      font-weight: 800;
+      color: #7b8b98;
+      margin-bottom: 4px;
+    }
+
+    .report-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #182532;
+      line-height: 1.35;
+    }
+
+    .report-type {
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #6d7b88;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.pendiente {
+      background: var(--badge-pendiente-bg);
+      color: var(--badge-pendiente-text);
+    }
+
+    .badge.asignada {
+      background: var(--badge-asignada-bg);
+      color: var(--badge-asignada-text);
+    }
+
+    .badge.en-proceso {
+      background: var(--badge-proceso-bg);
+      color: var(--badge-proceso-text);
+    }
+
+    .badge.completado {
+      background: var(--badge-completado-bg);
+      color: var(--badge-completado-text);
+    }
+
+    .badge.cancelado {
+      background: var(--badge-cancelado-bg);
+      color: var(--badge-cancelado-text);
+    }
+
+    .report-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .meta-box {
+      background: #f8fafc;
+      border: 1px solid #e6edf3;
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .meta-box span {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #7a8b98;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .meta-box strong {
+      font-size: 14px;
+      color: #1f2e3a;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .report-actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-view {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      background: #e9edf2;
+      color: #22313f;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 18px;
+      color: var(--muted);
+      font-weight: 700;
+      border: 1px dashed #d7e0e8;
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .detail-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+
+    .detail-backdrop.open {
+      display: flex;
+    }
+
+    .detail-modal {
+      width: 100%;
+      max-width: 640px;
+      max-height: 92vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.24);
+      border: 1px solid var(--line);
+    }
+
+    .detail-header {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 2;
+    }
+
+    .detail-header h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #1c2c38;
+    }
+
+    .detail-body {
+      padding: 18px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .detail-item {
+      background: #f8fafc;
+      border: 1px solid #e7edf3;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .detail-item span {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #7a8b98;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .detail-item strong,
+    .detail-item p {
+      margin: 0;
+      font-size: 14px;
+      color: #22313f;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .detail-section {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #e7edf3;
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .detail-section h4 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      color: #1d2d39;
+    }
+
+    .detail-image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .detail-image-box {
+      border: 1px solid #e7edf3;
+      border-radius: 16px;
+      background: #fff;
+      min-height: 220px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .detail-image-box img {
+      max-width: 100%;
+      max-height: 320px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      border-radius: 10px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item {
+      border: 1px solid #e7edf3;
+      border-radius: 14px;
+      background: #f9fbfd;
+      padding: 12px;
+    }
+
+    .history-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #1f2d3a;
+    }
+
+    .history-item small {
+      display: block;
+      color: #7a8b98;
+      font-size: 12px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .history-item p {
+      margin: 0;
+      color: #475867;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #eef2f6;
+      color: #475467;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .chip.averia {
+      background: #eef5fb;
+      color: #3f6d98;
+    }
+
+    .chip.trabajo {
+      background: #eaf3fe;
+      color: #2f6fb0;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -241,7 +624,9 @@
     }
 
     @media (max-width: 520px) {
-      .row-2 {
+      .row-2,
+      .report-meta,
+      .detail-grid {
         grid-template-columns: 1fr;
       }
 
@@ -255,8 +640,17 @@
         font-size: 15px;
       }
 
-      button {
-        font-size: 16px;
+      .tab-btn {
+        font-size: 14px;
+      }
+
+      .report-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .badge {
+        width: fit-content;
       }
     }
   </style>
@@ -264,96 +658,126 @@
 <body>
   <div class="app">
     <div class="header">
-      <h1>Nuevo reporte</h1>
-      <p>Registrar averías y trabajos desde el celular y enviarlos al sistema principal.</p>
+      <h1>App móvil de reportes</h1>
+      <p>Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tabCreate">Nuevo reporte</button>
+      <button class="tab-btn" id="tabReports">Ver reportes</button>
     </div>
 
     <div class="content">
-      <div class="card">
-        <form id="reporteForm">
-          <div class="row-2">
-            <div class="field">
-              <label for="tipo">Tipo de reporte</label>
-              <select id="tipo" required>
-                <option value="">Seleccionar</option>
-                <option value="Avería">Avería</option>
-                <option value="Trabajo">Trabajo</option>
-              </select>
+      <section class="section active" id="sectionCreate">
+        <div class="card">
+          <form id="reporteForm">
+            <div class="row-2">
+              <div class="field">
+                <label for="tipo">Tipo de reporte</label>
+                <select id="tipo" required>
+                  <option value="">Seleccionar</option>
+                  <option value="Avería">Avería</option>
+                  <option value="Trabajo">Trabajo</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="prioridad">Prioridad</label>
+                <select id="prioridad" required>
+                  <option value="Media">Media</option>
+                  <option value="Baja">Baja</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              </div>
             </div>
 
             <div class="field">
-              <label for="prioridad">Prioridad</label>
-              <select id="prioridad" required>
-                <option value="Media">Media</option>
-                <option value="Baja">Baja</option>
-                <option value="Alta">Alta</option>
-                <option value="Urgente">Urgente</option>
-              </select>
+              <label for="agencia">Agencia / Grupo</label>
+              <input
+                type="text"
+                id="agencia"
+                placeholder="Ej: Agencia 1000 / Grupo 44"
+                required
+              />
             </div>
-          </div>
 
-          <div class="field">
-            <label for="agencia">Agencia / Grupo</label>
-            <input
-              type="text"
-              id="agencia"
-              placeholder="Ej: Agencia 1000 / Grupo 44"
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label for="titulo">Título o asunto</label>
-            <input
-              type="text"
-              id="titulo"
-              placeholder="Ej: Máquina POS con fallas"
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label for="descripcion">Descripción</label>
-            <textarea
-              id="descripcion"
-              placeholder="Describe aquí la avería o el trabajo requerido..."
-              required
-            ></textarea>
-          </div>
-
-          <div class="field">
-            <label for="encargado">Nombre del reportante</label>
-            <input
-              type="text"
-              id="encargado"
-              placeholder="Ej: Encargado de agencia"
-            />
-          </div>
-
-          <div class="field">
-            <label for="imagen">Imagen</label>
-            <input type="file" id="imagen" accept="image/*" capture="environment" />
-            <div class="preview" id="previewContainer">
-              <img id="previewImg" alt="Vista previa" />
+            <div class="field">
+              <label for="titulo">Título o asunto</label>
+              <input
+                type="text"
+                id="titulo"
+                placeholder="Ej: Máquina POS con fallas"
+                required
+              />
             </div>
+
+            <div class="field">
+              <label for="descripcion">Descripción</label>
+              <textarea
+                id="descripcion"
+                placeholder="Describe aquí la avería o el trabajo requerido..."
+                required
+              ></textarea>
+            </div>
+
+            <div class="field">
+              <label for="encargado">Nombre del reportante</label>
+              <input
+                type="text"
+                id="encargado"
+                placeholder="Ej: Encargado de agencia"
+              />
+            </div>
+
+            <div class="field">
+              <label for="imagen">Imagen</label>
+              <input type="file" id="imagen" accept="image/*" capture="environment" />
+              <div class="preview" id="previewContainer">
+                <img id="previewImg" alt="Vista previa" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn-primary" id="btnGuardar">
+                Guardar reporte
+              </button>
+              <button type="button" class="btn-secondary" id="btnLimpiar">
+                Limpiar
+              </button>
+            </div>
+
+            <div id="statusBox" class="status"></div>
+
+            <div class="small-note">
+              El reporte se guarda en Supabase y debe reflejarse automáticamente en tu sistema web.
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="section" id="sectionReports">
+        <div class="card">
+          <div class="report-toolbar">
+            <button class="btn-refresh" id="btnRefreshReports">Actualizar reportes</button>
           </div>
 
-          <div class="actions">
-            <button type="submit" class="btn-primary" id="btnGuardar">
-              Guardar reporte
-            </button>
-            <button type="button" class="btn-secondary" id="btnLimpiar">
-              Limpiar
-            </button>
-          </div>
-
-          <div id="statusBox" class="status"></div>
+          <div class="report-list" id="reportList"></div>
 
           <div class="small-note">
-            El reporte se guarda en Supabase y debe reflejarse automáticamente en tu sistema web.
+            Aquí se muestran los reportes más recientes con su estado actual.
           </div>
-        </form>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="detail-backdrop" id="detailBackdrop">
+    <div class="detail-modal">
+      <div class="detail-header">
+        <h3>Detalle del reporte</h3>
       </div>
+      <div class="detail-body" id="detailBody"></div>
     </div>
   </div>
 
@@ -368,6 +792,11 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    const tabCreate = document.getElementById("tabCreate");
+    const tabReports = document.getElementById("tabReports");
+    const sectionCreate = document.getElementById("sectionCreate");
+    const sectionReports = document.getElementById("sectionReports");
+
     const form = document.getElementById("reporteForm");
     const tipo = document.getElementById("tipo");
     const prioridad = document.getElementById("prioridad");
@@ -381,6 +810,29 @@
     const btnGuardar = document.getElementById("btnGuardar");
     const btnLimpiar = document.getElementById("btnLimpiar");
     const statusBox = document.getElementById("statusBox");
+
+    const btnRefreshReports = document.getElementById("btnRefreshReports");
+    const reportList = document.getElementById("reportList");
+
+    const detailBackdrop = document.getElementById("detailBackdrop");
+    const detailBody = document.getElementById("detailBody");
+
+    function switchTab(mode) {
+      const createActive = mode === "create";
+
+      tabCreate.classList.toggle("active", createActive);
+      tabReports.classList.toggle("active", !createActive);
+
+      sectionCreate.classList.toggle("active", createActive);
+      sectionReports.classList.toggle("active", !createActive);
+
+      if (!createActive) {
+        loadReports();
+      }
+    }
+
+    tabCreate.addEventListener("click", () => switchTab("create"));
+    tabReports.addEventListener("click", () => switchTab("reports"));
 
     function showStatus(message, type = "ok") {
       statusBox.className = "status " + type;
@@ -411,6 +863,55 @@
       return `REP-${y}${m}${d}-${h}${min}${s}`;
     }
 
+    function formatDate(value) {
+      if (!value) return "No registrada";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString("es-DO", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function normalizeStatus(status) {
+      const raw = String(status || "Pendiente").trim().toLowerCase();
+
+      if (raw === "pendiente") {
+        return { label: "Pendiente", className: "pendiente" };
+      }
+
+      if (raw === "asignada" || raw === "asignado") {
+        return { label: "Asignada", className: "asignada" };
+      }
+
+      if (raw === "en proceso" || raw === "en_proceso" || raw === "proceso") {
+        return { label: "En proceso", className: "en-proceso" };
+      }
+
+      if (raw === "completado" || raw === "completada") {
+        return { label: "Completado", className: "completado" };
+      }
+
+      if (raw === "cancelado" || raw === "cancelada" || raw === "rechazada") {
+        return { label: status, className: "cancelado" };
+      }
+
+      return { label: status || "Pendiente", className: "pendiente" };
+    }
+
+    function renderSelectedTypes(selectedTypes, tipoReporte) {
+      if (!Array.isArray(selectedTypes) || !selectedTypes.length) {
+        return `<span class="chip ${tipoReporte === "Avería" ? "averia" : "trabajo"}">Sin tipo específico</span>`;
+      }
+
+      return selectedTypes
+        .map(item => `<span class="chip ${tipoReporte === "Avería" ? "averia" : "trabajo"}">${item}</span>`)
+        .join("");
+    }
+
     function crearHistorialInicial({ fechaISO, agenciaTexto, reportante }) {
       return [
         {
@@ -439,9 +940,7 @@
           contentType: file.type || "image/jpeg"
         });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
       const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
 
@@ -538,12 +1037,11 @@
           .from(TABLE_NAME)
           .insert([payload]);
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         showStatus("Reporte guardado correctamente.", "ok");
         resetForm();
+        await loadReports();
       } catch (err) {
         console.error("Error guardando reporte:", err);
         showStatus(
@@ -555,6 +1053,223 @@
         btnGuardar.textContent = "Guardar reporte";
       }
     });
+
+    function openDetail(report) {
+      const status = normalizeStatus(report.estado);
+      const images = Array.isArray(report.images) ? report.images.filter(Boolean) : [];
+      const resultImages = Array.isArray(report.result_images) ? report.result_images.filter(Boolean) : [];
+      const history = Array.isArray(report.history) ? report.history : [];
+      const selectedTypes = Array.isArray(report.selected_types) ? report.selected_types : [];
+
+      detailBody.innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span>Código</span>
+            <strong>${report.code || "No registrado"}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Estado</span>
+            <strong><span class="badge ${status.className}">${status.label}</span></strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Tipo</span>
+            <strong>${report.tipo_reporte || "No registrado"}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Prioridad</span>
+            <strong>${report.prioridad || "No registrada"}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Agencia / Grupo</span>
+            <strong>${report.agencia || report.grupo || "No registrado"}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Asignado a</span>
+            <strong>${report.asignado_a || "Sin asignar"}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Fecha</span>
+            <strong>${formatDate(report.fecha_reporte || report.created_at)}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span>Reportante</span>
+            <strong>${report.nombre_encargado || "No registrado"}</strong>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Título / Asunto</h4>
+          <p style="margin:0; line-height:1.5;">${report.categoria || "No registrado"}</p>
+        </div>
+
+        <div class="detail-section">
+          <h4>Descripción</h4>
+          <p style="margin:0; line-height:1.6;">${report.descripcion || "Sin descripción"}</p>
+        </div>
+
+        <div class="detail-section">
+          <h4>Tipos seleccionados</h4>
+          <div style="margin-top:6px;">
+            ${renderSelectedTypes(selectedTypes, report.tipo_reporte)}
+          </div>
+        </div>
+
+        ${images.length ? `
+          <div class="detail-section">
+            <h4>Imágenes reportadas</h4>
+            <div class="detail-image-grid">
+              ${images.map(img => `
+                <div class="detail-image-box">
+                  <img src="${img}" alt="Imagen reportada" />
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        ` : ""}
+
+        ${resultImages.length ? `
+          <div class="detail-section">
+            <h4>Evidencias de resultado</h4>
+            <div class="detail-image-grid">
+              ${resultImages.map(img => `
+                <div class="detail-image-box">
+                  <img src="${img}" alt="Evidencia de resultado" />
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        ` : ""}
+
+        <div class="detail-section">
+          <h4>Historial</h4>
+          ${
+            history.length
+              ? `<div class="history-list">
+                  ${history.map(item => `
+                    <div class="history-item">
+                      <strong>${item.action || "Movimiento"}</strong>
+                      <small>${formatDate(item.date)}${item.user ? " • " + item.user : ""}</small>
+                      <p>${item.detail || "Sin detalle"}</p>
+                    </div>
+                  `).join("")}
+                </div>`
+              : `<div class="empty-state" style="padding:16px;">Sin historial disponible.</div>`
+          }
+        </div>
+
+        <button class="btn-detail-close" id="btnCloseDetailInside">Cerrar</button>
+      `;
+
+      detailBackdrop.classList.add("open");
+
+      const btnCloseDetailInside = document.getElementById("btnCloseDetailInside");
+      if (btnCloseDetailInside) {
+        btnCloseDetailInside.addEventListener("click", closeDetail);
+      }
+    }
+
+    function closeDetail() {
+      detailBackdrop.classList.remove("open");
+      detailBody.innerHTML = "";
+    }
+
+    detailBackdrop.addEventListener("click", (e) => {
+      if (e.target === detailBackdrop) {
+        closeDetail();
+      }
+    });
+
+    async function loadReports() {
+      reportList.innerHTML = `<div class="empty-state">Cargando reportes...</div>`;
+
+      try {
+        const { data, error } = await supabase
+          .from(TABLE_NAME)
+          .select("*")
+          .order("fecha_reporte", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          reportList.innerHTML = `
+            <div class="empty-state">
+              No hay reportes registrados todavía.
+            </div>
+          `;
+          return;
+        }
+
+        reportList.innerHTML = "";
+
+        data.forEach((report) => {
+          const status = normalizeStatus(report.estado);
+          const reportCard = document.createElement("div");
+          reportCard.className = "report-card";
+
+          reportCard.innerHTML = `
+            <div class="report-top">
+              <div>
+                <div class="report-code">${report.code || "Sin código"}</div>
+                <div class="report-title">${report.categoria || "Sin título"}</div>
+                <div class="report-type">${report.tipo_reporte || "Sin tipo"}</div>
+              </div>
+              <div>
+                <span class="badge ${status.className}">${status.label}</span>
+              </div>
+            </div>
+
+            <div class="report-meta">
+              <div class="meta-box">
+                <span>Agencia / Grupo</span>
+                <strong>${report.agencia || report.grupo || "No registrado"}</strong>
+              </div>
+
+              <div class="meta-box">
+                <span>Fecha</span>
+                <strong>${formatDate(report.fecha_reporte || report.created_at)}</strong>
+              </div>
+
+              <div class="meta-box">
+                <span>Prioridad</span>
+                <strong>${report.prioridad || "No registrada"}</strong>
+              </div>
+
+              <div class="meta-box">
+                <span>Asignado a</span>
+                <strong>${report.asignado_a || "Sin asignar"}</strong>
+              </div>
+            </div>
+
+            <div class="report-actions">
+              <button class="btn-view">Ver detalle</button>
+            </div>
+          `;
+
+          const viewBtn = reportCard.querySelector(".btn-view");
+          viewBtn.addEventListener("click", () => openDetail(report));
+
+          reportList.appendChild(reportCard);
+        });
+      } catch (err) {
+        console.error("Error cargando reportes:", err);
+        reportList.innerHTML = `
+          <div class="empty-state" style="color:#991b1b;">
+            Error cargando reportes: ${err?.message || "desconocido"}
+          </div>
+        `;
+      }
+    }
+
+    btnRefreshReports.addEventListener("click", loadReports);
+
+    loadReports();
   </script>
 </body>
 </html>
