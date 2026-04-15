@@ -4486,6 +4486,15 @@ renderTransferencias();
   return initial;
 }
 
+function loadOperations() {
+  const saved = localStorage.getItem('operations_records');
+  if (saved) return JSON.parse(saved);
+
+  const initial = deepClone(demoOperations);
+  localStorage.setItem('operations_records', JSON.stringify(initial));
+  return initial;
+}
+
 async function saveSingleOperation(op) {
   try {
     const payload = {
@@ -4514,18 +4523,37 @@ async function saveSingleOperation(op) {
       source: 'web'
     };
 
+    console.log('📦 Enviando UNA operación a Supabase:', payload);
+
     const { data, error } = await supabaseClient
       .from('reportes_operaciones')
       .upsert(payload)
       .select();
 
     if (error) {
-      console.error('❌ Error guardando UNA operación en Supabase:', error);
+      console.error('❌ Error guardando en Supabase:', error);
     } else {
-      console.log('✅ UNA operación guardada en Supabase:', data);
+      console.log('✅ Guardado en Supabase:', data);
     }
   } catch (error) {
-    console.error('❌ Error general en saveSingleOperation:', error);
+    console.error('❌ Error general:', error);
+  }
+}
+
+async function deleteSingleOperation(id) {
+  try {
+    const { error } = await supabaseClient
+      .from('reportes_operaciones')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('❌ Error eliminando en Supabase:', error);
+    } else {
+      console.log('🗑️ Eliminado en Supabase:', id);
+    }
+  } catch (error) {
+    console.error('❌ Error general eliminando:', error);
   }
 }
 
@@ -4545,9 +4573,24 @@ async function saveOperations(operations) {
     if (typeof renderWorkshop === 'function') {
       renderWorkshop();
     }
+
   } catch (error) {
     console.error('❌ Error general:', error);
   }
+}
+
+async function deleteOperation(id) {
+  const operations = loadOperations().filter(item => item.id !== id);
+
+  localStorage.setItem('operations_records', JSON.stringify(operations));
+  await deleteSingleOperation(id);
+
+  renderOperations();
+  renderHistory();
+  renderReports();
+  renderAgencyReports();
+  renderOwnerReports();
+  renderSpecificReports();
 }
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
@@ -5628,6 +5671,7 @@ renderSpecificReports();
             if (loaded === imageFiles.length) {
               newOperation.images = results.filter(Boolean);
               newOperation.__dirty = true;
+newOperation.__dirty = true;
 operations.push(newOperation);
 saveOperations(operations);
               renderOperations();
@@ -6265,6 +6309,7 @@ function openEditModal(id) {
                 prevStatus: operations[index].status,
                 newStatus: operations[index].status
               }));
+              operations[index].__dirty = true;
               saveOperations(operations);
               closeEditModal();
               renderOperations();
