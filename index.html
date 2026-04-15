@@ -6218,7 +6218,8 @@ function openEditModal(id) {
       operations[index].priority = newPriority;
       operations[index].description = newDescription;
       operations[index].selectedTypes = newSelectedTypes;
-
+      operations[index].__dirty = true;
+     
       if (!Array.isArray(operations[index].history)) operations[index].history = [];
 
       const assignedNow = previousAssignee === 'Sin asignar' && newTechnician !== 'Sin asignar';
