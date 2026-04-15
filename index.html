@@ -6980,19 +6980,67 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-async function testConexionSupabase() {
+// 🔥 CARGAR OPERACIONES EN LA TABLA
+async function cargarOperacionesDesdeSupabase() {
+  const tbody = document.getElementById("operationsTableBody");
+
+  if (!tbody) {
+    console.error("No encontré el tbody con id operationsTableBody");
+    return;
+  }
+
   const { data, error } = await supabaseClient
-    .from('reportes_operaciones')
-    .select('*');
+    .from("reportes_operaciones")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error Supabase:", error);
-  } else {
-    console.log("🔥 DATOS REALES:", data);
+    return;
   }
+
+  tbody.innerHTML = "";
+
+  data.forEach((item, index) => {
+    const fila = document.createElement("tr");
+
+    fila.innerHTML = `
+      <td>REP-${String(index + 1).padStart(4, "0")}</td>
+      <td>${item.tipo_reporte || ""}</td>
+      <td>${item.categoria || ""}</td>
+      <td>${item.agencia || ""}</td>
+      <td>${item.asignado_a || "Sin asignar"}</td>
+      <td>${item.prioridad || "Media"}</td>
+      <td>${item.estado || "Pendiente"}</td>
+      <td>${new Date(item.created_at).toLocaleDateString()}</td>
+      <td>
+        <button onclick='verOperacionDesdeSupabase(${JSON.stringify(JSON.stringify(item))})'>
+          Ver
+        </button>
+      </td>
+    `;
+
+    tbody.appendChild(fila);
+  });
 }
 
-testConexionSupabase();
+// 🔍 VER DETALLE
+function verOperacionDesdeSupabase(itemString) {
+  const item = JSON.parse(itemString);
+
+  alert(
+    "Tipo: " + (item.tipo_reporte || "") + "\n" +
+    "Categoría: " + (item.categoria || "") + "\n" +
+    "Descripción: " + (item.descripcion || "") + "\n" +
+    "Agencia: " + (item.agencia || "") + "\n" +
+    "Grupo: " + (item.grupo || "") + "\n" +
+    "Encargado: " + (item.nombre_encargado || "") + "\n" +
+    "Estado: " + (item.estado || "")
+  );
+}
+
+// 🚀 EJECUTAR
+cargarOperacionesDesdeSupabase();
 </script>
   
 </body>
