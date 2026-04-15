@@ -4486,22 +4486,40 @@ renderTransferencias();
       return initial;
     }
 
-    function saveOperations(operations) {
-      const previousOperations = (() => {
-        try {
-          return JSON.parse(localStorage.getItem('operations_records') || '[]');
-        } catch (error) {
-          return [];
-        }
-      })();
-      localStorage.setItem('operations_records', JSON.stringify(operations));
-      if (typeof syncOperationNotifications === 'function') {
-        syncOperationNotifications(previousOperations, operations);
-      }
-      if (typeof renderWorkshop === 'function') {
-        renderWorkshop();
-      }
+   async function saveOperations(operations) {
+  try {
+    for (const op of operations) {
+      await supabaseClient
+        .from('reportes_operaciones')
+        .upsert({
+          id: op.id,
+          code: op.code,
+          tipo_reporte: op.type,
+          categoria: op.title,
+          descripcion: op.description,
+          agencia: op.agency,
+          grupo: op.grupo || '',
+          nombre_encargado: op.nombre_encargado || '',
+          estado: op.status,
+          prioridad: op.priority,
+          asignado_a: op.technician,
+          technician: op.technician,
+          selected_types: op.selectedTypes || [],
+          images: op.images || [],
+          result_images: op.resultImages || [],
+          assigned_at: op.assignedAt,
+          started_at: op.startedAt,
+          completed_at: op.completedAt,
+          resolution_time: op.resolutionTime || '',
+          closed_at: op.closedAt,
+          history: op.history || [],
+          source: 'web'
+        });
     }
+  } catch (error) {
+    console.error('Error guardando en Supabase:', error);
+  }
+}
 
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
