@@ -5673,14 +5673,15 @@ saveOperations(operations);
           };
           reader.readAsDataURL(file);
         });
-      } else {
-        operations.push(newOperation);
-        saveOperations(operations);
-        renderOperations();
-        renderHistory();
-        renderReports();
-        closeCreateModal();
-      }
+     } else {
+  newOperation.__dirty = true;
+  operations.push(newOperation);
+  saveOperations(operations);
+  renderOperations();
+  renderHistory();
+  renderReports();
+  closeCreateModal();
+}
     });
 
     function showDetail(id) {
