@@ -4487,6 +4487,8 @@ renderTransferencias();
 }
 
 async function saveOperations(operations) {
+  console.log('🔥 saveOperations se ejecutó', operations);
+
   try {
     localStorage.setItem('operations_records', JSON.stringify(operations));
 
@@ -4517,6 +4519,8 @@ async function saveOperations(operations) {
         source: 'web'
       };
 
+      console.log('📦 Payload a Supabase:', payload);
+
       const { data, error } = await supabaseClient
         .from('reportes_operaciones')
         .upsert(payload)
@@ -4524,7 +4528,6 @@ async function saveOperations(operations) {
 
       if (error) {
         console.error('❌ Error guardando operación en Supabase:', error);
-        console.log('Payload enviado:', payload);
       } else {
         console.log('✅ Guardado en Supabase:', data);
       }
