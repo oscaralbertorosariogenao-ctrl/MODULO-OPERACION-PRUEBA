@@ -4481,14 +4481,6 @@ renderTransferencias();
     function loadOperations() {
   const saved = localStorage.getItem('operations_records');
   if (saved) return JSON.parse(saved);
-  const initial = deepClone(demoOperations);
-  localStorage.setItem('operations_records', JSON.stringify(initial));
-  return initial;
-}
-
-function loadOperations() {
-  const saved = localStorage.getItem('operations_records');
-  if (saved) return JSON.parse(saved);
 
   const initial = deepClone(demoOperations);
   localStorage.setItem('operations_records', JSON.stringify(initial));
@@ -4511,16 +4503,16 @@ async function saveSingleOperation(op) {
       prioridad: op.priority,
       asignado_a: op.technician || 'Sin asignar',
       technician: op.technician || 'Sin asignar',
-      selected_types: op.selectedTypes || [],
-      images: op.images || [],
-      result_images: op.resultImages || [],
+      selected_types: Array.isArray(op.selectedTypes) ? op.selectedTypes : [],
+      images: Array.isArray(op.images) ? op.images : [],
+      result_images: Array.isArray(op.resultImages) ? op.resultImages : [],
       assigned_at: op.assignedAt || null,
       started_at: op.startedAt || null,
       completed_at: op.completedAt || null,
       resolution_time: op.resolutionTime || '',
       closed_at: op.closedAt || null,
-      history: op.history || [],
-      source: 'web'
+      history: Array.isArray(op.history) ? op.history : [],
+      source: op.source || 'web'
     };
 
     console.log('📦 Enviando UNA operación a Supabase:', payload);
@@ -5671,7 +5663,6 @@ renderSpecificReports();
             if (loaded === imageFiles.length) {
               newOperation.images = results.filter(Boolean);
               newOperation.__dirty = true;
-newOperation.__dirty = true;
 operations.push(newOperation);
 saveOperations(operations);
               renderOperations();
@@ -7082,7 +7073,7 @@ function crearHistorialBaseDesdeSupabase(item) {
       detail: 'Reporte importado desde Supabase',
       user: item.nombre_encargado || 'app@movil.com',
       prevStatus: null,
-      newStatus: item.estado || 'Pendiente',
+      newStatus: item.estado || item.status || 'Pendiente',
       timestamp: fechaBase
     }
   ];
@@ -7114,33 +7105,46 @@ async function sincronizarReportesSupabaseAOperaciones() {
   }
 
   const operacionesActuales = loadOperations();
-  const existentesPorId = new Map(operacionesActuales.map(op => [op.id, op]));
+  const existentesPorId = new Map(operacionesActuales.map(op => [String(op.id), op]));
   let huboCambios = false;
 
   data.forEach((item, index) => {
-    if (existentesPorId.has(item.id)) return;
+    const itemId = String(item.id);
+    if (existentesPorId.has(itemId)) return;
+
+    const selectedTypes = Array.isArray(item.selected_types)
+      ? item.selected_types
+      : (item.categoria ? [item.categoria] : []);
+
+    const images = Array.isArray(item.images)
+      ? item.images.filter(Boolean)
+      : (item.imagen_url ? [item.imagen_url] : []);
+
+    const resultImages = Array.isArray(item.result_images)
+      ? item.result_images.filter(Boolean)
+      : [];
 
     const nuevaOperacion = {
       id: item.id,
-      code: `REP-${String(index + 1).padStart(4, '0')}`,
-      type: item.tipo_reporte || 'Avería',
-      title: item.categoria || 'Reporte',
+      code: item.code || `REP-${String(index + 1).padStart(4, '0')}`,
+      type: item.tipo_reporte || item.type || 'Avería',
+      title: item.categoria || item.title || 'Reporte',
       agency: item.agencia || '',
-      technician: item.asignado_a || 'Sin asignar',
-      priority: item.prioridad || 'Media',
-      status: item.estado || 'Pendiente',
-      description: item.descripcion || '',
-      selectedTypes: item.categoria ? [item.categoria] : [],
-      createdAt: item.created_at || new Date().toISOString(),
-      images: item.imagen_url ? [item.imagen_url] : [],
-      resultImages: [],
-      assignedAt: item.asignado_a ? (item.created_at || new Date().toISOString()) : null,
-      startedAt: null,
-      completedAt: null,
-      resolutionTime: '',
-      closedAt: null,
-      history: crearHistorialBaseDesdeSupabase(item),
-      source: 'supabase',
+      technician: item.asignado_a || item.technician || 'Sin asignar',
+      priority: item.prioridad || item.priority || 'Media',
+      status: item.estado || item.status || 'Pendiente',
+      description: item.descripcion || item.description || '',
+      selectedTypes,
+      createdAt: item.fecha_reporte || item.created_at || new Date().toISOString(),
+      images,
+      resultImages,
+      assignedAt: item.assigned_at || (item.asignado_a && item.asignado_a !== 'Sin asignar' ? (item.created_at || new Date().toISOString()) : null),
+      startedAt: item.started_at || null,
+      completedAt: item.completed_at || null,
+      resolutionTime: item.resolution_time || '',
+      closedAt: item.closed_at || null,
+      history: Array.isArray(item.history) && item.history.length ? item.history : crearHistorialBaseDesdeSupabase(item),
+      source: item.source || 'supabase',
       grupo: item.grupo || '',
       nombre_encargado: item.nombre_encargado || ''
     };
@@ -7150,7 +7154,7 @@ async function sincronizarReportesSupabaseAOperaciones() {
   });
 
   if (huboCambios) {
-    saveOperations(operacionesActuales);
+    localStorage.setItem('operations_records', JSON.stringify(operacionesActuales));
   }
 
   renderOperations();
