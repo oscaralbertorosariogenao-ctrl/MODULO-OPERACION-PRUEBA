@@ -4485,53 +4485,58 @@ renderTransferencias();
       localStorage.setItem('operations_records', JSON.stringify(initial));
       return initial;
     }
-
-    async function saveOperations(operations) {
+async function saveSingleOperation(op) {
   try {
-    console.log('🔥 saveOperations ejecutándose');
+    const payload = {
+      id: op.id,
+      code: op.code,
+      tipo_reporte: op.type,
+      categoria: op.title,
+      descripcion: op.description,
+      agencia: op.agency,
+      grupo: op.grupo || '',
+      nombre_encargado: op.nombre_encargado || 'Sistema web',
+      fecha_reporte: op.createdAt || new Date().toISOString(),
+      estado: op.status,
+      prioridad: op.priority,
+      asignado_a: op.technician || 'Sin asignar',
+      technician: op.technician || 'Sin asignar',
+      selected_types: op.selectedTypes || [],
+      images: op.images || [],
+      result_images: op.resultImages || [],
+      assigned_at: op.assignedAt || null,
+      started_at: op.startedAt || null,
+      completed_at: op.completedAt || null,
+      resolution_time: op.resolutionTime || '',
+      closed_at: op.closedAt || null,
+      history: op.history || [],
+      source: 'web'
+    };
 
+    console.log('📦 Enviando UNA operación a Supabase:', payload);
+
+    const { data, error } = await supabaseClient
+      .from('reportes_operaciones')
+      .upsert(payload)
+      .select();
+
+    if (error) {
+      console.error('❌ Error guardando UNA operación en Supabase:', error);
+    } else {
+      console.log('✅ UNA operación guardada en Supabase:', data);
+    }
+  } catch (error) {
+    console.error('❌ Error general en saveSingleOperation:', error);
+  }
+}
+async function saveOperations(operations) {
+  try {
     localStorage.setItem('operations_records', JSON.stringify(operations));
 
-    for (const op of operations) {
+    const lastOperation = operations[operations.length - 1];
 
-      const payload = {
-        id: op.id,
-        code: op.code,
-        tipo_reporte: op.type,
-        categoria: op.title,
-        descripcion: op.description,
-        agencia: op.agency,
-        grupo: op.grupo || '',
-        nombre_encargado: op.nombre_encargado || 'Sistema web',
-        fecha_reporte: op.createdAt || new Date().toISOString(),
-        estado: op.status,
-        prioridad: op.priority,
-        asignado_a: op.technician || 'Sin asignar',
-        technician: op.technician || 'Sin asignar',
-        selected_types: op.selectedTypes || [],
-        images: op.images || [],
-        result_images: op.resultImages || [],
-        assigned_at: op.assignedAt || null,
-        started_at: op.startedAt || null,
-        completed_at: op.completedAt || null,
-        resolution_time: op.resolutionTime || '',
-        closed_at: op.closedAt || null,
-        history: op.history || [],
-        source: 'web'
-      };
-
-      console.log('📦 Enviando a Supabase:', payload);
-
-      const { data, error } = await supabaseClient
-        .from('reportes_operaciones')
-        .upsert(payload)
-        .select();
-
-      if (error) {
-        console.error('❌ Error Supabase:', error);
-      } else {
-        console.log('✅ Guardado en Supabase:', data);
-      }
+    if (lastOperation) {
+      await saveSingleOperation(lastOperation);
     }
 
     if (typeof renderWorkshop === 'function') {
@@ -4542,7 +4547,6 @@ renderTransferencias();
     console.error('❌ Error general:', error);
   }
 }
-
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
     function clearSession() { localStorage.removeItem('operations_session'); }
