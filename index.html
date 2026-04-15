@@ -4481,6 +4481,14 @@ renderTransferencias();
     function loadOperations() {
   const saved = localStorage.getItem('operations_records');
   if (saved) return JSON.parse(saved);
+  const initial = deepClone(demoOperations);
+  localStorage.setItem('operations_records', JSON.stringify(initial));
+  return initial;
+}
+
+function loadOperations() {
+  const saved = localStorage.getItem('operations_records');
+  if (saved) return JSON.parse(saved);
 
   const initial = deepClone(demoOperations);
   localStorage.setItem('operations_records', JSON.stringify(initial));
@@ -4503,16 +4511,16 @@ async function saveSingleOperation(op) {
       prioridad: op.priority,
       asignado_a: op.technician || 'Sin asignar',
       technician: op.technician || 'Sin asignar',
-      selected_types: Array.isArray(op.selectedTypes) ? op.selectedTypes : [],
-      images: Array.isArray(op.images) ? op.images : [],
-      result_images: Array.isArray(op.resultImages) ? op.resultImages : [],
+      selected_types: op.selectedTypes || [],
+      images: op.images || [],
+      result_images: op.resultImages || [],
       assigned_at: op.assignedAt || null,
       started_at: op.startedAt || null,
       completed_at: op.completedAt || null,
       resolution_time: op.resolutionTime || '',
       closed_at: op.closedAt || null,
-      history: Array.isArray(op.history) ? op.history : [],
-      source: op.source || 'web'
+      history: op.history || [],
+      source: 'web'
     };
 
     console.log('📦 Enviando UNA operación a Supabase:', payload);
@@ -5663,6 +5671,7 @@ renderSpecificReports();
             if (loaded === imageFiles.length) {
               newOperation.images = results.filter(Boolean);
               newOperation.__dirty = true;
+newOperation.__dirty = true;
 operations.push(newOperation);
 saveOperations(operations);
               renderOperations();
@@ -5673,15 +5682,14 @@ saveOperations(operations);
           };
           reader.readAsDataURL(file);
         });
-     } else {
-  newOperation.__dirty = true;
-  operations.push(newOperation);
-  saveOperations(operations);
-  renderOperations();
-  renderHistory();
-  renderReports();
-  closeCreateModal();
-}
+      } else {
+        operations.push(newOperation);
+        saveOperations(operations);
+        renderOperations();
+        renderHistory();
+        renderReports();
+        closeCreateModal();
+      }
     });
 
     function showDetail(id) {
@@ -5707,31 +5715,8 @@ saveOperations(operations);
       detailContent.innerHTML = `
         <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${op.technician}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
         <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
-${op.images && op.images.length ? `<div style="margin:12px 0;">
-  <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">
-    Imágenes reportadas
-  </label>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;">
-    ${op.images.map(img => `
-      <div style="border:1px solid var(--border); border-radius:14px; padding:8px; background:#fff; display:flex; align-items:center; justify-content:center; min-height:220px; overflow:hidden;">
-        <img src="${img}" style="max-width:100%; max-height:320px; width:auto; height:auto; object-fit:contain; border-radius:10px; display:block;" />
-      </div>
-    `).join('')}
-  </div>
-</div>` : ''}
-
-${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;">
-  <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">
-    Evidencias de resultado
-  </label>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px;">
-    ${op.resultImages.map(img => `
-      <div style="border:1px solid var(--border); border-radius:14px; padding:8px; background:#fff; display:flex; align-items:center; justify-content:center; min-height:220px; overflow:hidden;">
-        <img src="${img}" style="max-width:100%; max-height:320px; width:auto; height:auto; object-fit:contain; border-radius:10px; display:block;" />
-      </div>
-    `).join('')}
-  </div>
-</div>` : ''}
+        ${op.images && op.images.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Imágenes reportadas</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.images.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
+        ${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Evidencias de resultado</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.resultImages.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
         ${op.type === 'Avería' ? (() => { const workshop = ensureWorkshopData(op); const total = Number(workshop.partsCost || 0) + Number(workshop.laborCost || 0); return `<div class="detail-box"><div class="detail-item"><span>Ficha técnica de taller</span><div class="detail-grid" style="margin-top:12px;"><div><strong>Equipo:</strong> ${workshop.equipmentName || 'No registrado'}</div><div><strong>Serial:</strong> ${workshop.equipmentSerial || 'No registrado'}</div><div><strong>Estado técnico:</strong> ${workshop.technicalStatus || 'Pendiente de diagnóstico'}</div><div><strong>Piezas desde:</strong> ${workshop.pieceSource || 'No registrado'}</div><div><strong>Costo piezas:</strong> RD$ ${formatMoney(workshop.partsCost || 0)}</div><div><strong>Mano de obra:</strong> RD$ ${formatMoney(workshop.laborCost || 0)}</div><div><strong>Total:</strong> RD$ ${formatMoney(total)}</div><div><strong>Última actualización:</strong> ${workshop.updatedAt ? formatDate(workshop.updatedAt) : 'Sin actualizar'}</div></div>${workshop.diagnostic ? `<p style="margin-top:10px;"><strong>Diagnóstico:</strong> ${workshop.diagnostic}</p>` : ''}${workshop.partsUsed ? `<p style="margin-top:10px;"><strong>Piezas cambiadas:</strong> ${workshop.partsUsed}</p>` : ''}${workshop.solution ? `<p style="margin-top:10px;"><strong>Trabajo realizado:</strong> ${workshop.solution}</p>` : ''}${workshop.recommendation ? `<p style="margin-top:10px;"><strong>Recomendación:</strong> ${workshop.recommendation}</p>` : ''}</div></div>`; })() : ''}
         <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
         <div class="detail-box"><div class="detail-item"><span>Historial de la operación</span><div style="margin-top:8px;">${historyHtml}</div></div></div>
@@ -6159,7 +6144,19 @@ function openEditModal(id) {
       editModalBackdrop.classList.remove('hidden');
     }
 
-   function saveEditedOperation() {
+    function saveEditedOperation() {
+      const id = document.getElementById('editOperationId').value;
+      const operations = loadOperations();
+      const index = operations.findIndex(item => String(item.id) === String(id));
+      if (index === -1) {
+        alert('No se encontró la operación a editar.');
+        return;
+      }
+      if (operations[index].status === 'Completado') {
+        alert('Esta operación ya está completada y no se puede editar.');
+        closeEditModal();
+        return;
+      }
 
       const actor = getCurrentUserEmail();
       const previousStatus = operations[index].status;
@@ -6219,7 +6216,7 @@ function openEditModal(id) {
       operations[index].description = newDescription;
       operations[index].selectedTypes = newSelectedTypes;
       operations[index].__dirty = true;
-     
+
       if (!Array.isArray(operations[index].history)) operations[index].history = [];
 
       const assignedNow = previousAssignee === 'Sin asignar' && newTechnician !== 'Sin asignar';
@@ -6330,6 +6327,7 @@ function openEditModal(id) {
           reader.readAsDataURL(file);
         });
       } else {
+        operations[index].__dirty = true;
         saveOperations(operations);
         closeEditModal();
         renderOperations();
@@ -7089,7 +7087,7 @@ function crearHistorialBaseDesdeSupabase(item) {
       detail: 'Reporte importado desde Supabase',
       user: item.nombre_encargado || 'app@movil.com',
       prevStatus: null,
-      newStatus: item.estado || item.status || 'Pendiente',
+      newStatus: item.estado || 'Pendiente',
       timestamp: fechaBase
     }
   ];
@@ -7121,46 +7119,33 @@ async function sincronizarReportesSupabaseAOperaciones() {
   }
 
   const operacionesActuales = loadOperations();
-  const existentesPorId = new Map(operacionesActuales.map(op => [String(op.id), op]));
+  const existentesPorId = new Map(operacionesActuales.map(op => [op.id, op]));
   let huboCambios = false;
 
   data.forEach((item, index) => {
-    const itemId = String(item.id);
-    if (existentesPorId.has(itemId)) return;
-
-    const selectedTypes = Array.isArray(item.selected_types)
-      ? item.selected_types
-      : (item.categoria ? [item.categoria] : []);
-
-    const images = Array.isArray(item.images)
-      ? item.images.filter(Boolean)
-      : (item.imagen_url ? [item.imagen_url] : []);
-
-    const resultImages = Array.isArray(item.result_images)
-      ? item.result_images.filter(Boolean)
-      : [];
+    if (existentesPorId.has(item.id)) return;
 
     const nuevaOperacion = {
       id: item.id,
-      code: item.code || `REP-${String(index + 1).padStart(4, '0')}`,
-      type: item.tipo_reporte || item.type || 'Avería',
-      title: item.categoria || item.title || 'Reporte',
+      code: `REP-${String(index + 1).padStart(4, '0')}`,
+      type: item.tipo_reporte || 'Avería',
+      title: item.categoria || 'Reporte',
       agency: item.agencia || '',
-      technician: item.asignado_a || item.technician || 'Sin asignar',
-      priority: item.prioridad || item.priority || 'Media',
-      status: item.estado || item.status || 'Pendiente',
-      description: item.descripcion || item.description || '',
-      selectedTypes,
-      createdAt: item.fecha_reporte || item.created_at || new Date().toISOString(),
-      images,
-      resultImages,
-      assignedAt: item.assigned_at || (item.asignado_a && item.asignado_a !== 'Sin asignar' ? (item.created_at || new Date().toISOString()) : null),
-      startedAt: item.started_at || null,
-      completedAt: item.completed_at || null,
-      resolutionTime: item.resolution_time || '',
-      closedAt: item.closed_at || null,
-      history: Array.isArray(item.history) && item.history.length ? item.history : crearHistorialBaseDesdeSupabase(item),
-      source: item.source || 'supabase',
+      technician: item.asignado_a || 'Sin asignar',
+      priority: item.prioridad || 'Media',
+      status: item.estado || 'Pendiente',
+      description: item.descripcion || '',
+      selectedTypes: item.categoria ? [item.categoria] : [],
+      createdAt: item.created_at || new Date().toISOString(),
+      images: item.imagen_url ? [item.imagen_url] : [],
+      resultImages: [],
+      assignedAt: item.asignado_a ? (item.created_at || new Date().toISOString()) : null,
+      startedAt: null,
+      completedAt: null,
+      resolutionTime: '',
+      closedAt: null,
+      history: crearHistorialBaseDesdeSupabase(item),
+      source: 'supabase',
       grupo: item.grupo || '',
       nombre_encargado: item.nombre_encargado || ''
     };
@@ -7170,7 +7155,7 @@ async function sincronizarReportesSupabaseAOperaciones() {
   });
 
   if (huboCambios) {
-    localStorage.setItem('operations_records', JSON.stringify(operacionesActuales));
+    saveOperations(operacionesActuales);
   }
 
   renderOperations();
