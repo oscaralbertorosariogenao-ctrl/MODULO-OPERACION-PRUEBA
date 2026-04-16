@@ -1604,7 +1604,10 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
       source: "app_movil"
     });
   }
-
+if (techStatus === "Completado" && (!resultImagesFinal || resultImagesFinal.length === 0)) {
+  alert("Debes subir evidencia antes de completar.");
+  return;
+}
 const payload = {
   estado: techStatus,
   observaciones: techDescription,
