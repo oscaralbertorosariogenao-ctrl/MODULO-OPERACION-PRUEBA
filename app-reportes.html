@@ -670,9 +670,17 @@
 </div>
 <div class="app" id="appView" style="display:none;">
     <div class="header">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+    <div>
       <h1>App móvil de reportes</h1>
       <p>Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
     </div>
+
+    <button id="btnLogout" style="background:#ffffff; color:#c91717; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer;">
+      Cerrar sesión
+    </button>
+  </div>
+</div>
 
     <div class="tabs">
       <button class="tab-btn active" id="tabCreate">Nuevo reporte</button>
@@ -1327,11 +1335,24 @@ function iniciarApp() {
   document.getElementById("loginView").style.display = "none";
   document.getElementById("appView").style.display = "block";
 
+  if (usuarioActual?.rol === "tecnico") {
+    document.getElementById("tabCreate").style.display = "none";
+    document.getElementById("sectionCreate").style.display = "none";
+
+    document.getElementById("tabReports").classList.add("active");
+    document.getElementById("tabCreate").classList.remove("active");
+
+    document.getElementById("sectionReports").classList.add("active");
+    document.getElementById("sectionCreate").classList.remove("active");
+  } else {
+    document.getElementById("tabCreate").style.display = "block";
+    document.getElementById("sectionCreate").style.display = "block";
+  }
+
   loadReports();
 
   console.log("Usuario logueado:", usuarioActual);
 }
-
 // Auto login
 // const savedUser = localStorage.getItem("usuarioActual");
 // if (savedUser) {
@@ -1339,6 +1360,26 @@ function iniciarApp() {
 //   iniciarApp();
 // }
     document.getElementById("btnLogin")?.addEventListener("click", login);
+function logout() {
+  localStorage.removeItem("usuarioActual");
+  usuarioActual = null;
+
+  document.getElementById("appView").style.display = "none";
+  document.getElementById("loginView").style.display = "block";
+  document.getElementById("loginUser").value = "";
+
+  document.getElementById("tabCreate").style.display = "block";
+  document.getElementById("sectionCreate").style.display = "block";
+
+  document.getElementById("tabCreate").classList.add("active");
+  document.getElementById("tabReports").classList.remove("active");
+
+  document.getElementById("sectionCreate").classList.add("active");
+  document.getElementById("sectionReports").classList.remove("active");
+}
+
+document.getElementById("btnLogin")?.addEventListener("click", login);
+document.getElementById("btnLogout")?.addEventListener("click", logout);
   </script>
 </body>
 </html>
