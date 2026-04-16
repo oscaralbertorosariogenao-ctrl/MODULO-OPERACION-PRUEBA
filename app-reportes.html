@@ -669,11 +669,12 @@
 </button>
 </div>
 <div class="app" id="appView" style="display:none;">
-    <div class="header">
+<div class="header">
   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
     <div>
-    <h1 id="appTitle">App móvil de reportes</h1>
-<p id="appSubtitle">Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
+      <h1 id="appTitle">App móvil de reportes</h1>
+      <p id="appSubtitle">Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
+    </div>
 
     <button id="btnLogout" style="background:#ffffff; color:#c91717; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer;">
       Cerrar sesión
@@ -1330,11 +1331,11 @@ if (techBtn) {
     btnRefreshReports.addEventListener("click", loadReports);
 
   // loadReports();
-    const usuariosApp = [
+const usuariosApp = [
   { user: "oscar", rol: "administrador" },
   { user: "tecnico1", rol: "tecnico" },
   { user: "tecnico2", rol: "tecnico" },
-  { user: "encargado", rol: "encargado" }
+  { user: "encargado1", rol: "encargado" }
 ];
 
 let usuarioActual = null;
@@ -1406,7 +1407,7 @@ function iniciarApp() {
 //   usuarioActual = JSON.parse(savedUser);
 //   iniciarApp();
 // }
-    document.getElementById("btnLogin")?.addEventListener("click", login);
+
 function logout() {
   localStorage.removeItem("usuarioActual");
   usuarioActual = null;
@@ -1549,6 +1550,89 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
   document.getElementById("btnSaveTechnicalUpdate")?.addEventListener("click", async () => {
     await guardarGestionTecnica(report);
   });
+}
+    async function guardarGestionTecnica(report) {
+  const techStatus = document.getElementById("techStatus")?.value || "En proceso";
+  const techDescription = document.getElementById("techDescription")?.value?.trim() || "";
+  const evidenceFiles = Array.from(document.getElementById("techEvidence")?.files || []);
+
+  const currentResultImages = Array.isArray(report.result_images) ? [...report.result_images] : [];
+  let nuevasEvidencias = [];
+
+  if (evidenceFiles.length) {
+    for (const file of evidenceFiles) {
+      const imageUrl = await subirImagen(file);
+      nuevasEvidencias.push(imageUrl);
+    }
+  }
+
+  const resultImagesFinal = currentResultImages.concat(nuevasEvidencias);
+
+  if (techStatus === "Completado") {
+    if (!techDescription) {
+      alert("Debes escribir la descripción técnica antes de completar.");
+      return;
+    }
+
+    if (!resultImagesFinal.length) {
+      alert("Debes subir al menos una evidencia antes de completar.");
+      return;
+    }
+  }
+
+  const history = Array.isArray(report.history) ? [...report.history] : [];
+
+  if (nuevasEvidencias.length) {
+    history.push({
+      action: "Evidencia",
+      date: new Date().toISOString(),
+      user: usuarioActual?.user || "tecnico",
+      detail: `${nuevasEvidencias.length} evidencia(s) agregada(s)`,
+      source: "app_movil"
+    });
+  }
+
+  if ((report.estado || "") !== techStatus) {
+    history.push({
+      action: techStatus === "Completado" ? "Finalización" : "Estado",
+      date: new Date().toISOString(),
+      user: usuarioActual?.user || "tecnico",
+      detail: techStatus === "Completado"
+        ? "Operación completada desde app móvil"
+        : `Estado cambiado a ${techStatus}`,
+      source: "app_movil"
+    });
+  }
+
+  const payload = {
+    estado: techStatus,
+    descripcion_tecnica: techDescription,
+    result_images: resultImagesFinal,
+    history: history,
+    started_at: techStatus === "En proceso"
+      ? (report.started_at || new Date().toISOString())
+      : report.started_at,
+    completed_at: techStatus === "Completado"
+      ? new Date().toISOString()
+      : report.completed_at,
+    closed_at: techStatus === "Completado"
+      ? new Date().toISOString()
+      : report.closed_at
+  };
+
+  const { error } = await supabase
+    .from(TABLE_NAME)
+    .update(payload)
+    .eq("id", report.id);
+
+  if (error) {
+    alert("No se pudo guardar la actualización técnica.");
+    console.error(error);
+    return;
+  }
+
+  closeDetail();
+  await loadReports();
 }
   </script>
 </body>
