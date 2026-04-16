@@ -5177,11 +5177,17 @@ renderTransferencias();
       try {
         const { data, error } = await supabaseClient.from(REPORTES_TABLE).select('*').order('created_at', { ascending: true });
         if (error) throw error;
-        const localOps = loadOperations();
+        const localOps = loadOperations().filter(op => op.source !== 'supabase');
         const existingById = new Map(localOps.map(op => [op.id, op]));
         const localOnly = localOps.filter(op => op.source !== 'supabase' && op.source !== 'app_movil');
         const mergedRemote = (data || []).map((item, index) => mapSupabaseReportToOperation(item, index, existingById.get(item.id)));
-        const next = [...localOnly, ...mergedRemote];
+       const map = new Map();
+
+[...localOnly, ...mergedRemote].forEach(op => {
+  map.set(op.id, op);
+});
+
+const next = Array.from(map.values());
         saveOperations(next);
         renderOperations();
         renderHistory();
