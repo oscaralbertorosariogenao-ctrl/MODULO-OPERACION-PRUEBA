@@ -1219,8 +1219,22 @@
         }
 
         reportList.innerHTML = "";
+let reportsFiltrados = data;
 
-        data.forEach((report) => {
+if (usuarioActual) {
+  if (usuarioActual.rol === "tecnico") {
+    reportsFiltrados = (data || []).filter(report =>
+      (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase()
+    );
+  } else if (usuarioActual.rol === "encargado") {
+    reportsFiltrados = (data || []).filter(report =>
+      (report.creado_por || "").toLowerCase() === usuarioActual.user.toLowerCase()
+    );
+  } else if (usuarioActual.rol === "administrador") {
+    reportsFiltrados = data;
+  }
+}
+reportsFiltrados.forEach((report) => {
           const status = normalizeStatus(report.estado);
           const reportCard = document.createElement("div");
           reportCard.className = "report-card";
