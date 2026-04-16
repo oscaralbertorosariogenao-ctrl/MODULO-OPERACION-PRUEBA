@@ -1345,7 +1345,14 @@ const usuariosApp = [
 let usuarioActual = null;
 
 function login() {
-  const input = document.getElementById("loginUser").value.toLowerCase();
+  const input = (document.getElementById("loginUser")?.value || "")
+    .toLowerCase()
+    .trim();
+
+  if (!input) {
+    alert("Escribe un usuario.");
+    return;
+  }
 
   const user = usuariosApp.find(u => u.user === input);
 
@@ -1355,49 +1362,39 @@ function login() {
   }
 
   usuarioActual = user;
-
   localStorage.setItem("usuarioActual", JSON.stringify(user));
-
   iniciarApp();
 }
-    window.login = login;
 
 function iniciarApp() {
-  document.getElementById("loginView").style.display = "none";
-  document.getElementById("appView").style.display = "block";
-
+  const loginView = document.getElementById("loginView");
+  const appView = document.getElementById("appView");
   const appTitle = document.getElementById("appTitle");
   const appSubtitle = document.getElementById("appSubtitle");
+  const tabCreateEl = document.getElementById("tabCreate");
+
+  loginView.style.display = "none";
+  appView.style.display = "block";
 
   if (usuarioActual?.rol === "tecnico") {
     appTitle.textContent = "Reportes (Averías) Asignados";
     appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
-
-    document.getElementById("tabCreate").style.display = "none";
+    tabCreateEl.style.display = "none";
     switchTab("reports");
   } else if (usuarioActual?.rol === "encargado") {
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
-
-    document.getElementById("tabCreate").style.display = "block";
+    tabCreateEl.style.display = "block";
     switchTab("create");
   } else {
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados.";
-
-    document.getElementById("tabCreate").style.display = "block";
+    tabCreateEl.style.display = "block";
     switchTab("create");
   }
 
   console.log("Usuario logueado:", usuarioActual);
 }
-}
-// Auto login
-// const savedUser = localStorage.getItem("usuarioActual");
-// if (savedUser) {
-//   usuarioActual = JSON.parse(savedUser);
-//   iniciarApp();
-// }
 
 function logout() {
   localStorage.removeItem("usuarioActual");
@@ -1411,8 +1408,18 @@ function logout() {
   switchTab("create");
 }
 
+window.login = login;
+window.logout = logout;
+
 document.getElementById("btnLogin")?.addEventListener("click", login);
 document.getElementById("btnLogout")?.addEventListener("click", logout);
+
+document.getElementById("loginUser")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    login();
+  }
+});
 
     async function cambiarEstadoTecnico(report, nuevoEstado) {
   const history = Array.isArray(report.history) ? [...report.history] : [];
