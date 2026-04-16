@@ -1025,32 +1025,33 @@
         const code = generarCodigo();
 
         const payload = {
-          code: code,
-          tipo_reporte: tipoValue,
-          categoria: tituloValue,
-          descripcion: descripcionValue,
-          agencia: agenciaValue,
-          grupo: "",
-          nombre_encargado: encargadoValue,
-          fecha_reporte: now,
-          estado: "Pendiente",
-          prioridad: prioridadValue,
-          asignado_a: "Sin asignar",
-          selected_types: [],
-          images: imagenUrl ? [imagenUrl] : [],
-          result_images: [],
-          assigned_at: null,
-          started_at: null,
-          completed_at: null,
-          resolution_time: "",
-          closed_at: null,
-          source: "app_movil",
-          history: crearHistorialInicial({
-            fechaISO: now,
-            agenciaTexto: agenciaValue,
-            reportante: encargadoValue
-          })
-        };
+  code: code,
+  tipo_reporte: tipoValue,
+  categoria: tituloValue,
+  descripcion: descripcionValue,
+  agencia: agenciaValue,
+  grupo: "",
+  nombre_encargado: encargadoValue,
+  creado_por: usuarioActual?.user || "",
+  fecha_reporte: now,
+  estado: "Pendiente",
+  prioridad: prioridadValue,
+  asignado_a: "Sin asignar",
+  selected_types: [],
+  images: imagenUrl ? [imagenUrl] : [],
+  result_images: [],
+  assigned_at: null,
+  started_at: null,
+  completed_at: null,
+  resolution_time: "",
+  closed_at: null,
+  source: "app_movil",
+  history: crearHistorialInicial({
+    fechaISO: now,
+    agenciaTexto: agenciaValue,
+    reportante: encargadoValue
+  })
+};
 
         const { error } = await supabase
           .from(TABLE_NAME)
@@ -1231,16 +1232,17 @@ let reportsFiltrados = data;
 if (usuarioActual) {
   if (usuarioActual.rol === "tecnico") {
     reportsFiltrados = (data || []).filter(report =>
-      (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase()
+      (report.asignado_a || "").toLowerCase().trim() === usuarioActual.user.toLowerCase().trim()
     );
   } else if (usuarioActual.rol === "encargado") {
     reportsFiltrados = (data || []).filter(report =>
-      (report.creado_por || "").toLowerCase() === usuarioActual.user.toLowerCase()
+      (report.creado_por || "").toLowerCase().trim() === usuarioActual.user.toLowerCase().trim()
     );
   } else if (usuarioActual.rol === "administrador") {
     reportsFiltrados = data;
   }
 }
+
 reportsFiltrados.forEach((report) => {
           const status = normalizeStatus(report.estado);
           const reportCard = document.createElement("div");
@@ -1360,20 +1362,12 @@ function iniciarApp() {
   document.getElementById("appView").style.display = "block";
 
   const appTitle = document.getElementById("appTitle");
-const appSubtitle = document.getElementById("appSubtitle");
-
-if (usuarioActual?.rol === "tecnico") {
-  appTitle.textContent = "Reportes (Averías) Asignados";
-  appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
-} else if (usuarioActual?.rol === "encargado") {
-  appTitle.textContent = "App móvil de reportes";
-  appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
-} else {
-  appTitle.textContent = "App móvil de reportes";
-  appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados.";
-}
+  const appSubtitle = document.getElementById("appSubtitle");
 
   if (usuarioActual?.rol === "tecnico") {
+    appTitle.textContent = "Reportes (Averías) Asignados";
+    appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
+
     document.getElementById("tabCreate").style.display = "none";
     document.getElementById("sectionCreate").style.display = "none";
 
@@ -1382,7 +1376,22 @@ if (usuarioActual?.rol === "tecnico") {
 
     document.getElementById("sectionReports").classList.add("active");
     document.getElementById("sectionCreate").classList.remove("active");
+  } else if (usuarioActual?.rol === "encargado") {
+    appTitle.textContent = "App móvil de reportes";
+    appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
+
+    document.getElementById("tabCreate").style.display = "block";
+    document.getElementById("sectionCreate").style.display = "block";
+
+    document.getElementById("tabCreate").classList.add("active");
+    document.getElementById("tabReports").classList.remove("active");
+
+    document.getElementById("sectionCreate").classList.add("active");
+    document.getElementById("sectionReports").classList.remove("active");
   } else {
+    appTitle.textContent = "App móvil de reportes";
+    appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados.";
+
     document.getElementById("tabCreate").style.display = "block";
     document.getElementById("sectionCreate").style.display = "block";
   }
