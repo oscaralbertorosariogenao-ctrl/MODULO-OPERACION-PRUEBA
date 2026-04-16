@@ -4322,7 +4322,7 @@ renderTransferencias();
 
     function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
-    function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
+  function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
   if (!Array.isArray(arr)) return deepClone(fallback);
 
   const normalized = arr.map(item => {
@@ -5528,7 +5528,7 @@ renderSpecificReports();
       const item = list[index];
       if (!item) return;
 
-    if (type === 'users') {
+   if (type === 'users') {
   const name = prompt('Editar nombre:', item.name);
   if (!name || !name.trim()) return;
 
@@ -5539,12 +5539,13 @@ renderSpecificReports();
   const phone = prompt('Editar teléfono:', item.phone || '') || '';
 
   list[index] = {
-  ...item,
-  name: name.trim(),
-  username: username.trim().toLowerCase(),
-  area: area.trim(),
-  phone: phone.trim()
-};
+    ...item,
+    name: name.trim(),
+    username: username.trim().toLowerCase(),
+    area: area.trim(),
+    phone: phone.trim()
+  };
+}
 }else if (type === 'suppliers') {
         const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
