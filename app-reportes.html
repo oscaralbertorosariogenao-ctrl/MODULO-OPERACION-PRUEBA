@@ -2261,21 +2261,21 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
     });
   }
 
-  const payload = {
-    estado: techStatus,
-    descripcion_tecnica: techDescription,
-    result_images: resultImagesFinal,
-    history: history,
-    started_at: techStatus === "En proceso"
-      ? (report.started_at || new Date().toISOString())
-      : report.started_at,
-    completed_at: techStatus === "Completado"
-      ? new Date().toISOString()
-      : report.completed_at,
-    closed_at: techStatus === "Completado"
-      ? new Date().toISOString()
-      : report.closed_at
-  };
+ const payload = {
+  estado: techStatus,
+  observaciones: techDescription,
+  result_images: Array.isArray(resultImagesFinal) ? resultImagesFinal : [],
+  history: history,
+  started_at: techStatus === "En proceso"
+    ? (report.started_at || new Date().toISOString())
+    : report.started_at,
+  completed_at: techStatus === "Completado"
+    ? new Date().toISOString()
+    : report.completed_at,
+  closed_at: techStatus === "Completado"
+    ? new Date().toISOString()
+    : report.closed_at
+};
 
   const { error } = await supabase
     .from(TABLE_NAME)
@@ -2283,8 +2283,8 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
     .eq("id", report.id);
 
   if (error) {
-    alert("No se pudo guardar la actualización técnica.");
-    console.error(error);
+   alert("Error: " + error.message);
+console.error(error);
     return;
   }
 
