@@ -812,6 +812,14 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    const ASSIGNEE_LABELS = { tecnico1: 'Técnico 1', tecnico2: 'Técnico 2', encargado1: 'Encargado 1' };
+    function formatAssigneeLabel(value) {
+      const raw = String(value || '').trim();
+      if (!raw || raw.toLowerCase() === 'sin asignar') return 'Sin asignar';
+      const key = raw.toLowerCase();
+      return ASSIGNEE_LABELS[key] || raw;
+    }
+
     const tabCreate = document.getElementById("tabCreate");
     const tabReports = document.getElementById("tabReports");
     const sectionCreate = document.getElementById("sectionCreate");
@@ -1115,7 +1123,7 @@
 
           <div class="detail-item">
             <span>Asignado a</span>
-            <strong>${report.asignado_a || "Sin asignar"}</strong>
+            <strong>${formatAssigneeLabel(report.asignado_a)}</strong>
           </div>
 
           <div class="detail-item">
@@ -1292,7 +1300,7 @@
 
               <div class="meta-box">
                 <span>Asignado a</span>
-                <strong>${report.asignado_a || "Sin asignar"}</strong>
+                <strong>${formatAssigneeLabel(report.asignado_a)}</strong>
               </div>
             </div>
 
@@ -1477,7 +1485,7 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
 
       <div class="detail-item">
         <span>Asignado a</span>
-        <strong>${report.asignado_a || "Sin asignar"}</strong>
+        <strong>${formatAssigneeLabel(report.asignado_a)}</strong>
       </div>
     </div>
 
