@@ -4323,29 +4323,52 @@ renderTransferencias();
     function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
     function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
-      if (!Array.isArray(arr)) return deepClone(fallback);
-      const normalized = arr.map(item => {
-        if (typeof item === 'string') {
-          const name = item.trim();
-          return name ? { name, [descriptionKey]: '' } : null;
-        }
-        if (item && typeof item === 'object') {
-          const name = typeof item.name === 'string' ? item.name.trim() : '';
-          const extra = typeof item[descriptionKey] === 'string' ? item[descriptionKey].trim() : '';
-          return name ? { name, [descriptionKey]: extra } : null;
-        }
-        return null;
-      }).filter(Boolean);
-      const deduped = [];
-      const seen = new Set();
-      for (const item of normalized) {
-        const key = item.name.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        deduped.push(item);
-      }
-      return deduped.length ? deduped : deepClone(fallback);
+  if (!Array.isArray(arr)) return deepClone(fallback);
+
+  const normalized = arr.map(item => {
+    if (typeof item === 'string') {
+      const name = item.trim();
+      return name ? { name, [descriptionKey]: '' } : null;
     }
+
+    if (item && typeof item === 'object') {
+      const name = typeof item.name === 'string' ? item.name.trim() : '';
+      if (!name) return null;
+
+      const normalizedItem = { ...item, name };
+
+      if (typeof item[descriptionKey] === 'string') {
+        normalizedItem[descriptionKey] = item[descriptionKey].trim();
+      } else if (!(descriptionKey in normalizedItem)) {
+        normalizedItem[descriptionKey] = '';
+      }
+
+      if (typeof item.username === 'string') {
+        normalizedItem.username = item.username.trim().toLowerCase();
+      }
+
+      if (typeof item.phone === 'string') {
+        normalizedItem.phone = item.phone.trim();
+      }
+
+      return normalizedItem;
+    }
+
+    return null;
+  }).filter(Boolean);
+
+  const deduped = [];
+  const seen = new Set();
+
+  for (const item of normalized) {
+    const key = (item.username || item.name).toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  return deduped.length ? deduped : deepClone(fallback);
+}
 
     function loadCatalogs() {
       const users = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_users') || 'null'), DEFAULT_USERS, 'area');
@@ -5413,6 +5436,7 @@ renderSpecificReports();
       return `<option value="${optionValue}" ${isSelected ? 'selected' : ''}>${optionLabel}</option>`;
     }).join('');
 }
+}
     function showView(viewName) {
       ['operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView','workshopView'].forEach(id => document.getElementById(id).classList.add('hidden'));
       ['navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues','navWorkshop'].forEach(id => document.getElementById(id).classList.remove('active'));
@@ -5515,12 +5539,12 @@ renderSpecificReports();
   const phone = prompt('Editar teléfono:', item.phone || '') || '';
 
   list[index] = {
-    ...item,
-    name: name.trim(),
-    username: username.trim().toLowerCase(),
-    area: area.trim(),
-    phone: phone.trim()
-  };
+  ...item,
+  name: name.trim(),
+  username: username.trim().toLowerCase(),
+  area: area.trim(),
+  phone: phone.trim()
+};
 }else if (type === 'suppliers') {
         const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
