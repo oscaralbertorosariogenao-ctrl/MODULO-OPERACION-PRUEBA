@@ -838,18 +838,22 @@
     const detailBody = document.getElementById("detailBody");
 
     function switchTab(mode) {
-      const createActive = mode === "create";
+  const createActive = mode === "create";
 
-      tabCreate.classList.toggle("active", createActive);
-      tabReports.classList.toggle("active", !createActive);
+  tabCreate.classList.toggle("active", createActive);
+  tabReports.classList.toggle("active", !createActive);
 
-      sectionCreate.classList.toggle("active", createActive);
-      sectionReports.classList.toggle("active", !createActive);
+  sectionCreate.classList.toggle("active", createActive);
+  sectionReports.classList.toggle("active", !createActive);
 
-      if (!createActive) {
-        loadReports();
-      }
-    }
+  // Controlar display inline para no chocar con iniciarApp()
+  sectionCreate.style.display = createActive ? "block" : "none";
+  sectionReports.style.display = createActive ? "none" : "block";
+
+  if (!createActive) {
+    loadReports();
+  }
+}
 
     tabCreate.addEventListener("click", () => switchTab("create"));
     tabReports.addEventListener("click", () => switchTab("reports"));
@@ -1359,36 +1363,23 @@ function iniciarApp() {
     appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
 
     document.getElementById("tabCreate").style.display = "none";
-    document.getElementById("sectionCreate").style.display = "none";
-
-    document.getElementById("tabReports").classList.add("active");
-    document.getElementById("tabCreate").classList.remove("active");
-
-    document.getElementById("sectionReports").classList.add("active");
-    document.getElementById("sectionCreate").classList.remove("active");
+    switchTab("reports");
   } else if (usuarioActual?.rol === "encargado") {
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
 
     document.getElementById("tabCreate").style.display = "block";
-    document.getElementById("sectionCreate").style.display = "block";
-
-    document.getElementById("tabCreate").classList.add("active");
-    document.getElementById("tabReports").classList.remove("active");
-
-    document.getElementById("sectionCreate").classList.add("active");
-    document.getElementById("sectionReports").classList.remove("active");
+    switchTab("create");
   } else {
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados.";
 
     document.getElementById("tabCreate").style.display = "block";
-    document.getElementById("sectionCreate").style.display = "block";
+    switchTab("create");
   }
 
-  loadReports();
-
   console.log("Usuario logueado:", usuarioActual);
+}
 }
 // Auto login
 // const savedUser = localStorage.getItem("usuarioActual");
@@ -1406,13 +1397,7 @@ function logout() {
   document.getElementById("loginUser").value = "";
 
   document.getElementById("tabCreate").style.display = "block";
-  document.getElementById("sectionCreate").style.display = "block";
-
-  document.getElementById("tabCreate").classList.add("active");
-  document.getElementById("tabReports").classList.remove("active");
-
-  document.getElementById("sectionCreate").classList.add("active");
-  document.getElementById("sectionReports").classList.remove("active");
+  switchTab("create");
 }
 
 document.getElementById("btnLogin")?.addEventListener("click", login);
