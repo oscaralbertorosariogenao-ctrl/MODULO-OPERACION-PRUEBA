@@ -672,9 +672,8 @@
     <div class="header">
   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
     <div>
-      <h1>App móvil de reportes</h1>
-      <p>Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
-    </div>
+    <h1 id="appTitle">App móvil de reportes</h1>
+<p id="appSubtitle">Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
 
     <button id="btnLogout" style="background:#ffffff; color:#c91717; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer;">
       Cerrar sesión
@@ -1282,13 +1281,38 @@ reportsFiltrados.forEach((report) => {
             </div>
 
             <div class="report-actions">
-              <button class="btn-view">Ver detalle</button>
-            </div>
+  <button class="btn-view">Ver detalle</button>
+
+  ${
+    usuarioActual?.rol === "tecnico" &&
+    (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase() &&
+    (report.estado || "").toLowerCase() !== "completado"
+      ? `<button class="btn-view btn-start">Marcar en proceso</button>`
+      : ""
+  }
+
+  ${
+    usuarioActual?.rol === "tecnico" &&
+    (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase()
+      ? `<button class="btn-view btn-tech">Gestión técnica</button>`
+      : ""
+  }
+</div>
           `;
 
           const viewBtn = reportCard.querySelector(".btn-view");
           viewBtn.addEventListener("click", () => openDetail(report));
+const startBtn = reportCard.querySelector(".btn-start");
+if (startBtn) {
+  startBtn.addEventListener("click", async () => {
+    await cambiarEstadoTecnico(report, "En proceso");
+  });
+}
 
+const techBtn = reportCard.querySelector(".btn-tech");
+if (techBtn) {
+  techBtn.addEventListener("click", () => openTechnicalDetail(report));
+}
           reportList.appendChild(reportCard);
         });
       } catch (err) {
@@ -1335,6 +1359,20 @@ function iniciarApp() {
   document.getElementById("loginView").style.display = "none";
   document.getElementById("appView").style.display = "block";
 
+  const appTitle = document.getElementById("appTitle");
+const appSubtitle = document.getElementById("appSubtitle");
+
+if (usuarioActual?.rol === "tecnico") {
+  appTitle.textContent = "Reportes (Averías) Asignados";
+  appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
+} else if (usuarioActual?.rol === "encargado") {
+  appTitle.textContent = "App móvil de reportes";
+  appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
+} else {
+  appTitle.textContent = "App móvil de reportes";
+  appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados.";
+}
+
   if (usuarioActual?.rol === "tecnico") {
     document.getElementById("tabCreate").style.display = "none";
     document.getElementById("sectionCreate").style.display = "none";
@@ -1380,6 +1418,129 @@ function logout() {
 
 document.getElementById("btnLogin")?.addEventListener("click", login);
 document.getElementById("btnLogout")?.addEventListener("click", logout);
+
+    async function cambiarEstadoTecnico(report, nuevoEstado) {
+  const history = Array.isArray(report.history) ? [...report.history] : [];
+
+  history.push({
+    action: "Estado",
+    date: new Date().toISOString(),
+    user: usuarioActual?.user || "tecnico",
+    detail: `Estado cambiado a ${nuevoEstado}`,
+    source: "app_movil"
+  });
+
+  const payload = {
+    estado: nuevoEstado,
+    history: history,
+    started_at: nuevoEstado === "En proceso"
+      ? (report.started_at || new Date().toISOString())
+      : report.started_at
+  };
+
+  const { error } = await supabase
+    .from(TABLE_NAME)
+    .update(payload)
+    .eq("id", report.id);
+
+  if (error) {
+    alert("No se pudo actualizar el estado.");
+    console.error(error);
+    return;
+  }
+
+  await loadReports();
+}
+    function openTechnicalDetail(report) {
+  const status = normalizeStatus(report.estado);
+  const resultImages = Array.isArray(report.result_images) ? report.result_images.filter(Boolean) : [];
+
+  detailBody.innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span>Código</span>
+        <strong>${report.code || "No registrado"}</strong>
+      </div>
+
+      <div class="detail-item">
+        <span>Estado actual</span>
+        <strong><span class="badge ${status.className}">${status.label}</span></strong>
+      </div>
+
+      <div class="detail-item">
+        <span>Agencia / Grupo</span>
+        <strong>${report.agencia || report.grupo || "No registrado"}</strong>
+      </div>
+
+      <div class="detail-item">
+        <span>Asignado a</span>
+        <strong>${report.asignado_a || "Sin asignar"}</strong>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Título / Asunto</h4>
+      <p style="margin:0; line-height:1.5;">${report.categoria || "No registrado"}</p>
+    </div>
+
+    <div class="detail-section">
+      <h4>Descripción original</h4>
+      <p style="margin:0; line-height:1.6;">${report.descripcion || "Sin descripción"}</p>
+    </div>
+
+    <div class="detail-section">
+      <h4>Gestión técnica</h4>
+
+      <div class="field">
+        <label for="techStatus">Estado</label>
+        <select id="techStatus">
+          <option value="En proceso" ${(report.estado || "").toLowerCase() === "en proceso" ? "selected" : ""}>En proceso</option>
+          <option value="Completado">Completado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="techDescription">Descripción técnica / trabajo realizado</label>
+        <textarea id="techDescription" placeholder="Describe el trabajo realizado...">${report.descripcion_tecnica || ""}</textarea>
+      </div>
+
+      <div class="field">
+        <label for="techEvidence">Subir evidencia</label>
+        <input type="file" id="techEvidence" accept="image/*" multiple />
+      </div>
+
+      ${
+        resultImages.length
+          ? `
+        <div class="detail-section" style="margin-top:10px;">
+          <h4>Evidencias actuales</h4>
+          <div class="detail-image-grid">
+            ${resultImages.map(img => `
+              <div class="detail-image-box">
+                <img src="${img}" alt="Evidencia técnica" />
+              </div>
+            `).join("")}
+          </div>
+        </div>
+        `
+          : ""
+      }
+
+      <div style="margin-top:14px;">
+        <button class="btn-primary" id="btnSaveTechnicalUpdate">Guardar actualización</button>
+      </div>
+    </div>
+
+    <button class="btn-detail-close" id="btnCloseDetailInside">Cerrar</button>
+  `;
+
+  detailBackdrop.classList.add("open");
+
+  document.getElementById("btnCloseDetailInside")?.addEventListener("click", closeDetail);
+  document.getElementById("btnSaveTechnicalUpdate")?.addEventListener("click", async () => {
+    await guardarGestionTecnica(report);
+  });
+}
   </script>
 </body>
 </html>
