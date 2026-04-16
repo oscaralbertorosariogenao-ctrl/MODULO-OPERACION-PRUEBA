@@ -663,10 +663,10 @@
   <input id="loginUser" placeholder="Usuario"
     style="width:100%;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid #ccc">
 
-  <button onclick="login()"
-    style="width:100%;padding:12px;background:#c91717;color:white;border:none;border-radius:10px;font-weight:bold">
-    Entrar
-  </button>
+ <button id="btnLogin"
+  style="width:100%;padding:12px;background:#c91717;color:white;border:none;border-radius:10px;font-weight:bold">
+  Entrar
+</button>
 </div>
 <div class="app" id="appView" style="display:none;">
     <div class="header">
@@ -1338,6 +1338,7 @@ function iniciarApp() {
 //   usuarioActual = JSON.parse(savedUser);
 //   iniciarApp();
 // }
+    document.getElementById("btnLogin")?.addEventListener("click", login);
   </script>
 </body>
 </html>
