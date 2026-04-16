@@ -4407,6 +4407,108 @@ renderTransferencias();
       localStorage.setItem('operations_catalog_issue_types', JSON.stringify(ISSUE_TYPES));
     }
 
+    function slugifyUsername(value = '') {
+      return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '')
+        .trim();
+    }
+
+    function findUserByUsername(username = '') {
+      const key = String(username || '').trim().toLowerCase();
+      return USERS.find(user => (user.username || '').toLowerCase() === key) || null;
+    }
+
+    function findUserByName(name = '') {
+      const key = String(name || '').trim().toLowerCase();
+      return USERS.find(user => (user.name || '').toLowerCase() === key) || null;
+    }
+
+    function normalizeAssigneeStorageValue(type = 'Avería', rawValue = '') {
+      const value = String(rawValue || '').trim();
+      if (!value || value === 'Sin asignar') return 'Sin asignar';
+      if (type === 'Trabajo') return value;
+
+      const byUsername = findUserByUsername(value);
+      if (byUsername) return byUsername.username;
+
+      const byName = findUserByName(value);
+      if (byName) return byName.username;
+
+      return slugifyUsername(value) || 'Sin asignar';
+    }
+
+    function getAssigneeDisplayName(type = 'Avería', rawValue = '') {
+      const value = String(rawValue || '').trim();
+      if (!value || value === 'Sin asignar') return 'Sin asignar';
+      if (type === 'Trabajo') return value;
+      const byUsername = findUserByUsername(value);
+      if (byUsername) return byUsername.name;
+      const byName = findUserByName(value);
+      if (byName) return byName.name;
+      return value;
+    }
+
+    function getAssigneeSearchText(op) {
+      const raw = String(op?.technician || '').trim();
+      const display = getAssigneeDisplayName(op?.type, raw);
+      return [raw, display].filter(Boolean).join(' ').toLowerCase();
+    }
+
+    function normalizeOperationRecord(op = {}) {
+      const normalized = { ...op };
+      normalized.technician = normalizeAssigneeStorageValue(normalized.type, normalized.technician || normalized.asignado_a || 'Sin asignar');
+      if (!Array.isArray(normalized.history)) normalized.history = [];
+      if (!Array.isArray(normalized.selectedTypes)) normalized.selectedTypes = [];
+      if (!Array.isArray(normalized.images)) normalized.images = [];
+      if (!Array.isArray(normalized.resultImages)) normalized.resultImages = [];
+      return normalized;
+    }
+
+    function syncOperationCatalogDependencies() {
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
+      renderOperations();
+      renderWorkshop();
+      renderHistory();
+      renderReports();
+      renderAgencyReports();
+      renderOwnerReports();
+      renderSpecificReports();
+    }
+
+    function renderAssigneeOptions(selectId, type = 'Avería', selectedValue = '') {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+
+      const normalizedSelected = normalizeAssigneeStorageValue(type, selectedValue);
+      const options = ['<option value="Sin asignar">Sin asignar</option>'];
+
+      if (type === 'Trabajo') {
+        SUPPLIERS.forEach(item => {
+          const name = item?.name || '';
+          if (!name) return;
+          const selected = normalizedSelected === name ? 'selected' : '';
+          options.push(`<option value="${escapeHtml(name)}" ${selected}>${escapeHtml(name)}</option>`);
+        });
+      } else {
+        USERS
+          .filter(user => (user?.area || '').toLowerCase() !== 'administrador')
+          .forEach(user => {
+            const username = (user.username || slugifyUsername(user.name)).toLowerCase();
+            const selected = normalizedSelected === username ? 'selected' : '';
+            options.push(`<option value="${escapeHtml(username)}" ${selected}>${escapeHtml(user.name)}</option>`);
+          });
+      }
+
+      select.innerHTML = options.join('');
+      if (type !== 'Trabajo' && normalizedSelected && normalizedSelected !== 'Sin asignar') {
+        select.value = normalizedSelected;
+      }
+    }
+
     function nowIso() { return new Date().toISOString(); }
 
     function getCurrentUserEmail() {
@@ -4519,17 +4621,20 @@ renderTransferencias();
 
     function loadOperations() {
   const saved = localStorage.getItem('operations_records');
-  if (saved) return JSON.parse(saved);
-  const initial = deepClone(demoOperations);
-  localStorage.setItem('operations_records', JSON.stringify(initial));
-  return initial;
-}
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        const normalized = parsed.map(normalizeOperationRecord);
+        localStorage.setItem('operations_records', JSON.stringify(normalized));
+        return normalized;
+      }
+    } catch (error) {
+      console.error('Error leyendo operations_records:', error);
+    }
+  }
 
-function loadOperations() {
-  const saved = localStorage.getItem('operations_records');
-  if (saved) return JSON.parse(saved);
-
-  const initial = deepClone(demoOperations);
+  const initial = deepClone(demoOperations).map(normalizeOperationRecord);
   localStorage.setItem('operations_records', JSON.stringify(initial));
   return initial;
 }
@@ -4545,11 +4650,12 @@ async function saveSingleOperation(op) {
       agencia: op.agency,
       grupo: op.grupo || '',
       nombre_encargado: op.nombre_encargado || 'Sistema web',
+      creado_por: op.creado_por || 'web',
       fecha_reporte: op.createdAt || new Date().toISOString(),
       estado: op.status,
       prioridad: op.priority,
-      asignado_a: op.technician || 'Sin asignar',
-      technician: op.technician || 'Sin asignar',
+      asignado_a: normalizeAssigneeStorageValue(op.type, op.technician || 'Sin asignar'),
+      technician: normalizeAssigneeStorageValue(op.type, op.technician || 'Sin asignar'),
       selected_types: op.selectedTypes || [],
       images: op.images || [],
       result_images: op.resultImages || [],
@@ -4869,7 +4975,7 @@ async function deleteOperation(id) {
         const matchStatus = !statusValue || op.status === statusValue;
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
         const matchAgency = !agencyValue || op.agency.toLowerCase().includes(agencyValue.toLowerCase());
-        const matchOwner = !ownerValue || op.technician.toLowerCase().includes(ownerValue.toLowerCase());
+        const matchOwner = !ownerValue || getAssigneeSearchText(op).includes(ownerValue.toLowerCase());
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
         const toOk = !toValue || createdDate <= new Date(toValue + 'T23:59:59');
@@ -4902,7 +5008,7 @@ async function deleteOperation(id) {
     }
 
     function buildOwnerGroups(operations) {
-      return Array.from(averageFromOperations(operations, op => op.technician || 'Sin asignar').entries()).map(([owner, items]) => {
+      return Array.from(averageFromOperations(operations, op => getAssigneeDisplayName(op.type, op.technician || 'Sin asignar')).entries()).map(([owner, items]) => {
         const completed = items.filter(op => op.status === 'Completado').length;
         const inProgress = items.filter(op => ['Pendiente','Asignada','En proceso'].includes(op.status)).length;
         const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
@@ -4985,7 +5091,7 @@ async function deleteOperation(id) {
           <td>${op.type}</td>
           <td>${op.title}</td>
           <td>${op.agency}</td>
-          <td>${op.technician}</td>
+          <td>${assigneeDisplay}</td>
           <td>${statusBadge(op.status)}</td>
           <td>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</td>
           <td>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</td>
@@ -5130,7 +5236,7 @@ async function deleteOperation(id) {
         const matchType = !filterType.value || op.type === filterType.value;
         const matchStatus = !filterStatus.value || op.status === filterStatus.value;
         const matchAgency = !filterAgency.value || op.agency.toLowerCase().includes(filterAgency.value.toLowerCase());
-        const matchTech = !filterTech.value || op.technician.toLowerCase().includes(filterTech.value.toLowerCase());
+        const matchTech = !filterTech.value || getAssigneeSearchText(op).includes(filterTech.value.toLowerCase());
         const createdDate = new Date(op.createdAt);
         const fromOk = !filterDateFrom.value || createdDate >= new Date(filterDateFrom.value + 'T00:00:00');
         const toOk = !filterDateTo.value || createdDate <= new Date(filterDateTo.value + 'T23:59:59');
@@ -5148,13 +5254,14 @@ async function deleteOperation(id) {
       }
       operations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(op => {
         const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico';
+        const assigneeDisplay = getAssigneeDisplayName(op.type, op.technician);
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><strong>${op.code}</strong></td>
           <td><span class="chip ${op.type === 'Avería' ? 'averia' : 'trabajo'}">${op.type}</span></td>
           <td><strong>${op.title}</strong><div style="margin-top:6px; color: var(--muted); font-size:12px;">${op.description.slice(0, 60)}${op.description.length > 60 ? '...' : ''}</div><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></td>
           <td>${op.agency}</td>
-          <td><strong style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">${assignedLabel}</strong>${op.technician}</td>
+          <td><strong style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">${assignedLabel}</strong>${getAssigneeDisplayName(op.type, op.technician)}</td>
           <td><span class="chip priority-${op.priority.toLowerCase()}">${op.priority}</span></td>
           <td>${statusBadge(op.status)}</td>
           <td>${formatDate(op.createdAt)}</td>
@@ -5213,7 +5320,7 @@ async function deleteOperation(id) {
       document.getElementById('workshopRepairOperationId').value = op.id;
       document.getElementById('workshopRepairCode').textContent = op.code || '-';
       document.getElementById('workshopRepairAgency').textContent = op.agency || '-';
-      document.getElementById('workshopRepairTechnician').textContent = op.technician || 'Sin asignar';
+      document.getElementById('workshopRepairTechnician').textContent = getAssigneeDisplayName(op.type, op.technician || 'Sin asignar');
       document.getElementById('workshopRepairTitle').textContent = op.title || '-';
       document.getElementById('workshopEquipmentName').value = data.equipmentName || '';
       document.getElementById('workshopEquipmentSerial').value = data.equipmentSerial || '';
@@ -5320,10 +5427,10 @@ renderSpecificReports();
     function getFilteredWorkshopOperations() {
       return getWorkshopOperations().filter(op => {
         const text = (workshopFilterSearch?.value || '').toLowerCase().trim();
-        const matchText = !text || [op.code, op.title, op.agency, op.description, op.technician].some(value => (value || '').toLowerCase().includes(text));
+        const matchText = !text || [op.code, op.title, op.agency, op.description, op.technician, getAssigneeDisplayName(op.type, op.technician)].some(value => (value || '').toLowerCase().includes(text));
         const matchStatus = !workshopFilterStatus?.value || op.status === workshopFilterStatus.value;
         const matchAgency = !workshopFilterAgency?.value || op.agency.toLowerCase().includes(workshopFilterAgency.value.toLowerCase());
-        const matchTech = !workshopFilterTech?.value || op.technician.toLowerCase().includes(workshopFilterTech.value.toLowerCase());
+        const matchTech = !workshopFilterTech?.value || getAssigneeSearchText(op).includes(workshopFilterTech.value.toLowerCase());
         const createdDate = new Date(op.createdAt);
         const fromOk = !workshopFilterFrom?.value || createdDate >= new Date(workshopFilterFrom.value + 'T00:00:00');
         const toOk = !workshopFilterTo?.value || createdDate <= new Date(workshopFilterTo.value + 'T23:59:59');
@@ -5378,7 +5485,7 @@ renderSpecificReports();
           <td><strong>${op.code}</strong></td>
           <td><strong>${op.title}</strong><div style="margin-top:6px; color: var(--muted); font-size:12px;">${op.description.slice(0, 60)}${op.description.length > 60 ? '...' : ''}</div><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div><div style="margin-top:8px; font-size:12px; color:var(--title-dark);"><strong>Equipo:</strong> ${workshopData.equipmentName || 'Pendiente de registrar'}${workshopData.equipmentSerial ? ` · <strong>Serial:</strong> ${workshopData.equipmentSerial}` : ''}</div>${workshopData.partsUsed ? `<div style="margin-top:6px; font-size:12px; color:var(--text-soft);"><strong>Piezas:</strong> ${workshopData.partsUsed}</div>` : ''}</td>
           <td>${op.agency}</td>
-          <td>${op.technician}</td>
+          <td>${getAssigneeDisplayName(op.type, op.technician)}</td>
           <td><span class="chip priority-${op.priority.toLowerCase()}">${op.priority}</span></td>
           <td>${workshopStatusBadge(workshopData.technicalStatus)}<div style="margin-top:6px;">${statusBadge(op.status)}</div></td>
           <td>${formatDate(op.createdAt)}</td>
@@ -5392,39 +5499,164 @@ renderSpecificReports();
       let items = [];
       let tbody = null;
       let columns = [];
+
       if (type === 'users') {
-        const name = prompt('Editar nombre:', item.name);
-        if (!name || !name.trim()) return;
-
-        const username = prompt('Editar username:', item.username || '');
-        if (!username || !username.trim()) return;
-
-        const area = prompt('Editar área:', item.area || '') || '';
-        const phone = prompt('Editar teléfono:', item.phone || '') || '';
-
-        list[index] = {
-          ...item,
-          name: name.trim(),
-          username: username.trim().toLowerCase(),
-          area: area.trim(),
-          phone: phone.trim()
-        };
+        items = USERS;
+        tbody = document.getElementById('usersTableBody');
+        columns = ['Nombre', 'Username', 'Área', 'Teléfono'];
       } else if (type === 'suppliers') {
-        const name = prompt('Editar nombre:', item.name);
-        if (!name || !name.trim()) return;
-        const service = prompt('Editar servicio:', item.service || '') || '';
-        const phone = prompt('Editar teléfono:', item.phone || '') || '';
-        list[index] = { name: name.trim(), service: service.trim(), phone: phone.trim() };
+        items = SUPPLIERS;
+        tbody = document.getElementById('suppliersTableBody');
+        columns = ['Nombre', 'Servicio', 'Teléfono'];
+      } else if (type === 'work') {
+        items = WORK_TYPES;
+        tbody = document.getElementById('worksTableBody');
+        columns = ['Nombre', 'Descripción'];
       } else {
-        const name = prompt('Editar nombre:', item.name);
+        items = ISSUE_TYPES;
+        tbody = document.getElementById('issuesTableBody');
+        columns = ['Nombre', 'Descripción'];
+      }
+
+      if (!tbody) return;
+
+      const text = String(search || '').trim().toLowerCase();
+      const filtered = items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => Object.values(item || {}).some(value => String(value || '').toLowerCase().includes(text)));
+
+      tbody.innerHTML = '';
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="${columns.length + 1}" style="text-align:center; color: var(--muted); padding: 28px;">No hay registros para mostrar.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(({ item, index }) => {
+        const row = document.createElement('tr');
+
+        if (type === 'users') {
+          row.innerHTML = `
+            <td>${escapeHtml(item.name || '')}</td>
+            <td>${escapeHtml((item.username || '').toLowerCase())}</td>
+            <td>${escapeHtml(item.area || '')}</td>
+            <td>${escapeHtml(item.phone || '')}</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('users', ${index})">Ver</button>
+                <button class="btn btn-secondary btn-sm" onclick="editCatalogItem('users', ${index})">Editar</button>
+                <button class="btn btn-secondary btn-sm" onclick="deleteCatalogItem('users', ${index})">Eliminar</button>
+              </div>
+            </td>
+          `;
+        } else if (type === 'suppliers') {
+          row.innerHTML = `
+            <td>${escapeHtml(item.name || '')}</td>
+            <td>${escapeHtml(item.service || '')}</td>
+            <td>${escapeHtml(item.phone || '')}</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('suppliers', ${index})">Ver</button>
+                <button class="btn btn-secondary btn-sm" onclick="editCatalogItem('suppliers', ${index})">Editar</button>
+                <button class="btn btn-secondary btn-sm" onclick="deleteCatalogItem('suppliers', ${index})">Eliminar</button>
+              </div>
+            </td>
+          `;
+        } else {
+          const normalizedType = type === 'work' ? 'work' : 'issue';
+          row.innerHTML = `
+            <td>${escapeHtml(item.name || '')}</td>
+            <td>${escapeHtml(item.description || '')}</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('${normalizedType}', ${index})">Ver</button>
+                <button class="btn btn-secondary btn-sm" onclick="editCatalogItem('${normalizedType}', ${index})">Editar</button>
+                <button class="btn btn-secondary btn-sm" onclick="deleteCatalogItem('${normalizedType}', ${index})">Eliminar</button>
+              </div>
+            </td>
+          `;
+        }
+
+        tbody.appendChild(row);
+      });
+    }
+
+    function createCatalogItem(type) {
+      if (type === 'users') {
+        const name = prompt('Nombre del usuario:');
         if (!name || !name.trim()) return;
-        const description = prompt('Editar descripción:', item.description || '') || '';
-        list[index] = { name: name.trim(), description: description.trim() };
+        const usernameInput = prompt('Username (ej. tecnico1):', slugifyUsername(name)) || '';
+        const username = slugifyUsername(usernameInput);
+        if (!username) return alert('Debes escribir un username válido.');
+        if (USERS.some(item => (item.username || '').toLowerCase() === username)) {
+          return alert('Ese username ya existe.');
+        }
+        const area = (prompt('Área / rol:', 'Técnico') || 'Técnico').trim();
+        const phone = (prompt('Teléfono:', '') || '').trim();
+        USERS.push({ name: name.trim(), username, area, phone });
+      } else if (type === 'suppliers') {
+        const name = prompt('Nombre del suplidor:');
+        if (!name || !name.trim()) return;
+        const service = (prompt('Servicio:', '') || '').trim();
+        const phone = (prompt('Teléfono:', '') || '').trim();
+        SUPPLIERS.push({ name: name.trim(), service, phone });
+      } else {
+        const label = type === 'work' ? 'trabajo' : 'avería';
+        const list = type === 'work' ? WORK_TYPES : ISSUE_TYPES;
+        const name = prompt(`Nombre del tipo de ${label}:`);
+        if (!name || !name.trim()) return;
+        const description = (prompt('Descripción:', '') || '').trim();
+        list.push({ name: name.trim(), description });
       }
 
       saveCatalogs();
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
+      syncOperationCatalogDependencies();
+      renderCurrentCatalogView();
+    }
+
+    function editCatalogItem(type, index) {
+      let list = null;
+      if (type === 'users') list = USERS;
+      else if (type === 'suppliers') list = SUPPLIERS;
+      else if (type === 'work') list = WORK_TYPES;
+      else list = ISSUE_TYPES;
+
+      const item = list[index];
+      if (!item) return;
+
+      if (type === 'users') {
+        const name = prompt('Editar nombre:', item.name || '');
+        if (!name || !name.trim()) return;
+        const usernameInput = prompt('Editar username:', item.username || '') || '';
+        const username = slugifyUsername(usernameInput);
+        if (!username) return alert('Debes escribir un username válido.');
+        const exists = USERS.some((user, userIndex) => userIndex !== index && (user.username || '').toLowerCase() === username);
+        if (exists) return alert('Ese username ya está en uso.');
+        const area = (prompt('Editar área:', item.area || '') || '').trim();
+        const phone = (prompt('Editar teléfono:', item.phone || '') || '').trim();
+        list[index] = { ...item, name: name.trim(), username, area, phone };
+      } else if (type === 'suppliers') {
+        const name = prompt('Editar nombre:', item.name || '');
+        if (!name || !name.trim()) return;
+        const service = (prompt('Editar servicio:', item.service || '') || '').trim();
+        const phone = (prompt('Editar teléfono:', item.phone || '') || '').trim();
+        list[index] = { ...item, name: name.trim(), service, phone };
+      } else {
+        const name = prompt('Editar nombre:', item.name || '');
+        if (!name || !name.trim()) return;
+        const description = (prompt('Editar descripción:', item.description || '') || '').trim();
+        list[index] = { ...item, name: name.trim(), description };
+      }
+
+      saveCatalogs();
+
+      const operations = loadOperations();
+      operations.forEach(op => {
+        op.technician = normalizeAssigneeStorageValue(op.type, op.technician || 'Sin asignar');
+      });
+      localStorage.setItem('operations_records', JSON.stringify(operations));
+
+      syncOperationCatalogDependencies();
       renderCurrentCatalogView();
     }
 
@@ -5498,7 +5730,7 @@ renderSpecificReports();
       const status = document.getElementById('operationStatus').value;
       const title = document.getElementById('operationTitle').value.trim();
       const agency = document.getElementById('operationAgency').value.trim();
-      const technician = document.getElementById('operationTechnician').value.trim() || 'Sin asignar';
+      const technician = normalizeAssigneeStorageValue(document.getElementById('operationType').value, document.getElementById('operationTechnician').value.trim() || 'Sin asignar');
       const priority = document.getElementById('operationPriority').value;
       const description = document.getElementById('operationDescription').value.trim();
       const imageFiles = Array.from(document.getElementById('operationImage').files || []);
@@ -5616,7 +5848,7 @@ saveOperations(operations);
             `).join('')
         : '<div style="color:var(--muted);">Sin historial disponible.</div>';
       detailContent.innerHTML = `
-        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${op.technician}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
+        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${getAssigneeDisplayName(op.type, op.technician)}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
         <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
         ${op.images && op.images.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Imágenes reportadas</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.images.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
         ${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Evidencias de resultado</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.resultImages.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
@@ -5773,7 +6005,7 @@ saveOperations(operations);
         escapeHtml(op.type),
         escapeHtml(op.title),
         escapeHtml(op.agency),
-        escapeHtml(op.technician),
+        escapeHtml(getAssigneeDisplayName(op.type, op.technician)),
         escapeHtml(op.status),
         escapeHtml((op.selectedTypes || []).join(', ') || 'Sin tipo específico'),
         escapeHtml(formatMinutesHuman(getAssignmentMinutes(op) || 0)),
@@ -5997,7 +6229,7 @@ saveOperations(operations);
     <div class="meta-item"><span>Fecha</span><div>${escapeHtml(formatDate(op.createdAt))}</div></div>
     <div class="meta-item"><span>Título</span><div>${escapeHtml(op.title)}</div></div>
     <div class="meta-item"><span>Agencia</span><div>${escapeHtml(op.agency)}</div></div>
-    <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(op.technician)}</div></div>
+    <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(getAssigneeDisplayName(op.type, op.technician))}</div></div>
     <div class="meta-item"><span>Prioridad</span><div>${escapeHtml(op.priority)}</div></div>
     <div class="meta-item"><span>Tiempo de asignación</span><div>${escapeHtml(formatMinutesHuman(getAssignmentMinutes(op) || 0))}</div></div>
     <div class="meta-item"><span>Tiempo de resolución</span><div>${escapeHtml(formatMinutesHuman(getResolutionMinutes(op) || 0))}</div></div>
@@ -6063,12 +6295,12 @@ function openEditModal(id) {
 
       const actor = getCurrentUserEmail();
       const previousStatus = operations[index].status;
-      const previousAssignee = operations[index].technician || 'Sin asignar';
+      const previousAssignee = normalizeAssigneeStorageValue(operations[index].type, operations[index].technician || 'Sin asignar');
       const newType = document.getElementById('editOperationType').value;
       const newStatus = document.getElementById('editOperationStatus').value;
       const newTitle = document.getElementById('editOperationTitle').value.trim();
       const newAgency = document.getElementById('editOperationAgency').value.trim();
-      const newTechnician = document.getElementById('editOperationTechnician').value.trim() || 'Sin asignar';
+      const newTechnician = normalizeAssigneeStorageValue(newType, document.getElementById('editOperationTechnician').value.trim() || 'Sin asignar');
       const newPriority = document.getElementById('editOperationPriority').value;
       const newDescription = document.getElementById('editOperationDescription').value.trim();
       const newSelectedTypes = getSelectedValues('editOperationTypeOptions');
@@ -6132,7 +6364,7 @@ function openEditModal(id) {
       if (assignedNow) {
         operations[index].history.push(createHistoryEntry({
           action: 'Asignación',
-          detail: `Asignada a ${newTechnician}`,
+          detail: `Asignada a ${getAssigneeDisplayName(newType, newTechnician)}`,
           user: actor,
           prevStatus: previousStatus,
           newStatus: newStatus
@@ -6624,7 +6856,7 @@ function openEditModal(id) {
         }
         if (!Array.isArray(op.history)) {
           op.history = [createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'admin@empresa.com', newStatus: 'Pendiente' })];
-          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${op.technician}`, user: 'admin@empresa.com' }));
+          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${getAssigneeDisplayName(op.type, op.technician)}`, user: 'admin@empresa.com' }));
           if (op.status === 'En proceso') op.history.push(createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: 'admin@empresa.com', prevStatus: 'Asignada', newStatus: 'En proceso' }));
           if (op.status === 'Completado') op.history.push(createHistoryEntry({ action: 'Finalización', detail: op.resolutionTime ? `Operación completada en ${op.resolutionTime}` : 'Operación completada', user: 'admin@empresa.com', prevStatus: op.assignedAt ? 'Asignada' : 'Pendiente', newStatus: 'Completado' }));
           changed = true;
@@ -6870,7 +7102,7 @@ function syncOperationNotifications(previousOperations, newOperations){
     } else if((old.technician || '') !== (op.technician || '')){
       systemNotify({
         title:'Responsable actualizado',
-        message:`${op.code} ahora está asignada a ${op.technician || 'Sin asignar'}`,
+        message:`${op.code} ahora está asignada a ${getAssigneeDisplayName(op.type, op.technician || 'Sin asignar')}`,
         module:'Operaciones',
         reference:op.code,
         user:getCurrentUserEmail ? getCurrentUserEmail() : 'Sistema'
@@ -7014,7 +7246,7 @@ async function sincronizarReportesSupabaseAOperaciones() {
   const { data, error } = await supabaseClient
     .from('reportes_operaciones')
     .select('*')
-    .order('created_at', { ascending: true });
+    .order('fecha_reporte', { ascending: true });
 
   if (error) {
     console.error('Error Supabase:', error);
@@ -7022,46 +7254,52 @@ async function sincronizarReportesSupabaseAOperaciones() {
   }
 
   const operacionesActuales = loadOperations();
-  const existentesPorId = new Map(operacionesActuales.map(op => [op.id, op]));
+  const existentesPorId = new Map(operacionesActuales.map(op => [String(op.id), op]));
   let huboCambios = false;
 
-  data.forEach((item, index) => {
-    if (existentesPorId.has(item.id)) return;
-
-    const nuevaOperacion = {
+  (data || []).forEach((item, index) => {
+    const assigneeValue = normalizeAssigneeStorageValue(item.tipo_reporte || 'Avería', item.asignado_a || item.technician || 'Sin asignar');
+    const baseOperacion = normalizeOperationRecord({
       id: item.id,
-      code: `REP-${String(index + 1).padStart(4, '0')}`,
+      code: item.code || `REP-${String(index + 1).padStart(4, '0')}`,
       type: item.tipo_reporte || 'Avería',
       title: item.categoria || 'Reporte',
-      agency: item.agencia || '',
-      technician: item.asignado_a || 'Sin asignar',
+      agency: item.agencia || item.grupo || '',
+      technician: assigneeValue,
       priority: item.prioridad || 'Media',
       status: item.estado || 'Pendiente',
       description: item.descripcion || '',
-      selectedTypes: item.categoria ? [item.categoria] : [],
-      createdAt: item.created_at || new Date().toISOString(),
-      images: item.imagen_url ? [item.imagen_url] : [],
-      resultImages: [],
-      assignedAt: item.asignado_a ? (item.created_at || new Date().toISOString()) : null,
-      startedAt: null,
-      completedAt: null,
-      resolutionTime: '',
-      closedAt: null,
-      history: crearHistorialBaseDesdeSupabase(item),
-      source: 'supabase',
+      selectedTypes: Array.isArray(item.selected_types) ? item.selected_types : (item.categoria ? [item.categoria] : []),
+      createdAt: item.fecha_reporte || item.created_at || new Date().toISOString(),
+      images: Array.isArray(item.images) ? item.images : (item.imagen_url ? [item.imagen_url] : []),
+      resultImages: Array.isArray(item.result_images) ? item.result_images : [],
+      assignedAt: item.assigned_at || (assigneeValue !== 'Sin asignar' ? (item.fecha_reporte || item.created_at || new Date().toISOString()) : null),
+      startedAt: item.started_at || null,
+      completedAt: item.completed_at || null,
+      resolutionTime: item.resolution_time || '',
+      closedAt: item.closed_at || null,
+      history: Array.isArray(item.history) && item.history.length ? item.history : crearHistorialBaseDesdeSupabase(item),
+      source: item.source || 'supabase',
       grupo: item.grupo || '',
-      nombre_encargado: item.nombre_encargado || ''
-    };
+      nombre_encargado: item.nombre_encargado || '',
+      creado_por: item.creado_por || ''
+    });
 
-    operacionesActuales.push(nuevaOperacion);
+    const existente = existentesPorId.get(String(item.id));
+    if (existente) {
+      Object.assign(existente, baseOperacion);
+    } else {
+      operacionesActuales.push(baseOperacion);
+    }
     huboCambios = true;
   });
 
   if (huboCambios) {
-    saveOperations(operacionesActuales);
+    localStorage.setItem('operations_records', JSON.stringify(operacionesActuales));
   }
 
   renderOperations();
+  renderWorkshop();
   renderHistory();
   renderReports();
   renderAgencyReports();
