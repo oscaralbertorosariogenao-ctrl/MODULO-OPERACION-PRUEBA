@@ -4282,27 +4282,11 @@ renderTransferencias();
 <script>
     const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
 
-    const DEFAULT_USERS = [
-  {
-    name: 'Oscar Rosario',
-    area: 'Administrador',
-    phone: '809-000-0000'
-  },
-  {
-    name: 'Técnico 1',
-    area: 'Técnico',
-    phone: '809-000-0001'
-  },
-  {
-    name: 'Técnico 2',
-    area: 'Técnico',
-    phone: '809-000-0002'
-  },
-  {
-    name: 'Encargado de Zona',
-    area: 'Encargado de zona',
-    phone: '809-000-0003'
-  }
+ const DEFAULT_USERS = [
+  { name: 'Oscar Rosario', username: 'oscar', area: 'Administrador', phone: '809-000-0000' },
+  { name: 'Técnico 1', username: 'tecnico1', area: 'Técnico', phone: '809-000-0001' },
+  { name: 'Técnico 2', username: 'tecnico2', area: 'Técnico', phone: '809-000-0002' },
+  { name: 'Encargado 1', username: 'encargado1', area: 'Encargado de zona', phone: '809-000-0003' }
 ];
     const DEFAULT_SUPPLIERS = [
       { name: 'E-Gret Servicios', service: 'Publicidad', phone: '809-555-4444' },
@@ -5410,13 +5394,25 @@ renderSpecificReports();
       });
     }
 
-    function renderAssigneeOptions(selectId, type, selected = '') {
-      const select = document.getElementById(selectId);
-      if (!select) return;
-      const items = type === 'Trabajo' ? SUPPLIERS : USERS;
-      select.innerHTML = '<option value="">Sin asignar</option>' + items.map(item => `<option value="${item.name}" ${selected === item.name ? 'selected' : ''}>${item.name}</option>`).join('');
-    }
+   function renderAssigneeOptions(selectId, type, selected = '') {
+  const select = document.getElementById(selectId);
+  if (!select) return;
 
+  const items = type === 'Trabajo' ? SUPPLIERS : USERS;
+
+  select.innerHTML =
+    '<option value="">Sin asignar</option>' +
+    items.map(item => {
+      const optionValue = type === 'Trabajo'
+        ? item.name
+        : (item.username || item.name);
+
+      const optionLabel = item.name;
+      const isSelected = String(selected || '').toLowerCase() === String(optionValue || '').toLowerCase();
+
+      return `<option value="${optionValue}" ${isSelected ? 'selected' : ''}>${optionLabel}</option>`;
+    }).join('');
+}
     function showView(viewName) {
       ['operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView','workshopView'].forEach(id => document.getElementById(id).classList.add('hidden'));
       ['navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues','navWorkshop'].forEach(id => document.getElementById(id).classList.remove('active'));
@@ -5474,33 +5470,25 @@ renderSpecificReports();
     }
 
     function createCatalogItem(type) {
-      if (type === 'users') {
-        const name = prompt('Nombre del técnico/usuario:');
-        if (!name || !name.trim()) return;
-        const area = prompt('Área o especialidad:') || '';
-        const phone = prompt('Teléfono:') || '';
-        if (USERS.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
-        USERS.push({ name: name.trim(), area: area.trim(), phone: phone.trim() });
-      } else if (type === 'suppliers') {
-        const name = prompt('Nombre del suplidor:');
-        if (!name || !name.trim()) return;
-        const service = prompt('Servicio que ofrece:') || '';
-        const phone = prompt('Teléfono:') || '';
-        if (SUPPLIERS.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
-        SUPPLIERS.push({ name: name.trim(), service: service.trim(), phone: phone.trim() });
-      } else if (type === 'work') {
-        const name = prompt('Nombre del trabajo:');
-        if (!name || !name.trim()) return;
-        const description = prompt('Descripción:') || '';
-        if (WORK_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
-        WORK_TYPES.push({ name: name.trim(), description: description.trim() });
-      } else {
-        const name = prompt('Nombre de la avería:');
-        if (!name || !name.trim()) return;
-        const description = prompt('Descripción:') || '';
-        if (ISSUE_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
-        ISSUE_TYPES.push({ name: name.trim(), description: description.trim() });
-      }
+     if (type === 'users') {
+  const name = prompt('Nombre del técnico/usuario:');
+  if (!name || !name.trim()) return;
+
+  const username = prompt('Username de acceso (ej: tecnico1):');
+  if (!username || !username.trim()) return;
+
+  const area = prompt('Área o especialidad:') || '';
+  const phone = prompt('Teléfono:') || '';
+
+  if (USERS.some(x => (x.username || '').toLowerCase() === username.trim().toLowerCase())) return;
+
+  USERS.push({
+    name: name.trim(),
+    username: username.trim().toLowerCase(),
+    area: area.trim(),
+    phone: phone.trim()
+  });
+}
       saveCatalogs();
       refreshOpenTypeSelectors();
       populateReportSpecificTypeOptions();
@@ -5516,13 +5504,24 @@ renderSpecificReports();
       const item = list[index];
       if (!item) return;
 
-      if (type === 'users') {
-        const name = prompt('Editar nombre:', item.name);
-        if (!name || !name.trim()) return;
-        const area = prompt('Editar área:', item.area || '') || '';
-        const phone = prompt('Editar teléfono:', item.phone || '') || '';
-        list[index] = { name: name.trim(), area: area.trim(), phone: phone.trim() };
-      } else if (type === 'suppliers') {
+    if (type === 'users') {
+  const name = prompt('Editar nombre:', item.name);
+  if (!name || !name.trim()) return;
+
+  const username = prompt('Editar username:', item.username || '');
+  if (!username || !username.trim()) return;
+
+  const area = prompt('Editar área:', item.area || '') || '';
+  const phone = prompt('Editar teléfono:', item.phone || '') || '';
+
+  list[index] = {
+    ...item,
+    name: name.trim(),
+    username: username.trim().toLowerCase(),
+    area: area.trim(),
+    phone: phone.trim()
+  };
+}else if (type === 'suppliers') {
         const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
         const service = prompt('Editar servicio:', item.service || '') || '';
