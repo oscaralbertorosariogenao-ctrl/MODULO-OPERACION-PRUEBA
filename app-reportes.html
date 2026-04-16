@@ -930,6 +930,353 @@
         width: fit-content;
       }
     }
+  
+
+    /* ===== LOTEKA ULTRA UI ===== */
+    :root {
+      --bg: #eef5f9;
+      --bg-2: #ddebf3;
+      --line: #d6e5ee;
+      --line-strong: #bfd7e4;
+      --text: #173346;
+      --muted: #6c8291;
+      --primary: #0ea5c6;
+      --primary-dark: #0a7f9f;
+      --primary-soft: #e6f8fc;
+      --secondary: #edf4f8;
+      --secondary-text: #173346;
+      --shadow: 0 18px 42px rgba(16, 59, 85, 0.10);
+      --shadow-soft: 0 10px 26px rgba(16, 59, 85, 0.06);
+      --radius: 22px;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(14,165,198,.14), transparent 26%),
+        radial-gradient(circle at top right, rgba(16,59,85,.08), transparent 20%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    .app {
+      position: relative;
+    }
+
+    .app::before {
+      content: "";
+      position: fixed;
+      inset: auto -120px -120px auto;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(14,165,198,.14) 0%, rgba(14,165,198,0) 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(8px);
+    }
+
+    .header {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, #0ea5c6 0%, #0a8bad 45%, #0b6f8c 100%);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 36px rgba(10, 78, 102, 0.18);
+    }
+
+    .header::before,
+    .header::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      pointer-events: none;
+    }
+
+    .header::before {
+      width: 220px;
+      height: 220px;
+      right: -70px;
+      top: -90px;
+    }
+
+    .header::after {
+      width: 140px;
+      height: 140px;
+      right: 90px;
+      bottom: -70px;
+    }
+
+    .header-top,
+    .tabs,
+    .content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-brand img,
+    .brand-mark img {
+      background: rgba(255,255,255,.95);
+      border: 2px solid rgba(255,255,255,.35);
+      box-shadow: 0 14px 28px rgba(0,0,0,.16);
+    }
+
+    .header-kicker {
+      background: rgba(255,255,255,.18);
+      backdrop-filter: blur(8px);
+      letter-spacing: .10em;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      letter-spacing: .01em;
+    }
+
+    .header p {
+      max-width: 460px;
+      color: rgba(255,255,255,.92);
+    }
+
+    .header-meta {
+      margin-top: 14px;
+    }
+
+    .header-chip {
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .logout-btn {
+      min-height: 48px;
+      padding: 12px 18px;
+      border: 1px solid rgba(10,127,159,.12);
+    }
+
+    .tabs {
+      gap: 12px;
+      padding-top: 18px;
+    }
+
+    .tab-btn {
+      min-height: 54px;
+      border: 1px solid #d7e6ee;
+      box-shadow: var(--shadow-soft);
+      font-size: 16px;
+      letter-spacing: .01em;
+    }
+
+    .tab-btn.active {
+      box-shadow: 0 14px 26px rgba(14,165,198,.22);
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(8px);
+    }
+
+    .section-heading h3 {
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .section-badge {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+    }
+
+    input,
+    select,
+    textarea {
+      border: 1px solid #cfe0ea;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+    }
+
+    textarea {
+      min-height: 132px;
+    }
+
+    .preview,
+    .detail-image-box,
+    .detail-section,
+    .meta-box,
+    .detail-item,
+    .history-item,
+    .report-card {
+      box-shadow: var(--shadow-soft);
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-refresh,
+    .btn-detail-close,
+    .btn-view {
+      font-size: 15px;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+    .btn-secondary,
+    .btn-view,
+    .btn-detail-close {
+      background: linear-gradient(180deg, #f2f7fa 0%, #e9f1f6 100%);
+      border-color: #dbe8ef;
+    }
+
+    .btn-refresh {
+      background: linear-gradient(135deg, #6b879c 0%, #587488 100%);
+    }
+
+    .report-list {
+      gap: 14px;
+    }
+
+    .report-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #d8e8f0;
+      background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,252,254,.98) 100%);
+    }
+
+    .report-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: linear-gradient(180deg, #0ea5c6 0%, #0b7896 100%);
+      opacity: .95;
+    }
+
+    .report-top {
+      margin-bottom: 12px;
+    }
+
+    .report-code {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #0b7896;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .report-title {
+      font-size: 17px;
+      color: #112d40;
+    }
+
+    .report-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #5c7281;
+    }
+
+    .report-type::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #0ea5c6;
+      box-shadow: 0 0 0 4px rgba(14,165,198,.12);
+    }
+
+    .badge {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    }
+
+    .meta-box {
+      border-color: #dce9f1;
+      background: linear-gradient(180deg, #f7fbfd 0%, #f1f7fa 100%);
+    }
+
+    .meta-box span {
+      color: #7890a0;
+    }
+
+    .empty-state {
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
+      border-style: solid;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .detail-backdrop {
+      background: rgba(13, 34, 49, 0.58);
+      backdrop-filter: blur(6px);
+    }
+
+    .detail-modal {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border: 1px solid #dbe8ef;
+    }
+
+    .detail-header {
+      border-bottom: 1px solid #e2edf3;
+    }
+
+    .detail-section {
+      background: linear-gradient(180deg, #ffffff 0%, #f9fcfe 100%);
+      border-color: #dbe8ef;
+    }
+
+    .login-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: linear-gradient(90deg, #0ea5c6 0%, #0a7f9f 100%);
+    }
+
+    .login-title {
+      font-size: 30px;
+    }
+
+    .login-hint {
+      background: linear-gradient(180deg, #f7fbfd 0%, #eff7fb 100%);
+    }
+
+    @media (max-width: 520px) {
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .tabs {
+        padding-top: 16px;
+      }
+
+      .tab-btn {
+        min-height: 50px;
+        font-size: 15px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 22px;
+      }
+
+      .report-card {
+        padding: 14px 14px 14px 16px;
+      }
+
+      .section-heading h3 {
+        font-size: 18px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -965,7 +1312,7 @@
         <div>
           <div class="header-kicker">Sistema corporativo</div>
           <h1 id="appTitle">App móvil de reportes</h1>
-          <p id="appSubtitle">Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
+          <p id="appSubtitle">Crear reportes y consultar el estado de las averías o trabajos registrados en una interfaz más clara y corporativa.</p>
         </div>
       </div>
       <div class="header-meta">
@@ -1702,14 +2049,14 @@ function iniciarApp() {
   } else if (usuarioActual?.rol === "encargado") {
     if (roleBadge) roleBadge.textContent = "Rol: Encargado";
     appTitle.textContent = "App móvil de reportes";
-    appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
+    appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes con una experiencia más clara y ordenada.";
 
     document.getElementById("tabCreate").style.display = "block";
     switchTab("create");
   } else {
     if (roleBadge) roleBadge.textContent = "Rol: Administrador";
     appTitle.textContent = "App móvil de reportes";
-    appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados.";
+    appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados en una interfaz más clara y corporativa.";
 
     document.getElementById("tabCreate").style.display = "block";
     switchTab("create");
