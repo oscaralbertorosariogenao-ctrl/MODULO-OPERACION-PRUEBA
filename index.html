@@ -244,37 +244,6 @@ textarea{resize:vertical;min-height:90px}
 @media (max-width:1180px){.ops-scope .stats,.ops-scope .mini-stats,.ops-scope .history-highlight,.ops-scope .report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-scope .filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:680px){.ops-scope .stats,.ops-scope .filters,.ops-scope .grid-2,.ops-scope .detail-grid,.ops-scope .mini-stats,.ops-scope .history-highlight,.ops-scope .report-grid{grid-template-columns:1fr}.ops-scope .topbar h2,.ops-scope .catalog-topbar h2{font-size:22px}}
 
-
-
-/* ===== Centro de notificaciones ===== */
-.notification-fab{position:fixed;top:18px;right:18px;z-index:9999}
-.notification-bell{position:relative;width:52px;height:52px;border:none;border-radius:16px;background:#fff;color:var(--title-dark);box-shadow:0 10px 24px rgba(16,24,40,.14);border:1px solid var(--line);cursor:pointer;font-size:18px}
-.notification-bell:hover{transform:translateY(-1px)}
-.notification-badge{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
-.notification-panel{position:fixed;top:80px;right:18px;width:390px;max-width:calc(100vw - 28px);max-height:78vh;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 40px rgba(16,24,40,.16);z-index:9998;display:none;overflow:hidden}
-.notification-panel.open{display:flex;flex-direction:column}
-.notification-head{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 14px;border-bottom:1px solid var(--line);background:#fbfcfd}
-.notification-head h3{font-size:16px;color:var(--title-dark);margin:0}
-.notification-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.notification-text-btn{border:none;background:#eef3f8;color:#4f6980;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer}
-.notification-text-btn.active{background:#d9413a;color:#fff}
-.notification-list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:10px;background:#f6f8fb}
-.notification-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 12px 11px;box-shadow:0 2px 10px rgba(37,56,88,.04)}
-.notification-item.unread{border-left:4px solid var(--primary)}
-.notification-item-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;align-items:flex-start}
-.notification-item-title{font-size:13px;font-weight:800;color:var(--title-dark)}
-.notification-item-time{font-size:11px;color:#8da0b2;white-space:nowrap}
-.notification-item-text{font-size:13px;color:#526678;line-height:1.45}
-.notification-item-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.notification-chip{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#eef3f8;color:#51697d}
-.notification-empty{padding:24px 18px;text-align:center;color:#8798a8;font-weight:700;background:#f6f8fb}
-.notification-toast-wrap{position:fixed;top:82px;right:18px;z-index:10000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.notification-toast{min-width:280px;max-width:360px;background:#ffffff;border:1px solid var(--line);box-shadow:0 16px 36px rgba(16,24,40,.16);border-left:4px solid var(--primary);border-radius:14px;padding:12px 14px;animation:fadeSlideIn .22s ease}
-.notification-toast strong{display:block;font-size:13px;color:var(--title-dark);margin-bottom:4px}
-.notification-toast span{display:block;font-size:13px;color:#5d7183;line-height:1.4}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-@media (max-width:700px){.notification-fab{top:14px;right:14px}.notification-panel{top:72px;right:10px;width:calc(100vw - 20px)}.notification-toast-wrap{right:10px;left:10px}.notification-toast{min-width:unset;max-width:unset}}
-
 </style>
 </head>
 <body>
@@ -307,8 +276,6 @@ textarea{resize:vertical;min-height:90px}
   <div class="menu-section-title">Módulo de operaciones</div>
   <div class="menu">
     <a id="navOperations" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i> Gestión de Operaciones</a>
-
-    <a id="navWorkshop" onclick="abrirVistaOperaciones('workshop','ops-taller', this)"><i class="fas fa-screwdriver"></i> Taller</a>
     <a id="navHistory" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i> Historial</a>
     <a id="navReports" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i> Reportes de Operaciones</a>
     <a id="navReportsAgency" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i> Reportes por Agencia</a>
@@ -317,7 +284,8 @@ textarea{resize:vertical;min-height:90px}
     <a id="navUsers" onclick="abrirVistaOperaciones('users','ops-usuarios', this)"><i class="fas fa-user"></i> Usuarios</a>
     <a id="navSuppliers" onclick="abrirVistaOperaciones('suppliers','ops-suplidores', this)"><i class="fas fa-truck"></i> Suplidores</a>
     <a id="navWorks" onclick="abrirVistaOperaciones('works','ops-trabajos', this)"><i class="fas fa-hammer"></i> Trabajos</a>
-    <a id="navIssues" onclick="abrirVistaOperaciones('issues','ops-averias', this)"><i class="fas fa-triangle-exclamation"></i> Averías</a>  </div>
+    <a id="navIssues" onclick="abrirVistaOperaciones('issues','ops-averias', this)"><i class="fas fa-triangle-exclamation"></i> Averías</a>
+  </div>
 
 </div>
 
@@ -771,7 +739,6 @@ textarea{resize:vertical;min-height:90px}
 <option value="Finalización">Finalización</option>
 <option value="Cierre">Cierre</option>
 <option value="Evidencia">Evidencia</option>
-<option value="Taller">Taller</option>
 </select>
 <input class="input" id="historyFilterUser" placeholder="Filtrar por usuario"/>
 <input class="input" id="historyFilterFrom" type="date"/>
@@ -988,7 +955,7 @@ textarea{resize:vertical;min-height:90px}
 </div></div></div>
 <div id="vista-ops-usuarios" class="hidden"><div class="ops-scope"><div class="view hidden" id="usersView">
 <div class="catalog-topbar"><div><h2>Administración de Usuarios</h2><p>Gestión de técnicos disponibles para averías.</p></div><button class="btn btn-primary" id="addUserBtn">+ Crear Usuario</button></div>
-<div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="userSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Username</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
+<div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="userSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
 </div></div></div>
 <div id="vista-ops-suplidores" class="hidden"><div class="ops-scope"><div class="view hidden" id="suppliersView">
 <div class="catalog-topbar"><div><h2>Administración de Suplidores</h2><p>Gestión de suplidores de servicios para trabajos.</p></div><button class="btn btn-primary" id="addSupplierBtn">+ Crear Suplidor</button></div>
@@ -1001,54 +968,6 @@ textarea{resize:vertical;min-height:90px}
 <div id="vista-ops-averias" class="hidden"><div class="ops-scope"><div class="view hidden" id="issuesView">
 <div class="catalog-topbar"><div><h2>Administración de Averías</h2><p>Gestión de tipos de averías disponibles para operaciones.</p></div><button class="btn btn-primary" id="addIssueTypeBtn">+ Crear Avería</button></div>
 <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="issueSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="issuesCatalogTableBody"></tbody></table></div></div></div>
-</div></div></div>
-<div id="vista-ops-taller" class="hidden"><div class="ops-scope"><div class="view hidden" id="workshopView">
-<div class="topbar">
-<div>
-<h2>Módulo de Taller</h2>
-<p>Seguimiento técnico de averías asignadas al taller. Aquí no entran trabajos.</p>
-</div>
-<div class="actions">
-<button class="btn btn-secondary" onclick="abrirVistaOperaciones('operations','ops-operaciones', document.getElementById('navOperations'))">Ir a Operaciones</button>
-</div>
-</div>
-<div class="stats">
-<div class="stat-card"><span>Total de averías</span><strong id="workshopStatTotal">0</strong></div>
-<div class="stat-card"><span>Sin asignar</span><strong id="workshopStatPending">0</strong></div>
-<div class="stat-card"><span>En diagnóstico / reparación</span><strong id="workshopStatInProgress">0</strong></div>
-<div class="stat-card"><span>Completadas</span><strong id="workshopStatDone">0</strong></div>
-</div>
-<div class="panel">
-<div class="panel-header">
-<div>
-<h3>Listado técnico de averías</h3>
-<p style="margin:6px 0 0;color:var(--text-soft);font-size:13px;">Aquí podrás llevar la ficha técnica de reparación: diagnóstico, piezas cambiadas, seriales, costos y cierre.</p>
-</div>
-<div class="actions">
-<button class="btn btn-secondary" id="workshopClearBtn">Limpiar filtros</button>
-</div>
-</div>
-<div class="filters">
-<input class="input" id="workshopFilterSearch" placeholder="Buscar por código, título o agencia"/>
-<select class="select" id="workshopFilterStatus">
-<option value="">Todos los estados</option>
-<option value="Pendiente">Pendiente</option>
-<option value="Asignada">Asignada</option>
-<option value="En proceso">En proceso</option>
-<option value="Completado">Completado</option>
-</select>
-<input class="input" id="workshopFilterAgency" placeholder="Filtrar por agencia"/>
-<input class="input" id="workshopFilterTech" placeholder="Filtrar por técnico"/>
-<input class="input" id="workshopFilterFrom" type="date"/>
-<input class="input" id="workshopFilterTo" type="date"/>
-</div>
-<div class="table-wrap">
-<table>
-<thead><tr><th>Código</th><th>Avería / Equipo</th><th>Agencia</th><th>Técnico</th><th>Prioridad</th><th>Estado técnico</th><th>Fecha</th><th>Acciones</th></tr></thead>
-<tbody id="workshopTableBody"></tbody>
-</table>
-</div>
-</div>
 </div></div></div>
 </div>
 
@@ -1769,89 +1688,6 @@ textarea{resize:vertical;min-height:90px}
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
 </select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input class="input" id="editOperationAgency"/></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value" id="editOperationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Fotos de resultado / evidencia</label><input accept="image/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
-
-<div class="ops-modal-backdrop hidden" id="workshopRepairBackdrop">
-  <div class="ops-modal">
-    <div class="modal-header">
-      <h3>Ficha técnica de reparación</h3>
-      <button class="btn btn-secondary" onclick="closeWorkshopRepairModal()">Cerrar</button>
-    </div>
-    <div class="modal-body">
-      <input id="workshopRepairOperationId" type="hidden"/>
-      <div class="detail-box" style="margin-top:0;">
-        <div class="detail-grid">
-          <div class="detail-item"><span>Código</span><strong id="workshopRepairCode">-</strong></div>
-          <div class="detail-item"><span>Agencia</span><strong id="workshopRepairAgency">-</strong></div>
-          <div class="detail-item"><span>Técnico</span><strong id="workshopRepairTechnician">-</strong></div>
-          <div class="detail-item"><span>Avería</span><strong id="workshopRepairTitle">-</strong></div>
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field">
-          <label for="workshopEquipmentName">Equipo intervenido</label>
-          <input class="input" id="workshopEquipmentName" placeholder="Ej. Printer térmica, cámara, router, POS"/>
-        </div>
-        <div class="field">
-          <label for="workshopEquipmentSerial">Serial del equipo</label>
-          <input class="input" id="workshopEquipmentSerial" placeholder="Ej. PRN-00231 / HK-4MP-1001"/>
-        </div>
-        <div class="field">
-          <label for="workshopTechnicalStatus">Estado técnico</label>
-          <select class="select" id="workshopTechnicalStatus">
-            <option value="Pendiente de diagnóstico">Pendiente de diagnóstico</option>
-            <option value="En diagnóstico">En diagnóstico</option>
-            <option value="Esperando pieza">Esperando pieza</option>
-            <option value="En reparación">En reparación</option>
-            <option value="En prueba">En prueba</option>
-            <option value="Reparado">Reparado</option>
-            <option value="Entregado">Entregado</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="workshopPieceSource">Piezas tomadas desde</label>
-          <input class="input" id="workshopPieceSource" placeholder="Ej. Almacén principal / taller / agencia"/>
-        </div>
-      </div>
-      <div class="field">
-        <label for="workshopDiagnostic">Diagnóstico técnico</label>
-        <textarea class="textarea" id="workshopDiagnostic" placeholder="Qué se encontró al revisar el equipo..."></textarea>
-      </div>
-      <div class="field">
-        <label for="workshopPartsUsed">Piezas / repuestos cambiados</label>
-        <textarea class="textarea" id="workshopPartsUsed" placeholder="Ej. Fuente 12V x1 · cable HDMI x1 · cabezal térmico x1 · serial del repuesto..."></textarea>
-      </div>
-      <div class="grid-2">
-        <div class="field">
-          <label for="workshopPartsCost">Costo de piezas</label>
-          <input class="input" id="workshopPartsCost" type="number" min="0" step="0.01" placeholder="0.00"/>
-        </div>
-        <div class="field">
-          <label for="workshopLaborCost">Costo de mano de obra</label>
-          <input class="input" id="workshopLaborCost" type="number" min="0" step="0.01" placeholder="0.00"/>
-        </div>
-      </div>
-      <div class="field">
-        <label for="workshopSolution">Trabajo realizado</label>
-        <textarea class="textarea" id="workshopSolution" placeholder="Qué se hizo: reemplazo, limpieza, configuración, soldadura, prueba, reinstalación..."></textarea>
-      </div>
-      <div class="field">
-        <label for="workshopRecommendation">Observación / recomendación final</label>
-        <textarea class="textarea" id="workshopRecommendation" placeholder="Ej. Se recomienda cambiar UPS / mover cámara / vigilar voltaje / pendiente de nueva pieza..."></textarea>
-      </div>
-      <div class="field" style="margin-bottom:0;">
-        <label style="display:flex;align-items:center;gap:10px;">
-          <input id="workshopMarkCompleted" type="checkbox" style="width:auto;margin:0;"/>
-          <span>Marcar esta avería como completada desde Taller</span>
-        </label>
-      </div>
-    </div>
-    <div class="footer-actions">
-      <button class="btn btn-secondary" onclick="closeWorkshopRepairModal()">Cancelar</button>
-      <button class="btn btn-primary" type="button" onclick="saveWorkshopRepair()">Guardar ficha técnica</button>
-    </div>
-  </div>
-</div>
-
 <script>
 
 let productos = [
@@ -2087,13 +1923,6 @@ function guardarProducto(){
   }
 
   renderProductos();
-  systemNotify({
-    title: editIndex === null ? 'Producto creado' : 'Producto actualizado',
-    message: `${data.nombre} · ${data.marca || 'Sin marca'} · ${data.modelo || 'Sin modelo'}`,
-    module: 'Inventario',
-    reference: data.categoria || 'Productos',
-    user: usuarioMovimientoFijo
-  });
   cerrarProducto();
   limpiarProducto();
 }
@@ -2406,13 +2235,6 @@ function guardarEntrada(){
   llenarFiltrosEntrada();
   renderEntradas();
   renderAlmacenes();
-  systemNotify({
-    title: 'Entrada de inventario registrada',
-    message: `${referencia} · ${almacen.nombre} · ${totalUnidades} unidad(es)`,
-    module: 'Inventario',
-    reference: referencia,
-    user: usuario
-  });
   cerrarEntrada();
 }
 function llenarFiltrosEntrada(){
@@ -2574,13 +2396,6 @@ function guardarAlmacen(){
   }
 
   renderAlmacenes();
-  systemNotify({
-    title: editAlmacenIndex === null ? 'Almacén creado' : 'Almacén actualizado',
-    message: `${data.nombre} ${data.ubicacion ? '· ' + data.ubicacion : ''}`,
-    module: 'Inventario',
-    reference: data.nombre,
-    user: usuarioMovimientoFijo
-  });
   cerrarAlmacen();
   limpiarAlmacen();
 }
@@ -3324,13 +3139,6 @@ function guardarTransferencia(){
   renderGrupos();
   llenarSelectsTransferencia();
   renderTransferencias();
-  systemNotify({
-    title: 'Transferencia completada',
-    message: `${referencia} · ${nombreOrigen} → ${nombreDestino} · ${totalUnidades} unidad(es)`,
-    module: 'Inventario',
-    reference: referencia,
-    user: usuario
-  });
   cerrarTransferencia();
 }
 
@@ -3516,13 +3324,6 @@ function guardarAgencia(){
 
   agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
   renderAgencias();
-  systemNotify({
-    title: editAgenciaIndex === null ? 'Agencia creada' : 'Agencia actualizada',
-    message: `Agencia ${numero} · ${grupo} · Encargado: ${encargado}`,
-    module: 'Consultas',
-    reference: `AG-${numero}`,
-    user: usuarioMovimientoFijo
-  });
   cerrarModalAgencia();
 }
 
@@ -3744,13 +3545,6 @@ function guardarCambiosAgencia(){
   renderAlmacenes();
   llenarSelectsTransferencia();
   renderTransferencias();
-  systemNotify({
-    title: 'Equipos enviados a agencia',
-    message: `${referencia} · ${agencia.nombre} · ${origenes.length === 1 ? origenes[0] : 'Múltiples almacenes'} · ${transferenciasInventario[0].unidades} serial(es)`,
-    module: 'Inventario',
-    reference: referencia,
-    user: usuarioMovimientoFijo
-  });
   verDetalleAgencia(agenciaDetalleActualIndex);
 }
 
@@ -3880,13 +3674,6 @@ function confirmarMiniTransferenciaAgencia(){
   renderAlmacenes();
   llenarSelectsTransferencia();
   renderTransferencias();
-  systemNotify({
-    title: 'Transferencia desde agencia a almacén',
-    message: `${referencia} · ${agencia.nombre} → ${almacen.nombre} · ${item.producto}${item.serial ? ' [' + item.serial + ']' : ''}`,
-    module: 'Inventario',
-    reference: referencia,
-    user: usuarioMovimientoFijo
-  });
   verDetalleAgencia(agenciaDetalleActualIndex);
 }
 
@@ -4014,13 +3801,6 @@ function guardarGrupo(){
 
   renderAgencias();
   renderGrupos();
-  systemNotify({
-    title: editGrupoIndex === null ? 'Grupo creado' : 'Grupo actualizado',
-    message: `${nombre} · Encargado: ${encargado} · Agencias vinculadas: ${agenciasSeleccionadas.length}`,
-    module: 'Consultas',
-    reference: nombre,
-    user: usuarioMovimientoFijo
-  });
   cerrarModalGrupo();
 }
 
@@ -4279,15 +4059,22 @@ llenarSelectsTransferencia();
 renderEntradas();
 renderTransferencias();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0';
+    const REPORTES_TABLE = 'reportes_operaciones';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 <script>
     const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
 
- const DEFAULT_USERS = [
-  { name: 'Oscar Rosario', username: 'oscar', area: 'Administrador', phone: '809-000-0000' },
-  { name: 'Técnico 1', username: 'tecnico1', area: 'Técnico', phone: '809-000-0001' },
-  { name: 'Técnico 2', username: 'tecnico2', area: 'Técnico', phone: '809-000-0002' },
-  { name: 'Encargado 1', username: 'encargado1', area: 'Encargado de zona', phone: '809-000-0003' }
-];
+    const DEFAULT_USERS = [
+      { name: 'Técnico 1', username: 'tecnico1', area: 'Soporte técnico', phone: '809-555-1111' },
+      { name: 'Técnico 2', username: 'tecnico2', area: 'Soporte técnico', phone: '809-555-2222' },
+      { name: 'Encargado 1', username: 'encargado1', area: 'Encargado', phone: '809-555-3333' }
+    ];
+
     const DEFAULT_SUPPLIERS = [
       { name: 'E-Gret Servicios', service: 'Publicidad', phone: '809-555-4444' },
       { name: 'Toldos RD', service: 'Toldos', phone: '809-555-5555' },
@@ -4323,71 +4110,72 @@ renderTransferencias();
     function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
     function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
-  if (!Array.isArray(arr)) return deepClone(fallback);
-
-  const slugifyUsername = (value = '') => String(value)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '')
-    .trim();
-
-  const normalized = arr.map(item => {
-    if (typeof item === 'string') {
-      const name = item.trim();
-      if (!name) return null;
-      return {
-        name,
-        [descriptionKey]: '',
-        ...(descriptionKey === 'area' ? { username: slugifyUsername(name) } : {})
-      };
+      if (!Array.isArray(arr)) return deepClone(fallback);
+      const normalized = arr.map(item => {
+        if (typeof item === 'string') {
+          const name = item.trim();
+          return name ? { name, [descriptionKey]: '' } : null;
+        }
+        if (item && typeof item === 'object') {
+          const name = typeof item.name === 'string' ? item.name.trim() : '';
+          const extra = typeof item[descriptionKey] === 'string' ? item[descriptionKey].trim() : '';
+          const phone = typeof item.phone === 'string' ? item.phone.trim() : '';
+          return name ? { name, [descriptionKey]: extra, phone } : null;
+        }
+        return null;
+      }).filter(Boolean);
+      const deduped = [];
+      const seen = new Set();
+      for (const item of normalized) {
+        const key = item.name.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(item);
+      }
+      return deduped.length ? deduped : deepClone(fallback);
     }
 
-    if (item && typeof item === 'object') {
-      const name = typeof item.name === 'string' ? item.name.trim() : '';
-      if (!name) return null;
-
-      const normalizedItem = { ...item, name };
-
-      if (typeof item[descriptionKey] === 'string') {
-        normalizedItem[descriptionKey] = item[descriptionKey].trim();
-      } else if (!(descriptionKey in normalizedItem)) {
-        normalizedItem[descriptionKey] = '';
-      }
-
-      if (descriptionKey === 'area') {
-        normalizedItem.username = typeof item.username === 'string' && item.username.trim()
-          ? item.username.trim().toLowerCase()
-          : slugifyUsername(name);
-      }
-
-      if (typeof item.phone === 'string') {
-        normalizedItem.phone = item.phone.trim();
-      } else if (descriptionKey === 'area' && !('phone' in normalizedItem)) {
-        normalizedItem.phone = '';
-      }
-
-      return normalizedItem;
+    function slugifyUsername(value) {
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '')
+        .trim();
     }
 
-    return null;
-  }).filter(Boolean);
+    function normalizeUsersCatalog(arr, fallback) {
+      const source = Array.isArray(arr) ? arr : deepClone(fallback);
+      const normalized = source.map(item => {
+        if (!item || typeof item !== 'object') return null;
+        const name = typeof item.name === 'string' ? item.name.trim() : '';
+        if (!name) return null;
+        const username = slugifyUsername(item.username || item.user || name);
+        const area = typeof item.area === 'string' ? item.area.trim() : '';
+        const phone = typeof item.phone === 'string' ? item.phone.trim() : '';
+        return { name, username, area, phone };
+      }).filter(Boolean);
 
-  const deduped = [];
-  const seen = new Set();
+      const required = deepClone(fallback).map(item => ({
+        name: item.name,
+        username: slugifyUsername(item.username || item.name),
+        area: item.area || '',
+        phone: item.phone || ''
+      }));
 
-  for (const item of normalized) {
-    const key = (descriptionKey === 'area' ? (item.username || item.name) : item.name).toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    deduped.push(item);
-  }
-
-  return deduped.length ? deduped : deepClone(fallback);
-}
+      const merged = [...normalized];
+      const seen = new Set(merged.map(item => item.username));
+      required.forEach(item => {
+        if (!seen.has(item.username)) {
+          merged.push(item);
+          seen.add(item.username);
+        }
+      });
+      return merged.length ? merged : required;
+    }
 
     function loadCatalogs() {
-      const users = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_users') || 'null'), DEFAULT_USERS, 'area');
+      const users = normalizeUsersCatalog(JSON.parse(localStorage.getItem('operations_catalog_users') || 'null'), DEFAULT_USERS);
       const suppliers = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_suppliers') || 'null'), DEFAULT_SUPPLIERS, 'service');
       const works = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_work_types') || 'null'), DEFAULT_WORK_TYPES, 'description');
       const issues = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_issue_types') || 'null'), DEFAULT_ISSUE_TYPES, 'description');
@@ -4407,106 +4195,36 @@ renderTransferencias();
       localStorage.setItem('operations_catalog_issue_types', JSON.stringify(ISSUE_TYPES));
     }
 
-    function slugifyUsername(value = '') {
-      return String(value || '')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '')
-        .trim();
+    const ASSIGNEE_DISPLAY_BY_USERNAME = {
+      tecnico1: 'Técnico 1',
+      tecnico2: 'Técnico 2',
+      encargado1: 'Encargado 1'
+    };
+
+    function findUserByUsername(username) {
+      const normalized = slugifyUsername(username);
+      return USERS.find(item => slugifyUsername(item.username) === normalized) || null;
     }
 
-    function findUserByUsername(username = '') {
-      const key = String(username || '').trim().toLowerCase();
-      return USERS.find(user => (user.username || '').toLowerCase() === key) || null;
+    function normalizeStoredAssignee(value, type = 'Avería') {
+      const raw = String(value || '').trim();
+      if (!raw || raw.toLowerCase() === 'sin asignar') return 'Sin asignar';
+      if (type === 'Trabajo') return raw;
+      const normalized = slugifyUsername(raw);
+      const user = findUserByUsername(normalized) || USERS.find(item => slugifyUsername(item.name) === normalized);
+      if (user) return user.username;
+      if (ASSIGNEE_DISPLAY_BY_USERNAME[normalized]) return normalized;
+      return raw;
     }
 
-    function findUserByName(name = '') {
-      const key = String(name || '').trim().toLowerCase();
-      return USERS.find(user => (user.name || '').toLowerCase() === key) || null;
-    }
-
-    function normalizeAssigneeStorageValue(type = 'Avería', rawValue = '') {
-      const value = String(rawValue || '').trim();
-      if (!value || value === 'Sin asignar') return 'Sin asignar';
-      if (type === 'Trabajo') return value;
-
-      const byUsername = findUserByUsername(value);
-      if (byUsername) return byUsername.username;
-
-      const byName = findUserByName(value);
-      if (byName) return byName.username;
-
-      return slugifyUsername(value) || 'Sin asignar';
-    }
-
-    function getAssigneeDisplayName(type = 'Avería', rawValue = '') {
-      const value = String(rawValue || '').trim();
-      if (!value || value === 'Sin asignar') return 'Sin asignar';
-      if (type === 'Trabajo') return value;
-      const byUsername = findUserByUsername(value);
-      if (byUsername) return byUsername.name;
-      const byName = findUserByName(value);
-      if (byName) return byName.name;
-      return value;
-    }
-
-    function getAssigneeSearchText(op) {
-      const raw = String(op?.technician || '').trim();
-      const display = getAssigneeDisplayName(op?.type, raw);
-      return [raw, display].filter(Boolean).join(' ').toLowerCase();
-    }
-
-    function normalizeOperationRecord(op = {}) {
-      const normalized = { ...op };
-      normalized.technician = normalizeAssigneeStorageValue(normalized.type, normalized.technician || normalized.asignado_a || 'Sin asignar');
-      if (!Array.isArray(normalized.history)) normalized.history = [];
-      if (!Array.isArray(normalized.selectedTypes)) normalized.selectedTypes = [];
-      if (!Array.isArray(normalized.images)) normalized.images = [];
-      if (!Array.isArray(normalized.resultImages)) normalized.resultImages = [];
-      return normalized;
-    }
-
-    function syncOperationCatalogDependencies() {
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
-      renderOperations();
-      renderWorkshop();
-      renderHistory();
-      renderReports();
-      renderAgencyReports();
-      renderOwnerReports();
-      renderSpecificReports();
-    }
-
-    function renderAssigneeOptions(selectId, type = 'Avería', selectedValue = '') {
-      const select = document.getElementById(selectId);
-      if (!select) return;
-
-      const normalizedSelected = normalizeAssigneeStorageValue(type, selectedValue);
-      const options = ['<option value="Sin asignar">Sin asignar</option>'];
-
-      if (type === 'Trabajo') {
-        SUPPLIERS.forEach(item => {
-          const name = item?.name || '';
-          if (!name) return;
-          const selected = normalizedSelected === name ? 'selected' : '';
-          options.push(`<option value="${escapeHtml(name)}" ${selected}>${escapeHtml(name)}</option>`);
-        });
-      } else {
-        USERS
-          .filter(user => (user?.area || '').toLowerCase() !== 'administrador')
-          .forEach(user => {
-            const username = (user.username || slugifyUsername(user.name)).toLowerCase();
-            const selected = normalizedSelected === username ? 'selected' : '';
-            options.push(`<option value="${escapeHtml(username)}" ${selected}>${escapeHtml(user.name)}</option>`);
-          });
-      }
-
-      select.innerHTML = options.join('');
-      if (type !== 'Trabajo' && normalizedSelected && normalizedSelected !== 'Sin asignar') {
-        select.value = normalizedSelected;
-      }
+    function getAssigneeDisplayName(value, type = 'Avería') {
+      const raw = String(value || '').trim();
+      if (!raw || raw.toLowerCase() === 'sin asignar') return 'Sin asignar';
+      if (type === 'Trabajo') return raw;
+      const normalized = normalizeStoredAssignee(raw, type);
+      const user = findUserByUsername(normalized);
+      if (user?.name) return user.name;
+      return ASSIGNEE_DISPLAY_BY_USERNAME[slugifyUsername(normalized)] || raw;
     }
 
     function nowIso() { return new Date().toISOString(); }
@@ -4610,133 +4328,19 @@ renderTransferencias();
     const supplierSearch = document.getElementById('supplierSearch');
     const workSearch = document.getElementById('workSearch');
     const issueSearch = document.getElementById('issueSearch');
-    const workshopFilterSearch = document.getElementById('workshopFilterSearch');
-    const workshopFilterStatus = document.getElementById('workshopFilterStatus');
-    const workshopFilterAgency = document.getElementById('workshopFilterAgency');
-    const workshopFilterTech = document.getElementById('workshopFilterTech');
-    const workshopFilterFrom = document.getElementById('workshopFilterFrom');
-    const workshopFilterTo = document.getElementById('workshopFilterTo');
-    const workshopTableBody = document.getElementById('workshopTableBody');
-    const workshopRepairBackdrop = document.getElementById('workshopRepairBackdrop');
 
     function loadOperations() {
-  const saved = localStorage.getItem('operations_records');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        const normalized = parsed.map(normalizeOperationRecord);
-        localStorage.setItem('operations_records', JSON.stringify(normalized));
-        return normalized;
-      }
-    } catch (error) {
-      console.error('Error leyendo operations_records:', error);
-    }
-  }
-
-  const initial = deepClone(demoOperations).map(normalizeOperationRecord);
-  localStorage.setItem('operations_records', JSON.stringify(initial));
-  return initial;
-}
-
-async function saveSingleOperation(op) {
-  try {
-    const payload = {
-      id: op.id,
-      code: op.code,
-      tipo_reporte: op.type,
-      categoria: op.title,
-      descripcion: op.description,
-      agencia: op.agency,
-      grupo: op.grupo || '',
-      nombre_encargado: op.nombre_encargado || 'Sistema web',
-      creado_por: op.creado_por || 'web',
-      fecha_reporte: op.createdAt || new Date().toISOString(),
-      estado: op.status,
-      prioridad: op.priority,
-      asignado_a: normalizeAssigneeStorageValue(op.type, op.technician || 'Sin asignar'),
-      technician: normalizeAssigneeStorageValue(op.type, op.technician || 'Sin asignar'),
-      selected_types: op.selectedTypes || [],
-      images: op.images || [],
-      result_images: op.resultImages || [],
-      assigned_at: op.assignedAt || null,
-      started_at: op.startedAt || null,
-      completed_at: op.completedAt || null,
-      resolution_time: op.resolutionTime || '',
-      closed_at: op.closedAt || null,
-      history: op.history || [],
-      source: 'web'
-    };
-
-    console.log('📦 Enviando UNA operación a Supabase:', payload);
-
-    const { data, error } = await supabaseClient
-      .from('reportes_operaciones')
-      .upsert(payload)
-      .select();
-
-    if (error) {
-      console.error('❌ Error guardando en Supabase:', error);
-    } else {
-      console.log('✅ Guardado en Supabase:', data);
-    }
-  } catch (error) {
-    console.error('❌ Error general:', error);
-  }
-}
-
-async function deleteSingleOperation(id) {
-  try {
-    const { error } = await supabaseClient
-      .from('reportes_operaciones')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('❌ Error eliminando en Supabase:', error);
-    } else {
-      console.log('🗑️ Eliminado en Supabase:', id);
-    }
-  } catch (error) {
-    console.error('❌ Error general eliminando:', error);
-  }
-}
-
-async function saveOperations(operations) {
-  try {
-    localStorage.setItem('operations_records', JSON.stringify(operations));
-
-    const dirtyOperations = operations.filter(op => op && op.__dirty === true);
-
-    for (const op of dirtyOperations) {
-      await saveSingleOperation(op);
-      delete op.__dirty;
+      const saved = localStorage.getItem('operations_records');
+      if (saved) return JSON.parse(saved);
+      const initial = deepClone(demoOperations);
+      localStorage.setItem('operations_records', JSON.stringify(initial));
+      return initial;
     }
 
-    localStorage.setItem('operations_records', JSON.stringify(operations));
-
-    if (typeof renderWorkshop === 'function') {
-      renderWorkshop();
+    function saveOperations(operations) {
+      localStorage.setItem('operations_records', JSON.stringify(operations));
     }
 
-  } catch (error) {
-    console.error('❌ Error general:', error);
-  }
-}
-
-async function deleteOperation(id) {
-  const operations = loadOperations().filter(item => item.id !== id);
-
-  localStorage.setItem('operations_records', JSON.stringify(operations));
-  await deleteSingleOperation(id);
-
-  renderOperations();
-  renderHistory();
-  renderReports();
-  renderAgencyReports();
-  renderOwnerReports();
-  renderSpecificReports();
-}
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
     function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
     function clearSession() { localStorage.removeItem('operations_session'); }
@@ -4975,7 +4579,7 @@ async function deleteOperation(id) {
         const matchStatus = !statusValue || op.status === statusValue;
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
         const matchAgency = !agencyValue || op.agency.toLowerCase().includes(agencyValue.toLowerCase());
-        const matchOwner = !ownerValue || getAssigneeSearchText(op).includes(ownerValue.toLowerCase());
+        const matchOwner = !ownerValue || `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.includes(ownerValue.toLowerCase());
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
         const toOk = !toValue || createdDate <= new Date(toValue + 'T23:59:59');
@@ -5008,7 +4612,7 @@ async function deleteOperation(id) {
     }
 
     function buildOwnerGroups(operations) {
-      return Array.from(averageFromOperations(operations, op => getAssigneeDisplayName(op.type, op.technician || 'Sin asignar')).entries()).map(([owner, items]) => {
+      return Array.from(averageFromOperations(operations, op => op.technician || 'Sin asignar').entries()).map(([owner, items]) => {
         const completed = items.filter(op => op.status === 'Completado').length;
         const inProgress = items.filter(op => ['Pendiente','Asignada','En proceso'].includes(op.status)).length;
         const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
@@ -5091,7 +4695,7 @@ async function deleteOperation(id) {
           <td>${op.type}</td>
           <td>${op.title}</td>
           <td>${op.agency}</td>
-          <td>${assigneeDisplay}</td>
+          <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
           <td>${statusBadge(op.status)}</td>
           <td>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</td>
           <td>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</td>
@@ -5121,7 +4725,7 @@ async function deleteOperation(id) {
       const agencyGroups = buildAgencyGroups(operations);
       const ownerGroups = buildOwnerGroups(operations);
       document.getElementById('reportTopAgency').textContent = agencyGroups[0] ? agencyGroups[0].agency : '-';
-      document.getElementById('reportTopOwner').textContent = ownerGroups[0] ? ownerGroups[0].owner : '-';
+      document.getElementById('reportTopOwner').textContent = ownerGroups[0] ? getAssigneeDisplayName(ownerGroups[0].owner, 'Avería') : '-';
 
       renderOperationDetailRows('reportDetailBody', operations);
     }
@@ -5158,7 +4762,7 @@ async function deleteOperation(id) {
       const ownerGroups = buildOwnerGroups(operations);
       renderSimpleSummaryRows('reportOwnerBody', ownerGroups.map(row => `
         <tr>
-          <td>${row.owner}</td>
+          <td>${getAssigneeDisplayName(row.owner, 'Avería')}</td>
           <td>${row.total}</td>
           <td>${row.completed}</td>
           <td>${row.inProgress}</td>
@@ -5236,7 +4840,7 @@ async function deleteOperation(id) {
         const matchType = !filterType.value || op.type === filterType.value;
         const matchStatus = !filterStatus.value || op.status === filterStatus.value;
         const matchAgency = !filterAgency.value || op.agency.toLowerCase().includes(filterAgency.value.toLowerCase());
-        const matchTech = !filterTech.value || getAssigneeSearchText(op).includes(filterTech.value.toLowerCase());
+        const matchTech = !filterTech.value || `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.includes(filterTech.value.toLowerCase());
         const createdDate = new Date(op.createdAt);
         const fromOk = !filterDateFrom.value || createdDate >= new Date(filterDateFrom.value + 'T00:00:00');
         const toOk = !filterDateTo.value || createdDate <= new Date(filterDateTo.value + 'T23:59:59');
@@ -5254,244 +4858,19 @@ async function deleteOperation(id) {
       }
       operations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(op => {
         const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico';
-        const assigneeDisplay = getAssigneeDisplayName(op.type, op.technician);
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><strong>${op.code}</strong></td>
           <td><span class="chip ${op.type === 'Avería' ? 'averia' : 'trabajo'}">${op.type}</span></td>
           <td><strong>${op.title}</strong><div style="margin-top:6px; color: var(--muted); font-size:12px;">${op.description.slice(0, 60)}${op.description.length > 60 ? '...' : ''}</div><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></td>
           <td>${op.agency}</td>
-          <td><strong style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">${assignedLabel}</strong>${getAssigneeDisplayName(op.type, op.technician)}</td>
+          <td><strong style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">${assignedLabel}</strong>${getAssigneeDisplayName(op.technician, op.type)}</td>
           <td><span class="chip priority-${op.priority.toLowerCase()}">${op.priority}</span></td>
           <td>${statusBadge(op.status)}</td>
           <td>${formatDate(op.createdAt)}</td>
-          <td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="showDetail('${op.id}')">Ver</button>${op.type === 'Avería' ? `<button class="btn btn-secondary btn-sm" onclick="openWorkshopFromOperation('${op.id}')">Taller</button>` : ''}${op.status !== 'Completado' ? `<button class="btn btn-secondary btn-sm" onclick="openEditModal('${op.id}')">Editar</button><button class="btn btn-secondary btn-sm" onclick="deleteOperation('${op.id}')">Eliminar</button>` : ''}</div></td>
+          <td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="showDetail('${op.id}')">Ver</button>${op.status !== 'Completado' ? `<button class="btn btn-secondary btn-sm" onclick="openEditModal('${op.id}')">Editar</button><button class="btn btn-secondary btn-sm" onclick="deleteOperation('${op.id}')">Eliminar</button>` : ''}</div></td>
         `;
         operationsTableBody.appendChild(row);
-      });
-    }
-
-
-
-    function ensureWorkshopData(op) {
-      if (!op || typeof op !== 'object') return {};
-      if (!op.workshopData || typeof op.workshopData !== 'object') op.workshopData = {};
-      const defaults = {
-        equipmentName: '',
-        equipmentSerial: '',
-        technicalStatus: op.status === 'Completado' ? 'Entregado' : (op.status === 'En proceso' ? 'En reparación' : 'Pendiente de diagnóstico'),
-        pieceSource: '',
-        diagnostic: '',
-        partsUsed: '',
-        partsCost: 0,
-        laborCost: 0,
-        solution: '',
-        recommendation: '',
-        updatedAt: null
-      };
-      Object.keys(defaults).forEach(key => {
-        if (op.workshopData[key] === undefined || op.workshopData[key] === null) op.workshopData[key] = defaults[key];
-      });
-      return op.workshopData;
-    }
-
-    function workshopStatusBadge(status) {
-      const value = status || 'Pendiente de diagnóstico';
-      const doneStates = ['Reparado', 'Entregado'];
-      const warningStates = ['Esperando pieza'];
-      const progressStates = ['En diagnóstico', 'En reparación', 'En prueba'];
-      let bg = '#f3f6fa';
-      let color = '#5b7088';
-      if (doneStates.includes(value)) { bg = '#e8f3ee'; color = '#2f7d57'; }
-      else if (warningStates.includes(value)) { bg = '#fff1f2'; color = '#be123c'; }
-      else if (progressStates.includes(value)) { bg = '#eef4fb'; color = '#4c6f93'; }
-      return `<span class="badge" style="background:${bg};color:${color};">${value}</span>`;
-    }
-
-    function formatMoney(value) {
-      const amount = Number(value || 0);
-      return amount.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function openWorkshopRepairModal(id) {
-      const op = loadOperations().find(item => item.id === id && item.type === 'Avería');
-      if (!op) return;
-      const data = ensureWorkshopData(op);
-      document.getElementById('workshopRepairOperationId').value = op.id;
-      document.getElementById('workshopRepairCode').textContent = op.code || '-';
-      document.getElementById('workshopRepairAgency').textContent = op.agency || '-';
-      document.getElementById('workshopRepairTechnician').textContent = getAssigneeDisplayName(op.type, op.technician || 'Sin asignar');
-      document.getElementById('workshopRepairTitle').textContent = op.title || '-';
-      document.getElementById('workshopEquipmentName').value = data.equipmentName || '';
-      document.getElementById('workshopEquipmentSerial').value = data.equipmentSerial || '';
-      document.getElementById('workshopTechnicalStatus').value = data.technicalStatus || 'Pendiente de diagnóstico';
-      document.getElementById('workshopPieceSource').value = data.pieceSource || '';
-      document.getElementById('workshopDiagnostic').value = data.diagnostic || '';
-      document.getElementById('workshopPartsUsed').value = data.partsUsed || '';
-      document.getElementById('workshopPartsCost').value = Number(data.partsCost || 0);
-      document.getElementById('workshopLaborCost').value = Number(data.laborCost || 0);
-      document.getElementById('workshopSolution').value = data.solution || '';
-      document.getElementById('workshopRecommendation').value = data.recommendation || '';
-      document.getElementById('workshopMarkCompleted').checked = op.status === 'Completado';
-      workshopRepairBackdrop.classList.remove('hidden');
-    }
-
-    function closeWorkshopRepairModal() {
-      workshopRepairBackdrop?.classList.add('hidden');
-      ['workshopRepairOperationId','workshopEquipmentName','workshopEquipmentSerial','workshopPieceSource','workshopDiagnostic','workshopPartsUsed','workshopPartsCost','workshopLaborCost','workshopSolution','workshopRecommendation'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      const statusEl = document.getElementById('workshopTechnicalStatus');
-      if (statusEl) statusEl.value = 'Pendiente de diagnóstico';
-      const completedEl = document.getElementById('workshopMarkCompleted');
-      if (completedEl) completedEl.checked = false;
-    }
-
-    function saveWorkshopRepair() {
-      const id = document.getElementById('workshopRepairOperationId').value;
-      const operations = loadOperations();
-      const index = operations.findIndex(item => item.id === id);
-      if (index === -1) return;
-      const op = operations[index];
-      const actor = getCurrentUserEmail();
-      const data = ensureWorkshopData(op);
-      const previousTechnicalStatus = data.technicalStatus || 'Pendiente de diagnóstico';
-      const previousStatus = op.status;
-      const markCompleted = !!document.getElementById('workshopMarkCompleted').checked;
-
-      data.equipmentName = document.getElementById('workshopEquipmentName').value.trim();
-      data.equipmentSerial = document.getElementById('workshopEquipmentSerial').value.trim();
-      data.technicalStatus = document.getElementById('workshopTechnicalStatus').value;
-      data.pieceSource = document.getElementById('workshopPieceSource').value.trim();
-      data.diagnostic = document.getElementById('workshopDiagnostic').value.trim();
-      data.partsUsed = document.getElementById('workshopPartsUsed').value.trim();
-      data.partsCost = Number(document.getElementById('workshopPartsCost').value || 0);
-      data.laborCost = Number(document.getElementById('workshopLaborCost').value || 0);
-      data.solution = document.getElementById('workshopSolution').value.trim();
-      data.recommendation = document.getElementById('workshopRecommendation').value.trim();
-      data.updatedAt = nowIso();
-
-      if (!Array.isArray(op.history)) op.history = [];
-      const totalCost = Number(data.partsCost || 0) + Number(data.laborCost || 0);
-      op.history.push(createHistoryEntry({
-        action: 'Taller',
-        detail: `Ficha técnica actualizada (${data.technicalStatus})${data.equipmentSerial ? ` | Serial: ${data.equipmentSerial}` : ''}${data.pieceSource ? ` | Origen: ${data.pieceSource}` : ''}${data.partsUsed ? ` | Piezas: ${data.partsUsed}` : ''} | Costo total: RD$ ${formatMoney(totalCost)}`,
-        user: actor,
-        prevStatus: previousStatus,
-        newStatus: markCompleted ? 'Completado' : previousStatus
-      }));
-
-      if (previousTechnicalStatus !== data.technicalStatus) {
-        op.history.push(createHistoryEntry({
-          action: 'Estado',
-          detail: `Estado técnico cambiado de ${previousTechnicalStatus} a ${data.technicalStatus}`,
-          user: actor,
-          prevStatus: previousStatus,
-          newStatus: previousStatus
-        }));
-      }
-
-      if (previousStatus === 'Pendiente' && op.technician !== 'Sin asignar') {
-        op.status = 'Asignada';
-        if (!op.assignedAt) op.assignedAt = nowIso();
-      }
-      if (['En diagnóstico', 'Esperando pieza', 'En reparación', 'En prueba'].includes(data.technicalStatus) && op.status !== 'Completado') {
-        op.status = 'En proceso';
-        if (!op.assignedAt) op.assignedAt = nowIso();
-        if (!op.startedAt) op.startedAt = nowIso();
-      }
-      if (markCompleted || ['Reparado', 'Entregado'].includes(data.technicalStatus)) {
-        op.status = 'Completado';
-        if (!op.assignedAt) op.assignedAt = nowIso();
-        if (!op.startedAt) op.startedAt = op.assignedAt || nowIso();
-        op.completedAt = nowIso();
-        op.closedAt = op.completedAt;
-        op.resolutionTime = formatMinutesHuman(getResolutionMinutes(op) || 0);
-      }
-operations[index].__dirty = true;
-saveOperations(operations);
-closeEditModal();
-renderOperations();
-renderHistory();
-renderReports();
-renderAgencyReports();
-renderOwnerReports();
-renderSpecificReports();
-    }
-
-    function getWorkshopOperations() {
-      return loadOperations().filter(op => op.type === 'Avería');
-    }
-
-    function getFilteredWorkshopOperations() {
-      return getWorkshopOperations().filter(op => {
-        const text = (workshopFilterSearch?.value || '').toLowerCase().trim();
-        const matchText = !text || [op.code, op.title, op.agency, op.description, op.technician, getAssigneeDisplayName(op.type, op.technician)].some(value => (value || '').toLowerCase().includes(text));
-        const matchStatus = !workshopFilterStatus?.value || op.status === workshopFilterStatus.value;
-        const matchAgency = !workshopFilterAgency?.value || op.agency.toLowerCase().includes(workshopFilterAgency.value.toLowerCase());
-        const matchTech = !workshopFilterTech?.value || getAssigneeSearchText(op).includes(workshopFilterTech.value.toLowerCase());
-        const createdDate = new Date(op.createdAt);
-        const fromOk = !workshopFilterFrom?.value || createdDate >= new Date(workshopFilterFrom.value + 'T00:00:00');
-        const toOk = !workshopFilterTo?.value || createdDate <= new Date(workshopFilterTo.value + 'T23:59:59');
-        return matchText && matchStatus && matchAgency && matchTech && fromOk && toOk;
-      });
-    }
-
-    function renderWorkshopStats() {
-      const items = getWorkshopOperations();
-      const pending = items.filter(op => op.status === 'Pendiente').length;
-      const progress = items.filter(op => ['Asignada','En proceso'].includes(op.status)).length;
-      const done = items.filter(op => op.status === 'Completado').length;
-      document.getElementById('workshopStatTotal').textContent = items.length;
-      document.getElementById('workshopStatPending').textContent = pending;
-      document.getElementById('workshopStatInProgress').textContent = progress;
-      document.getElementById('workshopStatDone').textContent = done;
-    }
-
-    function openWorkshopFromOperation(id) {
-      abrirVistaOperaciones('workshop','ops-taller', document.getElementById('navWorkshop'));
-      const op = loadOperations().find(item => item.id === id);
-      if (!op) return;
-      if (workshopFilterSearch) {
-        workshopFilterSearch.value = op.code;
-        renderWorkshop();
-      }
-    }
-
-    function clearWorkshopFilters() {
-      if (workshopFilterSearch) workshopFilterSearch.value = '';
-      if (workshopFilterStatus) workshopFilterStatus.value = '';
-      if (workshopFilterAgency) workshopFilterAgency.value = '';
-      if (workshopFilterTech) workshopFilterTech.value = '';
-      if (workshopFilterFrom) workshopFilterFrom.value = '';
-      if (workshopFilterTo) workshopFilterTo.value = '';
-      renderWorkshop();
-    }
-
-    function renderWorkshop() {
-      if (!workshopTableBody) return;
-      const operations = getFilteredWorkshopOperations();
-      renderWorkshopStats();
-      workshopTableBody.innerHTML = '';
-      if (!operations.length) {
-        workshopTableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--muted); padding: 32px;">No hay averías que coincidan con los filtros.</td></tr>`;
-        return;
-      }
-      operations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(op => {
-        const row = document.createElement('tr');
-        const workshopData = ensureWorkshopData(op);
-        row.innerHTML = `
-          <td><strong>${op.code}</strong></td>
-          <td><strong>${op.title}</strong><div style="margin-top:6px; color: var(--muted); font-size:12px;">${op.description.slice(0, 60)}${op.description.length > 60 ? '...' : ''}</div><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div><div style="margin-top:8px; font-size:12px; color:var(--title-dark);"><strong>Equipo:</strong> ${workshopData.equipmentName || 'Pendiente de registrar'}${workshopData.equipmentSerial ? ` · <strong>Serial:</strong> ${workshopData.equipmentSerial}` : ''}</div>${workshopData.partsUsed ? `<div style="margin-top:6px; font-size:12px; color:var(--text-soft);"><strong>Piezas:</strong> ${workshopData.partsUsed}</div>` : ''}</td>
-          <td>${op.agency}</td>
-          <td>${getAssigneeDisplayName(op.type, op.technician)}</td>
-          <td><span class="chip priority-${op.priority.toLowerCase()}">${op.priority}</span></td>
-          <td>${workshopStatusBadge(workshopData.technicalStatus)}<div style="margin-top:6px;">${statusBadge(op.status)}</div></td>
-          <td>${formatDate(op.createdAt)}</td>
-          <td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="showDetail('${op.id}')">Ver</button><button class="btn btn-secondary btn-sm" onclick="openWorkshopRepairModal('${op.id}')">Reparación</button>${op.status !== 'Completado' ? `<button class="btn btn-secondary btn-sm" onclick="openEditModal('${op.id}')">Editar</button>` : ''}</div></td>
-        `;
-        workshopTableBody.appendChild(row);
       });
     }
 
@@ -5499,164 +4878,190 @@ renderSpecificReports();
       let items = [];
       let tbody = null;
       let columns = [];
-
       if (type === 'users') {
         items = USERS;
-        tbody = document.getElementById('usersTableBody');
-        columns = ['Nombre', 'Username', 'Área', 'Teléfono'];
+        tbody = document.getElementById('usersCatalogTableBody');
+        columns = ['name', 'area', 'phone'];
       } else if (type === 'suppliers') {
         items = SUPPLIERS;
-        tbody = document.getElementById('suppliersTableBody');
-        columns = ['Nombre', 'Servicio', 'Teléfono'];
+        tbody = document.getElementById('suppliersCatalogTableBody');
+        columns = ['name', 'service', 'phone'];
       } else if (type === 'work') {
         items = WORK_TYPES;
-        tbody = document.getElementById('worksTableBody');
-        columns = ['Nombre', 'Descripción'];
+        tbody = document.getElementById('worksCatalogTableBody');
+        columns = ['name', 'description'];
       } else {
         items = ISSUE_TYPES;
-        tbody = document.getElementById('issuesTableBody');
-        columns = ['Nombre', 'Descripción'];
+        tbody = document.getElementById('issuesCatalogTableBody');
+        columns = ['name', 'description'];
       }
 
-      if (!tbody) return;
-
-      const text = String(search || '').trim().toLowerCase();
-      const filtered = items
-        .map((item, index) => ({ item, index }))
-        .filter(({ item }) => Object.values(item || {}).some(value => String(value || '').toLowerCase().includes(text)));
-
+      const text = (search || '').toLowerCase().trim();
+      const filtered = items.filter(item => columns.some(col => (item[col] || '').toLowerCase().includes(text)));
       tbody.innerHTML = '';
-
       if (!filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="${columns.length + 1}" style="text-align:center; color: var(--muted); padding: 28px;">No hay registros para mostrar.</td></tr>`;
+        const colspan = type === 'users' || type === 'suppliers' ? 5 : 4;
+        tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; color: var(--muted); padding: 32px;">No hay registros.</td></tr>`;
         return;
       }
 
-      filtered.forEach(({ item, index }) => {
+      filtered.forEach(item => {
+        const realIndex = items.findIndex(x => JSON.stringify(x) === JSON.stringify(item));
         const row = document.createElement('tr');
-
         if (type === 'users') {
-          row.innerHTML = `
-            <td>${escapeHtml(item.name || '')}</td>
-            <td>${escapeHtml((item.username || '').toLowerCase())}</td>
-            <td>${escapeHtml(item.area || '')}</td>
-            <td>${escapeHtml(item.phone || '')}</td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('users', ${index})">Ver</button>
-                <button class="btn btn-secondary btn-sm" onclick="editCatalogItem('users', ${index})">Editar</button>
-                <button class="btn btn-secondary btn-sm" onclick="deleteCatalogItem('users', ${index})">Eliminar</button>
-              </div>
-            </td>
-          `;
+          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}<div style="margin-top:4px;font-size:12px;color:var(--text-soft);">@${item.username || ''}</div></td><td>${item.area || ''}</td><td>${item.phone || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('users', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('users', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('users', ${realIndex})">Eliminar</button></div></td>`;
         } else if (type === 'suppliers') {
-          row.innerHTML = `
-            <td>${escapeHtml(item.name || '')}</td>
-            <td>${escapeHtml(item.service || '')}</td>
-            <td>${escapeHtml(item.phone || '')}</td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('suppliers', ${index})">Ver</button>
-                <button class="btn btn-secondary btn-sm" onclick="editCatalogItem('suppliers', ${index})">Editar</button>
-                <button class="btn btn-secondary btn-sm" onclick="deleteCatalogItem('suppliers', ${index})">Eliminar</button>
-              </div>
-            </td>
-          `;
+          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.service || ''}</td><td>${item.phone || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('suppliers', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('suppliers', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('suppliers', ${realIndex})">Eliminar</button></div></td>`;
         } else {
-          const normalizedType = type === 'work' ? 'work' : 'issue';
-          row.innerHTML = `
-            <td>${escapeHtml(item.name || '')}</td>
-            <td>${escapeHtml(item.description || '')}</td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('${normalizedType}', ${index})">Ver</button>
-                <button class="btn btn-secondary btn-sm" onclick="editCatalogItem('${normalizedType}', ${index})">Editar</button>
-                <button class="btn btn-secondary btn-sm" onclick="deleteCatalogItem('${normalizedType}', ${index})">Eliminar</button>
-              </div>
-            </td>
-          `;
+          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.description || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('${type}', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('${type}', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('${type}', ${realIndex})">Eliminar</button></div></td>`;
         }
-
         tbody.appendChild(row);
       });
     }
 
+    function renderAssigneeOptions(selectId, type, selected = '') {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      if (type === 'Trabajo') {
+        select.innerHTML = '<option value="">Sin asignar</option>' + SUPPLIERS.map(item => `<option value="${item.name}" ${selected === item.name ? 'selected' : ''}>${item.name}</option>`).join('');
+        return;
+      }
+      const normalizedSelected = normalizeStoredAssignee(selected, type);
+      select.innerHTML = '<option value="">Sin asignar</option>' + USERS.map(item => {
+        const value = item.username || slugifyUsername(item.name);
+        const isSelected = normalizedSelected === value;
+        return `<option value="${value}" ${isSelected ? 'selected' : ''}>${item.name}</option>`;
+      }).join('');
+    }
+
+    function showView(viewName) {
+      ['operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues'].forEach(id => document.getElementById(id).classList.remove('active'));
+      if (viewName === 'operations') {
+        document.getElementById('operationsView').classList.remove('hidden');
+        document.getElementById('navOperations').classList.add('active');
+      } else if (viewName === 'history') {
+        document.getElementById('historyView').classList.remove('hidden');
+        document.getElementById('navHistory').classList.add('active');
+        renderHistory();
+      } else if (viewName === 'reports') {
+        document.getElementById('reportsView').classList.remove('hidden');
+        document.getElementById('navReports').classList.add('active');
+        renderReports();
+      } else if (viewName === 'reportsAgency') {
+        document.getElementById('reportsAgencyView').classList.remove('hidden');
+        document.getElementById('navReportsAgency').classList.add('active');
+        renderAgencyReports();
+      } else if (viewName === 'reportsOwner') {
+        document.getElementById('reportsOwnerView').classList.remove('hidden');
+        document.getElementById('navReportsOwner').classList.add('active');
+        renderOwnerReports();
+      } else if (viewName === 'reportsSpecific') {
+        document.getElementById('reportsSpecificView').classList.remove('hidden');
+        document.getElementById('navReportsSpecific').classList.add('active');
+        renderSpecificReports();
+      } else if (viewName === 'users') {
+        document.getElementById('usersView').classList.remove('hidden');
+        document.getElementById('navUsers').classList.add('active');
+        renderGenericTable('users', userSearch.value || '');
+      } else if (viewName === 'suppliers') {
+        document.getElementById('suppliersView').classList.remove('hidden');
+        document.getElementById('navSuppliers').classList.add('active');
+        renderGenericTable('suppliers', supplierSearch.value || '');
+      } else if (viewName === 'works') {
+        document.getElementById('worksView').classList.remove('hidden');
+        document.getElementById('navWorks').classList.add('active');
+        renderGenericTable('work', workSearch.value || '');
+      } else if (viewName === 'issues') {
+        document.getElementById('issuesView').classList.remove('hidden');
+        document.getElementById('navIssues').classList.add('active');
+        renderGenericTable('issue', issueSearch.value || '');
+      }
+    }
+
+    function refreshOpenTypeSelectors() {
+      renderTypeOptions('operationTypeOptions', document.getElementById('operationType')?.value || 'Avería', getSelectedValues('operationTypeOptions'));
+      renderTypeOptions('editOperationTypeOptions', document.getElementById('editOperationType')?.value || 'Avería', getSelectedValues('editOperationTypeOptions'));
+      renderAssigneeOptions('operationTechnician', document.getElementById('operationType')?.value || 'Avería', document.getElementById('operationTechnician')?.value || '');
+      renderAssigneeOptions('editOperationTechnician', document.getElementById('editOperationType')?.value || 'Avería', document.getElementById('editOperationTechnician')?.value || '');
+    }
+
     function createCatalogItem(type) {
       if (type === 'users') {
-        const name = prompt('Nombre del usuario:');
+        const name = prompt('Nombre visible del usuario:', 'Técnico 1');
         if (!name || !name.trim()) return;
-        const usernameInput = prompt('Username (ej. tecnico1):', slugifyUsername(name)) || '';
-        const username = slugifyUsername(usernameInput);
-        if (!username) return alert('Debes escribir un username válido.');
-        if (USERS.some(item => (item.username || '').toLowerCase() === username)) {
-          return alert('Ese username ya existe.');
+        const username = slugifyUsername(prompt('Username de acceso (ej: tecnico1):', slugifyUsername(name)) || slugifyUsername(name));
+        if (!username) return;
+        const area = prompt('Área o especialidad:', '') || '';
+        const phone = prompt('Teléfono:', '') || '';
+        if (USERS.some(x => slugifyUsername(x.username) === username)) {
+          alert('Ya existe un usuario con ese username.');
+          return;
         }
-        const area = (prompt('Área / rol:', 'Técnico') || 'Técnico').trim();
-        const phone = (prompt('Teléfono:', '') || '').trim();
-        USERS.push({ name: name.trim(), username, area, phone });
+        USERS.push({ name: name.trim(), username, area: area.trim(), phone: phone.trim() });
       } else if (type === 'suppliers') {
         const name = prompt('Nombre del suplidor:');
         if (!name || !name.trim()) return;
-        const service = (prompt('Servicio:', '') || '').trim();
-        const phone = (prompt('Teléfono:', '') || '').trim();
-        SUPPLIERS.push({ name: name.trim(), service, phone });
-      } else {
-        const label = type === 'work' ? 'trabajo' : 'avería';
-        const list = type === 'work' ? WORK_TYPES : ISSUE_TYPES;
-        const name = prompt(`Nombre del tipo de ${label}:`);
+        const service = prompt('Servicio que ofrece:') || '';
+        const phone = prompt('Teléfono:') || '';
+        if (SUPPLIERS.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        SUPPLIERS.push({ name: name.trim(), service: service.trim(), phone: phone.trim() });
+      } else if (type === 'work') {
+        const name = prompt('Nombre del trabajo:');
         if (!name || !name.trim()) return;
-        const description = (prompt('Descripción:', '') || '').trim();
-        list.push({ name: name.trim(), description });
+        const description = prompt('Descripción:') || '';
+        if (WORK_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        WORK_TYPES.push({ name: name.trim(), description: description.trim() });
+      } else {
+        const name = prompt('Nombre de la avería:');
+        if (!name || !name.trim()) return;
+        const description = prompt('Descripción:') || '';
+        if (ISSUE_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
+        ISSUE_TYPES.push({ name: name.trim(), description: description.trim() });
       }
-
       saveCatalogs();
-      syncOperationCatalogDependencies();
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
       renderCurrentCatalogView();
     }
 
     function editCatalogItem(type, index) {
-      let list = null;
+      let list = [];
       if (type === 'users') list = USERS;
       else if (type === 'suppliers') list = SUPPLIERS;
       else if (type === 'work') list = WORK_TYPES;
       else list = ISSUE_TYPES;
-
       const item = list[index];
       if (!item) return;
 
       if (type === 'users') {
-        const name = prompt('Editar nombre:', item.name || '');
+        const name = prompt('Editar nombre visible:', item.name);
         if (!name || !name.trim()) return;
-        const usernameInput = prompt('Editar username:', item.username || '') || '';
-        const username = slugifyUsername(usernameInput);
-        if (!username) return alert('Debes escribir un username válido.');
-        const exists = USERS.some((user, userIndex) => userIndex !== index && (user.username || '').toLowerCase() === username);
-        if (exists) return alert('Ese username ya está en uso.');
-        const area = (prompt('Editar área:', item.area || '') || '').trim();
-        const phone = (prompt('Editar teléfono:', item.phone || '') || '').trim();
-        list[index] = { ...item, name: name.trim(), username, area, phone };
+        const username = slugifyUsername(prompt('Editar username:', item.username || slugifyUsername(item.name)) || item.username || slugifyUsername(item.name));
+        if (!username) return;
+        if (USERS.some((x, idx) => idx !== index && slugifyUsername(x.username) === username)) {
+          alert('Ya existe otro usuario con ese username.');
+          return;
+        }
+        const area = prompt('Editar área:', item.area || '') || '';
+        const phone = prompt('Editar teléfono:', item.phone || '') || '';
+        list[index] = { name: name.trim(), username, area: area.trim(), phone: phone.trim() };
       } else if (type === 'suppliers') {
-        const name = prompt('Editar nombre:', item.name || '');
+        const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
-        const service = (prompt('Editar servicio:', item.service || '') || '').trim();
-        const phone = (prompt('Editar teléfono:', item.phone || '') || '').trim();
-        list[index] = { ...item, name: name.trim(), service, phone };
+        const service = prompt('Editar servicio:', item.service || '') || '';
+        const phone = prompt('Editar teléfono:', item.phone || '') || '';
+        list[index] = { name: name.trim(), service: service.trim(), phone: phone.trim() };
       } else {
-        const name = prompt('Editar nombre:', item.name || '');
+        const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
-        const description = (prompt('Editar descripción:', item.description || '') || '').trim();
-        list[index] = { ...item, name: name.trim(), description };
+        const description = prompt('Editar descripción:', item.description || '') || '';
+        list[index] = { name: name.trim(), description: description.trim() };
       }
 
       saveCatalogs();
-
-      const operations = loadOperations();
-      operations.forEach(op => {
-        op.technician = normalizeAssigneeStorageValue(op.type, op.technician || 'Sin asignar');
-      });
-      localStorage.setItem('operations_records', JSON.stringify(operations));
-
-      syncOperationCatalogDependencies();
+      refreshOpenTypeSelectors();
+      populateReportSpecificTypeOptions();
       renderCurrentCatalogView();
     }
 
@@ -5687,6 +5092,106 @@ renderSpecificReports();
       if (!document.getElementById('suppliersView').classList.contains('hidden')) renderGenericTable('suppliers', supplierSearch.value || '');
       if (!document.getElementById('worksView').classList.contains('hidden')) renderGenericTable('work', workSearch.value || '');
       if (!document.getElementById('issuesView').classList.contains('hidden')) renderGenericTable('issue', issueSearch.value || '');
+    }
+
+    function buildSupabasePayloadFromOperation(op) {
+      return {
+        id: op.id,
+        code: op.code,
+        tipo_reporte: op.type,
+        categoria: op.title,
+        descripcion: op.description,
+        agencia: op.agency,
+        grupo: op.grupo || '',
+        nombre_encargado: op.nombre_encargado || 'Sistema web',
+        creado_por: op.created_by || getCurrentUserEmail(),
+        fecha_reporte: op.createdAt || nowIso(),
+        estado: op.status,
+        prioridad: op.priority,
+        asignado_a: op.type === 'Trabajo' ? (op.technician || 'Sin asignar') : normalizeStoredAssignee(op.technician, op.type),
+        selected_types: Array.isArray(op.selectedTypes) ? op.selectedTypes : [],
+        images: Array.isArray(op.images) ? op.images : [],
+        result_images: Array.isArray(op.resultImages) ? op.resultImages : [],
+        assigned_at: op.assignedAt || null,
+        started_at: op.startedAt || null,
+        completed_at: op.completedAt || null,
+        resolution_time: op.resolutionTime || '',
+        closed_at: op.closedAt || null,
+        source: op.source || 'web_operacional',
+        history: Array.isArray(op.history) ? op.history : []
+      };
+    }
+
+    function mapSupabaseReportToOperation(item, fallbackIndex = 0, existing = null) {
+      const type = item.tipo_reporte || existing?.type || 'Avería';
+      const technician = type === 'Trabajo'
+        ? (item.asignado_a || existing?.technician || 'Sin asignar')
+        : normalizeStoredAssignee(item.asignado_a || existing?.technician || 'Sin asignar', type);
+      return {
+        id: item.id || existing?.id || crypto.randomUUID(),
+        code: item.code || existing?.code || `REP-${String(fallbackIndex + 1).padStart(4, '0')}`,
+        type,
+        title: item.categoria || existing?.title || 'Reporte',
+        agency: item.agencia || existing?.agency || '',
+        technician,
+        priority: item.prioridad || existing?.priority || 'Media',
+        status: item.estado === 'Cerrado' ? 'Completado' : (item.estado || existing?.status || 'Pendiente'),
+        description: item.descripcion || existing?.description || '',
+        selectedTypes: Array.isArray(item.selected_types) ? item.selected_types : (Array.isArray(existing?.selectedTypes) ? existing.selectedTypes : []),
+        createdAt: item.fecha_reporte || item.created_at || existing?.createdAt || nowIso(),
+        images: Array.isArray(item.images) ? item.images : (Array.isArray(existing?.images) ? existing.images : []),
+        resultImages: Array.isArray(item.result_images) ? item.result_images : (Array.isArray(existing?.resultImages) ? existing.resultImages : []),
+        assignedAt: item.assigned_at || existing?.assignedAt || null,
+        startedAt: item.started_at || existing?.startedAt || null,
+        completedAt: item.completed_at || existing?.completedAt || null,
+        resolutionTime: item.resolution_time || existing?.resolutionTime || '',
+        closedAt: item.closed_at || existing?.closedAt || null,
+        history: Array.isArray(item.history) ? item.history : (Array.isArray(existing?.history) ? existing.history : []),
+        source: item.source || 'supabase',
+        grupo: item.grupo || existing?.grupo || '',
+        nombre_encargado: item.nombre_encargado || existing?.nombre_encargado || '',
+        created_by: item.creado_por || existing?.created_by || ''
+      };
+    }
+
+    async function syncOperationToSupabase(op) {
+      try {
+        const payload = buildSupabasePayloadFromOperation(op);
+        const { error } = await supabaseClient.from(REPORTES_TABLE).upsert([payload], { onConflict: 'id' });
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error sincronizando operación con Supabase:', error);
+      }
+    }
+
+    async function deleteOperationFromSupabase(id) {
+      try {
+        const { error } = await supabaseClient.from(REPORTES_TABLE).delete().eq('id', id);
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error eliminando operación en Supabase:', error);
+      }
+    }
+
+    async function syncOperationsFromSupabase() {
+      try {
+        const { data, error } = await supabaseClient.from(REPORTES_TABLE).select('*').order('created_at', { ascending: true });
+        if (error) throw error;
+        const localOps = loadOperations();
+        const existingById = new Map(localOps.map(op => [op.id, op]));
+        const localOnly = localOps.filter(op => op.source !== 'supabase' && op.source !== 'app_movil');
+        const mergedRemote = (data || []).map((item, index) => mapSupabaseReportToOperation(item, index, existingById.get(item.id)));
+        const next = [...localOnly, ...mergedRemote];
+        saveOperations(next);
+        renderOperations();
+        renderHistory();
+        renderReports();
+        renderAgencyReports();
+        renderOwnerReports();
+        renderSpecificReports();
+      } catch (error) {
+        console.error('Error cargando operaciones desde Supabase:', error);
+      }
     }
 
     function openCreateModal() {
@@ -5730,7 +5235,7 @@ renderSpecificReports();
       const status = document.getElementById('operationStatus').value;
       const title = document.getElementById('operationTitle').value.trim();
       const agency = document.getElementById('operationAgency').value.trim();
-      const technician = normalizeAssigneeStorageValue(document.getElementById('operationType').value, document.getElementById('operationTechnician').value.trim() || 'Sin asignar');
+      const technician = (type === 'Trabajo' ? document.getElementById('operationTechnician').value.trim() : normalizeStoredAssignee(document.getElementById('operationTechnician').value.trim(), type)) || 'Sin asignar';
       const priority = document.getElementById('operationPriority').value;
       const description = document.getElementById('operationDescription').value.trim();
       const imageFiles = Array.from(document.getElementById('operationImage').files || []);
@@ -5788,7 +5293,7 @@ renderSpecificReports();
         closedAt: null,
         history: [
           createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: getCurrentUserEmail(), newStatus: 'Pendiente' }),
-          ...(technician && technician !== 'Sin asignar' ? [createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${technician}`, user: getCurrentUserEmail() })] : []),
+          ...(technician && technician !== 'Sin asignar' ? [createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${getAssigneeDisplayName(technician, type)}`, user: getCurrentUserEmail() })] : []),
           ...(status === 'Asignada' ? [createHistoryEntry({ action: 'Estado', detail: 'Estado inicial establecido en Asignada', user: getCurrentUserEmail(), prevStatus: 'Pendiente', newStatus: 'Asignada' })] : []),
           ...(status === 'En proceso' ? [createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: getCurrentUserEmail(), prevStatus: technician && technician !== 'Sin asignar' ? 'Asignada' : 'Pendiente', newStatus: 'En proceso' })] : []),
           ...(status === 'Completado' ? [createHistoryEntry({ action: 'Finalización', detail: 'Operación completada', user: getCurrentUserEmail(), prevStatus: technician && technician !== 'Sin asignar' ? 'Asignada' : 'Pendiente', newStatus: 'Completado' })] : [])
@@ -5805,10 +5310,9 @@ renderSpecificReports();
             loaded++;
             if (loaded === imageFiles.length) {
               newOperation.images = results.filter(Boolean);
-              newOperation.__dirty = true;
-newOperation.__dirty = true;
-operations.push(newOperation);
-saveOperations(operations);
+              operations.push(newOperation);
+              saveOperations(operations);
+              syncOperationToSupabase(newOperation);
               renderOperations();
               renderHistory();
               renderReports();
@@ -5820,6 +5324,7 @@ saveOperations(operations);
       } else {
         operations.push(newOperation);
         saveOperations(operations);
+        syncOperationToSupabase(newOperation);
         renderOperations();
         renderHistory();
         renderReports();
@@ -5833,7 +5338,8 @@ saveOperations(operations);
       const op = loadOperations().find(item => item.id === id);
       if (!op) return;
       const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico asignado';
-      const allowedActions = ['Creación', 'Asignación', 'Inicio', 'Estado', 'Finalización', 'Evidencia', 'Taller'];
+      const assignedDisplay = getAssigneeDisplayName(op.technician, op.type);
+      const allowedActions = ['Creación', 'Asignación', 'Inicio', 'Estado', 'Finalización', 'Evidencia'];
       const historyHtml = Array.isArray(op.history) && op.history.length
         ? op.history
             .filter(item => allowedActions.includes(item.action))
@@ -5848,11 +5354,10 @@ saveOperations(operations);
             `).join('')
         : '<div style="color:var(--muted);">Sin historial disponible.</div>';
       detailContent.innerHTML = `
-        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${getAssigneeDisplayName(op.type, op.technician)}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
+        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${assignedDisplay}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
         <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
         ${op.images && op.images.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Imágenes reportadas</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.images.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
         ${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Evidencias de resultado</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.resultImages.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
-        ${op.type === 'Avería' ? (() => { const workshop = ensureWorkshopData(op); const total = Number(workshop.partsCost || 0) + Number(workshop.laborCost || 0); return `<div class="detail-box"><div class="detail-item"><span>Ficha técnica de taller</span><div class="detail-grid" style="margin-top:12px;"><div><strong>Equipo:</strong> ${workshop.equipmentName || 'No registrado'}</div><div><strong>Serial:</strong> ${workshop.equipmentSerial || 'No registrado'}</div><div><strong>Estado técnico:</strong> ${workshop.technicalStatus || 'Pendiente de diagnóstico'}</div><div><strong>Piezas desde:</strong> ${workshop.pieceSource || 'No registrado'}</div><div><strong>Costo piezas:</strong> RD$ ${formatMoney(workshop.partsCost || 0)}</div><div><strong>Mano de obra:</strong> RD$ ${formatMoney(workshop.laborCost || 0)}</div><div><strong>Total:</strong> RD$ ${formatMoney(total)}</div><div><strong>Última actualización:</strong> ${workshop.updatedAt ? formatDate(workshop.updatedAt) : 'Sin actualizar'}</div></div>${workshop.diagnostic ? `<p style="margin-top:10px;"><strong>Diagnóstico:</strong> ${workshop.diagnostic}</p>` : ''}${workshop.partsUsed ? `<p style="margin-top:10px;"><strong>Piezas cambiadas:</strong> ${workshop.partsUsed}</p>` : ''}${workshop.solution ? `<p style="margin-top:10px;"><strong>Trabajo realizado:</strong> ${workshop.solution}</p>` : ''}${workshop.recommendation ? `<p style="margin-top:10px;"><strong>Recomendación:</strong> ${workshop.recommendation}</p>` : ''}</div></div>`; })() : ''}
         <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
         <div class="detail-box"><div class="detail-item"><span>Historial de la operación</span><div style="margin-top:8px;">${historyHtml}</div></div></div>
       `;
@@ -5917,37 +5422,6 @@ saveOperations(operations);
   .empty-cell{text-align:center;color:#64748b;padding:22px}
   .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;color:#64748b;font-size:11px}
   @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}.sheet{padding:0}}
-
-
-/* ===== Centro de notificaciones ===== */
-.notification-fab{position:fixed;top:18px;right:18px;z-index:9999}
-.notification-bell{position:relative;width:52px;height:52px;border:none;border-radius:16px;background:#fff;color:var(--title-dark);box-shadow:0 10px 24px rgba(16,24,40,.14);border:1px solid var(--line);cursor:pointer;font-size:18px}
-.notification-bell:hover{transform:translateY(-1px)}
-.notification-badge{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
-.notification-panel{position:fixed;top:80px;right:18px;width:390px;max-width:calc(100vw - 28px);max-height:78vh;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 40px rgba(16,24,40,.16);z-index:9998;display:none;overflow:hidden}
-.notification-panel.open{display:flex;flex-direction:column}
-.notification-head{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 14px;border-bottom:1px solid var(--line);background:#fbfcfd}
-.notification-head h3{font-size:16px;color:var(--title-dark);margin:0}
-.notification-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.notification-text-btn{border:none;background:#eef3f8;color:#4f6980;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer}
-.notification-text-btn.active{background:#d9413a;color:#fff}
-.notification-list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:10px;background:#f6f8fb}
-.notification-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 12px 11px;box-shadow:0 2px 10px rgba(37,56,88,.04)}
-.notification-item.unread{border-left:4px solid var(--primary)}
-.notification-item-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;align-items:flex-start}
-.notification-item-title{font-size:13px;font-weight:800;color:var(--title-dark)}
-.notification-item-time{font-size:11px;color:#8da0b2;white-space:nowrap}
-.notification-item-text{font-size:13px;color:#526678;line-height:1.45}
-.notification-item-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.notification-chip{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#eef3f8;color:#51697d}
-.notification-empty{padding:24px 18px;text-align:center;color:#8798a8;font-weight:700;background:#f6f8fb}
-.notification-toast-wrap{position:fixed;top:82px;right:18px;z-index:10000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.notification-toast{min-width:280px;max-width:360px;background:#ffffff;border:1px solid var(--line);box-shadow:0 16px 36px rgba(16,24,40,.16);border-left:4px solid var(--primary);border-radius:14px;padding:12px 14px;animation:fadeSlideIn .22s ease}
-.notification-toast strong{display:block;font-size:13px;color:var(--title-dark);margin-bottom:4px}
-.notification-toast span{display:block;font-size:13px;color:#5d7183;line-height:1.4}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-@media (max-width:700px){.notification-fab{top:14px;right:14px}.notification-panel{top:72px;right:10px;width:calc(100vw - 20px)}.notification-toast-wrap{right:10px;left:10px}.notification-toast{min-width:unset;max-width:unset}}
-
 </style></head><body>
 <div class="sheet">
   <div class="header">
@@ -5998,14 +5472,14 @@ saveOperations(operations);
         ['% Cumplimiento', `${compliance}%`],
         ['Promedio asignación', formatMinutesHuman(avgAssigned)],
         ['Agencia más cargada', agencyGroups[0] ? agencyGroups[0].agency : '-'],
-        ['Responsable más cargado', ownerGroups[0] ? ownerGroups[0].owner : '-']
+        ['Responsable más cargado', ownerGroups[0] ? getAssigneeDisplayName(ownerGroups[0].owner, 'Avería') : '-']
       ].map(([label, value]) => `<div class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('');
       const rows = operations.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(op => [
         escapeHtml(op.code),
         escapeHtml(op.type),
         escapeHtml(op.title),
         escapeHtml(op.agency),
-        escapeHtml(getAssigneeDisplayName(op.type, op.technician)),
+        escapeHtml(op.technician),
         escapeHtml(op.status),
         escapeHtml((op.selectedTypes || []).join(', ') || 'Sin tipo específico'),
         escapeHtml(formatMinutesHuman(getAssignmentMinutes(op) || 0)),
@@ -6086,7 +5560,7 @@ saveOperations(operations);
         ['Activas', operations.filter(op => ['Pendiente','Asignada','En proceso'].includes(op.status)).length]
       ].map(([label, value]) => `<div class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('');
       const rows = rowsData.map(row => [
-        escapeHtml(row.owner),
+        escapeHtml(getAssigneeDisplayName(row.owner, 'Avería')),
         escapeHtml(String(row.total)),
         escapeHtml(String(row.completed)),
         escapeHtml(String(row.inProgress)),
@@ -6149,6 +5623,7 @@ saveOperations(operations);
       const op = loadOperations().find(item => item.id === id);
       if (!op) return;
       const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico asignado';
+      const assignedDisplay = getAssigneeDisplayName(op.technician, op.type);
       const historyItems = Array.isArray(op.history) ? op.history : [];
       const historyHtml = historyItems
         .filter(item => ['Creación','Asignación','Inicio','Estado','Finalización','Evidencia'].includes(item.action))
@@ -6190,37 +5665,6 @@ saveOperations(operations);
   .print-image-card img{max-width:100%;max-height:260px;width:auto;height:auto;object-fit:contain;display:block}
   table{width:100%;border-collapse:collapse} th,td{border:1px solid #e5e7eb;padding:8px;text-align:left;vertical-align:top} th{background:#f8fafc;font-size:11px}
   @media print { body{print-color-adjust:exact;-webkit-print-color-adjust:exact} .sheet{padding:0 10px} }
-
-
-/* ===== Centro de notificaciones ===== */
-.notification-fab{position:fixed;top:18px;right:18px;z-index:9999}
-.notification-bell{position:relative;width:52px;height:52px;border:none;border-radius:16px;background:#fff;color:var(--title-dark);box-shadow:0 10px 24px rgba(16,24,40,.14);border:1px solid var(--line);cursor:pointer;font-size:18px}
-.notification-bell:hover{transform:translateY(-1px)}
-.notification-badge{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
-.notification-panel{position:fixed;top:80px;right:18px;width:390px;max-width:calc(100vw - 28px);max-height:78vh;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 40px rgba(16,24,40,.16);z-index:9998;display:none;overflow:hidden}
-.notification-panel.open{display:flex;flex-direction:column}
-.notification-head{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 14px;border-bottom:1px solid var(--line);background:#fbfcfd}
-.notification-head h3{font-size:16px;color:var(--title-dark);margin:0}
-.notification-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.notification-text-btn{border:none;background:#eef3f8;color:#4f6980;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer}
-.notification-text-btn.active{background:#d9413a;color:#fff}
-.notification-list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:10px;background:#f6f8fb}
-.notification-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 12px 11px;box-shadow:0 2px 10px rgba(37,56,88,.04)}
-.notification-item.unread{border-left:4px solid var(--primary)}
-.notification-item-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;align-items:flex-start}
-.notification-item-title{font-size:13px;font-weight:800;color:var(--title-dark)}
-.notification-item-time{font-size:11px;color:#8da0b2;white-space:nowrap}
-.notification-item-text{font-size:13px;color:#526678;line-height:1.45}
-.notification-item-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.notification-chip{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#eef3f8;color:#51697d}
-.notification-empty{padding:24px 18px;text-align:center;color:#8798a8;font-weight:700;background:#f6f8fb}
-.notification-toast-wrap{position:fixed;top:82px;right:18px;z-index:10000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.notification-toast{min-width:280px;max-width:360px;background:#ffffff;border:1px solid var(--line);box-shadow:0 16px 36px rgba(16,24,40,.16);border-left:4px solid var(--primary);border-radius:14px;padding:12px 14px;animation:fadeSlideIn .22s ease}
-.notification-toast strong{display:block;font-size:13px;color:var(--title-dark);margin-bottom:4px}
-.notification-toast span{display:block;font-size:13px;color:#5d7183;line-height:1.4}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-@media (max-width:700px){.notification-fab{top:14px;right:14px}.notification-panel{top:72px;right:10px;width:calc(100vw - 20px)}.notification-toast-wrap{right:10px;left:10px}.notification-toast{min-width:unset;max-width:unset}}
-
 </style></head><body>
 <div class="sheet">
   <div class="header"><div><h1>Reporte de Operación</h1><p>Sistema de Operaciones</p></div><div class="code-box"><span>Código</span><strong>${escapeHtml(op.code)}</strong></div></div>
@@ -6229,7 +5673,7 @@ saveOperations(operations);
     <div class="meta-item"><span>Fecha</span><div>${escapeHtml(formatDate(op.createdAt))}</div></div>
     <div class="meta-item"><span>Título</span><div>${escapeHtml(op.title)}</div></div>
     <div class="meta-item"><span>Agencia</span><div>${escapeHtml(op.agency)}</div></div>
-    <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(getAssigneeDisplayName(op.type, op.technician))}</div></div>
+    <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(op.technician)}</div></div>
     <div class="meta-item"><span>Prioridad</span><div>${escapeHtml(op.priority)}</div></div>
     <div class="meta-item"><span>Tiempo de asignación</span><div>${escapeHtml(formatMinutesHuman(getAssignmentMinutes(op) || 0))}</div></div>
     <div class="meta-item"><span>Tiempo de resolución</span><div>${escapeHtml(formatMinutesHuman(getResolutionMinutes(op) || 0))}</div></div>
@@ -6282,11 +5726,8 @@ function openEditModal(id) {
     function saveEditedOperation() {
       const id = document.getElementById('editOperationId').value;
       const operations = loadOperations();
-      const index = operations.findIndex(item => String(item.id) === String(id));
-      if (index === -1) {
-        alert('No se encontró la operación a editar.');
-        return;
-      }
+      const index = operations.findIndex(item => item.id === id);
+      if (index === -1) return;
       if (operations[index].status === 'Completado') {
         alert('Esta operación ya está completada y no se puede editar.');
         closeEditModal();
@@ -6295,12 +5736,12 @@ function openEditModal(id) {
 
       const actor = getCurrentUserEmail();
       const previousStatus = operations[index].status;
-      const previousAssignee = normalizeAssigneeStorageValue(operations[index].type, operations[index].technician || 'Sin asignar');
+      const previousAssignee = operations[index].technician || 'Sin asignar';
       const newType = document.getElementById('editOperationType').value;
       const newStatus = document.getElementById('editOperationStatus').value;
       const newTitle = document.getElementById('editOperationTitle').value.trim();
       const newAgency = document.getElementById('editOperationAgency').value.trim();
-      const newTechnician = normalizeAssigneeStorageValue(newType, document.getElementById('editOperationTechnician').value.trim() || 'Sin asignar');
+      const newTechnician = (newType === 'Trabajo' ? document.getElementById('editOperationTechnician').value.trim() : normalizeStoredAssignee(document.getElementById('editOperationTechnician').value.trim(), newType)) || 'Sin asignar';
       const newPriority = document.getElementById('editOperationPriority').value;
       const newDescription = document.getElementById('editOperationDescription').value.trim();
       const newSelectedTypes = getSelectedValues('editOperationTypeOptions');
@@ -6350,7 +5791,6 @@ function openEditModal(id) {
       operations[index].priority = newPriority;
       operations[index].description = newDescription;
       operations[index].selectedTypes = newSelectedTypes;
-      operations[index].__dirty = true;
 
       if (!Array.isArray(operations[index].history)) operations[index].history = [];
 
@@ -6364,7 +5804,7 @@ function openEditModal(id) {
       if (assignedNow) {
         operations[index].history.push(createHistoryEntry({
           action: 'Asignación',
-          detail: `Asignada a ${getAssigneeDisplayName(newType, newTechnician)}`,
+          detail: `Asignada a ${getAssigneeDisplayName(newTechnician, newType)}`,
           user: actor,
           prevStatus: previousStatus,
           newStatus: newStatus
@@ -6372,7 +5812,7 @@ function openEditModal(id) {
       } else if (previousAssignee !== newTechnician && newTechnician !== 'Sin asignar') {
         operations[index].history.push(createHistoryEntry({
           action: 'Asignación',
-          detail: `Responsable cambiado a ${newTechnician}`,
+          detail: `Responsable cambiado a ${getAssigneeDisplayName(newTechnician, newType)}`,
           user: actor,
           prevStatus: previousStatus,
           newStatus: newStatus
@@ -6448,8 +5888,8 @@ function openEditModal(id) {
                 prevStatus: operations[index].status,
                 newStatus: operations[index].status
               }));
-              operations[index].__dirty = true;
               saveOperations(operations);
+              syncOperationToSupabase(operations[index]);
               closeEditModal();
               renderOperations();
               renderHistory();
@@ -6462,8 +5902,8 @@ function openEditModal(id) {
           reader.readAsDataURL(file);
         });
       } else {
-        operations[index].__dirty = true;
         saveOperations(operations);
+        syncOperationToSupabase(operations[index]);
         closeEditModal();
         renderOperations();
         renderHistory();
@@ -6474,19 +5914,17 @@ function openEditModal(id) {
       }
     }
 
-   async function deleteOperation(id) {
-  const operations = loadOperations().filter(item => item.id !== id);
-
-  localStorage.setItem('operations_records', JSON.stringify(operations));
-  await deleteSingleOperation(id);
-
-  renderOperations();
-  renderHistory();
-  renderReports();
-  renderAgencyReports();
-  renderOwnerReports();
-  renderSpecificReports();
-}
+    function deleteOperation(id) {
+      const operations = loadOperations().filter(item => item.id !== id);
+      saveOperations(operations);
+      deleteOperationFromSupabase(id);
+      renderOperations();
+      renderHistory();
+      renderReports();
+      renderAgencyReports();
+      renderOwnerReports();
+      renderSpecificReports();
+    }
 
     function removeReportedImage(id, imageIndex) {
       const operations = loadOperations();
@@ -6580,7 +6018,6 @@ function openEditModal(id) {
     document.getElementById('navSuppliers').addEventListener('click', () => showView('suppliers'));
     document.getElementById('navWorks').addEventListener('click', () => showView('works'));
     document.getElementById('navIssues').addEventListener('click', () => showView('issues'));
-    document.getElementById('navWorkshop').addEventListener('click', () => showView('workshop'));
     document.getElementById('openCreateModalBtn').addEventListener('click', openCreateModal);
     document.getElementById('addUserBtn').addEventListener('click', () => createCatalogItem('users'));
     document.getElementById('addSupplierBtn').addEventListener('click', () => createCatalogItem('suppliers'));
@@ -6639,7 +6076,6 @@ function openEditModal(id) {
       renderGenericTable('suppliers', '');
       renderGenericTable('work', '');
       renderGenericTable('issue', '');
-      renderWorkshop();
     });
 
     [filterType, filterStatus, filterAgency, filterTech, filterDateFrom, filterDateTo].forEach(el => {
@@ -6671,12 +6107,6 @@ function openEditModal(id) {
       el.addEventListener('input', renderHistory);
       el.addEventListener('change', renderHistory);
     });
-
-    [workshopFilterSearch, workshopFilterStatus, workshopFilterAgency, workshopFilterTech, workshopFilterFrom, workshopFilterTo].forEach(el => {
-      el?.addEventListener('input', renderWorkshop);
-      el?.addEventListener('change', renderWorkshop);
-    });
-    document.getElementById('workshopClearBtn')?.addEventListener('click', clearWorkshopFilters);
 
     document.getElementById('reportClearBtn').addEventListener('click', () => {
       reportFilterType.value = '';
@@ -6775,7 +6205,7 @@ function openEditModal(id) {
       exportRowsToCsv(
         'reportes_por_responsable.csv',
         ['Responsable', 'Total', 'Completadas', 'Activas', 'Asignación promedio', 'Resolución promedio'],
-        rows.map(row => [row.owner, row.total, row.completed, row.inProgress, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResolution)])
+        rows.map(row => [getAssigneeDisplayName(row.owner, 'Avería'), row.total, row.completed, row.inProgress, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResolution)])
       );
     });
 
@@ -6847,6 +6277,7 @@ function openEditModal(id) {
     window.deleteCatalogItem = deleteCatalogItem;
 
     window.addEventListener('load', () => {
+      syncOperationsFromSupabase();
       const operations = loadOperations();
       let changed = false;
       operations.forEach(op => {
@@ -6856,7 +6287,7 @@ function openEditModal(id) {
         }
         if (!Array.isArray(op.history)) {
           op.history = [createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'admin@empresa.com', newStatus: 'Pendiente' })];
-          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${getAssigneeDisplayName(op.type, op.technician)}`, user: 'admin@empresa.com' }));
+          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${getAssigneeDisplayName(op.technician, op.type)}`, user: 'admin@empresa.com' }));
           if (op.status === 'En proceso') op.history.push(createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: 'admin@empresa.com', prevStatus: 'Asignada', newStatus: 'En proceso' }));
           if (op.status === 'Completado') op.history.push(createHistoryEntry({ action: 'Finalización', detail: op.resolutionTime ? `Operación completada en ${op.resolutionTime}` : 'Operación completada', user: 'admin@empresa.com', prevStatus: op.assignedAt ? 'Asignada' : 'Pendiente', newStatus: 'Completado' }));
           changed = true;
@@ -6916,276 +6347,6 @@ function openEditModal(id) {
   </script>
 
 <script>
-const SYSTEM_NOTIFICATION_KEY = 'sistema_local_notificaciones';
-const SYSTEM_NOTIFICATION_SOUND_KEY = 'sistema_local_notificaciones_sonido';
-let notificationPanelOpen = false;
-
-function safeReadNotifications(){
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SYSTEM_NOTIFICATION_KEY) || '[]');
-    return Array.isArray(parsed) ? parsed : [];
-  } catch(error){
-    return [];
-  }
-}
-
-function saveNotifications(items){
-  localStorage.setItem(SYSTEM_NOTIFICATION_KEY, JSON.stringify(items.slice(0, 120)));
-}
-
-function isNotificationSoundEnabled(){
-  const raw = localStorage.getItem(SYSTEM_NOTIFICATION_SOUND_KEY);
-  return raw === null ? true : raw === 'true';
-}
-
-function setNotificationSoundEnabled(value){
-  localStorage.setItem(SYSTEM_NOTIFICATION_SOUND_KEY, value ? 'true' : 'false');
-}
-
-function formatNotificationStamp(isoString){
-  const date = isoString ? new Date(isoString) : new Date();
-  return date.toLocaleString('es-DO', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
-}
-
-function escapeNotifHtml(value){
-  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-}
-
-function getUnreadNotificationCount(){
-  return safeReadNotifications().filter(item => !item.read).length;
-}
-
-function playNotificationSound(){
-  if(!isNotificationSoundEnabled()) return;
-  try{
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if(!AudioCtx) return;
-    if(!window.__systemAudioCtx){
-      window.__systemAudioCtx = new AudioCtx();
-    }
-    const ctx = window.__systemAudioCtx;
-    if(ctx.state === 'suspended') ctx.resume();
-    const now = ctx.currentTime;
-    [0, 0.13].forEach((offset, index) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = index === 0 ? 880 : 1174;
-      gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.06, now + offset + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + offset);
-      osc.stop(now + offset + 0.2);
-    });
-  }catch(error){
-    console.warn('No se pudo reproducir el sonido de notificación', error);
-  }
-}
-
-function showNotificationToast(item){
-  const wrap = document.getElementById('notificationToastWrap');
-  if(!wrap) return;
-  const toast = document.createElement('div');
-  toast.className = 'notification-toast';
-  toast.innerHTML = `<strong>${escapeNotifHtml(item.title)}</strong><span>${escapeNotifHtml(item.message)}</span>`;
-  wrap.prepend(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-6px)'; }, 2600);
-  setTimeout(() => toast.remove(), 3000);
-}
-
-function renderNotificationCenter(){
-  const list = document.getElementById('notificationList');
-  const badge = document.getElementById('notificationBadge');
-  const soundToggle = document.getElementById('notificationSoundToggle');
-  if(!list || !badge || !soundToggle) return;
-  const items = safeReadNotifications();
-  const unread = items.filter(item => !item.read).length;
-  badge.textContent = unread > 99 ? '99+' : String(unread);
-  badge.style.display = unread ? 'flex' : 'none';
-  soundToggle.classList.toggle('active', isNotificationSoundEnabled());
-  soundToggle.innerHTML = `<i class="fas ${isNotificationSoundEnabled() ? 'fa-volume-high' : 'fa-volume-xmark'}"></i>`;
-  if(!items.length){
-    list.innerHTML = '<div class="notification-empty">Todavía no hay notificaciones.</div>';
-    return;
-  }
-  list.innerHTML = items.map(item => `
-    <div class="notification-item ${item.read ? '' : 'unread'}">
-      <div class="notification-item-top">
-        <div class="notification-item-title">${escapeNotifHtml(item.title)}</div>
-        <div class="notification-item-time">${escapeNotifHtml(formatNotificationStamp(item.createdAt))}</div>
-      </div>
-      <div class="notification-item-text">${escapeNotifHtml(item.message)}</div>
-      <div class="notification-item-meta">
-        <span class="notification-chip">${escapeNotifHtml(item.module || 'General')}</span>
-        ${item.reference ? `<span class="notification-chip">${escapeNotifHtml(item.reference)}</span>` : ''}
-        ${item.user ? `<span class="notification-chip">${escapeNotifHtml(item.user)}</span>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-function markAllNotificationsAsRead(){
-  const items = safeReadNotifications().map(item => ({ ...item, read:true }));
-  saveNotifications(items);
-  renderNotificationCenter();
-}
-
-function toggleNotificationPanel(){
-  const panel = document.getElementById('notificationPanel');
-  if(!panel) return;
-  notificationPanelOpen = !notificationPanelOpen;
-  panel.classList.toggle('open', notificationPanelOpen);
-  if(notificationPanelOpen){
-    markAllNotificationsAsRead();
-  }
-}
-
-function closeNotificationPanel(){
-  const panel = document.getElementById('notificationPanel');
-  if(panel) panel.classList.remove('open');
-  notificationPanelOpen = false;
-}
-
-function systemNotify(payload){
-  if(!window.__notificationSystemReady) return;
-  const notification = {
-    id: payload.id || (window.crypto?.randomUUID ? crypto.randomUUID() : `notif-${Date.now()}-${Math.random().toString(16).slice(2)}`),
-    title: payload.title || 'Nueva notificación',
-    message: payload.message || '',
-    module: payload.module || 'General',
-    reference: payload.reference || '',
-    user: payload.user || usuarioMovimientoFijo || '',
-    createdAt: payload.createdAt || new Date().toISOString(),
-    read: false
-  };
-  const current = safeReadNotifications();
-  current.unshift(notification);
-  saveNotifications(current);
-  renderNotificationCenter();
-  showNotificationToast(notification);
-  playNotificationSound();
-}
-
-function syncOperationNotifications(previousOperations, newOperations){
-  if(!window.__notificationSystemReady) return;
-  const previous = Array.isArray(previousOperations) ? previousOperations : [];
-  const current = Array.isArray(newOperations) ? newOperations : [];
-  if(!previous.length && current.length && !window.__operationsNotificationBooted){
-    window.__operationsNotificationBooted = true;
-    return;
-  }
-  const previousMap = new Map(previous.map(op => [op.id, op]));
-  const currentMap = new Map(current.map(op => [op.id, op]));
-
-  current.forEach(op => {
-    const old = previousMap.get(op.id);
-    if(!old){
-      systemNotify({
-        title:'Nueva operación registrada',
-        message:`${op.code} · ${op.title} en ${op.agency}`,
-        module:'Operaciones',
-        reference:op.code,
-        user:getCurrentUserEmail ? getCurrentUserEmail() : 'Sistema'
-      });
-      return;
-    }
-    if(old.status !== op.status){
-      systemNotify({
-        title:'Cambio de estado en operación',
-        message:`${op.code} pasó de ${old.status} a ${op.status}`,
-        module:'Operaciones',
-        reference:op.code,
-        user:getCurrentUserEmail ? getCurrentUserEmail() : 'Sistema'
-      });
-    } else if((old.technician || '') !== (op.technician || '')){
-      systemNotify({
-        title:'Responsable actualizado',
-        message:`${op.code} ahora está asignada a ${getAssigneeDisplayName(op.type, op.technician || 'Sin asignar')}`,
-        module:'Operaciones',
-        reference:op.code,
-        user:getCurrentUserEmail ? getCurrentUserEmail() : 'Sistema'
-      });
-    }
-  });
-
-  previous.forEach(op => {
-    if(!currentMap.has(op.id)){
-      systemNotify({
-        title:'Operación eliminada',
-        message:`Se eliminó ${op.code} · ${op.title}`,
-        module:'Operaciones',
-        reference:op.code,
-        user:getCurrentUserEmail ? getCurrentUserEmail() : 'Sistema'
-      });
-    }
-  });
-}
-
-function buildNotificationCenter(){
-  if(document.getElementById('notificationFab')) return;
-  const fab = document.createElement('div');
-  fab.id = 'notificationFab';
-  fab.className = 'notification-fab';
-  fab.innerHTML = `
-    <button class="notification-bell" type="button" onclick="toggleNotificationPanel()">
-      <i class="fas fa-bell"></i>
-      <span class="notification-badge" id="notificationBadge" style="display:none">0</span>
-    </button>
-  `;
-  document.body.appendChild(fab);
-
-  const panel = document.createElement('div');
-  panel.id = 'notificationPanel';
-  panel.className = 'notification-panel';
-  panel.innerHTML = `
-    <div class="notification-head">
-      <h3>Notificaciones del sistema</h3>
-      <div class="notification-head-actions">
-        <button class="notification-text-btn" id="notificationSoundToggle" type="button" title="Activar o quitar sonido"></button>
-        <button class="notification-text-btn" type="button" onclick="markAllNotificationsAsRead()">Marcar leídas</button>
-        <button class="notification-text-btn" type="button" onclick="closeNotificationPanel()">Cerrar</button>
-      </div>
-    </div>
-    <div class="notification-list" id="notificationList"></div>
-  `;
-  document.body.appendChild(panel);
-
-  const toastWrap = document.createElement('div');
-  toastWrap.id = 'notificationToastWrap';
-  toastWrap.className = 'notification-toast-wrap';
-  document.body.appendChild(toastWrap);
-
-  document.addEventListener('click', function(event){
-    const fabNode = document.getElementById('notificationFab');
-    const panelNode = document.getElementById('notificationPanel');
-    if(!notificationPanelOpen || !fabNode || !panelNode) return;
-    const clickedInside = fabNode.contains(event.target) || panelNode.contains(event.target);
-    if(!clickedInside){
-      closeNotificationPanel();
-    }
-  });
-
-  document.getElementById('notificationSoundToggle').addEventListener('click', function(){
-    setNotificationSoundEnabled(!isNotificationSoundEnabled());
-    renderNotificationCenter();
-  });
-
-  renderNotificationCenter();
-  setTimeout(() => { window.__notificationSystemReady = true; window.__operationsNotificationBooted = true; }, 1200);
-}
-
-window.addEventListener('storage', function(event){
-  if(event.key === SYSTEM_NOTIFICATION_KEY || event.key === SYSTEM_NOTIFICATION_SOUND_KEY){
-    renderNotificationCenter();
-  }
-});
-
-document.addEventListener('DOMContentLoaded', buildNotificationCenter);
-</script>
-
-<script>
 function cambiarVista(vista, el){
   const ids = [
     'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
@@ -7205,114 +6366,6 @@ function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
   if(typeof showView === 'function') showView(nombreVista);
 }
 </script>
-  
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-const supabaseUrl = "https://cvmkfzagrtwygmwsqomb.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0";
-const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-function crearHistorialBaseDesdeSupabase(item) {
-  const fechaBase = item.created_at || new Date().toISOString();
-  const historial = [
-    {
-      id: crypto.randomUUID(),
-      action: 'Creación',
-      detail: 'Reporte importado desde Supabase',
-      user: item.nombre_encargado || 'app@movil.com',
-      prevStatus: null,
-      newStatus: item.estado || 'Pendiente',
-      timestamp: fechaBase
-    }
-  ];
-
-  if (item.asignado_a && item.asignado_a !== 'Sin asignar') {
-    historial.push({
-      id: crypto.randomUUID(),
-      action: 'Asignación',
-      detail: `Asignada a ${item.asignado_a}`,
-      user: 'admin@empresa.com',
-      prevStatus: 'Pendiente',
-      newStatus: 'Asignada',
-      timestamp: fechaBase
-    });
-  }
-
-  return historial;
-}
-
-async function sincronizarReportesSupabaseAOperaciones() {
-  const { data, error } = await supabaseClient
-    .from('reportes_operaciones')
-    .select('*')
-    .order('fecha_reporte', { ascending: true });
-
-  if (error) {
-    console.error('Error Supabase:', error);
-    return;
-  }
-
-  const operacionesActuales = loadOperations();
-  const existentesPorId = new Map(operacionesActuales.map(op => [String(op.id), op]));
-  let huboCambios = false;
-
-  (data || []).forEach((item, index) => {
-    const assigneeValue = normalizeAssigneeStorageValue(item.tipo_reporte || 'Avería', item.asignado_a || item.technician || 'Sin asignar');
-    const baseOperacion = normalizeOperationRecord({
-      id: item.id,
-      code: item.code || `REP-${String(index + 1).padStart(4, '0')}`,
-      type: item.tipo_reporte || 'Avería',
-      title: item.categoria || 'Reporte',
-      agency: item.agencia || item.grupo || '',
-      technician: assigneeValue,
-      priority: item.prioridad || 'Media',
-      status: item.estado || 'Pendiente',
-      description: item.descripcion || '',
-      selectedTypes: Array.isArray(item.selected_types) ? item.selected_types : (item.categoria ? [item.categoria] : []),
-      createdAt: item.fecha_reporte || item.created_at || new Date().toISOString(),
-      images: Array.isArray(item.images) ? item.images : (item.imagen_url ? [item.imagen_url] : []),
-      resultImages: Array.isArray(item.result_images) ? item.result_images : [],
-      assignedAt: item.assigned_at || (assigneeValue !== 'Sin asignar' ? (item.fecha_reporte || item.created_at || new Date().toISOString()) : null),
-      startedAt: item.started_at || null,
-      completedAt: item.completed_at || null,
-      resolutionTime: item.resolution_time || '',
-      closedAt: item.closed_at || null,
-      history: Array.isArray(item.history) && item.history.length ? item.history : crearHistorialBaseDesdeSupabase(item),
-      source: item.source || 'supabase',
-      grupo: item.grupo || '',
-      nombre_encargado: item.nombre_encargado || '',
-      creado_por: item.creado_por || ''
-    });
-
-    const existente = existentesPorId.get(String(item.id));
-    if (existente) {
-      Object.assign(existente, baseOperacion);
-    } else {
-      operacionesActuales.push(baseOperacion);
-    }
-    huboCambios = true;
-  });
-
-  if (huboCambios) {
-    localStorage.setItem('operations_records', JSON.stringify(operacionesActuales));
-  }
-
-  renderOperations();
-  renderWorkshop();
-  renderHistory();
-  renderReports();
-  renderAgencyReports();
-  renderOwnerReports();
-  renderSpecificReports();
-}
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    sincronizarReportesSupabaseAOperaciones();
-  }, 600);
-});
-</script>
-  
 </body>
 </html>
