@@ -988,7 +988,7 @@ textarea{resize:vertical;min-height:90px}
 </div></div></div>
 <div id="vista-ops-usuarios" class="hidden"><div class="ops-scope"><div class="view hidden" id="usersView">
 <div class="catalog-topbar"><div><h2>Administración de Usuarios</h2><p>Gestión de técnicos disponibles para averías.</p></div><button class="btn btn-primary" id="addUserBtn">+ Crear Usuario</button></div>
-<div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="userSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
+<div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="userSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Username</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
 </div></div></div>
 <div id="vista-ops-suplidores" class="hidden"><div class="ops-scope"><div class="view hidden" id="suppliersView">
 <div class="catalog-topbar"><div><h2>Administración de Suplidores</h2><p>Gestión de suplidores de servicios para trabajos.</p></div><button class="btn btn-primary" id="addSupplierBtn">+ Crear Suplidor</button></div>
@@ -4322,13 +4322,25 @@ renderTransferencias();
 
     function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
-  function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
+    function normalizeNamedCatalog(arr, fallback, descriptionKey = 'description') {
   if (!Array.isArray(arr)) return deepClone(fallback);
+
+  const slugifyUsername = (value = '') => String(value)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 
   const normalized = arr.map(item => {
     if (typeof item === 'string') {
       const name = item.trim();
-      return name ? { name, [descriptionKey]: '' } : null;
+      if (!name) return null;
+      return {
+        name,
+        [descriptionKey]: '',
+        ...(descriptionKey === 'area' ? { username: slugifyUsername(name) } : {})
+      };
     }
 
     if (item && typeof item === 'object') {
@@ -4343,12 +4355,16 @@ renderTransferencias();
         normalizedItem[descriptionKey] = '';
       }
 
-      if (typeof item.username === 'string') {
-        normalizedItem.username = item.username.trim().toLowerCase();
+      if (descriptionKey === 'area') {
+        normalizedItem.username = typeof item.username === 'string' && item.username.trim()
+          ? item.username.trim().toLowerCase()
+          : slugifyUsername(name);
       }
 
       if (typeof item.phone === 'string') {
         normalizedItem.phone = item.phone.trim();
+      } else if (descriptionKey === 'area' && !('phone' in normalizedItem)) {
+        normalizedItem.phone = '';
       }
 
       return normalizedItem;
@@ -4361,7 +4377,7 @@ renderTransferencias();
   const seen = new Set();
 
   for (const item of normalized) {
-    const key = (item.username || item.name).toLowerCase();
+    const key = (descriptionKey === 'area' ? (item.username || item.name) : item.name).toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
     deduped.push(item);
@@ -5377,176 +5393,23 @@ renderSpecificReports();
       let tbody = null;
       let columns = [];
       if (type === 'users') {
-        items = USERS;
-        tbody = document.getElementById('usersCatalogTableBody');
-        columns = ['name', 'area', 'phone'];
+        const name = prompt('Editar nombre:', item.name);
+        if (!name || !name.trim()) return;
+
+        const username = prompt('Editar username:', item.username || '');
+        if (!username || !username.trim()) return;
+
+        const area = prompt('Editar área:', item.area || '') || '';
+        const phone = prompt('Editar teléfono:', item.phone || '') || '';
+
+        list[index] = {
+          ...item,
+          name: name.trim(),
+          username: username.trim().toLowerCase(),
+          area: area.trim(),
+          phone: phone.trim()
+        };
       } else if (type === 'suppliers') {
-        items = SUPPLIERS;
-        tbody = document.getElementById('suppliersCatalogTableBody');
-        columns = ['name', 'service', 'phone'];
-      } else if (type === 'work') {
-        items = WORK_TYPES;
-        tbody = document.getElementById('worksCatalogTableBody');
-        columns = ['name', 'description'];
-      } else {
-        items = ISSUE_TYPES;
-        tbody = document.getElementById('issuesCatalogTableBody');
-        columns = ['name', 'description'];
-      }
-
-      const text = (search || '').toLowerCase().trim();
-      const filtered = items.filter(item => columns.some(col => (item[col] || '').toLowerCase().includes(text)));
-      tbody.innerHTML = '';
-      if (!filtered.length) {
-        const colspan = type === 'users' || type === 'suppliers' ? 5 : 4;
-        tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; color: var(--muted); padding: 32px;">No hay registros.</td></tr>`;
-        return;
-      }
-
-      filtered.forEach(item => {
-        const realIndex = items.findIndex(x => JSON.stringify(x) === JSON.stringify(item));
-        const row = document.createElement('tr');
-        if (type === 'users') {
-          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.area || ''}</td><td>${item.phone || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('users', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('users', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('users', ${realIndex})">Eliminar</button></div></td>`;
-        } else if (type === 'suppliers') {
-          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.service || ''}</td><td>${item.phone || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('suppliers', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('suppliers', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('suppliers', ${realIndex})">Eliminar</button></div></td>`;
-        } else {
-          row.innerHTML = `<td>${realIndex + 1}</td><td>${item.name}</td><td>${item.description || ''}</td><td><div class="actions"><button class="btn btn-secondary btn-sm" onclick="viewCatalogItem('${type}', ${realIndex})">Ver</button><button class="btn btn-secondary btn-sm" onclick="editCatalogItem('${type}', ${realIndex})">Editar</button><button class="btn btn-danger btn-sm" onclick="deleteCatalogItem('${type}', ${realIndex})">Eliminar</button></div></td>`;
-        }
-        tbody.appendChild(row);
-      });
-    }
-
-   function renderAssigneeOptions(selectId, type, selected = '') {
-  const select = document.getElementById(selectId);
-  if (!select) return;
-
-  const items = type === 'Trabajo' ? SUPPLIERS : USERS;
-
-  select.innerHTML =
-    '<option value="">Sin asignar</option>' +
-    items.map(item => {
-      const optionValue = type === 'Trabajo'
-        ? item.name
-        : (item.username || item.name);
-
-      const optionLabel = item.name;
-      const isSelected = String(selected || '').toLowerCase() === String(optionValue || '').toLowerCase();
-
-      return `<option value="${optionValue}" ${isSelected ? 'selected' : ''}>${optionLabel}</option>`;
-    }).join('');
-}
-}
-    function showView(viewName) {
-      ['operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView','workshopView'].forEach(id => document.getElementById(id).classList.add('hidden'));
-      ['navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues','navWorkshop'].forEach(id => document.getElementById(id).classList.remove('active'));
-      if (viewName === 'operations') {
-        document.getElementById('operationsView').classList.remove('hidden');
-        document.getElementById('navOperations').classList.add('active');
-      } else if (viewName === 'history') {
-        document.getElementById('historyView').classList.remove('hidden');
-        document.getElementById('navHistory').classList.add('active');
-        renderHistory();
-      } else if (viewName === 'reports') {
-        document.getElementById('reportsView').classList.remove('hidden');
-        document.getElementById('navReports').classList.add('active');
-        renderReports();
-      } else if (viewName === 'reportsAgency') {
-        document.getElementById('reportsAgencyView').classList.remove('hidden');
-        document.getElementById('navReportsAgency').classList.add('active');
-        renderAgencyReports();
-      } else if (viewName === 'reportsOwner') {
-        document.getElementById('reportsOwnerView').classList.remove('hidden');
-        document.getElementById('navReportsOwner').classList.add('active');
-        renderOwnerReports();
-      } else if (viewName === 'reportsSpecific') {
-        document.getElementById('reportsSpecificView').classList.remove('hidden');
-        document.getElementById('navReportsSpecific').classList.add('active');
-        renderSpecificReports();
-      } else if (viewName === 'users') {
-        document.getElementById('usersView').classList.remove('hidden');
-        document.getElementById('navUsers').classList.add('active');
-        renderGenericTable('users', userSearch.value || '');
-      } else if (viewName === 'suppliers') {
-        document.getElementById('suppliersView').classList.remove('hidden');
-        document.getElementById('navSuppliers').classList.add('active');
-        renderGenericTable('suppliers', supplierSearch.value || '');
-      } else if (viewName === 'works') {
-        document.getElementById('worksView').classList.remove('hidden');
-        document.getElementById('navWorks').classList.add('active');
-        renderGenericTable('work', workSearch.value || '');
-      } else if (viewName === 'issues') {
-        document.getElementById('issuesView').classList.remove('hidden');
-        document.getElementById('navIssues').classList.add('active');
-        renderGenericTable('issue', issueSearch.value || '');
-      } else if (viewName === 'workshop') {
-        document.getElementById('workshopView').classList.remove('hidden');
-        document.getElementById('navWorkshop').classList.add('active');
-        renderWorkshop();
-      }
-    }
-
-    function refreshOpenTypeSelectors() {
-      renderTypeOptions('operationTypeOptions', document.getElementById('operationType')?.value || 'Avería', getSelectedValues('operationTypeOptions'));
-      renderTypeOptions('editOperationTypeOptions', document.getElementById('editOperationType')?.value || 'Avería', getSelectedValues('editOperationTypeOptions'));
-      renderAssigneeOptions('operationTechnician', document.getElementById('operationType')?.value || 'Avería', document.getElementById('operationTechnician')?.value || '');
-      renderAssigneeOptions('editOperationTechnician', document.getElementById('editOperationType')?.value || 'Avería', document.getElementById('editOperationTechnician')?.value || '');
-    }
-
-    function createCatalogItem(type) {
-     if (type === 'users') {
-  const name = prompt('Nombre del técnico/usuario:');
-  if (!name || !name.trim()) return;
-
-  const username = prompt('Username de acceso (ej: tecnico1):');
-  if (!username || !username.trim()) return;
-
-  const area = prompt('Área o especialidad:') || '';
-  const phone = prompt('Teléfono:') || '';
-
-  if (USERS.some(x => (x.username || '').toLowerCase() === username.trim().toLowerCase())) return;
-
-  USERS.push({
-    name: name.trim(),
-    username: username.trim().toLowerCase(),
-    area: area.trim(),
-    phone: phone.trim()
-  });
-}
-      saveCatalogs();
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
-      renderCurrentCatalogView();
-    }
-
-    function editCatalogItem(type, index) {
-      let list = [];
-      if (type === 'users') list = USERS;
-      else if (type === 'suppliers') list = SUPPLIERS;
-      else if (type === 'work') list = WORK_TYPES;
-      else list = ISSUE_TYPES;
-      const item = list[index];
-      if (!item) return;
-
-   if (type === 'users') {
-  const name = prompt('Editar nombre:', item.name);
-  if (!name || !name.trim()) return;
-
-  const username = prompt('Editar username:', item.username || '');
-  if (!username || !username.trim()) return;
-
-  const area = prompt('Editar área:', item.area || '') || '';
-  const phone = prompt('Editar teléfono:', item.phone || '') || '';
-
-  list[index] = {
-    ...item,
-    name: name.trim(),
-    username: username.trim().toLowerCase(),
-    area: area.trim(),
-    phone: phone.trim()
-  };
-}
-}else if (type === 'suppliers') {
         const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
         const service = prompt('Editar servicio:', item.service || '') || '';
