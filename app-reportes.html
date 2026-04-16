@@ -1230,17 +1230,6 @@
         reportList.innerHTML = "";
 let reportsFiltrados = data;
 
-if (usuarioActual) {
-  if (usuarioActual.rol === "tecnico") {
-    reportsFiltrados = (data || []).filter(report =>
-      (report.asignado_a || "").toLowerCase().trim() === usuarioActual.user.toLowerCase().trim()
-    );
-  } else if (usuarioActual.rol === "encargado") {
-    reportsFiltrados = (data || []).filter(report =>
-      (report.creado_por || "").toLowerCase().trim() === usuarioActual.user.toLowerCase().trim()
-    );
-  } else if (usuarioActual.rol === "administrador") {
-    reportsFiltrados = data;
   }
 }
 
