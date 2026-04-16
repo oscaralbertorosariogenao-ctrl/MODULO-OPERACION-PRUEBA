@@ -311,6 +311,57 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .status-badge{border-radius:999px;padding:6px 10px;}
 .modal-content,.ops-modal{border-radius:22px;border:1px solid #d9e7f1;box-shadow:0 20px 50px rgba(24,74,111,.16);}
 
+
+
+/* ===== Dashboard empresarial ===== */
+.dashboard-shell{display:grid;gap:18px}
+.dashboard-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:24px;border-radius:24px;background:linear-gradient(135deg,#1f5f9f 0%,#2b7fc3 52%,#69aee9 100%);color:#fff;box-shadow:0 18px 45px rgba(35,94,148,.24)}
+.dashboard-hero h2{margin:0 0 8px;font-size:30px;color:#fff}
+.dashboard-hero p{margin:0;max-width:760px;color:rgba(255,255,255,.9);line-height:1.5}
+.dashboard-hero-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.dashboard-hero-badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);padding:9px 12px;border-radius:999px;font-size:12px;font-weight:800;backdrop-filter:blur(6px)}
+.dashboard-hero-side{display:grid;gap:10px;min-width:240px}
+.dashboard-hero-kpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px 16px}
+.dashboard-hero-kpi span{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,.8);margin-bottom:6px;font-weight:800}
+.dashboard-hero-kpi strong{font-size:28px;line-height:1;color:#fff}
+.dashboard-grid-4,.dashboard-grid-3,.dashboard-grid-2{display:grid;gap:16px}
+.dashboard-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.dashboard-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dashboard-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dashboard-kpi-card,.dashboard-panel{background:#fff;border:1px solid #dbe6f0;border-radius:22px;box-shadow:0 10px 28px rgba(15,23,42,.06)}
+.dashboard-kpi-card{padding:18px;position:relative;overflow:hidden}
+.dashboard-kpi-card::after{content:'';position:absolute;right:-26px;top:-26px;width:84px;height:84px;background:rgba(43,127,195,.08);border-radius:50%}
+.dashboard-kpi-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#6e8295;font-weight:800;margin-bottom:10px}
+.dashboard-kpi-card .value{font-size:34px;line-height:1;color:#204f7b;font-weight:900;margin-bottom:8px}
+.dashboard-kpi-card .sub{font-size:13px;color:#6d8091}
+.dashboard-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #e7eef5;flex-wrap:wrap}
+.dashboard-panel-head h3{margin:0;font-size:18px;color:#294a68}
+.dashboard-panel-head p{margin:0;font-size:13px;color:#76889a}
+.dashboard-panel-body{padding:18px 20px}
+.dashboard-bars{display:grid;gap:14px}
+.dashboard-bar-row{display:grid;grid-template-columns:180px 1fr 72px;gap:14px;align-items:center}
+.dashboard-bar-label{font-size:14px;font-weight:700;color:#41586d}
+.dashboard-bar-track{height:12px;background:#edf4fa;border-radius:999px;overflow:hidden;position:relative}
+.dashboard-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2b7fc3,#69aee9)}
+.dashboard-bar-fill.success{background:linear-gradient(90deg,#2f7d57,#5bc28a)}
+.dashboard-bar-fill.warning{background:linear-gradient(90deg,#b7791f,#f6ad55)}
+.dashboard-bar-fill.danger{background:linear-gradient(90deg,#c53030,#fc8181)}
+.dashboard-bar-value{font-size:13px;color:#607487;font-weight:800;text-align:right}
+.dashboard-mini-list{display:grid;gap:12px}
+.dashboard-mini-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;border:1px solid #e7eef5;border-radius:18px;background:#f9fbfd}
+.dashboard-mini-item strong{display:block;font-size:14px;color:#294a68}
+.dashboard-mini-item span{display:block;font-size:12px;color:#7a8d9f;margin-top:3px}
+.dashboard-rank{font-size:24px;font-weight:900;color:#1f5f9f;min-width:48px;text-align:right}
+.dashboard-table{width:100%;border-collapse:collapse}
+.dashboard-table th,.dashboard-table td{padding:12px 10px;border-bottom:1px solid #edf2f7;text-align:left}
+.dashboard-table th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#6f8295;background:#f8fbfe}
+.dashboard-table td{font-size:14px;color:#41586d}
+.dashboard-empty{padding:24px;text-align:center;border:1px dashed #d8e3ed;border-radius:18px;color:#8092a3;background:#fbfdff;font-weight:700}
+.dashboard-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#eef5fb;color:#346996;font-size:12px;font-weight:800}
+.dashboard-spotlight{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+@media (max-width:1180px){.dashboard-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-3,.dashboard-grid-2,.dashboard-spotlight{grid-template-columns:1fr}}
+@media (max-width:720px){.dashboard-grid-4{grid-template-columns:1fr}.dashboard-bar-row{grid-template-columns:1fr}.dashboard-bar-value{text-align:left}.dashboard-hero h2{font-size:24px}}
+
 </style>
 </head>
 <body>
@@ -347,6 +398,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 
   <div class="menu-section-title">Módulo de operaciones</div>
   <div class="menu">
+    <a id="navDashboard" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i> Resumen Operativo</a>
     <a id="navOperations" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i> Gestión de Operaciones</a>
     <a id="navHistory" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i> Historial</a>
     <a id="navReports" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i> Reportes de Operaciones</a>
@@ -777,6 +829,107 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       </table>
     </div>
   </div>
+<div id="vista-ops-dashboard" class="hidden"><div class="ops-scope"><div class="view" id="dashboardView">
+<div class="dashboard-shell">
+  <div class="dashboard-hero">
+    <div>
+      <h2>Resumen operativo de operaciones</h2>
+      <p>Vista central de productividad, tiempos de respuesta, carga operativa y seguimiento por agencia, técnicos y suplidores. Diseñado para control gerencial diario.</p>
+      <div class="dashboard-hero-badges">
+        <div class="dashboard-hero-badge"><i class="fas fa-bolt"></i> Operaciones en tiempo real</div>
+        <div class="dashboard-hero-badge"><i class="fas fa-trophy"></i> Ranking de desempeño</div>
+        <div class="dashboard-hero-badge"><i class="fas fa-clock"></i> Tiempos automáticos</div>
+      </div>
+    </div>
+    <div class="dashboard-hero-side">
+      <div class="dashboard-hero-kpi"><span>Agencia con mayor carga</span><strong id="dashTopAgencyHero">-</strong></div>
+      <div class="dashboard-hero-kpi"><span>Técnico con mayor carga</span><strong id="dashTopTechHero">-</strong></div>
+      <div class="dashboard-hero-kpi"><span>Suplidor con mayor carga</span><strong id="dashTopSupplierHero">-</strong></div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-4">
+    <div class="dashboard-kpi-card"><div class="label">Total de operaciones</div><div class="value" id="dashOpsTotal">0</div><div class="sub">Casos registrados en el sistema</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Pendientes</div><div class="value" id="dashOpsPending">0</div><div class="sub">Esperando atención o asignación</div></div>
+    <div class="dashboard-kpi-card"><div class="label">En proceso</div><div class="value" id="dashOpsInProcess">0</div><div class="sub">Trabajos activos actualmente</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Completadas</div><div class="value" id="dashOpsCompleted">0</div><div class="sub">Cerradas correctamente</div></div>
+  </div>
+
+  <div class="dashboard-grid-4">
+    <div class="dashboard-kpi-card"><div class="label">Promedio de asignación</div><div class="value" id="dashAvgAssign">0 min</div><div class="sub">Desde creación hasta asignación</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Promedio de resolución</div><div class="value" id="dashAvgResolution">0 min</div><div class="sub">Desde asignación hasta cierre</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Técnico más cargado</div><div class="value" id="dashTopTech">-</div><div class="sub">Mayor cantidad de averías asignadas</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Suplidor más cargado</div><div class="value" id="dashTopSupplier">-</div><div class="sub">Mayor cantidad de trabajos asignados</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Operaciones urgentes abiertas</div><div class="value" id="dashUrgentOpen">0</div><div class="sub">Prioridad urgente no completada</div></div>
+  </div>
+
+  <div class="dashboard-spotlight">
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Distribución de estados</h3><p>Radiografía instantánea del flujo operativo</p></div><span class="dashboard-chip"><i class="fas fa-chart-simple"></i> Resumen</span></div>
+      <div class="dashboard-panel-body"><div class="dashboard-bars" id="dashboardStatusBars"></div></div>
+    </div>
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Mix por tipo</h3><p>Averías frente a trabajos</p></div><span class="dashboard-chip"><i class="fas fa-layer-group"></i> Tipología</span></div>
+      <div class="dashboard-panel-body"><div class="dashboard-bars" id="dashboardTypeBars"></div></div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-4">
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Top agencias</h3><p>Mayor volumen de reportes</p></div></div>
+      <div class="dashboard-panel-body"><div class="dashboard-mini-list" id="dashboardTopAgencies"></div></div>
+    </div>
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Top técnicos</h3><p>Más carga operativa en averías</p></div></div>
+      <div class="dashboard-panel-body"><div class="dashboard-mini-list" id="dashboardTopTechs"></div></div>
+    </div>
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Top suplidores</h3><p>Más carga operativa en trabajos</p></div></div>
+      <div class="dashboard-panel-body"><div class="dashboard-mini-list" id="dashboardTopSuppliers"></div></div>
+    </div>
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Alertas operativas</h3><p>Casos que requieren seguimiento</p></div></div>
+      <div class="dashboard-panel-body"><div class="dashboard-mini-list" id="dashboardAlerts"></div></div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-3">
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Productividad de técnicos</h3><p>Total, activas y completadas en averías</p></div></div>
+      <div class="dashboard-panel-body">
+        <div class="table-wrap">
+          <table class="dashboard-table">
+            <thead><tr><th>Técnico</th><th>Total</th><th>Activas</th><th>Completadas</th><th>Prom. resolución</th></tr></thead>
+            <tbody id="dashboardTechTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Productividad de suplidores</h3><p>Total, activas y completadas en trabajos</p></div></div>
+      <div class="dashboard-panel-body">
+        <div class="table-wrap">
+          <table class="dashboard-table">
+            <thead><tr><th>Suplidor</th><th>Total</th><th>Activas</th><th>Completadas</th><th>Prom. resolución</th></tr></thead>
+            <tbody id="dashboardSupplierTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-panel">
+      <div class="dashboard-panel-head"><div><h3>Operaciones críticas recientes</h3><p>Urgentes y altas aún activas</p></div></div>
+      <div class="dashboard-panel-body">
+        <div class="table-wrap">
+          <table class="dashboard-table">
+            <thead><tr><th>Código</th><th>Título</th><th>Agencia</th><th>Estado</th><th>Responsable</th></tr></thead>
+            <tbody id="dashboardCriticalTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div></div></div>
 <div id="vista-ops-operaciones" class="hidden"><div class="ops-scope"><div class="view" id="operationsView">
 <div class="topbar"><div><h2>Módulo de Operaciones</h2><p>Registro, seguimiento y control de averías y trabajos por agencia.</p></div><button class="btn btn-primary" id="openCreateModalBtn">+ Nueva operación</button></div>
 <div class="stats"><div class="stat-card"><span>Total de operaciones</span><strong id="statTotal">0</strong></div><div class="stat-card"><span>En proceso</span><strong id="statProceso">0</strong></div><div class="stat-card"><span>Completadas</span><strong id="statCompletado">0</strong></div><div class="stat-card"><span>Pendientes</span><strong id="statPendiente">0</strong></div></div>
@@ -4923,6 +5076,7 @@ renderTransferencias();
     function renderOperations() {
       const operations = getFilteredOperations();
       renderStats(loadOperations());
+      renderDashboard();
       operationsTableBody.innerHTML = '';
       if (!operations.length) {
         operationsTableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--muted); padding: 32px;">No hay operaciones que coincidan con los filtros.</td></tr>`;
@@ -5006,10 +5160,141 @@ renderTransferencias();
       }).join('');
     }
 
+
+    function renderDashboard() {
+      const operations = loadOperations().slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const total = operations.length;
+      const pending = operations.filter(op => op.status === 'Pendiente' || op.status === 'Asignada').length;
+      const inProcess = operations.filter(op => op.status === 'En proceso').length;
+      const completed = operations.filter(op => op.status === 'Completado').length;
+      const urgentOpen = operations.filter(op => op.priority === 'Urgente' && op.status !== 'Completado').length;
+
+      const avgAssignValues = operations.map(getAssignmentMinutes).filter(v => Number.isFinite(v) && v >= 0);
+      const avgResolutionValues = operations.map(getResolutionMinutes).filter(v => Number.isFinite(v) && v >= 0);
+      const avgAssign = avgAssignValues.length ? Math.round(avgAssignValues.reduce((a,b)=>a+b,0) / avgAssignValues.length) : 0;
+      const avgResolution = avgResolutionValues.length ? Math.round(avgResolutionValues.reduce((a,b)=>a+b,0) / avgResolutionValues.length) : 0;
+
+      const agencyGroups = buildAgencyGroups(operations).sort((a,b)=>b.total-a.total).slice(0,5);
+      const techGroups = buildOwnerGroups(operations.filter(op => op.type !== 'Trabajo')).filter(item => item.owner && item.owner !== 'Sin asignar').sort((a,b)=>b.total-a.total).slice(0,6);
+      const supplierGroups = buildOwnerGroups(operations.filter(op => op.type === 'Trabajo')).filter(item => item.owner && item.owner !== 'Sin asignar').sort((a,b)=>b.total-a.total).slice(0,6);
+
+      const typeCounts = ['Avería','Trabajo'].map(type => ({ label:type, value: operations.filter(op => op.type === type).length }));
+      const statusCounts = [
+        { label:'Pendientes', value: operations.filter(op => op.status === 'Pendiente').length, cls:'danger' },
+        { label:'Asignadas', value: operations.filter(op => op.status === 'Asignada').length, cls:'' },
+        { label:'En proceso', value: operations.filter(op => op.status === 'En proceso').length, cls:'warning' },
+        { label:'Completadas', value: operations.filter(op => op.status === 'Completado').length, cls:'success' }
+      ];
+
+      const topTech = techGroups[0];
+      const topSupplier = supplierGroups[0];
+      const topAgency = agencyGroups[0];
+
+      const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      setText('dashOpsTotal', total);
+      setText('dashOpsPending', pending);
+      setText('dashOpsInProcess', inProcess);
+      setText('dashOpsCompleted', completed);
+      setText('dashAvgAssign', formatMinutesHuman(avgAssign));
+      setText('dashAvgResolution', formatMinutesHuman(avgResolution));
+      setText('dashTopTech', topTech ? getAssigneeDisplayName(topTech.owner, 'Avería') : '-');
+      setText('dashTopSupplier', topSupplier ? getAssigneeDisplayName(topSupplier.owner, 'Trabajo') : '-');
+      setText('dashTopTechHero', topTech ? getAssigneeDisplayName(topTech.owner, 'Avería') : '-');
+      setText('dashTopSupplierHero', topSupplier ? getAssigneeDisplayName(topSupplier.owner, 'Trabajo') : '-');
+      setText('dashTopAgencyHero', topAgency ? topAgency.agency : '-');
+      setText('dashUrgentOpen', urgentOpen);
+
+      const renderBars = (containerId, rows) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (!rows.length || rows.every(item => !item.value)) {
+          container.innerHTML = '<div class="dashboard-empty">Sin datos suficientes para mostrar este bloque.</div>';
+          return;
+        }
+        const max = Math.max(...rows.map(item => item.value), 1);
+        container.innerHTML = rows.map(item => `
+          <div class="dashboard-bar-row">
+            <div class="dashboard-bar-label">${item.label}</div>
+            <div class="dashboard-bar-track"><div class="dashboard-bar-fill ${item.cls || ''}" style="width:${Math.max((item.value/max)*100, item.value ? 8 : 0)}%"></div></div>
+            <div class="dashboard-bar-value">${item.value}</div>
+          </div>
+        `).join('');
+      };
+      renderBars('dashboardStatusBars', statusCounts);
+      renderBars('dashboardTypeBars', typeCounts.map(item => ({...item, cls:item.label === 'Trabajo' ? 'warning' : '' })));
+
+      const renderMiniList = (containerId, rows, typeLabel) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = rows.length ? rows.map((item, index) => `
+          <div class="dashboard-mini-item">
+            <div><strong>${getAssigneeDisplayName(item.owner, typeLabel)}</strong><span>${item.completed} completadas · ${item.inProgress} activas</span></div>
+            <div class="dashboard-rank">#${index + 1}</div>
+          </div>`).join('') : '<div class="dashboard-empty">Sin actividad suficiente para mostrar ranking.</div>';
+      };
+
+      const topAgencyEl = document.getElementById('dashboardTopAgencies');
+      if (topAgencyEl) {
+        topAgencyEl.innerHTML = agencyGroups.length ? agencyGroups.map((item, index) => `
+          <div class="dashboard-mini-item">
+            <div><strong>${item.agency}</strong><span>${item.completed} completadas · ${item.stillOpen} activas</span></div>
+            <div class="dashboard-rank">#${index + 1}</div>
+          </div>`).join('') : '<div class="dashboard-empty">Aún no hay agencias con actividad suficiente.</div>';
+      }
+
+      renderMiniList('dashboardTopTechs', techGroups, 'Avería');
+      renderMiniList('dashboardTopSuppliers', supplierGroups, 'Trabajo');
+
+      const alerts = [];
+      if (urgentOpen) alerts.push({title:'Urgentes abiertas', text:`${urgentOpen} operaciones urgentes siguen sin completar.`});
+      if (topAgency) alerts.push({title:'Agencia con más carga', text:`${topAgency.agency} lidera con ${topAgency.total} reportes.`});
+      if (topTech) alerts.push({title:'Técnico con más carga', text:`${getAssigneeDisplayName(topTech.owner, 'Avería')} lleva ${topTech.total} averías asignadas.`});
+      if (topSupplier) alerts.push({title:'Suplidor con más carga', text:`${getAssigneeDisplayName(topSupplier.owner, 'Trabajo')} lleva ${topSupplier.total} trabajos activos o completados.`});
+      const oldPending = operations.filter(op => op.status !== 'Completado' && ((Date.now() - new Date(op.createdAt).getTime()) / 3600000) >= 24);
+      if (oldPending.length) alerts.push({title:'Pendientes envejecidas', text:`${oldPending.length} operaciones llevan más de 24 horas abiertas.`});
+      const alertsEl = document.getElementById('dashboardAlerts');
+      if (alertsEl) {
+        alertsEl.innerHTML = alerts.length ? alerts.map(item => `<div class="dashboard-mini-item"><div><strong>${item.title}</strong><span>${item.text}</span></div><i class="fas fa-bell" style="color:#2b7fc3"></i></div>`).join('') : '<div class="dashboard-empty">Sin alertas operativas por el momento.</div>';
+      }
+
+      const renderOwnerTable = (containerId, rows, typeLabel, emptyText, colName) => {
+        const table = document.getElementById(containerId);
+        if (!table) return;
+        table.innerHTML = rows.length ? rows.map(item => `
+          <tr>
+            <td><strong>${getAssigneeDisplayName(item.owner, typeLabel)}</strong></td>
+            <td>${item.total}</td>
+            <td>${item.inProgress}</td>
+            <td>${item.completed}</td>
+            <td>${formatMinutesHuman(item.avgResolution)}</td>
+          </tr>`).join('') : `<tr><td colspan="5"><div class="dashboard-empty">${emptyText}</div></td></tr>`;
+      };
+
+      renderOwnerTable('dashboardTechTable', techGroups, 'Avería', 'No hay técnicos con actividad aún.');
+      renderOwnerTable('dashboardSupplierTable', supplierGroups, 'Trabajo', 'No hay suplidores con actividad aún.');
+
+      const criticalOps = operations.filter(op => ['Alta','Urgente'].includes(op.priority) && op.status !== 'Completado').slice(0,6);
+      const criticalTable = document.getElementById('dashboardCriticalTable');
+      if (criticalTable) {
+        criticalTable.innerHTML = criticalOps.length ? criticalOps.map(op => `
+          <tr>
+            <td><strong>${op.code}</strong></td>
+            <td>${op.title}</td>
+            <td>${op.agency}</td>
+            <td>${statusBadge(op.status)}</td>
+            <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
+          </tr>`).join('') : '<tr><td colspan="5"><div class="dashboard-empty">No hay operaciones críticas activas.</div></td></tr>';
+      }
+    }
+
     function showView(viewName) {
-      ['operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView'].forEach(id => document.getElementById(id).classList.add('hidden'));
-      ['navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues'].forEach(id => document.getElementById(id).classList.remove('active'));
-      if (viewName === 'operations') {
+      ['dashboardView','operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['navDashboard','navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues'].forEach(id => document.getElementById(id).classList.remove('active'));
+      if (viewName === 'dashboard') {
+        document.getElementById('dashboardView').classList.remove('hidden');
+        document.getElementById('navDashboard').classList.add('active');
+        renderDashboard();
+      } else if (viewName === 'operations') {
         document.getElementById('operationsView').classList.remove('hidden');
         document.getElementById('navOperations').classList.add('active');
       } else if (viewName === 'history') {
@@ -5991,6 +6276,7 @@ function openEditModal(id) {
       saveOperations(operations);
       deleteOperationFromSupabase(id);
       renderOperations();
+      renderDashboard();
       renderHistory();
       renderReports();
       renderAgencyReports();
@@ -6080,6 +6366,7 @@ function openEditModal(id) {
       showLogin();
     });
 
+    document.getElementById('navDashboard').addEventListener('click', () => showView('dashboard'));
     document.getElementById('navOperations').addEventListener('click', () => showView('operations'));
     document.getElementById('navHistory').addEventListener('click', () => showView('history'));
     document.getElementById('navReports').addEventListener('click', () => showView('reports'));
@@ -6411,6 +6698,7 @@ function openEditModal(id) {
         }
       });
       if (changed) saveOperations(operations);
+      renderDashboard();
       populateReportSpecificTypeOptions();
       const session = getSession() || { email: DEMO_USER.email };
       setSession(session);
@@ -6422,7 +6710,7 @@ function openEditModal(id) {
 function cambiarVista(vista, el){
   const ids = [
     'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
-    'vista-ops-operaciones','vista-ops-historial','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
+    'vista-ops-dashboard','vista-ops-operaciones','vista-ops-historial','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
   ];
   ids.forEach(id => {
     const node = document.getElementById(id);
