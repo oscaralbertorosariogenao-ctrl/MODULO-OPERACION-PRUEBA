@@ -1301,7 +1301,7 @@
 
   ${
     usuarioActual?.rol === "tecnico" &&
-    (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase() &&
+  (report.asignado_a || "").toLowerCase().includes(usuarioActual.user.toLowerCase()) &&
     (report.estado || "").toLowerCase() !== "completado"
       ? `<button class="btn-view btn-start">Marcar en proceso</button>`
       : ""
