@@ -656,7 +656,19 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <!-- LOGIN -->
+<div id="loginView" style="padding:20px; max-width:500px; margin:auto;">
+  <h2>Iniciar sesión</h2>
+
+  <input id="loginUser" placeholder="Usuario"
+    style="width:100%;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid #ccc">
+
+  <button onclick="login()"
+    style="width:100%;padding:12px;background:#c91717;color:white;border:none;border-radius:10px;font-weight:bold">
+    Entrar
+  </button>
+</div>
+<div class="app" id="appView" style="display:none;">
     <div class="header">
       <h1>App móvil de reportes</h1>
       <p>Crear reportes y consultar el estado de las averías o trabajos registrados.</p>
@@ -1269,7 +1281,48 @@
 
     btnRefreshReports.addEventListener("click", loadReports);
 
-    loadReports();
+  // loadReports();
+    const usuariosApp = [
+  { user: "oscar", rol: "administrador" },
+  { user: "tecnico1", rol: "tecnico" },
+  { user: "tecnico2", rol: "tecnico" },
+  { user: "encargado", rol: "encargado" }
+];
+
+let usuarioActual = null;
+
+function login() {
+  const input = document.getElementById("loginUser").value.toLowerCase();
+
+  const user = usuariosApp.find(u => u.user === input);
+
+  if (!user) {
+    alert("Usuario no válido");
+    return;
+  }
+
+  usuarioActual = user;
+
+  localStorage.setItem("usuarioActual", JSON.stringify(user));
+
+  iniciarApp();
+}
+
+function iniciarApp() {
+  document.getElementById("loginView").style.display = "none";
+  document.getElementById("appView").style.display = "block";
+
+  loadReports();
+
+  console.log("Usuario logueado:", usuarioActual);
+}
+
+// Auto login
+const savedUser = localStorage.getItem("usuarioActual");
+if (savedUser) {
+  usuarioActual = JSON.parse(savedUser);
+  iniciarApp();
+}
   </script>
 </body>
 </html>
