@@ -5883,6 +5883,7 @@ renderTransferencias();
         .channel('loteka-reportes-operaciones-live')
         .on('postgres_changes', { event: '*', schema: 'public', table: REPORTES_TABLE }, handleRealtimeOperationEvent)
         .subscribe((status) => {
+          console.info('Estado realtime:', status);
           if (status === 'SUBSCRIBED') {
             console.info('Realtime activo para reportes_operaciones');
             if (realtimeReconnectTimer) {
@@ -7222,14 +7223,15 @@ function openEditModal(id) {
 
     document.getElementById('dashboardRefreshBtn')?.addEventListener('click', () => runOperationalRefresh());
     document.getElementById('dashboardNotifyBtn')?.addEventListener('click', async () => {
+      initializeRealtimeSync();
       const granted = await requestNotificationPermissionIfNeeded();
       notificationsEnabled = granted || !('Notification' in window);
       localStorage.setItem(NOTIFY_STORAGE_KEY, notificationsEnabled ? 'true' : 'false');
       updateNotificationButtonState();
       showToastNotification(
-        notificationsEnabled ? 'Notificaciones activadas' : 'Notificaciones no activadas',
-        notificationsEnabled ? 'Recibirás avisos con sonido cuando entren operaciones o cambien de estado.' : 'Permite las notificaciones del navegador para recibir avisos en tiempo real.',
-        notificationsEnabled ? 'success' : 'warning'
+        notificationsEnabled ? 'Notificaciones activadas' : 'Recibirás avisos internos en tiempo real',
+        notificationsEnabled ? 'Recibirás avisos con sonido cuando entren operaciones o cambien de estado.' : 'El canal en vivo quedó activo. Si el navegador no permite alertas del sistema, seguirás viendo avisos dentro del panel.',
+        notificationsEnabled ? 'success' : 'info'
       );
     });
 
@@ -7237,10 +7239,11 @@ function openEditModal(id) {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') runOperationalRefresh({ silent: true, skipSuccessToast: true });
     });
-    window.setInterval(() => runOperationalRefresh({ silent: true, skipSuccessToast: true }), 45000);
+    window.setInterval(() => runOperationalRefresh({ silent: true, skipSuccessToast: true }), 15000);
 
     window.addEventListener('load', () => {
       updateNotificationButtonState();
+      initializeRealtimeSync();
       runOperationalRefresh({ silent: true });
       const operations = loadOperations();
       let changed = false;
