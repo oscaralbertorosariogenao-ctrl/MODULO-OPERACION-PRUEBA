@@ -1589,13 +1589,22 @@
             </div>
 
             <div class="field">
-              <label for="agencia">Agencia / Grupo</label>
+              <label for="grupoInfo">Grupo asignado</label>
               <input
                 type="text"
-                id="agencia"
-                placeholder="Ej: Agencia 1000 o Grupo 44"
-                required
+                id="grupoInfo"
+                placeholder="Se asigna automáticamente al iniciar sesión"
+                readonly
               />
+              <div class="helper-text" id="grupoHelper">El sistema detecta tu grupo automáticamente según tu usuario.</div>
+            </div>
+
+            <div class="field">
+              <label for="agencia">Agencia</label>
+              <select id="agencia" required>
+                <option value="">Seleccionar agencia</option>
+              </select>
+              <div class="helper-text" id="agenciaHelper">Solo verás las agencias del grupo asignado a tu usuario.</div>
             </div>
 
             <div class="field">
@@ -1756,6 +1765,30 @@
       "Otro": "❓"
     };
 
+
+    const AGENCIAS_POR_GRUPO = {
+      "Grupo 18": [
+        "Agencia 1801",
+        "Agencia 1802",
+        "Agencia 1803",
+        "Agencia 1804"
+      ],
+      "Grupo 07": [
+        "Agencia 0701",
+        "Agencia 0702",
+        "Agencia 0703"
+      ],
+      "Grupo 06": [
+        "Agencia 0601",
+        "Agencia 0602",
+        "Agencia 0603"
+      ]
+    };
+
+    const TODAS_LAS_AGENCIAS = Array.from(
+      new Set(Object.values(AGENCIAS_POR_GRUPO).flat())
+    ).sort((a, b) => a.localeCompare(b, "es"));
+
     const tabCreate = document.getElementById("tabCreate");
     const tabReports = document.getElementById("tabReports");
     const sectionCreate = document.getElementById("sectionCreate");
@@ -1764,7 +1797,10 @@
     const form = document.getElementById("reporteForm");
     const tipo = document.getElementById("tipo");
     const prioridad = document.getElementById("prioridad");
+    const grupoInfo = document.getElementById("grupoInfo");
+    const grupoHelper = document.getElementById("grupoHelper");
     const agencia = document.getElementById("agencia");
+    const agenciaHelper = document.getElementById("agenciaHelper");
     const categoriaSelect = document.getElementById("categoriaSelect");
     const tipoCards = document.getElementById("tipoCards");
     const prioridadCards = document.getElementById("prioridadCards");
@@ -1785,6 +1821,8 @@
 
     const detailBackdrop = document.getElementById("detailBackdrop");
     const detailBody = document.getElementById("detailBody");
+
+    let usuarioActual = null;
 
     function switchTab(mode) {
   const createActive = mode === "create";
@@ -1881,6 +1919,60 @@
       });
     }
 
+    function getAgenciasDisponibles() {
+      if (usuarioActual?.rol === "encargado" && usuarioActual?.grupo) {
+        return AGENCIAS_POR_GRUPO[usuarioActual.grupo] || [];
+      }
+      return TODAS_LAS_AGENCIAS;
+    }
+
+    function configurarSelectorAgencias() {
+      const agenciasDisponibles = getAgenciasDisponibles();
+      const placeholder = usuarioActual?.rol === "encargado"
+        ? "Seleccionar agencia de tu grupo"
+        : "Seleccionar agencia";
+
+      agencia.innerHTML = `<option value="">${placeholder}</option>` + agenciasDisponibles
+        .map(item => `<option value="${item}">${item}</option>`)
+        .join("");
+
+      if (grupoInfo) {
+        if (usuarioActual?.rol === "encargado") {
+          const grupoAsignado = usuarioActual?.grupo || "Sin grupo asignado";
+          grupoInfo.value = grupoAsignado;
+          grupoInfo.style.display = "block";
+          if (grupoHelper) {
+            grupoHelper.textContent = usuarioActual?.grupo
+              ? `Solo podrás reportar en agencias del ${grupoAsignado}.`
+              : "Tu usuario no tiene grupo configurado. Contacta al administrador.";
+          }
+        } else {
+          grupoInfo.value = usuarioActual?.grupo || "Todos los grupos";
+          grupoInfo.style.display = "block";
+          if (grupoHelper) {
+            grupoHelper.textContent = "Como administrador puedes seleccionar cualquier agencia disponible.";
+          }
+        }
+      }
+
+      if (agenciaHelper) {
+        if (usuarioActual?.rol === "encargado") {
+          const total = agenciasDisponibles.length;
+          agenciaHelper.textContent = total
+            ? `Se muestran ${total} agencia${total === 1 ? "" : "s"} disponibles para tu grupo.`
+            : "No hay agencias configuradas para tu grupo.";
+        } else {
+          agenciaHelper.textContent = "Selecciona la agencia donde se reporta la avería o trabajo.";
+        }
+      }
+
+      if (usuarioActual?.rol === "encargado" && !agenciasDisponibles.length) {
+        agencia.disabled = true;
+      } else {
+        agencia.disabled = false;
+      }
+    }
+
     function renderCategoryCards() {
       const selectedValue = categoriaSelect.value;
       const tipoValue = tipo.value.trim();
@@ -1915,7 +2007,8 @@
       setTipoValue("Avería");
       setPrioridadValue("");
       setCategoriaValue("");
-      agencia.placeholder = "Ej: Agencia 1000 o Grupo 44";
+      configurarSelectorAgencias();
+      agencia.value = "";
     }
 
     function renderCategoryOptions() {
@@ -2108,8 +2201,16 @@
       const imageFile = imagen.files?.[0] || null;
 
       if (!tipoValue || !agenciaValue || !categoriaValue) {
-        showStatus("Completa tipo de reporte, agencia/grupo y categoría.", "error");
+        showStatus("Completa tipo de reporte, agencia y categoría.", "error");
         return;
+      }
+
+      if (usuarioActual?.rol === "encargado" && usuarioActual?.grupo) {
+        const agenciasPermitidas = AGENCIAS_POR_GRUPO[usuarioActual.grupo] || [];
+        if (!agenciasPermitidas.includes(agenciaValue)) {
+          showStatus("Selecciona una agencia válida de tu grupo asignado.", "error");
+          return;
+        }
       }
 
       if (categoriaSelect.value === "Otro" && !campoOtro.value.trim()) {
@@ -2141,7 +2242,7 @@
   categoria: categoriaValue,
   descripcion: descripcionValue || "",
   agencia: agenciaValue,
-  grupo: "",
+  grupo: usuarioActual?.grupo || "",
   nombre_encargado: encargadoValue,
   creado_por: usuarioActual?.user || "",
   fecha_reporte: now,
@@ -2457,16 +2558,18 @@ if (techBtn) {
     renderPriorityCards();
     setTipoValue("Avería");
     setPrioridadValue("");
+    configurarSelectorAgencias();
 
   // loadReports();
 const usuariosApp = [
   { user: "oscar", rol: "administrador" },
   { user: "tecnico1", rol: "tecnico" },
   { user: "tecnico2", rol: "tecnico" },
-  { user: "encargado1", rol: "encargado" }
+  { user: "encargado1", rol: "encargado", grupo: "Grupo 18" },
+  { user: "encargado2", rol: "encargado", grupo: "Grupo 07" },
+  { user: "encargado3", rol: "encargado", grupo: "Grupo 06" }
 ];
 
-let usuarioActual = null;
 
 function login() {
   const inputEl = document.getElementById("loginUser");
@@ -2513,7 +2616,7 @@ function iniciarApp() {
     document.getElementById("tabCreate").style.display = "none";
     switchTab("reports");
   } else if (usuarioActual?.rol === "encargado") {
-    if (roleBadge) roleBadge.textContent = "Rol: Encargado";
+    if (roleBadge) roleBadge.textContent = `Rol: Encargado · ${usuarioActual?.grupo || "Sin grupo"}`;
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes con una experiencia más clara y ordenada.";
 
@@ -2528,6 +2631,7 @@ function iniciarApp() {
     switchTab("create");
   }
 
+  configurarSelectorAgencias();
   console.log("Usuario logueado:", usuarioActual);
 }
 // Auto login
