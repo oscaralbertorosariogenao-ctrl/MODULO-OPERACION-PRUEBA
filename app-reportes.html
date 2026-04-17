@@ -642,6 +642,172 @@
       border-radius: 10px;
     }
 
+    .detail-hero {
+      background: linear-gradient(135deg, #f7fbfd 0%, #eef7fb 100%);
+      border: 1px solid #dce8f0;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .detail-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .detail-eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eaf6fb;
+      color: #0b7896;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .detail-hero h4 {
+      margin: 0;
+      font-size: 22px;
+      color: #183447;
+      line-height: 1.1;
+    }
+
+    .detail-hero p {
+      margin: 6px 0 0;
+      color: #5f7585;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .detail-hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .detail-mini {
+      background: rgba(255,255,255,.86);
+      border: 1px solid #dbe7ef;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .detail-mini span {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #7a8b98;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .detail-mini strong {
+      display: block;
+      font-size: 14px;
+      color: #173346;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .detail-compact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .detail-note {
+      margin: 0;
+      color: #435765;
+      line-height: 1.55;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .detail-timeline {
+      position: relative;
+      display: grid;
+      gap: 12px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .timeline-marker {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    .timeline-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      margin-top: 6px;
+      background: #cfdbe4;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px #cfdbe4;
+      z-index: 1;
+    }
+
+    .timeline-item.done .timeline-dot {
+      background: #0ea55d;
+      box-shadow: 0 0 0 2px rgba(14,165,93,.28);
+    }
+
+    .timeline-line {
+      position: absolute;
+      top: 28px;
+      bottom: -14px;
+      width: 2px;
+      background: #d9e5ed;
+    }
+
+    .timeline-item:last-child .timeline-line {
+      display: none;
+    }
+
+    .timeline-card {
+      background: #f9fcfe;
+      border: 1px solid #e3edf3;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    .timeline-card strong {
+      display: block;
+      font-size: 15px;
+      color: #183447;
+      margin-bottom: 4px;
+    }
+
+    .timeline-card small {
+      display: block;
+      color: #7890a0;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .timeline-card p {
+      margin: 0;
+      color: #48606f;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
     .history-list {
       display: grid;
       gap: 10px;
@@ -1111,6 +1277,13 @@
 
       .badge {
         width: fit-content;
+      }
+
+      .detail-hero-top,
+      .detail-hero-meta,
+      .detail-compact-grid {
+        grid-template-columns: 1fr;
+        display: grid;
       }
     }
   
@@ -2476,119 +2649,157 @@
       }
     });
 
+    function getHistoryEvent(history, keywords = []) {
+      return history.find(item => {
+        const action = String(item?.action || "").toLowerCase();
+        const detail = String(item?.detail || "").toLowerCase();
+        return keywords.some(keyword => action.includes(keyword) || detail.includes(keyword));
+      }) || null;
+    }
+
+    function buildTimeline(report, history) {
+      const assignedEvent = getHistoryEvent(history, ["asign", "asignad"]);
+      const processEvent = getHistoryEvent(history, ["proceso", "en proceso"]);
+      const completedEvent = getHistoryEvent(history, ["complet", "cerrad", "resuelt"]);
+      const createdDate = report.fecha_reporte || report.created_at;
+
+      return [
+        {
+          label: "Reporte recibido",
+          done: true,
+          date: createdDate,
+          detail: report.categoria ? `Problema: ${report.categoria}` : (report.tipo_reporte || "Reporte creado")
+        },
+        {
+          label: "Técnico asignado",
+          done: Boolean(report.asignado_a),
+          date: assignedEvent?.date || report.fecha_asignacion || report.updated_at,
+          detail: report.asignado_a ? `Asignado a: ${formatAssigneeLabel(report.asignado_a)}` : "Aún sin asignar"
+        },
+        {
+          label: "En proceso",
+          done: ["en proceso", "completado"].includes(normalizeStatus(report.estado).value),
+          date: processEvent?.date || (normalizeStatus(report.estado).value === "en proceso" ? report.updated_at : ""),
+          detail: processEvent?.detail || (normalizeStatus(report.estado).value === "en proceso" ? "El reporte está siendo trabajado." : "Pendiente de inicio")
+        },
+        {
+          label: "Completado",
+          done: normalizeStatus(report.estado).value === "completado",
+          date: completedEvent?.date || (normalizeStatus(report.estado).value === "completado" ? report.updated_at : ""),
+          detail: completedEvent?.detail || report.resultado_tecnico || report.comentario_tecnico || "Aún no completado"
+        }
+      ];
+    }
+
+    function renderMediaGrid(items, label) {
+      return `
+        <div class="detail-section">
+          <h4>${label}</h4>
+          <div class="detail-image-grid">
+            ${items.map(img => `
+              <div class="detail-image-box">
+                ${isVideoUrl(img)
+                  ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${img}" type="video/mp4"></video>`
+                  : `<img src="${img}" alt="${label}" />`}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
     function openDetail(report) {
       const status = normalizeStatus(report.estado);
       const images = Array.isArray(report.images) ? report.images.filter(Boolean) : [];
       const resultImages = Array.isArray(report.result_images) ? report.result_images.filter(Boolean) : [];
       const history = Array.isArray(report.history) ? report.history : [];
-      const selectedTypes = Array.isArray(report.selected_types) ? report.selected_types : [];
+      const timeline = buildTimeline(report, history);
+      const summaryLocation = [report.grupo, report.agencia].filter(Boolean).join(" · ") || "No registrado";
+      const summaryCategory = report.categoria || report.tipo_reporte || "No registrado";
+      const summaryComment = report.descripcion || report.comentario || "";
+      const techComment = report.resultado_tecnico || report.comentario_tecnico || "";
 
       detailBody.innerHTML = `
-        <div class="detail-grid">
-          <div class="detail-item">
-            <span>Código</span>
-            <strong>${report.code || "No registrado"}</strong>
+        <div class="detail-hero">
+          <div class="detail-hero-top">
+            <div>
+              <span class="detail-eyebrow">Seguimiento del reporte</span>
+              <h4>${report.code || "Reporte sin código"}</h4>
+              <p>${summaryCategory} · ${summaryLocation}</p>
+            </div>
+            <span class="badge ${status.className}">${status.label}</span>
           </div>
 
-          <div class="detail-item">
-            <span>Estado</span>
-            <strong><span class="badge ${status.className}">${status.label}</span></strong>
+          <div class="detail-hero-meta">
+            <div class="detail-mini">
+              <span>Reportado por</span>
+              <strong>${report.nombre_encargado || report.created_by || "No registrado"}</strong>
+            </div>
+            <div class="detail-mini">
+              <span>Técnico</span>
+              <strong>${formatAssigneeLabel(report.asignado_a)}</strong>
+            </div>
+            <div class="detail-mini">
+              <span>Fecha</span>
+              <strong>${formatDate(report.fecha_reporte || report.created_at)}</strong>
+            </div>
           </div>
+        </div>
 
+        <div class="detail-compact-grid">
           <div class="detail-item">
             <span>Tipo</span>
             <strong>${report.tipo_reporte || "No registrado"}</strong>
           </div>
-
           <div class="detail-item">
-            <span>Prioridad</span>
-            <strong>${report.prioridad || "No registrada"}</strong>
+            <span>Agencia</span>
+            <strong>${report.agencia || "No registrada"}</strong>
           </div>
-
           <div class="detail-item">
-            <span>Agencia / Grupo</span>
-            <strong>${report.agencia || report.grupo || "No registrado"}</strong>
+            <span>Grupo</span>
+            <strong>${report.grupo || "No registrado"}</strong>
           </div>
-
           <div class="detail-item">
-            <span>Asignado a</span>
-            <strong>${formatAssigneeLabel(report.asignado_a)}</strong>
-          </div>
-
-          <div class="detail-item">
-            <span>Fecha</span>
-            <strong>${formatDate(report.fecha_reporte || report.created_at)}</strong>
-          </div>
-
-          <div class="detail-item">
-            <span>Reportante</span>
-            <strong>${report.nombre_encargado || "No registrado"}</strong>
+            <span>Última actualización</span>
+            <strong>${formatDate(history[history.length - 1]?.date || report.updated_at || report.created_at)}</strong>
           </div>
         </div>
 
-        <div class="detail-section">
-          <h4>Categoría seleccionada</h4>
-          <p style="margin:0; line-height:1.5;">${report.categoria || "No registrado"}</p>
-        </div>
-
-        <div class="detail-section">
-          <h4>Observación adicional</h4>
-          <p style="margin:0; line-height:1.6;">${report.descripcion || "Sin descripción"}</p>
-        </div>
-
-        <div class="detail-section">
-          <h4>Tipos seleccionados</h4>
-          <div style="margin-top:6px;">
-            ${renderSelectedTypes(selectedTypes, report.tipo_reporte)}
-          </div>
-        </div>
-
-        ${images.length ? `
+        ${summaryComment ? `
           <div class="detail-section">
-            <h4>Evidencia inicial</h4>
-            <div class="detail-image-grid">
-              ${images.map(img => `
-                <div class="detail-image-box">
-                  ${isVideoUrl(img)
-                    ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${img}" type="video/mp4"></video>`
-                    : `<img src="${img}" alt="Evidencia inicial" />`}
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        ` : ""}
-
-        ${resultImages.length ? `
-          <div class="detail-section">
-            <h4>Evidencias de resultado</h4>
-            <div class="detail-image-grid">
-              ${resultImages.map(img => `
-                <div class="detail-image-box">
-                  ${isVideoUrl(img)
-                    ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${img}" type="video/mp4"></video>`
-                    : `<img src="${img}" alt="Evidencia de resultado" />`}
-                </div>
-              `).join("")}
-            </div>
+            <h4>Comentario del reporte</h4>
+            <p class="detail-note">${summaryComment}</p>
           </div>
         ` : ""}
 
         <div class="detail-section">
-          <h4>Historial</h4>
-          ${
-            history.length
-              ? `<div class="history-list">
-                  ${history.map(item => `
-                    <div class="history-item">
-                      <strong>${item.action || "Movimiento"}</strong>
-                      <small>${formatDate(item.date)}${item.user ? " • " + item.user : ""}</small>
-                      <p>${item.detail || "Sin detalle"}</p>
-                    </div>
-                  `).join("")}
-                </div>`
-              : `<div class="empty-state" style="padding:16px;">Sin historial disponible.</div>`
-          }
+          <h4>Seguimiento</h4>
+          <div class="detail-timeline">
+            ${timeline.map((item, index) => `
+              <div class="timeline-item ${item.done ? "done" : ""}">
+                <div class="timeline-marker">
+                  <span class="timeline-dot"></span>
+                  ${index !== timeline.length - 1 ? '<span class="timeline-line"></span>' : ''}
+                </div>
+                <div class="timeline-card">
+                  <strong>${item.label}</strong>
+                  <small>${item.date ? formatDate(item.date) : "Pendiente"}</small>
+                  <p>${item.detail || "Sin detalle"}</p>
+                </div>
+              </div>
+            `).join("")}
+          </div>
         </div>
+
+        ${images.length ? renderMediaGrid(images, "Evidencia inicial") : ""}
+        ${resultImages.length ? renderMediaGrid(resultImages, "Evidencia final") : ""}
+
+        ${techComment ? `
+          <div class="detail-section">
+            <h4>Resultado técnico</h4>
+            <p class="detail-note">${techComment}</p>
+          </div>
+        ` : ""}
 
         <button class="btn-detail-close" id="btnCloseDetailInside">Cerrar</button>
       `;
