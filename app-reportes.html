@@ -1759,6 +1759,95 @@
       }
     }
 
+
+    .header-actions-row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .notify-btn {
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:800;
+      cursor:pointer;
+      background:rgba(255,255,255,.16);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.2);
+      backdrop-filter:blur(10px);
+      min-height:48px;
+    }
+
+    .notify-btn.active {
+      background:#ffffff;
+      color:#0b7896;
+    }
+
+    .notify-toast-wrap {
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:12000;
+      display:grid;
+      gap:10px;
+      width:min(92vw, 360px);
+      pointer-events:none;
+    }
+
+    .notify-toast {
+      background:rgba(19,40,56,.96);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      box-shadow:0 18px 40px rgba(15,23,42,.26);
+      padding:14px 14px 14px 16px;
+      opacity:0;
+      transform:translateY(12px);
+      animation:toastIn .22s ease forwards;
+      pointer-events:auto;
+    }
+
+    .notify-toast.hide {
+      animation:toastOut .22s ease forwards;
+    }
+
+    .notify-toast strong {
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
+    }
+
+    .notify-toast p {
+      margin:0;
+      font-size:13px;
+      line-height:1.45;
+      color:rgba(255,255,255,.88);
+    }
+
+    .notify-toast .mini {
+      display:block;
+      margin-top:8px;
+      font-size:12px;
+      color:rgba(255,255,255,.72);
+      font-weight:700;
+    }
+
+    @keyframes toastIn {
+      to {
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    @keyframes toastOut {
+      to {
+        opacity:0;
+        transform:translateY(12px);
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1800,6 +1889,9 @@
       <div class="header-meta">
         <span class="header-chip" id="roleBadge">Acceso operativo</span>
         <span class="header-chip" id="userBadge">Usuario activo</span>
+      </div>
+      <div class="header-actions-row">
+        <button id="btnEnableAlerts" class="notify-btn" type="button">Activar alertas</button>
       </div>
     </div>
 
@@ -1965,6 +2057,8 @@
     </div>
   </div>
 
+  <div class="notify-toast-wrap" id="notifyToastWrap"></div>
+
   <div class="detail-backdrop" id="detailBackdrop">
     <div class="detail-modal">
       <div class="detail-header">
@@ -2123,8 +2217,216 @@
 
     const detailBackdrop = document.getElementById("detailBackdrop");
     const detailBody = document.getElementById("detailBody");
+    const btnEnableAlerts = document.getElementById("btnEnableAlerts");
+    const notifyToastWrap = document.getElementById("notifyToastWrap");
 
     let usuarioActual = null;
+    let reportRefreshInterval = null;
+    let notificationsInitialized = false;
+    let lastKnownStatuses = {};
+    let audioContextRef = null;
+
+
+    function getStatusKeyForNotifications(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    function getUserStatusStoreKey() {
+      return `loteka_status_cache_${usuarioActual?.user || "anon"}`;
+    }
+
+    function loadStoredStatusCache() {
+      try {
+        const raw = localStorage.getItem(getUserStatusStoreKey());
+        lastKnownStatuses = raw ? JSON.parse(raw) : {};
+      } catch (_) {
+        lastKnownStatuses = {};
+      }
+    }
+
+    function saveStoredStatusCache() {
+      try {
+        localStorage.setItem(getUserStatusStoreKey(), JSON.stringify(lastKnownStatuses || {}));
+      } catch (_) {}
+    }
+
+    function updateAlertsButtonUI() {
+      if (!btnEnableAlerts) return;
+      const enabled = localStorage.getItem("loteka_alerts_enabled") === "true";
+      btnEnableAlerts.classList.toggle("active", enabled);
+      btnEnableAlerts.textContent = enabled ? "Alertas activas" : "Activar alertas";
+    }
+
+    async function requestBrowserAlerts() {
+      localStorage.setItem("loteka_alerts_enabled", "true");
+      updateAlertsButtonUI();
+      if (!("Notification" in window)) {
+        showInAppNotification("Alertas activadas", "Este navegador no permite notificaciones del sistema, pero sí verás avisos dentro de la app.");
+        return;
+      }
+      if (Notification.permission === "granted") {
+        showInAppNotification("Alertas activadas", "Recibirás avisos importantes según tu rol en la app.");
+        return;
+      }
+      if (Notification.permission !== "denied") {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          showInAppNotification("Alertas activadas", "Recibirás avisos importantes según tu rol en la app.");
+        } else {
+          showInAppNotification("Avisos internos activos", "El navegador bloqueó las notificaciones del sistema. Aun así verás alertas dentro de la app.");
+        }
+      } else {
+        showInAppNotification("Avisos internos activos", "Las notificaciones del sistema están bloqueadas en este navegador. Aun así verás alertas dentro de la app.");
+      }
+    }
+
+    function playNotificationSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!audioContextRef) audioContextRef = new AudioCtx();
+        const ctx = audioContextRef;
+        if (ctx.state === "suspended") ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.24);
+      } catch (_) {}
+    }
+
+    function showInAppNotification(title, message, mini = "") {
+      if (!notifyToastWrap) return;
+      const toast = document.createElement("div");
+      toast.className = "notify-toast";
+      toast.innerHTML = `<strong>${title}</strong><p>${message}</p>${mini ? `<span class="mini">${mini}</span>` : ""}`;
+      notifyToastWrap.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add("hide");
+        setTimeout(() => toast.remove(), 220);
+      }, 5200);
+    }
+
+    function showSystemNotification(title, body) {
+      try {
+        if ("Notification" in window && Notification.permission === "granted") {
+          const n = new Notification(title, { body, icon: document.querySelector('.header-brand img')?.src || undefined });
+          setTimeout(() => n.close(), 5000);
+        }
+      } catch (_) {}
+    }
+
+    function buildStatusChangeMessage(report, statusKey) {
+      const categoria = report?.categoria || "Reporte";
+      const agenciaTexto = report?.agencia || report?.grupo || "Tu agencia";
+      if (usuarioActual?.rol === "tecnico") {
+        return {
+          title: "Nueva asignación",
+          body: `Se te asignó ${categoria} para trabajar en ${agenciaTexto}.`,
+          mini: `${report?.code || "Sin código"}`
+        };
+      }
+      if (statusKey === "asignada") {
+        return {
+          title: "Reporte asignado",
+          body: `${categoria} ya fue asignado a ${formatAssigneeLabel(report?.asignado_a)}.`,
+          mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
+        };
+      }
+      if (statusKey === "en proceso") {
+        return {
+          title: "Reporte en proceso",
+          body: `${categoria} ya está siendo trabajado por ${formatAssigneeLabel(report?.asignado_a)}.`,
+          mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
+        };
+      }
+      if (statusKey === "completado") {
+        return {
+          title: "Reporte completado",
+          body: `${categoria} fue completado correctamente.`,
+          mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
+        };
+      }
+      return null;
+    }
+
+    function processStatusNotifications(reports) {
+      if (!usuarioActual || !["encargado", "tecnico"].includes(usuarioActual.rol)) return;
+      const currentMap = {};
+      const enabled = localStorage.getItem("loteka_alerts_enabled") === "true";
+      (reports || []).forEach(report => {
+        const reportId = String(report?.id || report?.code || "");
+        if (!reportId) return;
+        const currentStatus = getStatusKeyForNotifications(report?.estado);
+        const currentAssignee = String(report?.asignado_a || "").trim().toLowerCase();
+        currentMap[reportId] = {
+          status: currentStatus,
+          assignedTo: currentAssignee
+        };
+        const previousEntry = lastKnownStatuses[reportId] || {};
+        const previousStatus = typeof previousEntry === "string" ? previousEntry : previousEntry.status;
+        const previousAssignedTo = typeof previousEntry === "string" ? "" : (previousEntry.assignedTo || "");
+
+        if (!notificationsInitialized || !enabled) return;
+
+        if (usuarioActual.rol === "encargado") {
+          if (previousStatus && previousStatus !== currentStatus) {
+            const payload = buildStatusChangeMessage(report, currentStatus);
+            if (payload) {
+              playNotificationSound();
+              showInAppNotification(payload.title, payload.body, payload.mini);
+              showSystemNotification(payload.title, `${payload.body} ${payload.mini}`.trim());
+            }
+          }
+          return;
+        }
+
+        if (usuarioActual.rol === "tecnico") {
+          const isMineNow = currentAssignee === String(usuarioActual.user || "").trim().toLowerCase();
+          const wasMineBefore = previousAssignedTo === String(usuarioActual.user || "").trim().toLowerCase();
+          if (isMineNow && !wasMineBefore) {
+            const payload = buildStatusChangeMessage(report, currentStatus || "asignada");
+            if (payload) {
+              playNotificationSound();
+              showInAppNotification(payload.title, payload.body, payload.mini);
+              showSystemNotification(payload.title, `${payload.body} ${payload.mini}`.trim());
+            }
+          }
+        }
+      });
+      lastKnownStatuses = currentMap;
+      saveStoredStatusCache();
+      notificationsInitialized = true;
+    }
+
+    function startReportAutoRefresh() {
+      stopReportAutoRefresh();
+      reportRefreshInterval = window.setInterval(() => {
+        if (!usuarioActual) return;
+        if (document.visibilityState === "visible") {
+          loadReports(true);
+        }
+      }, 25000);
+    }
+
+    function stopReportAutoRefresh() {
+      if (reportRefreshInterval) {
+        clearInterval(reportRefreshInterval);
+        reportRefreshInterval = null;
+      }
+    }
 
     function switchTab(mode) {
   const createActive = mode === "create";
@@ -2845,8 +3147,10 @@
       throw lastError;
     }
 
-    async function loadReports() {
-      reportList.innerHTML = `<div class="empty-state">Cargando reportes...</div>`;
+    async function loadReports(isBackgroundRefresh = false) {
+      if (!isBackgroundRefresh) {
+        reportList.innerHTML = `<div class="empty-state">Cargando reportes...</div>`;
+      }
 
       try {
         if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -2886,6 +3190,7 @@
           }
         }
 
+        processStatusNotifications(reportsFiltrados);
         updateReportSummaryCounts(reportsFiltrados);
 
         if (!reportsFiltrados.length) {
@@ -2992,13 +3297,15 @@ if (techBtn) {
       } catch (err) {
         console.error("Error cargando reportes:", err);
         const isNetworkError = String(err?.message || "").toLowerCase().includes("load failed") || String(err?.message || "").toLowerCase().includes("failed to fetch");
-        reportList.innerHTML = `
+        if (!isBackgroundRefresh) {
+          reportList.innerHTML = `
           <div class="empty-state" style="color:#991b1b;">
             ${isNetworkError
               ? "No se pudo conectar con Supabase desde este móvil ahora mismo. Pulsa ‘Actualizar reportes’ para reintentar."
               : `Error cargando reportes: ${err?.message || "desconocido"}`}
           </div>
         `;
+        }
       }
     }
 
@@ -3025,6 +3332,8 @@ if (techBtn) {
     setTipoValue("Avería");
     setPrioridadValue("");
     configurarSelectorAgencias();
+    updateAlertsButtonUI();
+    btnEnableAlerts?.addEventListener("click", requestBrowserAlerts);
 
   // loadReports();
 const usuariosApp = [
@@ -3057,6 +3366,8 @@ function login() {
 
   usuarioActual = user;
   localStorage.setItem("usuarioActual", JSON.stringify(user));
+  notificationsInitialized = false;
+  loadStoredStatusCache();
   iniciarApp();
 }
     window.login = login;
@@ -3110,6 +3421,9 @@ function iniciarApp() {
   }
 
   configurarSelectorAgencias();
+  loadStoredStatusCache();
+  startReportAutoRefresh();
+  loadReports(true);
   console.log("Usuario logueado:", usuarioActual);
 }
 // Auto login
@@ -3118,6 +3432,8 @@ if (savedUser) {
   try {
     usuarioActual = JSON.parse(savedUser);
     if (usuarioActual?.user) {
+      notificationsInitialized = false;
+      loadStoredStatusCache();
       iniciarApp();
     }
   } catch (error) {
@@ -3127,7 +3443,10 @@ if (savedUser) {
 
 function logout() {
   localStorage.removeItem("usuarioActual");
+  stopReportAutoRefresh();
   usuarioActual = null;
+  notificationsInitialized = false;
+  lastKnownStatuses = {};
 
   document.getElementById("appView").style.display = "none";
   document.getElementById("loginView").style.display = "block";
@@ -3144,6 +3463,16 @@ if (btnLogin) {
   };
 }
 document.getElementById("btnLogout")?.addEventListener("click", logout);
+
+window.addEventListener("focus", () => {
+  if (usuarioActual) loadReports(true);
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && usuarioActual) {
+    loadReports(true);
+  }
+});
 
     async function cambiarEstadoTecnico(report, nuevoEstado) {
   const history = Array.isArray(report.history) ? [...report.history] : [];
