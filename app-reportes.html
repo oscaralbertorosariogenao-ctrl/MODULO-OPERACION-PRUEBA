@@ -975,6 +975,86 @@
       }
     }
 
+
+    .reports-summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin: 10px 0 14px;
+    }
+
+    .summary-card {
+      border: 1px solid #d8e8f0;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
+      padding: 12px 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: .18s ease;
+    }
+
+    .summary-card span {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      color: #7690a0;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 6px;
+    }
+
+    .summary-card strong {
+      display: block;
+      font-size: 22px;
+      color: #153447;
+      line-height: 1;
+    }
+
+    .summary-card.active {
+      border-color: #bfe6f0;
+      background: linear-gradient(135deg, #effbff 0%, #e3f8fd 100%);
+      box-shadow: 0 12px 24px rgba(14,165,198,.14);
+    }
+
+    .report-toolbar-2 {
+      margin-bottom: 14px;
+    }
+
+    .report-toolbar-2 input {
+      width: 100%;
+      border: 1px solid #cfe0ea;
+      border-radius: 16px;
+      padding: 14px 14px;
+      font-size: 15px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      color: var(--text);
+      outline: none;
+    }
+
+    .report-toolbar-2 input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14,165,198,.14);
+    }
+
+    .report-subline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .report-mini-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: #f0f6fa;
+      border: 1px solid #d9e8f0;
+      color: #5a7181;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 7px 10px;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -1536,7 +1616,7 @@
 
     <div class="tabs">
       <button class="tab-btn active" id="tabCreate">Nuevo reporte</button>
-      <button class="tab-btn" id="tabReports">Ver reportes</button>
+      <button class="tab-btn" id="tabReports">Mis reportes</button>
     </div>
 
     <div class="content">
@@ -1651,7 +1731,35 @@
 
       <section class="section" id="sectionReports">
         <div class="card">
-          <div class="section-heading"><div><h3>Reportes asignados y seguimiento</h3><p>Consulta el estado actual y la gestión técnica desde una vista más clara.</p></div><span class="section-badge">Seguimiento</span></div><div class="soft-divider"></div>
+          <div class="section-heading"><div><h3 id="reportsSectionTitle">Mis reportes</h3><p id="reportsSectionSubtitle">Consulta el estado de tus reportes, revisa el detalle y da seguimiento sin salir de la app.</p></div><span class="section-badge">Seguimiento</span></div><div class="soft-divider"></div>
+
+          <div class="reports-summary" id="reportsSummary">
+            <div class="summary-card active" data-report-filter="todos">
+              <span>Todos</span>
+              <strong id="countTodos">0</strong>
+            </div>
+            <div class="summary-card" data-report-filter="pendiente">
+              <span>Pendientes</span>
+              <strong id="countPendiente">0</strong>
+            </div>
+            <div class="summary-card" data-report-filter="asignada">
+              <span>Asignadas</span>
+              <strong id="countAsignada">0</strong>
+            </div>
+            <div class="summary-card" data-report-filter="en-proceso">
+              <span>En proceso</span>
+              <strong id="countProceso">0</strong>
+            </div>
+            <div class="summary-card" data-report-filter="completado">
+              <span>Completados</span>
+              <strong id="countCompletado">0</strong>
+            </div>
+          </div>
+
+          <div class="report-toolbar-2">
+            <input type="text" id="reportSearchInput" placeholder="Buscar por agencia, código o categoría">
+          </div>
+
           <div class="report-toolbar">
             <button class="btn-refresh" id="btnRefreshReports">Actualizar reportes</button>
           </div>
@@ -1817,6 +1925,9 @@
     const statusBox = document.getElementById("statusBox");
 
     const btnRefreshReports = document.getElementById("btnRefreshReports");
+    const reportSearchInput = document.getElementById("reportSearchInput");
+    const reportFilterCards = Array.from(document.querySelectorAll("[data-report-filter]"));
+    let currentReportFilter = "todos";
     const reportList = document.getElementById("reportList");
 
     const detailBackdrop = document.getElementById("detailBackdrop");
@@ -2076,6 +2187,64 @@
       }
 
       return { label: status || "Pendiente", className: "pendiente" };
+    }
+
+
+    function updateReportSummaryCounts(reports) {
+      const counts = {
+        todos: reports.length,
+        pendiente: 0,
+        asignada: 0,
+        "en-proceso": 0,
+        completado: 0
+      };
+
+      reports.forEach(report => {
+        const key = normalizeStatus(report.estado).className;
+        if (counts[key] !== undefined) counts[key] += 1;
+      });
+
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(value);
+      };
+
+      setText("countTodos", counts.todos);
+      setText("countPendiente", counts.pendiente);
+      setText("countAsignada", counts.asignada);
+      setText("countProceso", counts["en-proceso"]);
+      setText("countCompletado", counts.completado);
+    }
+
+    function applyReportCardFilter(cards) {
+      const query = (reportSearchInput?.value || "").trim().toLowerCase();
+      let visible = 0;
+
+      cards.forEach(card => {
+        const matchesFilter = currentReportFilter === "todos" || card.dataset.statusClass === currentReportFilter;
+        const haystack = [
+          card.dataset.code,
+          card.dataset.category,
+          card.dataset.agency,
+          card.dataset.type,
+          card.dataset.assignee
+        ].join(" ").toLowerCase();
+        const matchesSearch = !query || haystack.includes(query);
+        const show = matchesFilter && matchesSearch;
+        card.style.display = show ? "block" : "none";
+        if (show) visible += 1;
+      });
+
+      const emptyExisting = document.getElementById("reportListEmptyState");
+      if (emptyExisting) emptyExisting.remove();
+
+      if (!visible) {
+        const empty = document.createElement("div");
+        empty.id = "reportListEmptyState";
+        empty.className = "empty-state";
+        empty.textContent = "No hay reportes que coincidan con el filtro seleccionado.";
+        reportList.appendChild(empty);
+      }
     }
 
     function renderSelectedTypes(selectedTypes, tipoReporte) {
@@ -2459,19 +2628,30 @@
           }
         }
 
+        updateReportSummaryCounts(reportsFiltrados);
+
         if (!reportsFiltrados.length) {
           reportList.innerHTML = `
             <div class="empty-state">
-              No hay reportes disponibles para este usuario.
+              ${usuarioActual?.rol === "encargado"
+                ? "Todavía no has creado reportes desde esta app."
+                : "No hay reportes disponibles para este usuario."}
             </div>
           `;
           return;
         }
 
+        const cardElements = [];
         reportsFiltrados.forEach((report) => {
           const status = normalizeStatus(report.estado);
           const reportCard = document.createElement("div");
           reportCard.className = "report-card";
+          reportCard.dataset.statusClass = status.className;
+          reportCard.dataset.code = report.code || "";
+          reportCard.dataset.category = report.categoria || "";
+          reportCard.dataset.agency = report.agencia || report.grupo || "";
+          reportCard.dataset.type = report.tipo_reporte || "";
+          reportCard.dataset.assignee = formatAssigneeLabel(report.asignado_a) || "";
 
           reportCard.innerHTML = `
             <div class="report-top">
@@ -2483,6 +2663,12 @@
               <div>
                 <span class="badge ${status.className}">${status.label}</span>
               </div>
+            </div>
+
+            <div class="report-subline">
+              <span class="report-mini-chip">${report.tipo_reporte || "Sin tipo"}</span>
+              <span class="report-mini-chip">${report.agencia || report.grupo || "Sin agencia"}</span>
+              <span class="report-mini-chip">${formatAssigneeLabel(report.asignado_a)}</span>
             </div>
 
             <div class="report-meta">
@@ -2540,8 +2726,11 @@ const techBtn = reportCard.querySelector(".btn-tech");
 if (techBtn) {
   techBtn.addEventListener("click", () => openTechnicalDetail(report));
 }
+          cardElements.push(reportCard);
           reportList.appendChild(reportCard);
         });
+
+        applyReportCardFilter(cardElements);
       } catch (err) {
         console.error("Error cargando reportes:", err);
         reportList.innerHTML = `
@@ -2553,6 +2742,22 @@ if (techBtn) {
     }
 
     btnRefreshReports.addEventListener("click", loadReports);
+
+    reportFilterCards.forEach(card => {
+      card.addEventListener("click", () => {
+        currentReportFilter = card.dataset.reportFilter || "todos";
+        reportFilterCards.forEach(item => item.classList.toggle("active", item === card));
+        const cards = Array.from(reportList.querySelectorAll(".report-card"));
+        applyReportCardFilter(cards);
+      });
+    });
+
+    if (reportSearchInput) {
+      reportSearchInput.addEventListener("input", () => {
+        const cards = Array.from(reportList.querySelectorAll(".report-card"));
+        applyReportCardFilter(cards);
+      });
+    }
 
     renderTypeCards();
     renderPriorityCards();
@@ -2612,6 +2817,10 @@ function iniciarApp() {
     if (roleBadge) roleBadge.textContent = "Rol: Técnico";
     appTitle.textContent = "Reportes (Averías) Asignados";
     appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
+    const reportsSectionTitle = document.getElementById("reportsSectionTitle");
+    const reportsSectionSubtitle = document.getElementById("reportsSectionSubtitle");
+    if (reportsSectionTitle) reportsSectionTitle.textContent = "Averías asignadas";
+    if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Gestiona las averías asignadas a tu usuario técnico y actualiza su estado.";
 
     document.getElementById("tabCreate").style.display = "none";
     switchTab("reports");
@@ -2619,6 +2828,10 @@ function iniciarApp() {
     if (roleBadge) roleBadge.textContent = `Rol: Encargado · ${usuarioActual?.grupo || "Sin grupo"}`;
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes con una experiencia más clara y ordenada.";
+    const reportsSectionTitle = document.getElementById("reportsSectionTitle");
+    const reportsSectionSubtitle = document.getElementById("reportsSectionSubtitle");
+    if (reportsSectionTitle) reportsSectionTitle.textContent = "Mis reportes";
+    if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Consulta el estado de los reportes que has creado, revisa su detalle y da seguimiento desde tu grupo.";
 
     document.getElementById("tabCreate").style.display = "block";
     switchTab("create");
@@ -2626,6 +2839,10 @@ function iniciarApp() {
     if (roleBadge) roleBadge.textContent = "Rol: Administrador";
     appTitle.textContent = "App móvil de reportes";
     appSubtitle.textContent = "Crear reportes y consultar el estado de las averías o trabajos registrados en una interfaz más clara y corporativa.";
+    const reportsSectionTitle = document.getElementById("reportsSectionTitle");
+    const reportsSectionSubtitle = document.getElementById("reportsSectionSubtitle");
+    if (reportsSectionTitle) reportsSectionTitle.textContent = "Todos los reportes";
+    if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Visualiza todos los reportes registrados y revisa su estado general desde la app.";
 
     document.getElementById("tabCreate").style.display = "block";
     switchTab("create");
