@@ -1277,6 +1277,132 @@
       }
     }
 
+  
+
+    .hidden-native-select {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    .helper-text {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .segmented-grid,
+    .priority-grid,
+    .category-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .segmented-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .priority-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .category-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 2px;
+    }
+
+    .choice-card,
+    .priority-card,
+    .category-card {
+      border: 1px solid #d7e6ee;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+      color: #173346;
+      border-radius: 18px;
+      min-height: 62px;
+      padding: 14px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .category-card {
+      justify-content: flex-start;
+      text-align: left;
+      min-height: 58px;
+      padding: 14px 16px;
+      font-size: 14px;
+    }
+
+    .choice-card:hover,
+    .priority-card:hover,
+    .category-card:hover {
+      transform: translateY(-1px);
+      border-color: #9fd8e6;
+    }
+
+    .choice-card.active,
+    .priority-card.active,
+    .category-card.active {
+      background: linear-gradient(135deg, #0ea5c6 0%, #0a88a6 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 16px 28px rgba(14,165,198,.22);
+    }
+
+    .choice-card .icon,
+    .priority-card .icon,
+    .category-card .icon {
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .compact-field {
+      margin-top: 12px;
+    }
+
+    .quick-banner {
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #f5fbfe 0%, #edf6fa 100%);
+      border: 1px solid #d9ebf3;
+      color: #587180;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .quick-banner strong {
+      color: #173346;
+    }
+
+    @media (max-width: 520px) {
+      .segmented-grid,
+      .priority-grid,
+      .category-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-card,
+      .priority-card {
+        min-height: 56px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1337,25 +1463,48 @@
         <div class="card">
           <div class="section-heading"><div><h3>Nuevo reporte</h3><p>Registra averías o trabajos de forma rápida y clara.</p></div><span class="section-badge">LOTEKA GO</span></div><div class="soft-divider"></div>
           <form id="reporteForm">
-            <div class="row-2">
-              <div class="field">
-                <label for="tipo">Tipo de reporte</label>
-                <select id="tipo" required>
-                  <option value="">Seleccionar</option>
-                  <option value="Avería">Avería</option>
-                  <option value="Trabajo">Trabajo</option>
-                </select>
-              </div>
+            <div class="quick-banner">
+              <strong>Haz el reporte en 4 pasos:</strong> elige el tipo, toca la categoría, agrega la evidencia y guarda. Todo lo demás es opcional.
+            </div>
 
-              <div class="field">
-                <label for="prioridad">Prioridad</label>
-                <select id="prioridad" required>
-                  <option value="Media">Media</option>
-                  <option value="Baja">Baja</option>
-                  <option value="Alta">Alta</option>
-                  <option value="Urgente">Urgente</option>
-                </select>
-              </div>
+            <div class="field">
+              <label for="tipo">¿Qué vas a reportar?</label>
+              <select id="tipo" class="hidden-native-select" required>
+                <option value="">Seleccionar</option>
+                <option value="Avería">Avería</option>
+                <option value="Trabajo">Trabajo</option>
+              </select>
+              <div class="segmented-grid" id="tipoCards"></div>
+              <div class="helper-text">Toca una sola opción para continuar.</div>
+            </div>
+
+            <div class="field compact-field">
+              <label for="categoriaSelect">¿Qué pasó?</label>
+              <select id="categoriaSelect" class="hidden-native-select" required>
+                <option value="">Seleccionar</option>
+              </select>
+              <div class="category-grid" id="categoriaCards"></div>
+              <div class="helper-text">Usa las opciones rápidas. Si no aparece, toca <strong>Otro</strong>.</div>
+            </div>
+
+            <div class="field" id="campoOtroWrap" style="display:none;">
+              <label for="campoOtro">Especificar</label>
+              <input
+                type="text"
+                id="campoOtro"
+                placeholder="Escribe brevemente la avería o trabajo"
+              />
+            </div>
+
+            <div class="field compact-field">
+              <label for="prioridad">Prioridad</label>
+              <select id="prioridad" class="hidden-native-select" required>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+              <div class="priority-grid" id="prioridadCards"></div>
             </div>
 
             <div class="field">
@@ -1363,34 +1512,16 @@
               <input
                 type="text"
                 id="agencia"
-                placeholder="Ej: Agencia 1000 / Grupo 44"
+                placeholder="Ej: Agencia 1000 o Grupo 44"
                 required
               />
             </div>
 
-            <div class="row-2">
-              <div class="field">
-                <label for="categoriaSelect">Selecciona la categoría</label>
-                <select id="categoriaSelect" required>
-                  <option value="">Seleccionar</option>
-                </select>
-              </div>
-
-              <div class="field" id="campoOtroWrap" style="display:none;">
-                <label for="campoOtro">Especificar</label>
-                <input
-                  type="text"
-                  id="campoOtro"
-                  placeholder="Escribe la avería o trabajo"
-                />
-              </div>
-            </div>
-
             <div class="field">
-              <label for="descripcion">Observación adicional (opcional)</label>
+              <label for="descripcion">Comentario adicional (opcional)</label>
               <textarea
                 id="descripcion"
-                placeholder="Detalle breve, referencia o comentario adicional..."
+                placeholder="Referencia breve, detalle o comentario adicional..."
               ></textarea>
             </div>
 
@@ -1506,6 +1637,45 @@
       ]
     };
 
+
+    const TYPE_CARD_OPTIONS = [
+      { value: "Avería", label: "Avería", icon: "🔧" },
+      { value: "Trabajo", label: "Trabajo", icon: "🏗️" }
+    ];
+
+    const PRIORITY_CARD_OPTIONS = [
+      { value: "Media", label: "Media", icon: "🟡" },
+      { value: "Baja", label: "Baja", icon: "🟢" },
+      { value: "Alta", label: "Alta", icon: "🟠" },
+      { value: "Urgente", label: "Urgente", icon: "🔴" }
+    ];
+
+    const CATEGORY_ICONS = {
+      "Cambio de printer": "🖨️",
+      "Cambio de escáner": "📠",
+      "Cambio de POS": "💳",
+      "Cambio de TV": "📺",
+      "Problema de red": "📡",
+      "Cable de red": "🔌",
+      "Cámara dañada": "📷",
+      "Teléfono dañado": "☎️",
+      "Impresora no imprime": "🖨️",
+      "Equipo no enciende": "💻",
+      "Sistema lento": "🐢",
+      "Sin internet": "🌐",
+      "Problema eléctrico": "⚡",
+      "Pintura": "🎨",
+      "Remodelación": "🏢",
+      "Mantenimiento de aire": "❄️",
+      "Instalación de cámara": "📹",
+      "Instalación de teléfono": "📞",
+      "Cableado": "🧵",
+      "Reparación general": "🛠️",
+      "Cambio de piezas": "🔩",
+      "Limpieza técnica": "🧼",
+      "Otro": "❓"
+    };
+
     const tabCreate = document.getElementById("tabCreate");
     const tabReports = document.getElementById("tabReports");
     const sectionCreate = document.getElementById("sectionCreate");
@@ -1516,6 +1686,9 @@
     const prioridad = document.getElementById("prioridad");
     const agencia = document.getElementById("agencia");
     const categoriaSelect = document.getElementById("categoriaSelect");
+    const tipoCards = document.getElementById("tipoCards");
+    const prioridadCards = document.getElementById("prioridadCards");
+    const categoriaCards = document.getElementById("categoriaCards");
     const campoOtroWrap = document.getElementById("campoOtroWrap");
     const campoOtro = document.getElementById("campoOtro");
     const descripcion = document.getElementById("descripcion");
@@ -1556,13 +1729,16 @@
 
     tipo.addEventListener("change", () => {
       renderCategoryOptions();
+      renderTypeCards();
+    });
+
+    prioridad.addEventListener("change", () => {
+      renderPriorityCards();
     });
 
     categoriaSelect.addEventListener("change", () => {
-      campoOtroWrap.style.display = categoriaSelect.value === "Otro" ? "block" : "none";
-      if (categoriaSelect.value !== "Otro") {
-        campoOtro.value = "";
-      }
+      syncOtherFieldVisibility();
+      renderCategoryCards();
     });
 
     function showStatus(message, type = "ok") {
@@ -1575,23 +1751,99 @@
       statusBox.textContent = "";
     }
 
+    function setTipoValue(value) {
+      tipo.value = value;
+      renderTypeCards();
+      renderCategoryOptions();
+    }
+
+    function setPrioridadValue(value) {
+      prioridad.value = value;
+      renderPriorityCards();
+    }
+
+    function setCategoriaValue(value) {
+      categoriaSelect.value = value;
+      syncOtherFieldVisibility();
+      renderCategoryCards();
+    }
+
+    function syncOtherFieldVisibility() {
+      campoOtroWrap.style.display = categoriaSelect.value === "Otro" ? "block" : "none";
+      if (categoriaSelect.value !== "Otro") {
+        campoOtro.value = "";
+      }
+    }
+
+    function renderTypeCards() {
+      tipoCards.innerHTML = TYPE_CARD_OPTIONS.map(option => `
+        <button type="button" class="choice-card ${tipo.value === option.value ? "active" : ""}" data-type-value="${option.value}">
+          <span class="icon">${option.icon}</span>
+          <span>${option.label}</span>
+        </button>
+      `).join("");
+
+      tipoCards.querySelectorAll("[data-type-value]").forEach(button => {
+        button.addEventListener("click", () => setTipoValue(button.dataset.typeValue));
+      });
+    }
+
+    function renderPriorityCards() {
+      prioridadCards.innerHTML = PRIORITY_CARD_OPTIONS.map(option => `
+        <button type="button" class="priority-card ${prioridad.value === option.value ? "active" : ""}" data-priority-value="${option.value}">
+          <span class="icon">${option.icon}</span>
+          <span>${option.label}</span>
+        </button>
+      `).join("");
+
+      prioridadCards.querySelectorAll("[data-priority-value]").forEach(button => {
+        button.addEventListener("click", () => setPrioridadValue(button.dataset.priorityValue));
+      });
+    }
+
+    function renderCategoryCards() {
+      const selectedValue = categoriaSelect.value;
+      const tipoValue = tipo.value.trim();
+      const options = REPORT_CATEGORY_OPTIONS[tipoValue] || [];
+
+      if (!options.length) {
+        categoriaCards.innerHTML = '<div class="helper-text">Primero selecciona si es avería o trabajo.</div>';
+        return;
+      }
+
+      categoriaCards.innerHTML = options.map(option => `
+        <button type="button" class="category-card ${selectedValue === option ? "active" : ""}" data-category-value="${option}">
+          <span class="icon">${CATEGORY_ICONS[option] || "📌"}</span>
+          <span>${option}</span>
+        </button>
+      `).join("");
+
+      categoriaCards.querySelectorAll("[data-category-value]").forEach(button => {
+        button.addEventListener("click", () => setCategoriaValue(button.dataset.categoryValue));
+      });
+    }
+
     function resetForm() {
       form.reset();
       previewContainer.style.display = "none";
       previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
       clearStatus();
-      prioridad.value = "Media";
-      campoOtroWrap.style.display = "none";
       campoOtro.value = "";
-      renderCategoryOptions();
+      const nombreGuardado = usuarioActual?.user ? usuarioActual.user : "";
+      encargado.value = nombreGuardado;
+      setTipoValue("Avería");
+      setPrioridadValue("Media");
+      setCategoriaValue("");
+      agencia.placeholder = "Ej: Agencia 1000 o Grupo 44";
     }
 
     function renderCategoryOptions() {
       const tipoValue = tipo.value.trim();
       const options = REPORT_CATEGORY_OPTIONS[tipoValue] || [];
       categoriaSelect.innerHTML = '<option value="">Seleccionar</option>' + options.map(item => `<option value="${item}">${item}</option>`).join('');
-      campoOtroWrap.style.display = "none";
-      campoOtro.value = "";
+      categoriaSelect.value = "";
+      syncOtherFieldVisibility();
+      renderCategoryCards();
     }
 
     function resolveSelectedCategory() {
@@ -2114,7 +2366,10 @@ if (techBtn) {
 
     btnRefreshReports.addEventListener("click", loadReports);
 
-    renderCategoryOptions();
+    renderTypeCards();
+    renderPriorityCards();
+    setTipoValue("Avería");
+    setPrioridadValue("Media");
 
   // loadReports();
 const usuariosApp = [
