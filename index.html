@@ -1288,6 +1288,18 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <label for="agenciaEncargado">Encargado</label>
         <input id="agenciaEncargado" type="text" placeholder="Nombre del encargado">
       </div>
+      <div class="form-group">
+        <label for="agenciaLatitud">Latitud</label>
+        <input id="agenciaLatitud" type="number" step="any" placeholder="Ej. 18.53926">
+      </div>
+      <div class="form-group">
+        <label for="agenciaLongitud">Longitud</label>
+        <input id="agenciaLongitud" type="number" step="any" placeholder="Ej. -69.93532">
+      </div>
+      <div class="form-group full">
+        <label for="agenciaDireccion">Dirección / referencia</label>
+        <input id="agenciaDireccion" type="text" placeholder="Dirección visible o referencia de la agencia">
+      </div>
     </div>
 
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px">
@@ -1314,6 +1326,20 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       <div class="agency-mini-stat"><div class="label">Seriales</div><div class="value" id="detalleAgenciaSeriales">0</div></div>
       <div class="agency-mini-stat"><div class="label">Cámaras</div><div class="value" id="detalleAgenciaCamaras">0</div></div>
       <div class="agency-mini-stat"><div class="label">Routers</div><div class="value" id="detalleAgenciaRouters">0</div></div>
+    </div>
+
+    <div class="detail-panel" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#7b8d9d;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Geolocalización de la agencia</div>
+          <div id="detalleAgenciaGeoTexto" style="font-size:14px;font-weight:700;color:#204b6a;margin-bottom:6px">Sin coordenadas registradas</div>
+          <div id="detalleAgenciaGeoDireccion" style="font-size:13px;color:#708596">Agrega una referencia para facilitar la ubicación al técnico.</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a id="detalleAgenciaMapLink" class="btn btn-secondary" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fas fa-map-marker-alt"></i> Ver ubicación</a>
+          <a id="detalleAgenciaRouteLink" class="btn" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px"><i class="fas fa-route"></i> Cómo llegar</a>
+        </div>
+      </div>
     </div>
 
     <div class="detail-panel">
@@ -2053,10 +2079,15 @@ const equiposBaseAgencia = [
   {categoria:'adicional', producto:'Scanner', imagen:'https://cdn-icons-png.flaticon.com/512/2920/2920339.png', marca:'Witek', modelo:'MIS200 OMR A6', serial:'SC-772001', fechaInstalacion:'21/04/2026'}
 ];
 
-let agencias = Array.from({length:15}, (_, idx) => {
-  const numero = 1000 + idx;
-  const grupo = idx < 5 ? 'Grupo 08' : idx < 10 ? 'Grupo 15' : 'Grupo 44';
-  const encargado = idx < 5 ? 'Carlos Paulino' : idx < 10 ? 'Andrea Torres' : 'Juan Pérez';
+const AGENCY_GEO_CATALOG = {
+  1088: { lat: 18.53926, lng: -69.93532, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1088 · Grupo 44' },
+  1112: { lat: 18.5417, lng: -69.94032, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1112 · Grupo 44' },
+  1130: { lat: 18.54045, lng: -69.93627, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1130 · Grupo 44' },
+  1188: { lat: 18.53521, lng: -69.93818, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1188 · Grupo 44' }
+};
+
+function createAgencyRecord(numero, grupo, encargado) {
+  const geo = AGENCY_GEO_CATALOG[numero] || {};
   const equipos = equiposBaseAgencia.map((item, i) => ({
     ...item,
     serial: `${item.serial}-${numero}`,
@@ -2065,16 +2096,36 @@ let agencias = Array.from({length:15}, (_, idx) => {
   return {
     numero,
     nombre: `Agencia ${numero}`,
-    grupo,
-    encargado,
+    grupo: geo.grupo || grupo,
+    encargado: geo.encargado || encargado,
+    direccion: geo.direccion || `Agencia ${numero}`,
+    latitud: typeof geo.lat === 'number' ? geo.lat : null,
+    longitud: typeof geo.lng === 'number' ? geo.lng : null,
     equipos
   };
-});
+}
+
+let agencias = [
+  createAgencyRecord(1000, 'Grupo 08', 'Carlos Paulino'),
+  createAgencyRecord(1001, 'Grupo 08', 'Carlos Paulino'),
+  createAgencyRecord(1002, 'Grupo 08', 'Carlos Paulino'),
+  createAgencyRecord(1003, 'Grupo 08', 'Carlos Paulino'),
+  createAgencyRecord(1004, 'Grupo 08', 'Carlos Paulino'),
+  createAgencyRecord(1005, 'Grupo 15', 'Andrea Torres'),
+  createAgencyRecord(1006, 'Grupo 15', 'Andrea Torres'),
+  createAgencyRecord(1007, 'Grupo 15', 'Andrea Torres'),
+  createAgencyRecord(1008, 'Grupo 15', 'Andrea Torres'),
+  createAgencyRecord(1009, 'Grupo 15', 'Andrea Torres'),
+  createAgencyRecord(1088, 'Grupo 44', 'encargado1'),
+  createAgencyRecord(1112, 'Grupo 44', 'encargado1'),
+  createAgencyRecord(1130, 'Grupo 44', 'encargado1'),
+  createAgencyRecord(1188, 'Grupo 44', 'encargado1')
+];
 
 let grupos = [
   {numero:'08', nombre:'Grupo 08', color:'#f0c243', encargado:'Carlos Paulino', flota:'(829) 213-7183', extension:'1108', correo:'encargado_g08@grupoortiz.com.do', custodia:[], agencias:[1000,1001,1002,1003,1004]},
   {numero:'15', nombre:'Grupo 15', color:'#22a7d6', encargado:'Andrea Torres', flota:'(809) 747-5258', extension:'1115', correo:'encargado_g15@grupoortiz.com.do', custodia:[], agencias:[1005,1006,1007,1008,1009]},
-  {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'Juan Pérez', flota:'(829) 340-6805', extension:'1144', correo:'encargado_g44@grupoortiz.com.do', custodia:[], agencias:[1010,1011,1012,1013,1014]}
+  {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'encargado1', flota:'(829) 340-6805', extension:'1144', correo:'encargado1@grupoortiz.com.do', custodia:[], agencias:[1088,1112,1130,1188]}
 ];
 let editGrupoIndex = null;
 let detalleGrupoActualIndex = null;
@@ -2083,6 +2134,41 @@ let imagen = "";
 let editIndex = null;
 let editAlmacenIndex = null;
 const usuarioMovimientoFijo = 'Oscar Rosario';
+
+function normalizarNumeroGeografico(value) {
+  if (value === '' || value === null || value === undefined) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getAgencyCoordinates(agencia) {
+  if (!agencia) return { lat: null, lng: null };
+  return {
+    lat: normalizarNumeroGeografico(agencia.latitud),
+    lng: normalizarNumeroGeografico(agencia.longitud)
+  };
+}
+
+function buildAgencyMapsSearchUrl(agencia) {
+  const { lat, lng } = getAgencyCoordinates(agencia);
+  if (lat !== null && lng !== null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const fallback = encodeURIComponent(String(agencia?.direccion || agencia?.nombre || '').trim());
+  return fallback ? `https://www.google.com/maps/search/?api=1&query=${fallback}` : '#';
+}
+
+function buildAgencyMapsDirectionsUrl(agencia) {
+  const { lat, lng } = getAgencyCoordinates(agencia);
+  if (lat !== null && lng !== null) return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  const fallback = encodeURIComponent(String(agencia?.direccion || agencia?.nombre || '').trim());
+  return fallback ? `https://www.google.com/maps/dir/?api=1&destination=${fallback}&travelmode=driving` : '#';
+}
+
+function formatAgencyGeoText(agencia) {
+  const { lat, lng } = getAgencyCoordinates(agencia);
+  if (lat === null || lng === null) return 'Sin coordenadas registradas';
+  return `${lat}, ${lng}`;
+}
+
 const suplidoresBase = ['Suplidor General', 'Distribuidora Central', 'Tech Supplies RD', 'Importadora Loteka'];
 let entradasInventario = [];
 let secuenciaEntrada = 1;
@@ -3569,6 +3655,9 @@ function abrirModalAgencia(){
   document.getElementById('agenciaNumero').value = '';
   document.getElementById('agenciaGrupo').value = '';
   document.getElementById('agenciaEncargado').value = '';
+  document.getElementById('agenciaLatitud').value = '';
+  document.getElementById('agenciaLongitud').value = '';
+  document.getElementById('agenciaDireccion').value = '';
   document.getElementById('modalAgencia').style.display = 'flex';
 }
 
@@ -3583,6 +3672,9 @@ function editarAgencia(i){
   document.getElementById('agenciaNumero').value = agencia.numero;
   document.getElementById('agenciaGrupo').value = agencia.grupo;
   document.getElementById('agenciaEncargado').value = agencia.encargado;
+  document.getElementById('agenciaLatitud').value = agencia.latitud ?? '';
+  document.getElementById('agenciaLongitud').value = agencia.longitud ?? '';
+  document.getElementById('agenciaDireccion').value = agencia.direccion || agencia.nombre || '';
   document.getElementById('modalAgencia').style.display = 'flex';
 }
 
@@ -3590,6 +3682,9 @@ function guardarAgencia(){
   const numero = String(document.getElementById('agenciaNumero').value || '').trim();
   const grupo = document.getElementById('agenciaGrupo').value.trim() || 'Grupo 00';
   const encargado = document.getElementById('agenciaEncargado').value.trim() || 'Sin encargado';
+  const latitud = normalizarNumeroGeografico(document.getElementById('agenciaLatitud').value);
+  const longitud = normalizarNumeroGeografico(document.getElementById('agenciaLongitud').value);
+  const direccion = document.getElementById('agenciaDireccion').value.trim() || `Agencia ${numero}`;
 
   if(!numero){
     alert('Escribe el número de la agencia');
@@ -3608,6 +3703,9 @@ function guardarAgencia(){
       nombre: `Agencia ${numero}`,
       grupo,
       encargado,
+      direccion,
+      latitud,
+      longitud,
       equipos: []
     });
   } else {
@@ -3615,6 +3713,9 @@ function guardarAgencia(){
     agencias[editAgenciaIndex].nombre = `Agencia ${numero}`;
     agencias[editAgenciaIndex].grupo = grupo;
     agencias[editAgenciaIndex].encargado = encargado;
+    agencias[editAgenciaIndex].direccion = direccion;
+    agencias[editAgenciaIndex].latitud = latitud;
+    agencias[editAgenciaIndex].longitud = longitud;
   }
 
   agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
@@ -3633,6 +3734,7 @@ function renderAgencias(){
         <td><strong>${agencia.nombre}</strong></td>
         <td>${agencia.grupo}</td>
         <td>${agencia.encargado}</td>
+        <td>${formatAgencyGeoText(agencia)}</td>
         <td>${agencia.equipos.length}</td>
         <td>${totalSeriales}</td>
         <td class="actions"><i class="fas fa-eye" onclick="verDetalleAgencia(${i})" title="Consultar"></i><i class="fas fa-edit" onclick="editarAgencia(${i})" title="Editar"></i></td>
@@ -3656,6 +3758,10 @@ function verDetalleAgencia(i){
   document.getElementById('detalleAgenciaSeriales').innerText = agencia.equipos.filter(item => item.serial).length;
   document.getElementById('detalleAgenciaCamaras').innerText = agencia.equipos.filter(item => item.categoria === 'camara').length;
   document.getElementById('detalleAgenciaRouters').innerText = agencia.equipos.filter(item => item.categoria === 'routers').length;
+  document.getElementById('detalleAgenciaGeoTexto').innerText = formatAgencyGeoText(agencia);
+  document.getElementById('detalleAgenciaGeoDireccion').innerText = agencia.direccion || 'Sin dirección registrada';
+  document.getElementById('detalleAgenciaMapLink').href = buildAgencyMapsSearchUrl(agencia);
+  document.getElementById('detalleAgenciaRouteLink').href = buildAgencyMapsDirectionsUrl(agencia);
   document.getElementById('buscarSerialAgencia').value = '';
   document.querySelectorAll('.agency-tab').forEach((btn, idx) => btn.classList.toggle('active', idx === 0));
   renderDetalleAgenciaInventario();
