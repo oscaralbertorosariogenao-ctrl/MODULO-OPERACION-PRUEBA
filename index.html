@@ -4576,6 +4576,31 @@ renderTransferencias();
       return date.toLocaleString('es-DO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     }
 
+    function normalizeRemoteStatus(status) {
+      const value = String(status || '').trim().toLowerCase();
+      if (!value) return 'Pendiente';
+      if (['cerrado', 'cerrada', 'resuelto', 'resuelta', 'completado', 'completada'].includes(value)) return 'Completado';
+      if (['en ruta', 'en proceso', 'proceso'].includes(value)) return 'En proceso';
+      if (['asignada', 'asignado'].includes(value)) return 'Asignada';
+      return 'Pendiente';
+    }
+
+    function getOperationLocation(op = {}) {
+      const agency = String(op.agency || '').trim();
+      const grupo = String(op.grupo || '').trim();
+      if (agency && grupo) return `${agency} · ${grupo}`;
+      return agency || grupo || 'No registrado';
+    }
+
+    function getOperationReporter(op = {}) {
+      return String(op.nombre_encargado || op.created_by || '').trim() || 'No registrado';
+    }
+
+    function getOperationSpecificTypes(op = {}) {
+      if (Array.isArray(op.selectedTypes) && op.selectedTypes.length) return op.selectedTypes;
+      return op.title ? [op.title] : [];
+    }
+
     function getCatalogNames(type) {
       return (type === 'Trabajo' ? WORK_TYPES : ISSUE_TYPES).map(item => item.name).filter(Boolean);
     }
@@ -4701,9 +4726,11 @@ renderTransferencias();
     }
 
     function getHistoryTimestamp(historyItem) {
-      if (!historyItem || !historyItem.timestamp) return null;
-      const timestamp = new Date(historyItem.timestamp).getTime();
-      return Number.isFinite(timestamp) ? historyItem.timestamp : null;
+      if (!historyItem) return null;
+      const raw = historyItem.timestamp || historyItem.date || historyItem.fecha || historyItem.created_at || null;
+      if (!raw) return null;
+      const timestamp = new Date(raw).getTime();
+      return Number.isFinite(timestamp) ? raw : null;
     }
 
     function inferAssignedAtFromHistory(op) {
@@ -4715,7 +4742,7 @@ renderTransferencias();
           (item.action === 'Inicio' && item.newStatus === 'En proceso') ||
           (item.action === 'Finalización' && item.newStatus === 'Completado')
         ))
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))[0];
+        .sort((a, b) => new Date(getHistoryTimestamp(a) || 0) - new Date(getHistoryTimestamp(b) || 0))[0];
 
       return getHistoryTimestamp(assignmentEntry);
     }
@@ -4727,7 +4754,7 @@ renderTransferencias();
           item.action === 'Finalización' ||
           (item.action === 'Estado' && item.newStatus === 'Completado')
         ))
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))[0];
+        .sort((a, b) => new Date(getHistoryTimestamp(a) || 0) - new Date(getHistoryTimestamp(b) || 0))[0];
 
       return getHistoryTimestamp(completionEntry);
     }
@@ -4908,9 +4935,9 @@ renderTransferencias();
           user: item.user || 'admin@empresa.com',
           prevStatus: item.prevStatus ?? null,
           newStatus: item.newStatus ?? null,
-          timestamp: item.timestamp || op.createdAt
+          timestamp: getHistoryTimestamp(item) || op.createdAt
         }));
-      }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      }).sort((a, b) => new Date(a.timestamp || 0) < new Date(b.timestamp || 0) ? 1 : -1);
     }
 
     function getFilteredHistoryEntries() {
@@ -4943,7 +4970,7 @@ renderTransferencias();
           <td><strong>${op.code}</strong></td>
           <td>${op.type}</td>
           <td>${op.title}</td>
-          <td>${op.agency}</td>
+          <td>${getOperationLocation(op)}</td>
           <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
           <td>${statusBadge(op.status)}</td>
           <td>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</td>
@@ -5059,7 +5086,7 @@ renderTransferencias();
           <td><strong>${item.code}</strong></td>
           <td>${item.action}</td>
           <td><div><strong>${item.title}</strong></div><div style="margin-top:6px;"><span class="chip ${item.type === 'Avería' ? 'averia' : 'trabajo'}">${item.type}</span></div></td>
-          <td>${item.agency}</td>
+          <td>${item.agency || '-'}</td>
           <td>${item.user}</td>
           <td>
             <div>${item.detail}</div>
@@ -5088,7 +5115,8 @@ renderTransferencias();
       return operations.filter(op => {
         const matchType = !filterType.value || op.type === filterType.value;
         const matchStatus = !filterStatus.value || op.status === filterStatus.value;
-        const matchAgency = !filterAgency.value || op.agency.toLowerCase().includes(filterAgency.value.toLowerCase());
+        const locationText = getOperationLocation(op).toLowerCase();
+        const matchAgency = !filterAgency.value || locationText.includes(filterAgency.value.toLowerCase());
         const matchTech = !filterTech.value || `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.includes(filterTech.value.toLowerCase());
         const createdDate = new Date(op.createdAt);
         const fromOk = !filterDateFrom.value || createdDate >= new Date(filterDateFrom.value + 'T00:00:00');
@@ -5113,7 +5141,7 @@ renderTransferencias();
           <td><strong>${op.code}</strong></td>
           <td><span class="chip ${op.type === 'Avería' ? 'averia' : 'trabajo'}">${op.type}</span></td>
           <td><strong>${op.title}</strong><div style="margin-top:6px; color: var(--muted); font-size:12px;">${op.description.slice(0, 60)}${op.description.length > 60 ? '...' : ''}</div><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></td>
-          <td>${op.agency}</td>
+          <td>${getOperationLocation(op)}</td>
           <td><strong style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">${assignedLabel}</strong>${getAssigneeDisplayName(op.technician, op.type)}</td>
           <td><span class="chip priority-${op.priority.toLowerCase()}">${op.priority}</span></td>
           <td>${statusBadge(op.status)}</td>
@@ -5304,7 +5332,7 @@ renderTransferencias();
           <tr>
             <td><strong>${op.code}</strong></td>
             <td>${op.title}</td>
-            <td>${op.agency}</td>
+            <td>${getOperationLocation(op)}</td>
             <td>${statusBadge(op.status)}</td>
             <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
           </tr>`).join('') : '<tr><td colspan="5"><div class="dashboard-empty">No hay operaciones críticas activas.</div></td></tr>';
@@ -5476,21 +5504,22 @@ renderTransferencias();
     }
 
     function buildSupabasePayloadFromOperation(op) {
+      const locationAgency = String(op.agency || '').trim();
       return {
         id: op.id,
         code: op.code,
         tipo_reporte: op.type,
         categoria: op.title,
         descripcion: op.description,
-        agencia: op.agency,
+        agencia: locationAgency,
         grupo: op.grupo || '',
-        nombre_encargado: op.nombre_encargado || 'Sistema web',
-        creado_por: op.created_by || getCurrentUserEmail(),
+        nombre_encargado: op.nombre_encargado || op.created_by || 'Sistema web',
+        creado_por: op.created_by || op.nombre_encargado || getCurrentUserEmail(),
         fecha_reporte: op.createdAt || nowIso(),
-        estado: op.status,
-        prioridad: op.priority,
+        estado: normalizeRemoteStatus(op.status),
+        prioridad: op.priority || 'Media',
         asignado_a: op.type === 'Trabajo' ? (op.technician || 'Sin asignar') : normalizeStoredAssignee(op.technician, op.type),
-        selected_types: Array.isArray(op.selectedTypes) ? op.selectedTypes : [],
+        selected_types: Array.isArray(op.selectedTypes) ? op.selectedTypes : getOperationSpecificTypes(op),
         images: Array.isArray(op.images) ? op.images : [],
         result_images: Array.isArray(op.resultImages) ? op.resultImages : [],
         assigned_at: op.assignedAt || null,
@@ -5508,17 +5537,21 @@ renderTransferencias();
       const technician = type === 'Trabajo'
         ? (item.asignado_a || existing?.technician || 'Sin asignar')
         : normalizeStoredAssignee(item.asignado_a || existing?.technician || 'Sin asignar', type);
+      const title = item.categoria || existing?.title || 'Reporte';
+      const selectedTypes = Array.isArray(item.selected_types) && item.selected_types.length
+        ? item.selected_types
+        : (Array.isArray(existing?.selectedTypes) && existing.selectedTypes.length ? existing.selectedTypes : (title ? [title] : []));
       return {
         id: item.id || existing?.id || crypto.randomUUID(),
         code: item.code || existing?.code || `REP-${String(fallbackIndex + 1).padStart(4, '0')}`,
         type,
-        title: item.categoria || existing?.title || 'Reporte',
+        title,
         agency: item.agencia || existing?.agency || '',
         technician,
         priority: item.prioridad || existing?.priority || 'Media',
-        status: item.estado === 'Cerrado' ? 'Completado' : (item.estado || existing?.status || 'Pendiente'),
+        status: normalizeRemoteStatus(item.estado || existing?.status || 'Pendiente'),
         description: item.descripcion || existing?.description || '',
-        selectedTypes: Array.isArray(item.selected_types) ? item.selected_types : (Array.isArray(existing?.selectedTypes) ? existing.selectedTypes : []),
+        selectedTypes,
         createdAt: item.fecha_reporte || item.created_at || existing?.createdAt || nowIso(),
         images: Array.isArray(item.images) ? item.images : (Array.isArray(existing?.images) ? existing.images : []),
         resultImages: Array.isArray(item.result_images) ? item.result_images : (Array.isArray(existing?.resultImages) ? existing.resultImages : []),
@@ -5530,8 +5563,8 @@ renderTransferencias();
         history: Array.isArray(item.history) ? item.history : (Array.isArray(existing?.history) ? existing.history : []),
         source: item.source || 'supabase',
         grupo: item.grupo || existing?.grupo || '',
-        nombre_encargado: item.nombre_encargado || existing?.nombre_encargado || '',
-        created_by: item.creado_por || existing?.created_by || ''
+        nombre_encargado: item.nombre_encargado || existing?.nombre_encargado || item.creado_por || '',
+        created_by: item.creado_por || existing?.created_by || item.nombre_encargado || ''
       };
     }
 
@@ -5728,19 +5761,19 @@ renderTransferencias();
       const historyHtml = Array.isArray(op.history) && op.history.length
         ? op.history
             .filter(item => allowedActions.includes(item.action))
-            .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .sort((a,b) => new Date(getHistoryTimestamp(b) || 0) - new Date(getHistoryTimestamp(a) || 0))
             .map(item => `
               <div style="padding:10px 0; border-bottom:1px solid var(--border);">
                 <strong style="display:block; font-size:13px;">${item.action}</strong>
                 <div style="font-size:13px; color:var(--text); margin-top:4px;">${item.detail}</div>
                 ${(item.prevStatus || item.newStatus) ? `<div style="font-size:12px; color:var(--muted); margin-top:4px;"><strong>${item.prevStatus || '-'}</strong> → <strong>${item.newStatus || '-'}</strong></div>` : ''}
-                <div style="font-size:12px; color:var(--muted); margin-top:4px;">${formatDate(item.timestamp)} · ${item.user}</div>
+                <div style="font-size:12px; color:var(--muted); margin-top:4px;">${formatDate(getHistoryTimestamp(item) || op.createdAt)} · ${item.user}</div>
               </div>
             `).join('')
         : '<div style="color:var(--muted);">Sin historial disponible.</div>';
       detailContent.innerHTML = `
-        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${assignedDisplay}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
-        <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
+        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Categoría / asunto</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia / grupo</span><strong>${getOperationLocation(op)}</strong></div><div class="detail-item"><span>Reportado por</span><strong>${getOperationReporter(op)}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${assignedDisplay}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority || 'Media'}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
+        <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(getOperationSpecificTypes(op))}</div></div></div>
         ${op.images && op.images.length ? renderMediaGrid(op.images, { title: 'Archivos reportados' }) : ''}
         ${op.resultImages && op.resultImages.length ? renderMediaGrid(op.resultImages, { title: 'Evidencias de resultado' }) : ''}
         <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
@@ -6014,10 +6047,10 @@ renderTransferencias();
       const historyItems = Array.isArray(op.history) ? op.history : [];
       const historyHtml = historyItems
         .filter(item => ['Creación','Asignación','Inicio','Estado','Finalización','Evidencia'].includes(item.action))
-        .sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp))
+        .sort((a,b) => new Date(getHistoryTimestamp(a) || 0) - new Date(getHistoryTimestamp(b) || 0))
         .map(item => `
           <tr>
-            <td>${escapeHtml(formatDate(item.timestamp))}</td>
+            <td>${escapeHtml(formatDate(getHistoryTimestamp(item) || op.createdAt))}</td>
             <td>${escapeHtml(item.action || '')}</td>
             <td>${escapeHtml(item.detail || '')}${(item.prevStatus || item.newStatus) ? `<div style="margin-top:4px; color:#667085; font-size:11px;"><strong>${escapeHtml(item.prevStatus || '-')}</strong> → <strong>${escapeHtml(item.newStatus || '-')}</strong></div>` : ''}</td>
             <td>${escapeHtml(item.user || '')}</td>
@@ -6059,12 +6092,12 @@ renderTransferencias();
     <div class="meta-item"><span>Estado</span><div>${escapeHtml(op.status)}</div></div>
     <div class="meta-item"><span>Fecha</span><div>${escapeHtml(formatDate(op.createdAt))}</div></div>
     <div class="meta-item"><span>Título</span><div>${escapeHtml(op.title)}</div></div>
-    <div class="meta-item"><span>Agencia</span><div>${escapeHtml(op.agency)}</div></div>
+    <div class="meta-item"><span>Agencia / Grupo</span><div>${escapeHtml(getOperationLocation(op))}</div></div>
     <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(op.technician)}</div></div>
     <div class="meta-item"><span>Prioridad</span><div>${escapeHtml(op.priority)}</div></div>
     <div class="meta-item"><span>Tiempo de asignación</span><div>${escapeHtml(formatMinutesHuman(getAssignmentMinutes(op) || 0))}</div></div>
     <div class="meta-item"><span>Tiempo de resolución</span><div>${escapeHtml(formatMinutesHuman(getResolutionMinutes(op) || 0))}</div></div>
-    <div class="meta-item"><span>Tipos específicos</span><div class="types">${(Array.isArray(op.selectedTypes)&&op.selectedTypes.length?op.selectedTypes:['Sin tipo específico']).map(t=>`<span class="type-chip">${escapeHtml(t)}</span>`).join('')}</div></div>
+    <div class="meta-item"><span>Tipos específicos</span><div class="types">${(getOperationSpecificTypes(op).length ? getOperationSpecificTypes(op) : ['Sin tipo específico']).map(t=>`<span class="type-chip">${escapeHtml(t)}</span>`).join('')}</div></div><div class="meta-item"><span>Reportado por</span><div>${escapeHtml(getOperationReporter(op))}</div></div>
   </div>
   <div class="print-section"><h3>Descripción</h3><div class="description">${escapeHtml(op.description || '')}</div></div>
   ${mediaSections}
@@ -6086,7 +6119,7 @@ function openEditModal(id) {
       document.getElementById('editOperationType').value = op.type;
       document.getElementById('editOperationStatus').value = op.status;
       document.getElementById('editOperationTitle').value = op.title;
-      document.getElementById('editOperationAgency').value = op.agency;
+      document.getElementById('editOperationAgency').value = op.agency || '';
       document.getElementById('editOperationPriority').value = op.priority;
       document.getElementById('editOperationDescription').value = op.description;
       document.getElementById('editResultImage').value = '';
@@ -6175,9 +6208,12 @@ function openEditModal(id) {
       operations[index].title = newTitle;
       operations[index].agency = newAgency;
       operations[index].technician = newTechnician;
-      operations[index].priority = newPriority;
+      operations[index].priority = newPriority || operations[index].priority || 'Media';
       operations[index].description = newDescription;
       operations[index].selectedTypes = newSelectedTypes;
+      operations[index].grupo = operations[index].grupo || '';
+      operations[index].nombre_encargado = operations[index].nombre_encargado || operations[index].created_by || '';
+      operations[index].created_by = operations[index].created_by || operations[index].nombre_encargado || getCurrentUserEmail();
 
       if (!Array.isArray(operations[index].history)) operations[index].history = [];
 
@@ -6689,7 +6725,7 @@ function openEditModal(id) {
             user: item.user || 'admin@empresa.com',
             prevStatus: Object.prototype.hasOwnProperty.call(item, 'prevStatus') ? item.prevStatus : null,
             newStatus: Object.prototype.hasOwnProperty.call(item, 'newStatus') ? item.newStatus : null,
-            timestamp: item.timestamp || op.createdAt
+            timestamp: getHistoryTimestamp(item) || op.createdAt
           }));
           changed = true;
         }
