@@ -514,36 +514,51 @@
     .detail-location-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .detail-location-actions.prominent {
+      margin-top: 16px;
     }
 
     .btn-map,
+    .btn-directions,
     .btn-route {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 52px;
-      padding: 14px 16px;
-      border-radius: 14px;
+      gap: 10px;
+      min-height: 58px;
+      padding: 16px 18px;
+      border-radius: 18px;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 900;
+      letter-spacing: .01em;
       transition: .2s ease;
+      text-align: center;
     }
 
     .btn-map {
-      background: #e8f6fb;
+      background: linear-gradient(180deg, #effaff 0%, #dff4fb 100%);
       color: #0b7896;
-      border: 1px solid #cfeaf3;
+      border: 1px solid #c4e6f1;
+      box-shadow: 0 10px 20px rgba(11,120,150,.10);
     }
 
+    .btn-directions,
     .btn-route {
       background: linear-gradient(135deg, #0ea5c6, #0a88a6);
       color: #fff;
       border: 1px solid transparent;
-      box-shadow: 0 10px 18px rgba(14,165,198,.18);
+      box-shadow: 0 12px 22px rgba(14,165,198,.22);
+    }
+
+    .btn-map:hover,
+    .btn-directions:hover,
+    .btn-route:hover {
+      transform: translateY(-1px);
     }
 
     .location-note {
@@ -1325,7 +1340,8 @@
 
       .detail-hero-top,
       .detail-hero-meta,
-      .detail-compact-grid {
+      .detail-compact-grid,
+      .detail-location-actions {
         grid-template-columns: 1fr;
         display: grid;
       }
@@ -2293,6 +2309,19 @@
     }
 
 
+    function buildLocationButtons(report, prominent = false) {
+      const agencyGeo = getAgencyGeoData(report);
+      if (!agencyGeo) return "";
+      const mapsUrl = buildGoogleMapsSearchUrl(agencyGeo);
+      const directionsUrl = buildGoogleMapsDirectionsUrl(agencyGeo);
+      return `
+        <div class="detail-location-actions ${prominent ? "prominent" : ""}">
+          <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">📍 Ver ubicación</a>
+          <a class="btn-directions" href="${directionsUrl}" target="_blank" rel="noopener">🧭 Cómo llegar</a>
+        </div>
+      `;
+    }
+
     function renderLocationSection(report) {
       const agencyGeo = getAgencyGeoData(report);
       if (!agencyGeo) {
@@ -2304,8 +2333,6 @@
         `;
       }
 
-      const mapsUrl = buildGoogleMapsSearchUrl(agencyGeo);
-      const directionsUrl = buildGoogleMapsDirectionsUrl(agencyGeo);
       const lat = Number(agencyGeo.lat);
       const lng = Number(agencyGeo.lng);
       const coordsLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
@@ -2326,10 +2353,6 @@
             </div>
           </div>
           <p class="detail-note">${direccion}</p>
-          <div class="detail-location-actions">
-            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">📍 Ver ubicación</a>
-            <a class="btn-directions" href="${directionsUrl}" target="_blank" rel="noopener">🚗 Cómo llegar</a>
-          </div>
         </div>
       `;
     }
@@ -3199,6 +3222,8 @@
               <strong>${formatDate(report.fecha_reporte || report.created_at)}</strong>
             </div>
           </div>
+
+          ${buildLocationButtons(report, true)}
         </div>
 
         <div class="detail-compact-grid">
