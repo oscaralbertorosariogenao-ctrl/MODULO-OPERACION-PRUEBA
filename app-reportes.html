@@ -1294,24 +1294,11 @@
     <h2 class="login-title">Iniciar sesión</h2>
     <p class="login-subtitle">Accede al módulo móvil de reportes con una imagen más corporativa, limpia y cómoda, manteniendo intacto el flujo operativo.</p>
 
-<input
-  id="loginUser"
-  type="text"
-  placeholder="Usuario"
-  autocomplete="off"
-  autocorrect="off"
-  autocapitalize="off"
-  spellcheck="false"
-  style="width:100%;padding:14px 16px;margin-bottom:12px;border-radius:16px;border:1px solid #c9dce7;background:#fff"
->
+    <input id="loginUser" type="text" placeholder="Usuario" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;padding:14px 16px;margin-bottom:12px;border-radius:16px;border:1px solid #c9dce7;background:#fff">
 
-<button
-  id="btnLogin"
-  type="button"
-  style="width:100%;padding:14px 16px;background:linear-gradient(135deg,#0ea5c6,#0a88a6);color:white;border:none;border-radius:16px;font-weight:900;box-shadow:0 12px 18px rgba(14,165,198,.18)"
->
-  Entrar
-</button>
+    <button id="btnLogin" type="button" onclick="login()" style="width:100%;padding:14px 16px;background:linear-gradient(135deg,#0ea5c6,#0a88a6);color:white;border:none;border-radius:16px;font-weight:900;box-shadow:0 12px 18px rgba(14,165,198,.18)">
+      Entrar
+    </button>
 
     <div class="login-hint">Usuarios sugeridos para prueba: <strong>encargado1</strong>, <strong>tecnico1</strong>, <strong>tecnico2</strong>.</div>
   </div>
@@ -1381,22 +1368,29 @@
               />
             </div>
 
-            <div class="field">
-              <label for="titulo">Título o asunto</label>
-              <input
-                type="text"
-                id="titulo"
-                placeholder="Ej: Máquina POS con fallas"
-                required
-              />
+            <div class="row-2">
+              <div class="field">
+                <label for="categoriaSelect">Selecciona la categoría</label>
+                <select id="categoriaSelect" required>
+                  <option value="">Seleccionar</option>
+                </select>
+              </div>
+
+              <div class="field" id="campoOtroWrap" style="display:none;">
+                <label for="campoOtro">Especificar</label>
+                <input
+                  type="text"
+                  id="campoOtro"
+                  placeholder="Escribe la avería o trabajo"
+                />
+              </div>
             </div>
 
             <div class="field">
-              <label for="descripcion">Descripción</label>
+              <label for="descripcion">Observación adicional (opcional)</label>
               <textarea
                 id="descripcion"
-                placeholder="Describe aquí la avería o el trabajo requerido..."
-                required
+                placeholder="Detalle breve, referencia o comentario adicional..."
               ></textarea>
             </div>
 
@@ -1411,7 +1405,7 @@
 
             <div class="field">
               <label for="imagen">Evidencia inicial (foto o video)</label>
-             <input type="file" id="evidenciaInput" accept="image/*,video/*">
+              <input type="file" id="imagen" accept="image/*,video/*" />
               <div class="preview" id="previewContainer">
                 <img id="previewImg" alt="Vista previa" />
               </div>
@@ -1471,36 +1465,6 @@
     const TABLE_NAME = "reportes_operaciones";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    async function subirImagen(file) {
-  if (!file) return null;
-
-  const extension = (file.name.split('.').pop() || '').toLowerCase();
-  const safeExtension = extension || (file.type.startsWith('video/') ? 'mp4' : 'jpg');
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExtension}`;
-  const filePath = `reportes/${fileName}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET_NAME)
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type || "image/jpeg"
-    });
-
-  if (uploadError) {
-    throw uploadError;
-  }
-
-  const { data } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(filePath);
-
-  if (!data?.publicUrl) {
-    throw new Error("No se pudo obtener la URL pública del archivo.");
-  }
-
-  return data.publicUrl;
-}
 
     const ASSIGNEE_LABELS = { tecnico1: 'Técnico 1', tecnico2: 'Técnico 2', encargado1: 'Encargado 1' };
     function formatAssigneeLabel(value) {
@@ -1509,6 +1473,38 @@
       const key = raw.toLowerCase();
       return ASSIGNEE_LABELS[key] || raw;
     }
+
+
+    const REPORT_CATEGORY_OPTIONS = {
+      "Avería": [
+        "Cambio de printer",
+        "Cambio de escáner",
+        "Cambio de POS",
+        "Cambio de TV",
+        "Problema de red",
+        "Cable de red",
+        "Cámara dañada",
+        "Teléfono dañado",
+        "Impresora no imprime",
+        "Equipo no enciende",
+        "Sistema lento",
+        "Sin internet",
+        "Problema eléctrico",
+        "Otro"
+      ],
+      "Trabajo": [
+        "Pintura",
+        "Remodelación",
+        "Mantenimiento de aire",
+        "Instalación de cámara",
+        "Instalación de teléfono",
+        "Cableado",
+        "Reparación general",
+        "Cambio de piezas",
+        "Limpieza técnica",
+        "Otro"
+      ]
+    };
 
     const tabCreate = document.getElementById("tabCreate");
     const tabReports = document.getElementById("tabReports");
@@ -1519,7 +1515,9 @@
     const tipo = document.getElementById("tipo");
     const prioridad = document.getElementById("prioridad");
     const agencia = document.getElementById("agencia");
-    const titulo = document.getElementById("titulo");
+    const categoriaSelect = document.getElementById("categoriaSelect");
+    const campoOtroWrap = document.getElementById("campoOtroWrap");
+    const campoOtro = document.getElementById("campoOtro");
     const descripcion = document.getElementById("descripcion");
     const encargado = document.getElementById("encargado");
     const imagen = document.getElementById("imagen");
@@ -1556,6 +1554,17 @@
     tabCreate.addEventListener("click", () => switchTab("create"));
     tabReports.addEventListener("click", () => switchTab("reports"));
 
+    tipo.addEventListener("change", () => {
+      renderCategoryOptions();
+    });
+
+    categoriaSelect.addEventListener("change", () => {
+      campoOtroWrap.style.display = categoriaSelect.value === "Otro" ? "block" : "none";
+      if (categoriaSelect.value !== "Otro") {
+        campoOtro.value = "";
+      }
+    });
+
     function showStatus(message, type = "ok") {
       statusBox.className = "status " + type;
       statusBox.textContent = message;
@@ -1569,9 +1578,28 @@
     function resetForm() {
       form.reset();
       previewContainer.style.display = "none";
-      previewImg.src = "";
+      previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
       clearStatus();
       prioridad.value = "Media";
+      campoOtroWrap.style.display = "none";
+      campoOtro.value = "";
+      renderCategoryOptions();
+    }
+
+    function renderCategoryOptions() {
+      const tipoValue = tipo.value.trim();
+      const options = REPORT_CATEGORY_OPTIONS[tipoValue] || [];
+      categoriaSelect.innerHTML = '<option value="">Seleccionar</option>' + options.map(item => `<option value="${item}">${item}</option>`).join('');
+      campoOtroWrap.style.display = "none";
+      campoOtro.value = "";
+    }
+
+    function resolveSelectedCategory() {
+      const selected = categoriaSelect.value.trim();
+      if (selected === "Otro") {
+        return campoOtro.value.trim();
+      }
+      return selected;
     }
 
     function generarCodigo() {
@@ -1648,7 +1676,7 @@
       ];
     }
 
-    async function isVideoFile(file) {
+    function isVideoFile(file) {
       return (file?.type || "").startsWith("video/");
     }
 
@@ -1735,13 +1763,18 @@
       const tipoValue = tipo.value.trim();
       const prioridadValue = prioridad.value.trim();
       const agenciaValue = agencia.value.trim();
-      const tituloValue = titulo.value.trim();
+      const categoriaValue = resolveSelectedCategory();
       const descripcionValue = descripcion.value.trim();
       const encargadoValue = encargado.value.trim() || "App móvil";
       const imageFile = imagen.files?.[0] || null;
 
-      if (!tipoValue || !agenciaValue || !tituloValue || !descripcionValue) {
-        showStatus("Completa todos los campos obligatorios.", "error");
+      if (!tipoValue || !agenciaValue || !categoriaValue) {
+        showStatus("Completa tipo de reporte, agencia/grupo y categoría.", "error");
+        return;
+      }
+
+      if (categoriaSelect.value === "Otro" && !campoOtro.value.trim()) {
+        showStatus("Especifica la avería o trabajo cuando elijas Otro.", "error");
         return;
       }
 
@@ -1757,7 +1790,7 @@
         let imagenUrl = null;
 
         if (imageFile) {
-          imagenUrl = await subirImagen(imageFile);
+          imagenUrl = await subirArchivoEvidencia(imageFile);
         }
 
         const now = new Date().toISOString();
@@ -1766,8 +1799,8 @@
         const payload = {
   code: code,
   tipo_reporte: tipoValue,
-  categoria: tituloValue,
-  descripcion: descripcionValue,
+  categoria: categoriaValue,
+  descripcion: descripcionValue || "",
   agencia: agenciaValue,
   grupo: "",
   nombre_encargado: encargadoValue,
@@ -1776,7 +1809,7 @@
   estado: "Pendiente",
   prioridad: prioridadValue,
   asignado_a: "Sin asignar",
-  selected_types: [],
+  selected_types: categoriaValue ? [categoriaValue] : [],
   images: imagenUrl ? [imagenUrl] : [],
   result_images: [],
   assigned_at: null,
@@ -1864,12 +1897,12 @@
         </div>
 
         <div class="detail-section">
-          <h4>Título / Asunto</h4>
+          <h4>Categoría seleccionada</h4>
           <p style="margin:0; line-height:1.5;">${report.categoria || "No registrado"}</p>
         </div>
 
         <div class="detail-section">
-          <h4>Descripción</h4>
+          <h4>Observación adicional</h4>
           <p style="margin:0; line-height:1.6;">${report.descripcion || "Sin descripción"}</p>
         </div>
 
@@ -1882,11 +1915,13 @@
 
         ${images.length ? `
           <div class="detail-section">
-            <h4>Imágenes reportadas</h4>
+            <h4>Evidencia inicial</h4>
             <div class="detail-image-grid">
               ${images.map(img => `
                 <div class="detail-image-box">
-                  <img src="${img}" alt="Imagen reportada" />
+                  ${isVideoUrl(img)
+                    ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${img}" type="video/mp4"></video>`
+                    : `<img src="${img}" alt="Evidencia inicial" />`}
                 </div>
               `).join("")}
             </div>
@@ -1899,7 +1934,9 @@
             <div class="detail-image-grid">
               ${resultImages.map(img => `
                 <div class="detail-image-box">
-                  <img src="${img}" alt="Evidencia de resultado" />
+                  ${isVideoUrl(img)
+                    ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${img}" type="video/mp4"></video>`
+                    : `<img src="${img}" alt="Evidencia de resultado" />`}
                 </div>
               `).join("")}
             </div>
@@ -2077,6 +2114,8 @@ if (techBtn) {
 
     btnRefreshReports.addEventListener("click", loadReports);
 
+    renderCategoryOptions();
+
   // loadReports();
 const usuariosApp = [
   { user: "oscar", rol: "administrador" },
@@ -2097,7 +2136,7 @@ function login() {
   }
 
   const user = usuariosApp.find(function (u) {
-    return (u.user || "").trim().toLowerCase() === input;
+    return ((u.user || "").trim().toLowerCase() === input);
   });
 
   if (!user) {
@@ -2109,8 +2148,7 @@ function login() {
   localStorage.setItem("usuarioActual", JSON.stringify(user));
   iniciarApp();
 }
-
-window.login = login;
+    window.login = login;
 
 function iniciarApp() {
   document.getElementById("loginView").style.display = "none";
@@ -2129,27 +2167,16 @@ function iniciarApp() {
     if (roleBadge) roleBadge.textContent = "Rol: Técnico";
     appTitle.textContent = "Reportes (Averías) Asignados";
     appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y sube evidencias.";
+
     document.getElementById("tabCreate").style.display = "none";
     switchTab("reports");
   } else if (usuarioActual?.rol === "encargado") {
     if (roleBadge) roleBadge.textContent = "Rol: Encargado";
     appTitle.textContent = "App móvil de reportes";
-    appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes.";
+    appSubtitle.textContent = "Crea reportes y consulta el estado de tus solicitudes con una experiencia más clara y ordenada.";
+
     document.getElementById("tabCreate").style.display = "block";
     switchTab("create");
-  }
-}
-
-const btnLogin = document.getElementById("btnLogin");
-
-if (btnLogin) {
-  btnLogin.onclick = function (e) {
-    if (e) e.preventDefault();
-    login();
-  };
-}
-
-document.getElementById("btnLogout")?.addEventListener("click", logout);
   } else {
     if (roleBadge) roleBadge.textContent = "Rol: Administrador";
     appTitle.textContent = "App móvil de reportes";
@@ -2162,11 +2189,17 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
   console.log("Usuario logueado:", usuarioActual);
 }
 // Auto login
-// const savedUser = localStorage.getItem("usuarioActual");
-// if (savedUser) {
-//   usuarioActual = JSON.parse(savedUser);
-//   iniciarApp();
-// }
+const savedUser = localStorage.getItem("usuarioActual");
+if (savedUser) {
+  try {
+    usuarioActual = JSON.parse(savedUser);
+    if (usuarioActual?.user) {
+      iniciarApp();
+    }
+  } catch (error) {
+    localStorage.removeItem("usuarioActual");
+  }
+}
 
 function logout() {
   localStorage.removeItem("usuarioActual");
@@ -2181,14 +2214,11 @@ function logout() {
 }
 
 const btnLogin = document.getElementById("btnLogin");
-
 if (btnLogin) {
-  btnLogin.onclick = function (e) {
-    if (e) e.preventDefault();
+  btnLogin.onclick = function () {
     login();
   };
 }
-
 document.getElementById("btnLogout")?.addEventListener("click", logout);
 
     async function cambiarEstadoTecnico(report, nuevoEstado) {
@@ -2251,12 +2281,12 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
     </div>
 
     <div class="detail-section">
-      <h4>Título / Asunto</h4>
+      <h4>Categoría seleccionada</h4>
       <p style="margin:0; line-height:1.5;">${report.categoria || "No registrado"}</p>
     </div>
 
     <div class="detail-section">
-      <h4>Descripción original</h4>
+      <h4>Observación adicional</h4>
       <p style="margin:0; line-height:1.6;">${report.descripcion || "Sin descripción"}</p>
     </div>
 
