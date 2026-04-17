@@ -360,6 +360,23 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .dashboard-empty{padding:24px;text-align:center;border:1px dashed #d8e3ed;border-radius:18px;color:#8092a3;background:#fbfdff;font-weight:700}
 .dashboard-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#eef5fb;color:#346996;font-size:12px;font-weight:800}
 .dashboard-spotlight{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+
+.dashboard-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.dashboard-action-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 14px;border:none;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);color:#fff;font-size:13px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 8px 18px rgba(10,34,60,.12);transition:.18s ease}
+.dashboard-action-btn:hover{background:rgba(255,255,255,.22)}
+.dashboard-action-btn.active{background:#ffffff;color:#1f5f9f}
+.dashboard-action-btn .dot{width:8px;height:8px;border-radius:999px;background:#9fe6b8;display:inline-block;box-shadow:0 0 0 5px rgba(159,230,184,.18)}
+.ops-toast-wrap{position:fixed;top:18px;right:18px;z-index:9999;display:grid;gap:12px;max-width:360px}
+.ops-toast{background:#fff;border:1px solid #d8e6f0;border-left:5px solid #22b4e2;border-radius:18px;box-shadow:0 16px 35px rgba(15,23,42,.14);padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:flex-start;animation:toastIn .2s ease}
+.ops-toast.success{border-left-color:#46a672}
+.ops-toast.warning{border-left-color:#f59e0b}
+.ops-toast-icon{width:36px;height:36px;border-radius:999px;background:#eef8fd;color:#148fbc;display:grid;place-items:center;font-size:16px}
+.ops-toast.success .ops-toast-icon{background:#ecf8f1;color:#2f7d57}
+.ops-toast.warning .ops-toast-icon{background:#fff7e8;color:#b7791f}
+.ops-toast-title{font-size:14px;font-weight:900;color:#1f3f5a;margin-bottom:4px}
+.ops-toast-text{font-size:13px;line-height:1.45;color:#5d7387}
+.ops-toast-close{border:none;background:transparent;color:#88a0b3;font-size:16px;cursor:pointer;padding:2px 0 0}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @media (max-width:1180px){.dashboard-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-3,.dashboard-grid-2,.dashboard-spotlight{grid-template-columns:1fr}}
 @media (max-width:720px){.dashboard-grid-4{grid-template-columns:1fr}.dashboard-bar-row{grid-template-columns:1fr}.dashboard-bar-value{text-align:left}.dashboard-hero h2{font-size:24px}}
 
@@ -889,11 +906,15 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <div class="dashboard-hero-badge"><i class="fas fa-trophy"></i> Ranking de desempeño</div>
         <div class="dashboard-hero-badge"><i class="fas fa-clock"></i> Tiempos automáticos</div>
       </div>
+      <div class="dashboard-hero-actions">
+        <button type="button" class="dashboard-action-btn" id="dashboardRefreshBtn"><i class="fas fa-rotate-right"></i> Actualizar sistema</button>
+        <button type="button" class="dashboard-action-btn" id="dashboardNotifyBtn"><span class="dot"></span> Activar notificaciones</button>
+      </div>
     </div>
     <div class="dashboard-hero-side">
-      <div class="dashboard-hero-kpi"><span>Agencia con mayor carga</span><strong id="dashTopAgencyHero">-</strong></div>
-      <div class="dashboard-hero-kpi"><span>Técnico con mayor carga</span><strong id="dashTopTechHero">-</strong></div>
-      <div class="dashboard-hero-kpi"><span>Suplidor con mayor carga</span><strong id="dashTopSupplierHero">-</strong></div>
+      <div class="dashboard-hero-kpi"><span>Agencias con más incidencias reportadas</span><strong id="dashTopAgencyHero">-</strong></div>
+      <div class="dashboard-hero-kpi"><span>Técnico con más operaciones</span><strong id="dashTopTechHero">-</strong></div>
+      <div class="dashboard-hero-kpi"><span>Suplidor con más operaciones</span><strong id="dashTopSupplierHero">-</strong></div>
     </div>
   </div>
 
@@ -905,12 +926,11 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
   </div>
 
   <div class="dashboard-grid-4">
-    <div class="dashboard-kpi-card"><div class="label">Promedio de asignación</div><div class="value" id="dashAvgAssign">0 min</div><div class="sub">Desde creación hasta asignación</div></div>
-    <div class="dashboard-kpi-card"><div class="label">Promedio de resolución</div><div class="value" id="dashAvgResolution">0 min</div><div class="sub">Desde asignación hasta cierre</div></div>
-    <div class="dashboard-kpi-card"><div class="label">Técnico más cargado</div><div class="value" id="dashTopTech">-</div><div class="sub">Mayor cantidad de averías asignadas</div></div>
-    <div class="dashboard-kpi-card"><div class="label">Suplidor más cargado</div><div class="value" id="dashTopSupplier">-</div><div class="sub">Mayor cantidad de trabajos asignados</div></div>
     <div class="dashboard-kpi-card"><div class="label">Operaciones urgentes abiertas</div><div class="value" id="dashUrgentOpen">0</div><div class="sub">Prioridad urgente no completada</div></div>
-  </div>
+    <div class="dashboard-kpi-card"><div class="label">Promedio de resolución</div><div class="value" id="dashAvgResolution">0 min</div><div class="sub">Desde asignación hasta cierre</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Técnico con más operaciones</div><div class="value" id="dashTopTech">-</div><div class="sub">Mayor cantidad de averías asignadas</div></div>
+    <div class="dashboard-kpi-card"><div class="label">Suplidor con más operaciones</div><div class="value" id="dashTopSupplier">-</div><div class="sub">Mayor cantidad de trabajos asignados</div></div>
+      </div>
 
   <div class="dashboard-spotlight">
     <div class="dashboard-panel">
@@ -4873,7 +4893,9 @@ renderTransferencias();
     }
 
     function getResolutionMinutes(op) {
-      return minutesBetween(getAssignmentTimestamp(op), getCompletionTimestamp(op));
+      const startBase = getAssignmentTimestamp(op) || op.startedAt || op.createdAt || null;
+      const endBase = getCompletionTimestamp(op) || op.closedAt || op.updatedAt || inferCompletedAtFromHistory(op) || null;
+      return minutesBetween(startBase, endBase);
     }
 
     function averageFromOperations(operations, keyGetter) {
@@ -5314,7 +5336,6 @@ renderTransferencias();
       setText('dashOpsPending', pending);
       setText('dashOpsInProcess', inProcess);
       setText('dashOpsCompleted', completed);
-      setText('dashAvgAssign', formatMinutesHuman(avgAssign));
       setText('dashAvgResolution', formatMinutesHuman(avgResolution));
       setText('dashTopTech', topTech ? getAssigneeDisplayName(topTech.owner, 'Avería') : '-');
       setText('dashTopSupplier', topSupplier ? getAssigneeDisplayName(topSupplier.owner, 'Trabajo') : '-');
@@ -5366,7 +5387,7 @@ renderTransferencias();
 
       const alerts = [];
       if (urgentOpen) alerts.push({title:'Urgentes abiertas', text:`${urgentOpen} operaciones urgentes siguen sin completar.`});
-      if (topAgency) alerts.push({title:'Agencia con más carga', text:`${topAgency.agency} lidera con ${topAgency.total} reportes.`});
+      if (topAgency) alerts.push({title:'Agencias con más incidencias reportadas', text:`${topAgency.agency} lidera con ${topAgency.total} reportes.`});
       if (topTech) alerts.push({title:'Técnico con más carga', text:`${getAssigneeDisplayName(topTech.owner, 'Avería')} lleva ${topTech.total} averías asignadas.`});
       if (topSupplier) alerts.push({title:'Suplidor con más carga', text:`${getAssigneeDisplayName(topSupplier.owner, 'Trabajo')} lleva ${topSupplier.total} trabajos activos o completados.`});
       const oldPending = operations.filter(op => op.status !== 'Completado' && ((Date.now() - new Date(op.createdAt).getTime()) / 3600000) >= 24);
@@ -5654,7 +5675,157 @@ renderTransferencias();
       }
     }
 
-    async function syncOperationsFromSupabase() {
+
+    const NOTIFY_STORAGE_KEY = 'loteka_ops_notifications_enabled';
+    let notificationsEnabled = localStorage.getItem(NOTIFY_STORAGE_KEY) === 'true';
+    let syncInitialized = false;
+    let previousNotificationSnapshot = new Map();
+    let syncInFlight = false;
+
+    function updateNotificationButtonState() {
+      const btn = document.getElementById('dashboardNotifyBtn');
+      if (!btn) return;
+      btn.classList.toggle('active', notificationsEnabled);
+      btn.innerHTML = notificationsEnabled
+        ? '<i class="fas fa-bell"></i> Notificaciones activas'
+        : '<span class="dot"></span> Activar notificaciones';
+    }
+
+    async function requestNotificationPermissionIfNeeded() {
+      if (!('Notification' in window)) return false;
+      if (Notification.permission === 'granted') return true;
+      if (Notification.permission === 'denied') return false;
+      try {
+        const permission = await Notification.requestPermission();
+        return permission === 'granted';
+      } catch (error) {
+        console.error('No se pudo solicitar permiso de notificaciones:', error);
+        return false;
+      }
+    }
+
+    function playNotificationSound() {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.linearRampToValueAtTime(660, now + 0.16);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.46);
+      } catch (error) {
+        console.error('No se pudo reproducir el sonido de notificación:', error);
+      }
+    }
+
+    function showToastNotification(title, text, tone = 'info') {
+      const wrap = document.getElementById('opsToastWrap');
+      if (!wrap) return;
+      const iconMap = { info: 'fa-bell', success: 'fa-circle-check', warning: 'fa-triangle-exclamation' };
+      const toast = document.createElement('div');
+      toast.className = `ops-toast ${tone === 'success' ? 'success' : tone === 'warning' ? 'warning' : ''}`.trim();
+      toast.innerHTML = `
+        <div class="ops-toast-icon"><i class="fas ${iconMap[tone] || iconMap.info}"></i></div>
+        <div><div class="ops-toast-title">${escapeHtml(title)}</div><div class="ops-toast-text">${escapeHtml(text)}</div></div>
+        <button type="button" class="ops-toast-close" aria-label="Cerrar notificación"><i class="fas fa-xmark"></i></button>
+      `;
+      const closeBtn = toast.querySelector('.ops-toast-close');
+      closeBtn?.addEventListener('click', () => toast.remove());
+      wrap.prepend(toast);
+      window.setTimeout(() => toast.remove(), 7000);
+    }
+
+    function dispatchBrowserNotification(title, body) {
+      if (!notificationsEnabled) return;
+      if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState === 'hidden') {
+        try {
+          new Notification(title, { body, icon: '' });
+        } catch (error) {
+          console.error('No se pudo mostrar la notificación del navegador:', error);
+        }
+      }
+      playNotificationSound();
+      showToastNotification(title, body, 'info');
+    }
+
+    function buildNotificationSnapshot(operations) {
+      return new Map((operations || []).map(op => {
+        const history = Array.isArray(op.history) ? op.history : [];
+        const lastHistory = history.length ? history[history.length - 1] : null;
+        return [op.id, {
+          status: op.status || 'Pendiente',
+          assigned: op.technician || 'Sin asignar',
+          updated: op.completedAt || op.startedAt || op.assignedAt || op.createdAt || '',
+          historyKey: lastHistory ? `${lastHistory.action || ''}|${lastHistory.newStatus || ''}|${lastHistory.timestamp || lastHistory.date || ''}` : '',
+          code: op.code || '',
+          agency: op.agency || '',
+          title: op.title || ''
+        }];
+      }));
+    }
+
+    function evaluateOperationNotifications(operations) {
+      const nextSnapshot = buildNotificationSnapshot(operations);
+      if (!syncInitialized) {
+        previousNotificationSnapshot = nextSnapshot;
+        syncInitialized = true;
+        return;
+      }
+      const notices = [];
+      nextSnapshot.forEach((current, id) => {
+        const previous = previousNotificationSnapshot.get(id);
+        if (!previous) {
+          notices.push({
+            title: 'Nueva operación recibida',
+            text: `${current.code || 'Sin código'} · ${current.agency || 'Sin agencia'} · ${current.title || 'Sin categoría'}`
+          });
+          return;
+        }
+        if (previous.status !== current.status) {
+          notices.push({
+            title: 'Cambio de estado',
+            text: `${current.code || 'Operación'} cambió de ${previous.status} a ${current.status}.`
+          });
+          return;
+        }
+        if (previous.assigned !== current.assigned && current.assigned && current.assigned !== 'Sin asignar') {
+          notices.push({
+            title: 'Operación asignada',
+            text: `${current.code || 'Operación'} fue asignada a ${getAssigneeDisplayName(current.assigned, 'Avería')}.`
+          });
+          return;
+        }
+        if (previous.historyKey !== current.historyKey && current.historyKey) {
+          notices.push({
+            title: 'Actualización de seguimiento',
+            text: `${current.code || 'Operación'} registró un nuevo movimiento en seguimiento.`
+          });
+        }
+      });
+      previousNotificationSnapshot = nextSnapshot;
+      notices.slice(0, 4).forEach(item => dispatchBrowserNotification(item.title, item.text));
+    }
+
+    async function runOperationalRefresh({ silent = false } = {}) {
+      if (syncInFlight) return;
+      syncInFlight = true;
+      try {
+        await syncOperationsFromSupabase({ silent });
+      } finally {
+        syncInFlight = false;
+      }
+    }
+
+    async function syncOperationsFromSupabase({ silent = false } = {}) {
       try {
         const { data, error } = await supabaseClient.from(REPORTES_TABLE).select('*').order('created_at', { ascending: true });
         if (error) throw error;
@@ -5674,8 +5845,11 @@ renderTransferencias();
         renderAgencyReports();
         renderOwnerReports();
         renderSpecificReports();
+        evaluateOperationNotifications(next);
+        if (!silent) showToastNotification('Sistema actualizado', 'Operaciones sincronizadas correctamente.', 'success');
       } catch (error) {
         console.error('Error cargando operaciones desde Supabase:', error);
+        if (!silent) showToastNotification('No se pudo actualizar', 'Hubo un problema sincronizando con Supabase.', 'warning');
       }
     }
 
@@ -5856,7 +6030,7 @@ renderTransferencias();
         },
         {
           label: 'En proceso',
-          icon: '<i class="fa-solid fa-screwdriver-wrench"></i>',
+          icon: '<i class="fa-solid fa-truck-fast"></i>',
           state: op.status === 'En proceso' ? 'active' : (op.status === 'Completado' ? 'done' : 'pending'),
           detail: op.status === 'En proceso' || op.status === 'Completado' ? ((startEntry && startEntry.detail) || 'La operación ya está en gestión.') : 'Aún no ha iniciado la gestión.',
           date: (op.status === 'En proceso' || op.status === 'Completado') ? formatDate((startEntry && getHistoryTimestamp(startEntry)) || op.startedAt || op.assignedAt || op.createdAt) : ''
@@ -5866,7 +6040,7 @@ renderTransferencias();
           icon: '<i class="fa-solid fa-circle-check"></i>',
           state: op.status === 'Completado' ? 'done' : 'pending',
           detail: op.status === 'Completado'
-            ? `${((completionEntry && completionEntry.detail) || 'La operación fue completada correctamente.')}${resolutionLabel ? ` · Tiempo de resolución: ${resolutionLabel}` : ''}`
+            ? `${((completionEntry && completionEntry.detail) || 'La operación fue completada correctamente.')}${resolutionLabel ? ` · Tiempo de resolución de la avería: ${resolutionLabel}` : ''}`
             : 'Todavía no ha sido completado.',
           date: op.status === 'Completado' ? formatDate((completionEntry && getHistoryTimestamp(completionEntry)) || op.completedAt || op.closedAt || op.createdAt) : ''
         }
@@ -6102,6 +6276,8 @@ renderTransferencias();
   <div class="footer"><div>Sistema de Operaciones</div><div>Impresión optimizada para hoja A4 horizontal</div></div>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},220);};<\/script>
+
+<div class="ops-toast-wrap" id="opsToastWrap"></div>
 
 <div class="ops-media-lightbox hidden" id="opsMediaLightbox">
   <div class="ops-media-lightbox-dialog">
@@ -6382,6 +6558,8 @@ renderTransferencias();
   <div class="print-section"><h3>Historial principal</h3><table><thead><tr><th>Fecha</th><th>Acción</th><th>Detalle</th><th>Usuario</th></tr></thead><tbody>${historyHtml}</tbody></table></div>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},200);};<\/script>
+
+<div class="ops-toast-wrap" id="opsToastWrap"></div>
 
 <div class="ops-media-lightbox hidden" id="opsMediaLightbox">
   <div class="ops-media-lightbox-dialog">
@@ -6988,8 +7166,29 @@ function openEditModal(id) {
     window.editCatalogItem = editCatalogItem;
     window.deleteCatalogItem = deleteCatalogItem;
 
+
+    document.getElementById('dashboardRefreshBtn')?.addEventListener('click', () => runOperationalRefresh());
+    document.getElementById('dashboardNotifyBtn')?.addEventListener('click', async () => {
+      const granted = await requestNotificationPermissionIfNeeded();
+      notificationsEnabled = granted || !('Notification' in window);
+      localStorage.setItem(NOTIFY_STORAGE_KEY, notificationsEnabled ? 'true' : 'false');
+      updateNotificationButtonState();
+      showToastNotification(
+        notificationsEnabled ? 'Notificaciones activadas' : 'Notificaciones no activadas',
+        notificationsEnabled ? 'Recibirás avisos con sonido cuando entren operaciones o cambien de estado.' : 'Permite las notificaciones del navegador para recibir avisos en tiempo real.',
+        notificationsEnabled ? 'success' : 'warning'
+      );
+    });
+
+    window.addEventListener('focus', () => runOperationalRefresh({ silent: true }));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') runOperationalRefresh({ silent: true });
+    });
+    window.setInterval(() => runOperationalRefresh({ silent: true }), 30000);
+
     window.addEventListener('load', () => {
-      syncOperationsFromSupabase();
+      updateNotificationButtonState();
+      runOperationalRefresh({ silent: true });
       const operations = loadOperations();
       let changed = false;
       operations.forEach(op => {
@@ -7080,6 +7279,8 @@ function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
 }
 </script>
 
+
+<div class="ops-toast-wrap" id="opsToastWrap"></div>
 
 <div class="ops-media-lightbox hidden" id="opsMediaLightbox">
   <div class="ops-media-lightbox-dialog">
