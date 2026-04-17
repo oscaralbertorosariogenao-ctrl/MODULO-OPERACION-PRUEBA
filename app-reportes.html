@@ -1294,26 +1294,24 @@
     <h2 class="login-title">Iniciar sesión</h2>
     <p class="login-subtitle">Accede al módulo móvil de reportes con una imagen más corporativa, limpia y cómoda, manteniendo intacto el flujo operativo.</p>
 
- <form id="loginForm" style="width:100%;">
-  <input
-    id="loginUser"
-    type="text"
-    placeholder="Usuario"
-    autocomplete="off"
-    autocorrect="off"
-    autocapitalize="off"
-    spellcheck="false"
-    style="width:100%;padding:14px 16px;margin-bottom:12px;border-radius:16px;border:1px solid #c9dce7;background:#fff"
-  >
+<input
+  id="loginUser"
+  type="text"
+  placeholder="Usuario"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  style="width:100%;padding:14px 16px;margin-bottom:12px;border-radius:16px;border:1px solid #c9dce7;background:#fff"
+>
 
-  <button
-    id="btnLogin"
-    type="submit"
-    style="width:100%;padding:14px 16px;background:linear-gradient(135deg,#0ea5c6,#0a88a6);color:white;border:none;border-radius:16px;font-weight:900;box-shadow:0 12px 18px rgba(14,165,198,.18)"
-  >
-    Entrar
-  </button>
-</form>
+<button
+  id="btnLogin"
+  type="button"
+  style="width:100%;padding:14px 16px;background:linear-gradient(135deg,#0ea5c6,#0a88a6);color:white;border:none;border-radius:16px;font-weight:900;box-shadow:0 12px 18px rgba(14,165,198,.18)"
+>
+  Entrar
+</button>
     <div class="login-hint">Usuarios sugeridos para prueba: <strong>encargado1</strong>, <strong>tecnico1</strong>, <strong>tecnico2</strong>.</div>
   </div>
 </div>
@@ -2089,7 +2087,14 @@ const usuariosApp = [
 let usuarioActual = null;
 
 function login() {
-  const input = document.getElementById("loginUser").value.toLowerCase();
+  const input = (document.getElementById("loginUser").value || "")
+    .trim()
+    .toLowerCase();
+
+  if (!input) {
+    alert("Escribe un usuario.");
+    return;
+  }
 
   const user = usuariosApp.find(u => u.user === input);
 
@@ -2163,12 +2168,10 @@ function logout() {
   switchTab("create");
 }
 
-const loginForm = document.getElementById("loginForm");
 const btnLogin = document.getElementById("btnLogin");
 
-if (loginForm) {
-  loginForm.addEventListener("submit", function (e) {
-    e.preventDefault();
+if (btnLogin) {
+  btnLogin.addEventListener("click", function () {
     login();
   });
 }
