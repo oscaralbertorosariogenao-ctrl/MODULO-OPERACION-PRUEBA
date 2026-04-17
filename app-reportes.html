@@ -1397,8 +1397,8 @@
             </div>
 
             <div class="field">
-              <label for="imagen">Imagen</label>
-              <input type="file" id="imagen" accept="image/*" capture="environment" />
+              <label for="imagen">Evidencia inicial (foto o video)</label>
+              <input type="file" id="imagen" accept="image/*,video/*" capture="environment" />
               <div class="preview" id="previewContainer">
                 <img id="previewImg" alt="Vista previa" />
               </div>
@@ -1605,10 +1605,35 @@
       ];
     }
 
-    async function subirImagen(file) {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    async function isVideoFile(file) {
+      return (file?.type || "").startsWith("video/");
+    }
+
+    function isVideoUrl(url) {
+      return /\.(mp4|mov|webm|ogg)(\?|#|$)/i.test(String(url || ""));
+    }
+
+    function validateEvidenceFile(file) {
+      if (!file) return;
+      const isImage = (file.type || "").startsWith("image/");
+      const isVideo = (file.type || "").startsWith("video/");
+      if (!isImage && !isVideo) {
+        throw new Error("Solo se permiten imágenes o videos.");
+      }
+      const maxBytes = isVideo ? 25 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxBytes) {
+        throw new Error(isVideo
+          ? "El video supera el máximo permitido de 25 MB."
+          : "La imagen supera el máximo permitido de 10 MB.");
+      }
+    }
+
+    async function subirArchivoEvidencia(file) {
+      validateEvidenceFile(file);
+      const ext = file.name.split(".").pop()?.toLowerCase() || (isVideoFile(file) ? "mp4" : "jpg");
       const safeExt = ext.replace(/[^a-z0-9]/gi, "") || "jpg";
-      const fileName = `reporte_${Date.now()}_${Math.random().toString(36).slice(2)}.${safeExt}`;
+      const filePrefix = isVideoFile(file) ? "video" : "reporte";
+      const fileName = `${filePrefix}_${Date.now()}_${Math.random().toString(36).slice(2)}.${safeExt}`;
       const filePath = `reportes/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -1624,7 +1649,7 @@
       const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
 
       if (!data?.publicUrl) {
-        throw new Error("No se pudo obtener la URL pública de la imagen.");
+        throw new Error("No se pudo obtener la URL pública del archivo.");
       }
 
       return data.publicUrl;
@@ -1635,16 +1660,27 @@
 
       if (!file) {
         previewContainer.style.display = "none";
-        previewImg.src = "";
+        previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        previewImg.src = e.target.result;
-        previewContainer.style.display = "block";
-      };
-      reader.readAsDataURL(file);
+      try {
+        validateEvidenceFile(file);
+      } catch (err) {
+        alert(err.message);
+        imagen.value = "";
+        previewContainer.style.display = "none";
+        previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      if (isVideoFile(file)) {
+        previewContainer.innerHTML = `<video controls playsinline style="display:block;width:100%;max-height:340px;object-fit:cover;"><source src="${objectUrl}" type="${file.type || 'video/mp4'}"></video>`;
+      } else {
+        previewContainer.innerHTML = `<img src="${objectUrl}" alt="Vista previa" />`;
+      }
+      previewContainer.style.display = "block";
     });
 
     btnLimpiar.addEventListener("click", resetForm);
@@ -2168,12 +2204,12 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
 
       <div class="field">
         <label for="techDescription">Descripción técnica / trabajo realizado</label>
-        <textarea id="techDescription" placeholder="Describe el trabajo realizado...">${report.descripcion_tecnica || ""}</textarea>
+        <textarea id="techDescription" placeholder="Describe el trabajo realizado...">${report.observaciones || ""}</textarea>
       </div>
 
       <div class="field">
-        <label for="techEvidence">Subir evidencia</label>
-        <input type="file" id="techEvidence" accept="image/*" multiple />
+        <label for="techEvidence">Subir evidencia (foto o video)</label>
+        <input type="file" id="techEvidence" accept="image/*,video/*" multiple />
       </div>
 
       ${
@@ -2182,9 +2218,11 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
         <div class="detail-section" style="margin-top:10px;">
           <h4>Evidencias actuales</h4>
           <div class="detail-image-grid">
-            ${resultImages.map(img => `
+            ${resultImages.map(fileUrl => `
               <div class="detail-image-box">
-                <img src="${img}" alt="Evidencia técnica" />
+                ${isVideoUrl(fileUrl)
+                  ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${fileUrl}" type="video/mp4"></video>`
+                  : `<img src="${fileUrl}" alt="Evidencia técnica" />`}
               </div>
             `).join("")}
           </div>
@@ -2218,7 +2256,7 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
 
   if (evidenceFiles.length) {
     for (const file of evidenceFiles) {
-      const imageUrl = await subirImagen(file);
+      const imageUrl = await subirArchivoEvidencia(file);
       nuevasEvidencias.push(imageUrl);
     }
   }
@@ -2261,21 +2299,21 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
     });
   }
 
- const payload = {
-  estado: techStatus,
-  observaciones: techDescription,
-  result_images: Array.isArray(resultImagesFinal) ? resultImagesFinal : [],
-  history: history,
-  started_at: techStatus === "En proceso"
-    ? (report.started_at || new Date().toISOString())
-    : report.started_at,
-  completed_at: techStatus === "Completado"
-    ? new Date().toISOString()
-    : report.completed_at,
-  closed_at: techStatus === "Completado"
-    ? new Date().toISOString()
-    : report.closed_at
-};
+  const payload = {
+    estado: techStatus,
+    observaciones: techDescription,
+    result_images: Array.isArray(resultImagesFinal) ? resultImagesFinal : [],
+    history: history,
+    started_at: techStatus === "En proceso"
+      ? (report.started_at || new Date().toISOString())
+      : report.started_at,
+    completed_at: techStatus === "Completado"
+      ? new Date().toISOString()
+      : report.completed_at,
+    closed_at: techStatus === "Completado"
+      ? new Date().toISOString()
+      : report.closed_at
+  };
 
   const { error } = await supabase
     .from(TABLE_NAME)
@@ -2283,8 +2321,8 @@ document.getElementById("btnLogout")?.addEventListener("click", logout);
     .eq("id", report.id);
 
   if (error) {
-   alert("Error: " + error.message);
-console.error(error);
+    alert("Error: " + error.message);
+    console.error(error);
     return;
   }
 
