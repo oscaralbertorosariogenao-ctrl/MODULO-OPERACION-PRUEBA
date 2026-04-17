@@ -1458,6 +1458,36 @@
     const TABLE_NAME = "reportes_operaciones";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    async function subirImagen(file) {
+  if (!file) return null;
+
+  const extension = (file.name.split('.').pop() || '').toLowerCase();
+  const safeExtension = extension || (file.type.startsWith('video/') ? 'mp4' : 'jpg');
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExtension}`;
+  const filePath = `reportes/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET_NAME)
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || "image/jpeg"
+    });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage
+    .from(BUCKET_NAME)
+    .getPublicUrl(filePath);
+
+  if (!data?.publicUrl) {
+    throw new Error("No se pudo obtener la URL pública del archivo.");
+  }
+
+  return data.publicUrl;
+}
 
     const ASSIGNEE_LABELS = { tecnico1: 'Técnico 1', tecnico2: 'Técnico 2', encargado1: 'Encargado 1' };
     function formatAssigneeLabel(value) {
