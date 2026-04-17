@@ -493,7 +493,8 @@
 
     .report-actions {
       margin-top: 12px;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 10px;
     }
 
@@ -2291,6 +2292,48 @@
       return `https://www.google.com/maps/dir/?api=1&destination=${geo.lat},${geo.lng}&travelmode=driving`;
     }
 
+
+    function renderLocationSection(report) {
+      const agencyGeo = getAgencyGeoData(report);
+      if (!agencyGeo) {
+        return `
+          <div class="detail-section">
+            <h4>Ubicación de la agencia</h4>
+            <p class="detail-note">Esta agencia aún no tiene geolocalización registrada.</p>
+          </div>
+        `;
+      }
+
+      const mapsUrl = buildGoogleMapsSearchUrl(agencyGeo);
+      const directionsUrl = buildGoogleMapsDirectionsUrl(agencyGeo);
+      const lat = Number(agencyGeo.lat);
+      const lng = Number(agencyGeo.lng);
+      const coordsLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      const agencyLabel = agencyGeo.agencyLabel || report?.agencia || "Agencia";
+      const direccion = agencyGeo.direccion || report?.agency_address || report?.direccion || "Ubicación registrada";
+
+      return `
+        <div class="detail-section">
+          <h4>Ubicación de la agencia</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span>Agencia</span>
+              <strong>${agencyLabel}</strong>
+            </div>
+            <div class="detail-item">
+              <span>Coordenadas</span>
+              <strong>${coordsLabel}</strong>
+            </div>
+          </div>
+          <p class="detail-note">${direccion}</p>
+          <div class="detail-location-actions">
+            <a class="btn-map" href="${mapsUrl}" target="_blank" rel="noopener">📍 Ver ubicación</a>
+            <a class="btn-directions" href="${directionsUrl}" target="_blank" rel="noopener">🚗 Cómo llegar</a>
+          </div>
+        </div>
+      `;
+    }
+
     const tabCreate = document.getElementById("tabCreate");
     const tabReports = document.getElementById("tabReports");
     const sectionCreate = document.getElementById("sectionCreate");
@@ -3010,7 +3053,6 @@
         const now = new Date().toISOString();
         const code = generarCodigo();
 
-        const agencyGeo = getAgencyGeoData(agenciaValue);
 
         const payload = {
   code: code,
@@ -3019,10 +3061,6 @@
   descripcion: descripcionValue || "",
   agencia: agenciaValue,
   grupo: usuarioActual?.grupo || "",
-  agency_latitude: agencyGeo?.lat ?? null,
-  agency_longitude: agencyGeo?.lng ?? null,
-  agency_maps_url: agencyGeo ? buildGoogleMapsSearchUrl(agencyGeo) : "",
-  agency_directions_url: agencyGeo ? buildGoogleMapsDirectionsUrl(agencyGeo) : "",
   nombre_encargado: encargadoValue,
   creado_por: usuarioActual?.user || "",
   fecha_reporte: now,
