@@ -2173,17 +2173,6 @@ if (loginForm) {
   });
 }
 
-if (btnLogin) {
-  btnLogin.addEventListener("click", function (e) {
-    e.preventDefault();
-    login();
-  });
-
-  btnLogin.addEventListener("touchend", function (e) {
-    e.preventDefault();
-    login();
-  });
-}
 document.getElementById("btnLogout")?.addEventListener("click", logout);
 
     async function cambiarEstadoTecnico(report, nuevoEstado) {
