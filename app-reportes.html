@@ -171,6 +171,87 @@
       background: #fafbfc;
     }
 
+    .evidence-uploader {
+      border: 1px solid #d8e8f0;
+      border-radius: 20px;
+      padding: 14px;
+      background: linear-gradient(180deg, #f8fcfe 0%, #f1f7fa 100%);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .evidence-uploader-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .evidence-chip,
+    .evidence-tip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .evidence-chip {
+      background: #e6f8fc;
+      color: #0b7896;
+      border: 1px solid #cfeef6;
+    }
+
+    .evidence-tip {
+      background: #ffffff;
+      color: #5d7383;
+      border: 1px solid #dbe8ef;
+    }
+
+    .evidence-input {
+      width: 100%;
+      border: 1px dashed #9fd5e4 !important;
+      border-radius: 18px !important;
+      background: linear-gradient(135deg, #14add8 0%, #0b88ad 100%) !important;
+      color: #ffffff !important;
+      padding: 14px !important;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(14,165,198,.16);
+    }
+
+    .evidence-input::file-selector-button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-right: 12px;
+      background: #ffffff;
+      color: #0b7896;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .evidence-helper {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #6d8392;
+      line-height: 1.45;
+    }
+
+    .evidence-file-name {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #dbe8ef;
+      color: #173346;
+      font-size: 13px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
     .preview {
       display: none;
       margin-top: 12px;
@@ -1496,9 +1577,9 @@
               />
             </div>
 
-            <div class="field compact-field">
-              <label for="prioridad">Prioridad</label>
-              <select id="prioridad" class="hidden-native-select" required>
+            <div class="field compact-field" id="prioridadField" style="display:none;">
+              <select id="prioridad" class="hidden-native-select">
+                <option value="" selected>Sin prioridad</option>
                 <option value="Media">Media</option>
                 <option value="Baja">Baja</option>
                 <option value="Alta">Alta</option>
@@ -1526,19 +1607,18 @@
             </div>
 
             <div class="field">
-              <label for="encargado">Nombre del reportante</label>
-              <input
-                type="text"
-                id="encargado"
-                placeholder="Ej: Encargado de agencia"
-              />
-            </div>
-
-            <div class="field">
-              <label for="imagen">Evidencia inicial (foto o video)</label>
-              <input type="file" id="imagen" accept="image/*,video/*" />
-              <div class="preview" id="previewContainer">
-                <img id="previewImg" alt="Vista previa" />
+              <label for="imagen">Evidencia inicial</label>
+              <div class="evidence-uploader">
+                <div class="evidence-uploader-top">
+                  <span class="evidence-chip">📸 Foto o video</span>
+                  <span class="evidence-tip">Galería o cámara</span>
+                </div>
+                <input type="file" id="imagen" class="evidence-input" accept="image/*,video/*" />
+                <div class="evidence-helper">Toca el botón para elegir una imagen o video desde la galería del teléfono o tomar una evidencia nueva.</div>
+                <div class="evidence-file-name" id="imagenFileName">Ningún archivo seleccionado</div>
+                <div class="preview" id="previewContainer">
+                  <img id="previewImg" alt="Vista previa" />
+                </div>
               </div>
             </div>
 
@@ -1692,8 +1772,8 @@
     const campoOtroWrap = document.getElementById("campoOtroWrap");
     const campoOtro = document.getElementById("campoOtro");
     const descripcion = document.getElementById("descripcion");
-    const encargado = document.getElementById("encargado");
     const imagen = document.getElementById("imagen");
+    const imagenFileName = document.getElementById("imagenFileName");
     const previewContainer = document.getElementById("previewContainer");
     const previewImg = document.getElementById("previewImg");
     const btnGuardar = document.getElementById("btnGuardar");
@@ -1829,10 +1909,11 @@
       previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
       clearStatus();
       campoOtro.value = "";
-      const nombreGuardado = usuarioActual?.user ? usuarioActual.user : "";
-      encargado.value = nombreGuardado;
+      if (imagenFileName) {
+        imagenFileName.textContent = "Ningún archivo seleccionado";
+      }
       setTipoValue("Avería");
-      setPrioridadValue("Media");
+      setPrioridadValue("");
       setCategoriaValue("");
       agencia.placeholder = "Ej: Agencia 1000 o Grupo 44";
     }
@@ -1984,6 +2065,7 @@
       if (!file) {
         previewContainer.style.display = "none";
         previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
+        if (imagenFileName) imagenFileName.textContent = "Ningún archivo seleccionado";
         return;
       }
 
@@ -1994,7 +2076,12 @@
         imagen.value = "";
         previewContainer.style.display = "none";
         previewContainer.innerHTML = '<img id="previewImg" alt="Vista previa" />';
+        if (imagenFileName) imagenFileName.textContent = "Ningún archivo seleccionado";
         return;
+      }
+
+      if (imagenFileName) {
+        imagenFileName.textContent = file.name;
       }
 
       const objectUrl = URL.createObjectURL(file);
@@ -2017,7 +2104,7 @@
       const agenciaValue = agencia.value.trim();
       const categoriaValue = resolveSelectedCategory();
       const descripcionValue = descripcion.value.trim();
-      const encargadoValue = encargado.value.trim() || "App móvil";
+      const encargadoValue = usuarioActual?.user || "App móvil";
       const imageFile = imagen.files?.[0] || null;
 
       if (!tipoValue || !agenciaValue || !categoriaValue) {
@@ -2369,7 +2456,7 @@ if (techBtn) {
     renderTypeCards();
     renderPriorityCards();
     setTipoValue("Avería");
-    setPrioridadValue("Media");
+    setPrioridadValue("");
 
   // loadReports();
 const usuariosApp = [
