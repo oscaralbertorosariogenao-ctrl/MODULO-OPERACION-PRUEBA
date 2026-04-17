@@ -5684,6 +5684,7 @@ renderTransferencias();
     let syncInFlight = false;
     let realtimeChannel = null;
     let realtimeReconnectTimer = null;
+    let realtimeConnected = false;
 
     function updateNotificationButtonState() {
       const btn = document.getElementById('dashboardNotifyBtn');
@@ -5885,6 +5886,7 @@ renderTransferencias();
         .subscribe((status) => {
           console.info('Estado realtime:', status);
           if (status === 'SUBSCRIBED') {
+            realtimeConnected = true;
             console.info('Realtime activo para reportes_operaciones');
             if (realtimeReconnectTimer) {
               clearTimeout(realtimeReconnectTimer);
@@ -5892,6 +5894,7 @@ renderTransferencias();
             }
           }
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            realtimeConnected = false;
             console.warn('Realtime desconectado:', status);
             if (!realtimeReconnectTimer) {
               realtimeReconnectTimer = window.setTimeout(() => {
@@ -7239,11 +7242,19 @@ function openEditModal(id) {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') runOperationalRefresh({ silent: true, skipSuccessToast: true });
     });
-    window.setInterval(() => runOperationalRefresh({ silent: true, skipSuccessToast: true }), 15000);
+
+    function startLiveSyncWatchdog() {
+      window.setInterval(() => {
+        if (document.visibilityState !== 'visible') return;
+        if (!realtimeConnected) initializeRealtimeSync();
+        runOperationalRefresh({ silent: true, skipSuccessToast: true });
+      }, 3000);
+    }
 
     window.addEventListener('load', () => {
       updateNotificationButtonState();
       initializeRealtimeSync();
+      startLiveSyncWatchdog();
       runOperationalRefresh({ silent: true });
       const operations = loadOperations();
       let changed = false;
