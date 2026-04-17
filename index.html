@@ -363,6 +363,54 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 @media (max-width:1180px){.dashboard-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-3,.dashboard-grid-2,.dashboard-spotlight{grid-template-columns:1fr}}
 @media (max-width:720px){.dashboard-grid-4{grid-template-columns:1fr}.dashboard-bar-row{grid-template-columns:1fr}.dashboard-bar-value{text-align:left}.dashboard-hero h2{font-size:24px}}
 
+
+
+/* ===== Detalle de operación ligero ===== */
+.ops-detail-shell{display:grid;gap:14px}
+.ops-detail-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#fbfdff 0%,#f5fbff 100%)}
+.ops-detail-title h3{margin:0 0 6px;font-size:24px;color:var(--title-dark)}
+.ops-detail-title p{margin:0;color:var(--text-soft);font-size:14px;line-height:1.45}
+.ops-detail-meta-inline{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ops-detail-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#eef5fb;color:#3b678e;font-size:12px;font-weight:800}
+.ops-detail-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ops-detail-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:15px 16px}
+.ops-detail-card span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);font-weight:800;margin-bottom:6px}
+.ops-detail-card strong,.ops-detail-card p{margin:0;font-size:15px;color:var(--text);line-height:1.5}
+.ops-detail-section{border:1px solid var(--line);border-radius:20px;background:#fff;padding:16px}
+.ops-detail-section h4{margin:0 0 10px;font-size:16px;color:var(--title-dark)}
+.ops-detail-timeline{display:grid;gap:12px}
+.ops-detail-step{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:flex-start}
+.ops-detail-step-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#edf3f8;color:#6c8499;font-weight:900;border:2px solid #dbe6ef}
+.ops-detail-step.done .ops-detail-step-icon{background:#e8f6ef;color:#2f7d57;border-color:#bfe5cf}
+.ops-detail-step.active .ops-detail-step-icon{background:#fff2d8;color:#9a6b12;border-color:#f4d48a}
+.ops-detail-step-body{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:#fbfdff}
+.ops-detail-step-body strong{display:block;font-size:14px;color:var(--text);margin-bottom:4px}
+.ops-detail-step-body p{margin:0;color:var(--text-soft);font-size:13px;line-height:1.45}
+.ops-detail-step-body small{display:block;margin-top:5px;color:#8295a7;font-size:12px;font-weight:700}
+.ops-detail-empty{padding:18px;border:1px dashed var(--line);border-radius:16px;background:#fbfdff;color:#8092a3;text-align:center;font-weight:700}
+@media (max-width:780px){.ops-detail-summary{grid-template-columns:1fr}.ops-detail-hero{padding:16px}.ops-detail-title h3{font-size:21px}}
+
+
+
+/* ===== Ajustes visuales pro para detalle y evidencias ===== */
+.ops-detail-step-icon i{font-size:16px}
+.ops-media-gallery-wrap{margin-top:6px}
+.ops-media-gallery{display:grid;gap:14px}
+.ops-media-card{display:flex;flex-direction:column;gap:0;background:#f8fbfe;border:1px solid #dbe7f0;border-radius:18px;padding:12px;cursor:pointer;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;text-align:left;box-shadow:0 10px 24px rgba(20,70,105,.06)}
+.ops-media-card:hover{transform:translateY(-2px);border-color:#b7d8ea;box-shadow:0 16px 28px rgba(20,70,105,.10)}
+.ops-media-stage{display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:14px;background:linear-gradient(180deg,#eef6fb 0%,#f8fbfe 100%);border:1px solid #d9e7f1;padding:10px}
+.ops-media-stage img,.ops-media-stage video{width:100%;height:100%;max-height:340px;object-fit:contain;display:block;border-radius:10px;background:#fff}
+.ops-media-caption{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px 2px}
+.ops-media-caption span{font-size:12px;font-weight:800;color:#6f879a;text-transform:uppercase;letter-spacing:.04em}
+.ops-media-caption strong{font-size:13px;color:#204b6a}
+.ops-media-lightbox{position:fixed;inset:0;background:rgba(15,23,42,.76);display:flex;align-items:center;justify-content:center;padding:28px;z-index:500}
+.ops-media-lightbox-dialog{position:relative;width:min(1100px,100%);max-height:90vh;background:#fff;border-radius:24px;padding:20px;box-shadow:0 30px 80px rgba(15,23,42,.32);display:flex;flex-direction:column;gap:12px}
+.ops-media-lightbox-close{position:absolute;top:14px;right:14px;width:42px;height:42px;border:none;border-radius:999px;background:#edf4fa;color:#204b6a;cursor:pointer;font-size:18px}
+.ops-media-lightbox-stage{display:flex;align-items:center;justify-content:center;min-height:320px;max-height:calc(90vh - 110px);overflow:hidden;border-radius:18px;background:#f5f9fc;border:1px solid #dce8f1;padding:12px}
+.ops-media-lightbox-stage img,.ops-media-lightbox-stage video{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:12px;background:#fff;display:block}
+.ops-media-lightbox-caption{font-size:14px;font-weight:700;color:#365874}
+@media (max-width:780px){.ops-media-lightbox{padding:14px}.ops-media-lightbox-dialog{padding:14px;border-radius:20px}.ops-media-stage{min-height:220px}}
+
 </style>
 </head>
 <body>
@@ -4650,12 +4698,31 @@ renderTransferencias();
     function renderMediaGrid(items = [], options = {}) {
       const list = Array.isArray(items) ? items.filter(Boolean) : [];
       if (!list.length) return '';
-      const title = options.title || 'Archivos';
-      const minWidth = options.minWidth || 180;
-      const height = options.height || 160;
-      return `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">${title}</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(${minWidth}px,1fr)); gap:10px;">${list.map(src => isVideoMedia(src)
-        ? `<video controls preload="metadata" style="width:100%; height:${height}px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border); background:#000;"><source src="${src}"></video>`
-        : `<img src="${src}" style="width:100%; height:${height}px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>`;
+      const title = options.title === undefined ? 'Archivos' : options.title;
+      const minWidth = options.minWidth || 240;
+      const height = options.height || 210;
+      const sectionTitle = title
+        ? `<label style="display:block; margin-bottom:10px; font-size:14px; font-weight:700; color: var(--text);">${title}</label>`
+        : '';
+      return `
+        <div class="ops-media-gallery-wrap">
+          ${sectionTitle}
+          <div class="ops-media-gallery" style="grid-template-columns:repeat(auto-fit,minmax(${minWidth}px,1fr));">
+            ${list.map((src, index) => `
+              <button type="button" class="ops-media-card" onclick="openMediaLightbox('${escapeHtml(src)}', ${isVideoMedia(src) ? 'true' : 'false'}, 'Archivo ${index + 1}')">
+                <div class="ops-media-stage" style="min-height:${height}px;">
+                  ${isVideoMedia(src)
+                    ? `<video controls preload="metadata" playsinline><source src="${src}"></video>`
+                    : `<img src="${src}" alt="Archivo ${index + 1}" loading="lazy" />`}
+                </div>
+                <div class="ops-media-caption">
+                  <span>${isVideoMedia(src) ? 'Video' : 'Imagen'}</span>
+                  <strong>Ver archivo</strong>
+                </div>
+              </button>
+            `).join('')}
+          </div>
+        </div>`;
     }
 
     function renderEditableImageGrid(containerId, images = [], onRemoveName, id) {
@@ -5750,37 +5817,185 @@ renderTransferencias();
       }
     });
 
+    function getOperationHeadline(op = {}) {
+      const code = String(op.code || '').trim() || 'Sin código';
+      const category = String(op.title || '').trim() || 'Sin categoría';
+      const location = getOperationLocation(op);
+      return { code, category, location };
+    }
+
+    function getCompactHistoryEntry(op, actionName) {
+      const history = Array.isArray(op.history) ? op.history : [];
+      return history.find(item => String(item.action || '').trim() === actionName) || null;
+    }
+
+    function buildDetailTimeline(op) {
+      const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico';
+      const assignedDisplay = getAssigneeDisplayName(op.technician, op.type);
+      const creationEntry = getCompactHistoryEntry(op, 'Creación');
+      const assignmentEntry = getCompactHistoryEntry(op, 'Asignación') || getCompactHistoryEntry(op, 'Estado');
+      const startEntry = getCompactHistoryEntry(op, 'Inicio') || (op.status === 'En proceso' ? getCompactHistoryEntry(op, 'Estado') : null);
+      const completionEntry = getCompactHistoryEntry(op, 'Finalización') || (op.status === 'Completado' ? getCompactHistoryEntry(op, 'Estado') : null);
+      const resolutionMinutes = getResolutionMinutes(op);
+      const resolutionLabel = resolutionMinutes !== null ? formatMinutesHuman(resolutionMinutes) : '';
+
+      const steps = [
+        {
+          label: 'Reporte recibido',
+          icon: '<i class="fa-solid fa-file-circle-plus"></i>',
+          state: 'done',
+          detail: (creationEntry && creationEntry.detail) || `Se registró ${op.type === 'Trabajo' ? 'el trabajo' : 'la avería'} en el sistema.`,
+          date: formatDate((creationEntry && getHistoryTimestamp(creationEntry)) || op.createdAt)
+        },
+        {
+          label: op.type === 'Trabajo' ? 'Suplidor asignado' : 'Técnico asignado',
+          icon: '<i class="fa-solid fa-user-gear"></i>',
+          state: assignedDisplay !== 'Sin asignar' ? (op.status === 'Pendiente' ? 'active' : 'done') : 'pending',
+          detail: assignedDisplay !== 'Sin asignar' ? `${assignedLabel} asignado: ${assignedDisplay}` : `${assignedLabel} pendiente por asignar.`,
+          date: assignedDisplay !== 'Sin asignar' ? formatDate((assignmentEntry && getHistoryTimestamp(assignmentEntry)) || op.assignedAt || op.createdAt) : ''
+        },
+        {
+          label: 'En proceso',
+          icon: '<i class="fa-solid fa-screwdriver-wrench"></i>',
+          state: op.status === 'En proceso' ? 'active' : (op.status === 'Completado' ? 'done' : 'pending'),
+          detail: op.status === 'En proceso' || op.status === 'Completado' ? ((startEntry && startEntry.detail) || 'La operación ya está en gestión.') : 'Aún no ha iniciado la gestión.',
+          date: (op.status === 'En proceso' || op.status === 'Completado') ? formatDate((startEntry && getHistoryTimestamp(startEntry)) || op.startedAt || op.assignedAt || op.createdAt) : ''
+        },
+        {
+          label: 'Completado',
+          icon: '<i class="fa-solid fa-circle-check"></i>',
+          state: op.status === 'Completado' ? 'done' : 'pending',
+          detail: op.status === 'Completado'
+            ? `${((completionEntry && completionEntry.detail) || 'La operación fue completada correctamente.')}${resolutionLabel ? ` · Tiempo de resolución: ${resolutionLabel}` : ''}`
+            : 'Todavía no ha sido completado.',
+          date: op.status === 'Completado' ? formatDate((completionEntry && getHistoryTimestamp(completionEntry)) || op.completedAt || op.closedAt || op.createdAt) : ''
+        }
+      ];
+
+      return `<div class="ops-detail-timeline">${steps.map(step => `
+        <div class="ops-detail-step ${step.state}">
+          <div class="ops-detail-step-icon">${step.icon}</div>
+          <div class="ops-detail-step-body">
+            <strong>${step.label}</strong>
+            <p>${step.detail}</p>
+            ${step.date ? `<small>${step.date}</small>` : ''}
+          </div>
+        </div>
+      `).join('')}</div>`;
+    }
+
     function showDetail(id) {
       currentDetailOperationId = id;
       if (detailPrintBtn) detailPrintBtn.onclick = () => printOperation(id);
       const op = loadOperations().find(item => item.id === id);
       if (!op) return;
-      const assignedLabel = op.type === 'Trabajo' ? 'Suplidor' : 'Técnico asignado';
+      const assignedLabel = op.type === 'Trabajo' ? 'Suplidor asignado' : 'Técnico asignado';
       const assignedDisplay = getAssigneeDisplayName(op.technician, op.type);
-      const allowedActions = ['Creación', 'Asignación', 'Inicio', 'Estado', 'Finalización', 'Evidencia'];
-      const historyHtml = Array.isArray(op.history) && op.history.length
-        ? op.history
-            .filter(item => allowedActions.includes(item.action))
-            .sort((a,b) => new Date(getHistoryTimestamp(b) || 0) - new Date(getHistoryTimestamp(a) || 0))
-            .map(item => `
-              <div style="padding:10px 0; border-bottom:1px solid var(--border);">
-                <strong style="display:block; font-size:13px;">${item.action}</strong>
-                <div style="font-size:13px; color:var(--text); margin-top:4px;">${item.detail}</div>
-                ${(item.prevStatus || item.newStatus) ? `<div style="font-size:12px; color:var(--muted); margin-top:4px;"><strong>${item.prevStatus || '-'}</strong> → <strong>${item.newStatus || '-'}</strong></div>` : ''}
-                <div style="font-size:12px; color:var(--muted); margin-top:4px;">${formatDate(getHistoryTimestamp(item) || op.createdAt)} · ${item.user}</div>
-              </div>
-            `).join('')
-        : '<div style="color:var(--muted);">Sin historial disponible.</div>';
+      const headline = getOperationHeadline(op);
+      const selectedTypes = getOperationSpecificTypes(op);
+      const lastUpdate = op.status === 'Completado'
+        ? (op.completedAt || op.closedAt || op.createdAt)
+        : (op.startedAt || op.assignedAt || op.createdAt);
+      const summaryCards = [
+        { label: 'Tipo', value: op.type || 'No registrado' },
+        { label: 'Ubicación', value: headline.location },
+        { label: 'Reportado por', value: getOperationReporter(op) },
+        { label: assignedLabel, value: assignedDisplay },
+        { label: 'Fecha de reporte', value: formatDate(op.createdAt) },
+        { label: 'Última actualización', value: formatDate(lastUpdate) }
+      ];
+
       detailContent.innerHTML = `
-        <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Categoría / asunto</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia / grupo</span><strong>${getOperationLocation(op)}</strong></div><div class="detail-item"><span>Reportado por</span><strong>${getOperationReporter(op)}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${assignedDisplay}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority || 'Media'}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
-        <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(getOperationSpecificTypes(op))}</div></div></div>
-        ${op.images && op.images.length ? renderMediaGrid(op.images, { title: 'Archivos reportados' }) : ''}
-        ${op.resultImages && op.resultImages.length ? renderMediaGrid(op.resultImages, { title: 'Evidencias de resultado' }) : ''}
-        <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
-        <div class="detail-box"><div class="detail-item"><span>Historial de la operación</span><div style="margin-top:8px;">${historyHtml}</div></div></div>
+        <div class="ops-detail-shell">
+          <div class="ops-detail-hero">
+            <div class="ops-detail-title">
+              <h3>${headline.code}</h3>
+              <p>${headline.category}</p>
+              <div class="ops-detail-meta-inline">
+                <span class="ops-detail-pill">${op.type || 'Operación'}</span>
+                <span class="ops-detail-pill">${headline.location}</span>
+              </div>
+            </div>
+            <div>${statusBadge(op.status)}</div>
+          </div>
+
+          <div class="ops-detail-summary">
+            ${summaryCards.map(card => `
+              <div class="ops-detail-card">
+                <span>${card.label}</span>
+                <strong>${card.value}</strong>
+              </div>
+            `).join('')}
+          </div>
+
+          ${selectedTypes.length ? `
+            <div class="ops-detail-section">
+              <h4>${op.type === 'Trabajo' ? 'Trabajos seleccionados' : 'Tipos seleccionados'}</h4>
+              <div style="margin-top:8px;">${renderSelectedTypeChips(selectedTypes)}</div>
+            </div>
+          ` : ''}
+
+          <div class="ops-detail-section">
+            <h4>Seguimiento</h4>
+            ${buildDetailTimeline(op)}
+          </div>
+
+          ${op.description ? `
+            <div class="ops-detail-section">
+              <h4>Observación</h4>
+              <p style="margin:0; color:var(--text); line-height:1.55;">${op.description}</p>
+            </div>
+          ` : ''}
+
+          ${op.images && op.images.length ? `
+            <div class="ops-detail-section">
+              <h4>Evidencia inicial</h4>
+              ${renderMediaGrid(op.images, { title: '', minWidth: 180, height: 160 })}
+            </div>
+          ` : ''}
+
+          ${op.resultImages && op.resultImages.length ? `
+            <div class="ops-detail-section">
+              <h4>Evidencia de resultado</h4>
+              ${renderMediaGrid(op.resultImages, { title: '', minWidth: 180, height: 160 })}
+            </div>
+          ` : ''}
+        </div>
       `;
       detailModalBackdrop.classList.remove('hidden');
     }
+
+    function openMediaLightbox(src, isVideo = false, label = 'Archivo') {
+      const lightbox = document.getElementById('opsMediaLightbox');
+      const stage = document.getElementById('opsMediaLightboxStage');
+      const caption = document.getElementById('opsMediaLightboxCaption');
+      if (!lightbox || !stage || !caption) return;
+      caption.textContent = label || 'Archivo';
+      stage.innerHTML = isVideo
+        ? `<video controls autoplay playsinline preload="metadata"><source src="${src}"></video>`
+        : `<img src="${src}" alt="${label || 'Archivo'}" />`;
+      lightbox.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMediaLightbox() {
+      const lightbox = document.getElementById('opsMediaLightbox');
+      const stage = document.getElementById('opsMediaLightboxStage');
+      if (lightbox) lightbox.classList.add('hidden');
+      if (stage) stage.innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', function(event) {
+      const lightbox = document.getElementById('opsMediaLightbox');
+      if (lightbox && event.target === lightbox) {
+        closeMediaLightbox();
+      }
+    });
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') closeMediaLightbox();
+    });
 
     
     function escapeHtml(value) {
@@ -5842,6 +6057,33 @@ renderTransferencias();
   .empty-cell{text-align:center;color:#64748b;padding:22px}
   .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;color:#64748b;font-size:11px}
   @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}.sheet{padding:0}}
+
+
+/* ===== Detalle de operación ligero ===== */
+.ops-detail-shell{display:grid;gap:14px}
+.ops-detail-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#fbfdff 0%,#f5fbff 100%)}
+.ops-detail-title h3{margin:0 0 6px;font-size:24px;color:var(--title-dark)}
+.ops-detail-title p{margin:0;color:var(--text-soft);font-size:14px;line-height:1.45}
+.ops-detail-meta-inline{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ops-detail-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#eef5fb;color:#3b678e;font-size:12px;font-weight:800}
+.ops-detail-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ops-detail-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:15px 16px}
+.ops-detail-card span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);font-weight:800;margin-bottom:6px}
+.ops-detail-card strong,.ops-detail-card p{margin:0;font-size:15px;color:var(--text);line-height:1.5}
+.ops-detail-section{border:1px solid var(--line);border-radius:20px;background:#fff;padding:16px}
+.ops-detail-section h4{margin:0 0 10px;font-size:16px;color:var(--title-dark)}
+.ops-detail-timeline{display:grid;gap:12px}
+.ops-detail-step{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:flex-start}
+.ops-detail-step-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#edf3f8;color:#6c8499;font-weight:900;border:2px solid #dbe6ef}
+.ops-detail-step.done .ops-detail-step-icon{background:#e8f6ef;color:#2f7d57;border-color:#bfe5cf}
+.ops-detail-step.active .ops-detail-step-icon{background:#fff2d8;color:#9a6b12;border-color:#f4d48a}
+.ops-detail-step-body{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:#fbfdff}
+.ops-detail-step-body strong{display:block;font-size:14px;color:var(--text);margin-bottom:4px}
+.ops-detail-step-body p{margin:0;color:var(--text-soft);font-size:13px;line-height:1.45}
+.ops-detail-step-body small{display:block;margin-top:5px;color:#8295a7;font-size:12px;font-weight:700}
+.ops-detail-empty{padding:18px;border:1px dashed var(--line);border-radius:16px;background:#fbfdff;color:#8092a3;text-align:center;font-weight:700}
+@media (max-width:780px){.ops-detail-summary{grid-template-columns:1fr}.ops-detail-hero{padding:16px}.ops-detail-title h3{font-size:21px}}
+
 </style></head><body>
 <div class="sheet">
   <div class="header">
@@ -5860,6 +6102,15 @@ renderTransferencias();
   <div class="footer"><div>Sistema de Operaciones</div><div>Impresión optimizada para hoja A4 horizontal</div></div>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},220);};<\/script>
+
+<div class="ops-media-lightbox hidden" id="opsMediaLightbox">
+  <div class="ops-media-lightbox-dialog">
+    <button type="button" class="ops-media-lightbox-close" onclick="closeMediaLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="ops-media-lightbox-stage" id="opsMediaLightboxStage"></div>
+    <div class="ops-media-lightbox-caption" id="opsMediaLightboxCaption"></div>
+  </div>
+</div>
+
 </body></html>`);
       printWindow.document.close();
     }
@@ -6085,6 +6336,33 @@ renderTransferencias();
   .print-image-card img{max-width:100%;max-height:260px;width:auto;height:auto;object-fit:contain;display:block}
   table{width:100%;border-collapse:collapse} th,td{border:1px solid #e5e7eb;padding:8px;text-align:left;vertical-align:top} th{background:#f8fafc;font-size:11px}
   @media print { body{print-color-adjust:exact;-webkit-print-color-adjust:exact} .sheet{padding:0 10px} }
+
+
+/* ===== Detalle de operación ligero ===== */
+.ops-detail-shell{display:grid;gap:14px}
+.ops-detail-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#fbfdff 0%,#f5fbff 100%)}
+.ops-detail-title h3{margin:0 0 6px;font-size:24px;color:var(--title-dark)}
+.ops-detail-title p{margin:0;color:var(--text-soft);font-size:14px;line-height:1.45}
+.ops-detail-meta-inline{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ops-detail-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#eef5fb;color:#3b678e;font-size:12px;font-weight:800}
+.ops-detail-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ops-detail-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:15px 16px}
+.ops-detail-card span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-soft);font-weight:800;margin-bottom:6px}
+.ops-detail-card strong,.ops-detail-card p{margin:0;font-size:15px;color:var(--text);line-height:1.5}
+.ops-detail-section{border:1px solid var(--line);border-radius:20px;background:#fff;padding:16px}
+.ops-detail-section h4{margin:0 0 10px;font-size:16px;color:var(--title-dark)}
+.ops-detail-timeline{display:grid;gap:12px}
+.ops-detail-step{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:flex-start}
+.ops-detail-step-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#edf3f8;color:#6c8499;font-weight:900;border:2px solid #dbe6ef}
+.ops-detail-step.done .ops-detail-step-icon{background:#e8f6ef;color:#2f7d57;border-color:#bfe5cf}
+.ops-detail-step.active .ops-detail-step-icon{background:#fff2d8;color:#9a6b12;border-color:#f4d48a}
+.ops-detail-step-body{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:#fbfdff}
+.ops-detail-step-body strong{display:block;font-size:14px;color:var(--text);margin-bottom:4px}
+.ops-detail-step-body p{margin:0;color:var(--text-soft);font-size:13px;line-height:1.45}
+.ops-detail-step-body small{display:block;margin-top:5px;color:#8295a7;font-size:12px;font-weight:700}
+.ops-detail-empty{padding:18px;border:1px dashed var(--line);border-radius:16px;background:#fbfdff;color:#8092a3;text-align:center;font-weight:700}
+@media (max-width:780px){.ops-detail-summary{grid-template-columns:1fr}.ops-detail-hero{padding:16px}.ops-detail-title h3{font-size:21px}}
+
 </style></head><body>
 <div class="sheet">
   <div class="header"><div><h1>Reporte de Operación</h1><p>Sistema de Operaciones</p></div><div class="code-box"><span>Código</span><strong>${escapeHtml(op.code)}</strong></div></div>
@@ -6104,6 +6382,15 @@ renderTransferencias();
   <div class="print-section"><h3>Historial principal</h3><table><thead><tr><th>Fecha</th><th>Acción</th><th>Detalle</th><th>Usuario</th></tr></thead><tbody>${historyHtml}</tbody></table></div>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},200);};<\/script>
+
+<div class="ops-media-lightbox hidden" id="opsMediaLightbox">
+  <div class="ops-media-lightbox-dialog">
+    <button type="button" class="ops-media-lightbox-close" onclick="closeMediaLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="ops-media-lightbox-stage" id="opsMediaLightboxStage"></div>
+    <div class="ops-media-lightbox-caption" id="opsMediaLightboxCaption"></div>
+  </div>
+</div>
+
 </body></html>`);
       printWindow.document.close();
     }
@@ -6792,6 +7079,15 @@ function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
   if(typeof showView === 'function') showView(nombreVista);
 }
 </script>
+
+
+<div class="ops-media-lightbox hidden" id="opsMediaLightbox">
+  <div class="ops-media-lightbox-dialog">
+    <button type="button" class="ops-media-lightbox-close" onclick="closeMediaLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="ops-media-lightbox-stage" id="opsMediaLightboxStage"></div>
+    <div class="ops-media-lightbox-caption" id="opsMediaLightboxCaption"></div>
+  </div>
+</div>
 
 </body>
 </html>
