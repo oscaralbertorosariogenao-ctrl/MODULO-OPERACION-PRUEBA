@@ -978,8 +978,8 @@
 
     .reports-summary {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
       margin: 10px 0 14px;
     }
 
@@ -987,33 +987,55 @@
       border: 1px solid #d8e8f0;
       border-radius: 18px;
       background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
-      padding: 12px 14px;
+      padding: 14px 12px;
       cursor: pointer;
       box-shadow: var(--shadow-soft);
       transition: .18s ease;
+      text-align: center;
     }
 
     .summary-card span {
       display: block;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 900;
-      color: #7690a0;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      margin-bottom: 6px;
+      color: #111111;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+      line-height: 1.2;
     }
 
     .summary-card strong {
       display: block;
-      font-size: 22px;
-      color: #153447;
+      font-size: 28px;
+      color: #111111;
       line-height: 1;
+      font-weight: 900;
     }
 
     .summary-card.active {
-      border-color: #bfe6f0;
+      border-color: #22b4e2;
       background: linear-gradient(135deg, #effbff 0%, #e3f8fd 100%);
       box-shadow: 0 12px 24px rgba(14,165,198,.14);
+    }
+
+    @media (max-width: 520px) {
+      .reports-summary {
+        gap: 10px;
+      }
+
+      .summary-card {
+        padding: 12px 10px;
+        border-radius: 16px;
+      }
+
+      .summary-card span {
+        font-size: 12px;
+      }
+
+      .summary-card strong {
+        font-size: 24px;
+      }
     }
 
     .report-toolbar-2 {
@@ -1734,16 +1756,12 @@
           <div class="section-heading"><div><h3 id="reportsSectionTitle">Mis reportes</h3><p id="reportsSectionSubtitle">Consulta el estado de tus reportes, revisa el detalle y da seguimiento sin salir de la app.</p></div><span class="section-badge">Seguimiento</span></div><div class="soft-divider"></div>
 
           <div class="reports-summary" id="reportsSummary">
-            <div class="summary-card active" data-report-filter="todos">
-              <span>Todos</span>
-              <strong id="countTodos">0</strong>
-            </div>
-            <div class="summary-card" data-report-filter="pendiente">
-              <span>Pendientes</span>
+            <div class="summary-card active" data-report-filter="pendiente">
+              <span>Pendiente</span>
               <strong id="countPendiente">0</strong>
             </div>
             <div class="summary-card" data-report-filter="asignada">
-              <span>Asignadas</span>
+              <span>Asignada</span>
               <strong id="countAsignada">0</strong>
             </div>
             <div class="summary-card" data-report-filter="en-proceso">
@@ -1751,7 +1769,7 @@
               <strong id="countProceso">0</strong>
             </div>
             <div class="summary-card" data-report-filter="completado">
-              <span>Completados</span>
+              <span>Completado</span>
               <strong id="countCompletado">0</strong>
             </div>
           </div>
@@ -1927,7 +1945,7 @@
     const btnRefreshReports = document.getElementById("btnRefreshReports");
     const reportSearchInput = document.getElementById("reportSearchInput");
     const reportFilterCards = Array.from(document.querySelectorAll("[data-report-filter]"));
-    let currentReportFilter = "todos";
+    let currentReportFilter = "pendiente";
     const reportList = document.getElementById("reportList");
 
     const detailBackdrop = document.getElementById("detailBackdrop");
@@ -1949,7 +1967,9 @@
   sectionReports.style.display = createActive ? "none" : "block";
 
   if (!createActive) {
-    loadReports();
+    setTimeout(() => {
+      loadReports();
+    }, 180);
   }
 }
 
@@ -2192,7 +2212,6 @@
 
     function updateReportSummaryCounts(reports) {
       const counts = {
-        todos: reports.length,
         pendiente: 0,
         asignada: 0,
         "en-proceso": 0,
@@ -2201,7 +2220,10 @@
 
       reports.forEach(report => {
         const key = normalizeStatus(report.estado).className;
-        if (counts[key] !== undefined) counts[key] += 1;
+        if (key === "pendiente") counts.pendiente += 1;
+        if (key === "asignada") counts.asignada += 1;
+        if (key === "en-proceso") counts["en-proceso"] += 1;
+        if (key === "completado") counts.completado += 1;
       });
 
       const setText = (id, value) => {
@@ -2209,7 +2231,6 @@
         if (el) el.textContent = String(value);
       };
 
-      setText("countTodos", counts.todos);
       setText("countPendiente", counts.pendiente);
       setText("countAsignada", counts.asignada);
       setText("countProceso", counts["en-proceso"]);
@@ -2221,7 +2242,7 @@
       let visible = 0;
 
       cards.forEach(card => {
-        const matchesFilter = currentReportFilter === "todos" || card.dataset.statusClass === currentReportFilter;
+        const matchesFilter = card.dataset.statusClass === currentReportFilter;
         const haystack = [
           card.dataset.code,
           card.dataset.category,
@@ -2591,16 +2612,42 @@
       }
     });
 
+    async function fetchReportsWithRetry(maxRetries = 2) {
+      let lastError = null;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+        try {
+          const { data, error } = await supabase
+            .from(TABLE_NAME)
+            .select("*");
+
+          if (error) throw error;
+          return data || [];
+        } catch (err) {
+          lastError = err;
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 700 * (attempt + 1)));
+          }
+        }
+      }
+
+      throw lastError;
+    }
+
     async function loadReports() {
       reportList.innerHTML = `<div class="empty-state">Cargando reportes...</div>`;
 
       try {
-        const { data, error } = await supabase
-          .from(TABLE_NAME)
-          .select("*")
-          .order("fecha_reporte", { ascending: false });
+        if (typeof navigator !== "undefined" && navigator.onLine === false) {
+          throw new Error("Sin conexión a internet.");
+        }
 
-        if (error) throw error;
+        let data = await fetchReportsWithRetry(2);
+        data = (data || []).sort((a, b) => {
+          const dateA = new Date(a?.fecha_reporte || a?.created_at || 0).getTime();
+          const dateB = new Date(b?.fecha_reporte || b?.created_at || 0).getTime();
+          return dateB - dateA;
+        });
 
         if (!data || !data.length) {
           reportList.innerHTML = `
@@ -2733,9 +2780,12 @@ if (techBtn) {
         applyReportCardFilter(cardElements);
       } catch (err) {
         console.error("Error cargando reportes:", err);
+        const isNetworkError = String(err?.message || "").toLowerCase().includes("load failed") || String(err?.message || "").toLowerCase().includes("failed to fetch");
         reportList.innerHTML = `
           <div class="empty-state" style="color:#991b1b;">
-            Error cargando reportes: ${err?.message || "desconocido"}
+            ${isNetworkError
+              ? "No se pudo conectar con Supabase desde este móvil ahora mismo. Pulsa ‘Actualizar reportes’ para reintentar."
+              : `Error cargando reportes: ${err?.message || "desconocido"}`}
           </div>
         `;
       }
@@ -2745,7 +2795,7 @@ if (techBtn) {
 
     reportFilterCards.forEach(card => {
       card.addEventListener("click", () => {
-        currentReportFilter = card.dataset.reportFilter || "todos";
+        currentReportFilter = card.dataset.reportFilter || "pendiente";
         reportFilterCards.forEach(item => item.classList.toggle("active", item === card));
         const cards = Array.from(reportList.querySelectorAll(".report-card"));
         applyReportCardFilter(cards);
