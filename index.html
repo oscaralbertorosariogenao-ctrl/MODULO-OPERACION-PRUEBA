@@ -366,17 +366,18 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .dashboard-action-btn:hover{background:rgba(255,255,255,.22)}
 .dashboard-action-btn.active{background:#ffffff;color:#1f5f9f}
 .dashboard-action-btn .dot{width:8px;height:8px;border-radius:999px;background:#9fe6b8;display:inline-block;box-shadow:0 0 0 5px rgba(159,230,184,.18)}
-.ops-toast-wrap{position:fixed;top:18px;right:18px;z-index:9999;display:grid;gap:12px;max-width:360px}
-.ops-toast{background:#fff;border:1px solid #d8e6f0;border-left:5px solid #22b4e2;border-radius:18px;box-shadow:0 16px 35px rgba(15,23,42,.14);padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:flex-start;animation:toastIn .2s ease}
+.ops-toast-wrap{position:fixed;top:22px;right:22px;z-index:9999;display:grid;gap:14px;max-width:440px;width:min(440px,calc(100vw - 28px))}
+.ops-toast{background:#fff;border:1px solid #d8e6f0;border-left:6px solid #22b4e2;border-radius:22px;box-shadow:0 22px 50px rgba(15,23,42,.18);padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:flex-start;animation:toastIn .22s ease}
 .ops-toast.success{border-left-color:#46a672}
 .ops-toast.warning{border-left-color:#f59e0b}
-.ops-toast-icon{width:36px;height:36px;border-radius:999px;background:#eef8fd;color:#148fbc;display:grid;place-items:center;font-size:16px}
+.ops-toast-icon{width:48px;height:48px;border-radius:999px;background:#eef8fd;color:#148fbc;display:grid;place-items:center;font-size:20px;box-shadow:inset 0 0 0 1px rgba(20,143,188,.08)}
 .ops-toast.success .ops-toast-icon{background:#ecf8f1;color:#2f7d57}
 .ops-toast.warning .ops-toast-icon{background:#fff7e8;color:#b7791f}
-.ops-toast-title{font-size:14px;font-weight:900;color:#1f3f5a;margin-bottom:4px}
-.ops-toast-text{font-size:13px;line-height:1.45;color:#5d7387}
-.ops-toast-close{border:none;background:transparent;color:#88a0b3;font-size:16px;cursor:pointer;padding:2px 0 0}
-@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.ops-toast-title{font-size:18px;font-weight:900;color:#1f3f5a;margin-bottom:6px;line-height:1.2}
+.ops-toast-text{font-size:15px;line-height:1.55;color:#5d7387}
+.ops-toast-close{border:none;background:transparent;color:#88a0b3;font-size:18px;cursor:pointer;padding:4px 0 0}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media (max-width:680px){.ops-toast-wrap{left:14px;right:14px;top:14px;max-width:none;width:auto}.ops-toast{padding:16px 16px 16px 14px;border-radius:18px}.ops-toast-icon{width:42px;height:42px;font-size:18px}.ops-toast-title{font-size:16px}.ops-toast-text{font-size:14px}}
 @media (max-width:1180px){.dashboard-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-3,.dashboard-grid-2,.dashboard-spotlight{grid-template-columns:1fr}}
 @media (max-width:720px){.dashboard-grid-4{grid-template-columns:1fr}.dashboard-bar-row{grid-template-columns:1fr}.dashboard-bar-value{text-align:left}.dashboard-hero h2{font-size:24px}}
 
@@ -5681,6 +5682,8 @@ renderTransferencias();
     let syncInitialized = false;
     let previousNotificationSnapshot = new Map();
     let syncInFlight = false;
+    let realtimeChannel = null;
+    let realtimeReconnectTimer = null;
 
     function updateNotificationButtonState() {
       const btn = document.getElementById('dashboardNotifyBtn');
@@ -5713,15 +5716,15 @@ renderTransferencias();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.linearRampToValueAtTime(660, now + 0.16);
+        osc.frequency.setValueAtTime(920, now);
+        osc.frequency.linearRampToValueAtTime(700, now + 0.18);
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+        gain.gain.exponentialRampToValueAtTime(0.11, now + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.46);
+        osc.stop(now + 0.56);
       } catch (error) {
         console.error('No se pudo reproducir el sonido de notificación:', error);
       }
@@ -5741,10 +5744,10 @@ renderTransferencias();
       const closeBtn = toast.querySelector('.ops-toast-close');
       closeBtn?.addEventListener('click', () => toast.remove());
       wrap.prepend(toast);
-      window.setTimeout(() => toast.remove(), 7000);
+      window.setTimeout(() => toast.remove(), 8200);
     }
 
-    function dispatchBrowserNotification(title, body) {
+    function dispatchBrowserNotification(title, body, tone = 'info') {
       if (!notificationsEnabled) return;
       if ('Notification' in window && Notification.permission === 'granted' && document.visibilityState === 'hidden') {
         try {
@@ -5754,7 +5757,7 @@ renderTransferencias();
         }
       }
       playNotificationSound();
-      showToastNotification(title, body, 'info');
+      showToastNotification(title, body, tone);
     }
 
     function buildNotificationSnapshot(operations) {
@@ -5786,46 +5789,50 @@ renderTransferencias();
         if (!previous) {
           notices.push({
             title: 'Nueva operación recibida',
-            text: `${current.code || 'Sin código'} · ${current.agency || 'Sin agencia'} · ${current.title || 'Sin categoría'}`
+            text: `${current.code || 'Sin código'} · ${current.agency || 'Sin agencia'} · ${current.title || 'Sin categoría'}`,
+            tone: 'success'
           });
           return;
         }
         if (previous.status !== current.status) {
           notices.push({
             title: 'Cambio de estado',
-            text: `${current.code || 'Operación'} cambió de ${previous.status} a ${current.status}.`
+            text: `${current.code || 'Operación'} cambió de ${previous.status} a ${current.status}.`,
+            tone: current.status === 'Completado' ? 'success' : 'info'
           });
           return;
         }
         if (previous.assigned !== current.assigned && current.assigned && current.assigned !== 'Sin asignar') {
           notices.push({
             title: 'Operación asignada',
-            text: `${current.code || 'Operación'} fue asignada a ${getAssigneeDisplayName(current.assigned, 'Avería')}.`
+            text: `${current.code || 'Operación'} fue asignada a ${getAssigneeDisplayName(current.assigned, 'Avería')}.`,
+            tone: 'info'
           });
           return;
         }
         if (previous.historyKey !== current.historyKey && current.historyKey) {
           notices.push({
             title: 'Actualización de seguimiento',
-            text: `${current.code || 'Operación'} registró un nuevo movimiento en seguimiento.`
+            text: `${current.code || 'Operación'} registró un nuevo movimiento en seguimiento.`,
+            tone: 'info'
           });
         }
       });
       previousNotificationSnapshot = nextSnapshot;
-      notices.slice(0, 4).forEach(item => dispatchBrowserNotification(item.title, item.text));
+      notices.slice(0, 4).forEach(item => dispatchBrowserNotification(item.title, item.text, item.tone || 'info'));
     }
 
-    async function runOperationalRefresh({ silent = false } = {}) {
+    async function runOperationalRefresh({ silent = false, skipSuccessToast = false } = {}) {
       if (syncInFlight) return;
       syncInFlight = true;
       try {
-        await syncOperationsFromSupabase({ silent });
+        await syncOperationsFromSupabase({ silent, skipSuccessToast });
       } finally {
         syncInFlight = false;
       }
     }
 
-    async function syncOperationsFromSupabase({ silent = false } = {}) {
+    async function syncOperationsFromSupabase({ silent = false, skipSuccessToast = false } = {}) {
       try {
         const { data, error } = await supabaseClient.from(REPORTES_TABLE).select('*').order('created_at', { ascending: true });
         if (error) throw error;
@@ -5846,13 +5853,59 @@ renderTransferencias();
         renderOwnerReports();
         renderSpecificReports();
         evaluateOperationNotifications(next);
-        if (!silent) showToastNotification('Sistema actualizado', 'Operaciones sincronizadas correctamente.', 'success');
+        if (!silent && !skipSuccessToast) showToastNotification('Sistema actualizado', 'Operaciones sincronizadas correctamente.', 'success');
       } catch (error) {
         console.error('Error cargando operaciones desde Supabase:', error);
         if (!silent) showToastNotification('No se pudo actualizar', 'Hubo un problema sincronizando con Supabase.', 'warning');
       }
     }
 
+    function handleRealtimeOperationEvent(payload) {
+      const eventType = payload?.eventType || 'UPDATE';
+      const record = payload?.new || payload?.old || null;
+      const code = record?.code || 'Operación';
+      const agency = record?.agencia || record?.grupo || 'Sin ubicación';
+      const category = record?.categoria || 'Sin categoría';
+      const state = record?.estado || '';
+      if (eventType === 'INSERT') {
+        dispatchBrowserNotification('Nueva operación recibida', `${code} · ${agency} · ${category}`, 'success');
+      } else if (eventType === 'UPDATE') {
+        dispatchBrowserNotification('Operación actualizada', `${code}${state ? ` · ${state}` : ''}`, state === 'Completado' ? 'success' : 'info');
+      } else if (eventType === 'DELETE') {
+        dispatchBrowserNotification('Operación eliminada', `${code} fue removida del tablero.`, 'warning');
+      }
+      runOperationalRefresh({ silent: true, skipSuccessToast: true });
+    }
+
+    function initializeRealtimeSync() {
+      if (!supabaseClient || realtimeChannel) return;
+      realtimeChannel = supabaseClient
+        .channel('loteka-reportes-operaciones-live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: REPORTES_TABLE }, handleRealtimeOperationEvent)
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.info('Realtime activo para reportes_operaciones');
+            if (realtimeReconnectTimer) {
+              clearTimeout(realtimeReconnectTimer);
+              realtimeReconnectTimer = null;
+            }
+          }
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            console.warn('Realtime desconectado:', status);
+            if (!realtimeReconnectTimer) {
+              realtimeReconnectTimer = window.setTimeout(() => {
+                realtimeReconnectTimer = null;
+                if (realtimeChannel) {
+                  try { supabaseClient.removeChannel(realtimeChannel); } catch (error) {}
+                  realtimeChannel = null;
+                }
+                initializeRealtimeSync();
+                runOperationalRefresh({ silent: true, skipSuccessToast: true });
+              }, 3000);
+            }
+          }
+        });
+    }
     function openCreateModal() {
       createModalBackdrop.classList.remove('hidden');
       createError.classList.add('hidden');
@@ -7180,11 +7233,11 @@ function openEditModal(id) {
       );
     });
 
-    window.addEventListener('focus', () => runOperationalRefresh({ silent: true }));
+    window.addEventListener('focus', () => runOperationalRefresh({ silent: true, skipSuccessToast: true }));
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') runOperationalRefresh({ silent: true });
+      if (document.visibilityState === 'visible') runOperationalRefresh({ silent: true, skipSuccessToast: true });
     });
-    window.setInterval(() => runOperationalRefresh({ silent: true }), 30000);
+    window.setInterval(() => runOperationalRefresh({ silent: true, skipSuccessToast: true }), 45000);
 
     window.addEventListener('load', () => {
       updateNotificationButtonState();
