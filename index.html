@@ -233,6 +233,7 @@ textarea{resize:vertical;min-height:90px}
 .ops-scope .image-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .ops-scope .image-card{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
 .ops-scope .image-card img{width:100%;height:140px;object-fit:cover;display:block}
+.ops-scope .image-card video{width:100%;height:140px;object-fit:cover;display:block;background:#000}
 .ops-scope .image-remove{position:absolute;top:8px;right:8px;border:none;border-radius:999px;width:28px;height:28px;background:rgba(15,23,42,.78);color:#fff;cursor:pointer;font-size:14px;display:grid;place-items:center}
 .ops-modal-backdrop{position:fixed;inset:0;background:rgba(16,24,40,.52);display:flex;align-items:center;justify-content:center;padding:20px;z-index:200}
 .ops-modal{width:100%;max-width:780px;max-height:90vh;background:#fff;border-radius:24px;box-shadow:0 24px 60px rgba(16,24,40,.25);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
@@ -1905,14 +1906,14 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <option value="Asignada">Asignada</option>
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
-</select></div><div class="field"><label for="operationTitle">Título</label><input class="input" id="operationTitle" placeholder="Ej. Cambio de printer en caja"/></div><div class="field"><label for="operationAgency">Agencia</label><input class="input" id="operationAgency" placeholder="Ej. Agencia 0335"/></div><div class="field"><label for="operationTechnician" id="labelTechnician">Técnico asignado</label><select class="select" id="operationTechnician"></select></div><div class="field"><label for="operationPriority">Prioridad</label><select class="select" id="operationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea class="textarea" id="operationDescription" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="operationTypeOptionsBtn" type="button"><span class="multi-select-value" id="operationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="operationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label>Imágenes reportadas (opcional)</label><input accept="image/*" class="input" id="operationImage" multiple="" type="file"/></div><div class="error hidden" id="createError"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button class="btn btn-primary" id="saveOperationBtn">Guardar operación</button></div></div></div>
+</select></div><div class="field"><label for="operationTitle">Título</label><input class="input" id="operationTitle" placeholder="Ej. Cambio de printer en caja"/></div><div class="field"><label for="operationAgency">Agencia</label><input class="input" id="operationAgency" placeholder="Ej. Agencia 0335"/></div><div class="field"><label for="operationTechnician" id="labelTechnician">Técnico asignado</label><select class="select" id="operationTechnician"></select></div><div class="field"><label for="operationPriority">Prioridad</label><select class="select" id="operationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea class="textarea" id="operationDescription" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="operationTypeOptionsBtn" type="button"><span class="multi-select-value" id="operationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="operationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label>Archivos reportados (imagen o video, opcional)</label><input accept="image/*,video/*" class="input" id="operationImage" multiple="" type="file"/></div><div class="error hidden" id="createError"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button class="btn btn-primary" id="saveOperationBtn">Guardar operación</button></div></div></div>
 <div class="ops-modal-backdrop hidden" id="detailModalBackdrop"><div class="ops-modal"><div class="modal-header"><h3>Detalle de la operación</h3><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div><div class="modal-body" id="detailContent"></div><div class="footer-actions"><button class="btn btn-primary" id="detailPrintBtn" type="button">Imprimir operación</button><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div></div></div>
 <div class="ops-modal-backdrop hidden" id="editModalBackdrop"><div class="ops-modal"><div class="modal-header"><h3>Editar operación</h3><button class="btn btn-secondary" onclick="closeEditModal()">Cerrar</button></div><div class="modal-body"><input id="editOperationId" type="hidden"/><div class="grid-2"><div class="field"><label for="editOperationType">Tipo</label><select class="select" id="editOperationType"><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select></div><div class="field"><label for="editOperationStatus">Estado</label><select class="select" id="editOperationStatus">
 <option value="Pendiente">Pendiente</option>
 <option value="Asignada">Asignada</option>
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
-</select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input class="input" id="editOperationAgency"/></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value" id="editOperationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Fotos de resultado / evidencia</label><input accept="image/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
+</select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input class="input" id="editOperationAgency"/></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value" id="editOperationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Evidencias de resultado (imagen o video)</label><input accept="image/*,video/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
 <script>
 
 let productos = [
@@ -4609,13 +4610,36 @@ renderTransferencias();
       return selectedTypes.map(type => `<span class="chip">${type}</span>`).join('');
     }
 
+    function isVideoMedia(src = '') {
+      const value = String(src || '').toLowerCase();
+      return value.startsWith('data:video/') || value.includes('video/') || /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i.test(value);
+    }
+
+    function renderMediaPreview(src, alt = 'Archivo', className = '') {
+      if (isVideoMedia(src)) {
+        return `<video ${className ? `class="${className}"` : ''} controls preload="metadata"><source src="${src}"></video>`;
+      }
+      return `<img src="${src}" alt="${alt}" ${className ? `class="${className}"` : ''} />`;
+    }
+
+    function renderMediaGrid(items = [], options = {}) {
+      const list = Array.isArray(items) ? items.filter(Boolean) : [];
+      if (!list.length) return '';
+      const title = options.title || 'Archivos';
+      const minWidth = options.minWidth || 180;
+      const height = options.height || 160;
+      return `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">${title}</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(${minWidth}px,1fr)); gap:10px;">${list.map(src => isVideoMedia(src)
+        ? `<video controls preload="metadata" style="width:100%; height:${height}px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border); background:#000;"><source src="${src}"></video>`
+        : `<img src="${src}" style="width:100%; height:${height}px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>`;
+    }
+
     function renderEditableImageGrid(containerId, images = [], onRemoveName, id) {
       const container = document.getElementById(containerId);
       if (!container) return;
       if (!images.length) { container.innerHTML = ''; return; }
       container.innerHTML = images.map((img, index) => `
         <div class="image-card">
-          <img src="${img}" alt="Imagen" />
+          ${renderMediaPreview(img, 'Archivo')}
           <button type="button" class="image-remove" onclick="${onRemoveName}('${id}', ${index})">✕</button>
         </div>
       `).join('');
@@ -5717,8 +5741,8 @@ renderTransferencias();
       detailContent.innerHTML = `
         <div class="detail-box"><div class="detail-grid"><div class="detail-item"><span>Código</span><strong>${op.code}</strong></div><div class="detail-item"><span>Tipo</span><strong>${op.type}</strong></div><div class="detail-item"><span>Título</span><strong>${op.title}</strong></div><div class="detail-item"><span>Agencia</span><strong>${op.agency}</strong></div><div class="detail-item"><span>${assignedLabel}</span><strong>${assignedDisplay}</strong></div><div class="detail-item"><span>Prioridad</span><strong>${op.priority}</strong></div><div class="detail-item"><span>Estado</span><strong>${op.status}</strong></div><div class="detail-item"><span>Fecha</span><strong>${formatDate(op.createdAt)}</strong></div><div class="detail-item"><span>Tiempo de asignación</span><strong>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</strong></div><div class="detail-item"><span>Tiempo de resolución</span><strong>${formatMinutesHuman(getResolutionMinutes(op) || 0)}</strong></div></div></div>
         <div class="detail-box"><div class="detail-item"><span>Tipos seleccionados</span><div style="margin-top:8px;">${renderSelectedTypeChips(op.selectedTypes)}</div></div></div>
-        ${op.images && op.images.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Imágenes reportadas</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.images.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
-        ${op.resultImages && op.resultImages.length ? `<div style="margin:12px 0;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600; color: var(--muted);">Evidencias de resultado</label><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">${op.resultImages.map(img => `<img src="${img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; display:block; border:1px solid var(--border);" />`).join('')}</div></div>` : ''}
+        ${op.images && op.images.length ? renderMediaGrid(op.images, { title: 'Archivos reportados' }) : ''}
+        ${op.resultImages && op.resultImages.length ? renderMediaGrid(op.resultImages, { title: 'Evidencias de resultado' }) : ''}
         <div class="detail-box"><div class="detail-item"><span>Descripción</span><p>${op.description}</p></div></div>
         <div class="detail-box"><div class="detail-item"><span>Historial de la operación</span><div style="margin-top:8px;">${historyHtml}</div></div></div>
       `;
@@ -5736,7 +5760,9 @@ renderTransferencias();
         <div class="print-section">
           <h3>${escapeHtml(title)}</h3>
           <div class="print-image-grid">
-            ${images.map(img => `<div class="print-image-card"><img src="${img}" alt="${escapeHtml(title)}" /></div>`).join('')}
+            ${images.map(img => `<div class="print-image-card">${isVideoMedia(img)
+              ? `<video controls preload="metadata" style="max-width:100%;max-height:260px;width:auto;height:auto;display:block;background:#000;border-radius:8px;"><source src="${img}"></video>`
+              : `<img src="${img}" alt="${escapeHtml(title)}" />`}</div>`).join('')}
           </div>
         </div>
       `;
@@ -6135,7 +6161,7 @@ function openEditModal(id) {
       }
 
       if (newStatus === 'Completado' && !currentEvidence.length && !resultImageFiles.length) {
-        alert('Debes subir al menos una foto de evidencia para completar la operación.');
+        alert('Debes subir al menos una evidencia (imagen o video) para completar la operación.');
         return;
       }
 
