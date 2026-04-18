@@ -2169,6 +2169,81 @@ function formatAgencyGeoText(agencia) {
   return `${lat}, ${lng}`;
 }
 
+
+const BUCKET_NAME = 'reportes-operaciones';
+
+function normalizeAgencyLabel(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const match = raw.match(/(\d{3,4})/);
+  if (match) return match[1];
+  return raw.replace(/^agencia\s*/i, '').trim();
+}
+
+function findAgencyRecord(value = '') {
+  const agencyNumber = normalizeAgencyLabel(value);
+  if (!agencyNumber) return null;
+  return agencias.find(item => String(item.numero) === String(agencyNumber)) || null;
+}
+
+function enrichOperationWithAgencyContext(op = {}) {
+  const agencyRecord = findAgencyRecord(op.agency || op.agencia || '');
+  if (!agencyRecord) return { ...op };
+  return {
+    ...op,
+    agency: agencyRecord.nombre || op.agency || op.agencia || '',
+    grupo: agencyRecord.grupo || op.grupo || '',
+    nombre_encargado: op.nombre_encargado || agencyRecord.encargado || '',
+    created_by: op.created_by || op.nombre_encargado || agencyRecord.encargado || '',
+    agency_latitude: normalizarNumeroGeografico(agencyRecord.latitud),
+    agency_longitude: normalizarNumeroGeografico(agencyRecord.longitud),
+    agency_direccion: agencyRecord.direccion || '',
+    agency_maps_url: buildAgencyMapsSearchUrl(agencyRecord),
+    agency_directions_url: buildAgencyMapsDirectionsUrl(agencyRecord)
+  };
+}
+
+function normalizeMediaItems(input) {
+  if (!input) return [];
+  let items = input;
+  if (typeof items === 'string') {
+    const trimmed = items.trim();
+    if (!trimmed) return [];
+    try {
+      items = JSON.parse(trimmed);
+    } catch (_err) {
+      items = trimmed.includes(',') ? trimmed.split(',') : [trimmed];
+    }
+  }
+  if (!Array.isArray(items)) items = [items];
+  return items
+    .flatMap(item => {
+      if (item == null) return [];
+      if (typeof item === 'string') return [item];
+      if (typeof item === 'object') return [item.publicUrl, item.url, item.path, item.name].filter(Boolean);
+      return [String(item)];
+    })
+    .map(value => String(value || '').trim())
+    .filter(Boolean);
+}
+
+function resolveStorageMediaUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^blob:/i.test(raw) || /^data:/i.test(raw) || /^https?:\/\//i.test(raw)) return raw;
+  const sanitized = raw.replace(/^\/+/, '');
+  const bucketPrefix = `${BUCKET_NAME}/`;
+  const filePath = sanitized.startsWith(bucketPrefix)
+    ? sanitized.slice(bucketPrefix.length)
+    : sanitized.replace(/^reportes-operaciones\//i, '');
+  return supabaseClient?.storage ? (supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath).data?.publicUrl || raw) : raw;
+}
+
+function getSafeMediaList(items = []) {
+  return normalizeMediaItems(items).map(resolveStorageMediaUrl).filter(Boolean);
+}
+
+
 const suplidoresBase = ['Suplidor General', 'Distribuidora Central', 'Tech Supplies RD', 'Importadora Loteka'];
 let entradasInventario = [];
 let secuenciaEntrada = 1;
@@ -4732,14 +4807,19 @@ renderTransferencias();
 
     function loadOperations() {
       const saved = localStorage.getItem('operations_records');
-      if (saved) return JSON.parse(saved);
-      const initial = deepClone(demoOperations);
+      if (saved) {
+        try {
+          return JSON.parse(saved).map(item => enrichOperationWithAgencyContext(item));
+        } catch (_error) {}
+      }
+      const initial = deepClone(demoOperations).map(item => enrichOperationWithAgencyContext(item));
       localStorage.setItem('operations_records', JSON.stringify(initial));
       return initial;
     }
 
     function saveOperations(operations) {
-      localStorage.setItem('operations_records', JSON.stringify(operations));
+      const normalized = Array.isArray(operations) ? operations.map(item => enrichOperationWithAgencyContext(item)) : [];
+      localStorage.setItem('operations_records', JSON.stringify(normalized));
     }
 
     function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
@@ -4761,8 +4841,9 @@ renderTransferencias();
     }
 
     function getOperationLocation(op = {}) {
-      const agency = String(op.agency || '').trim();
-      const grupo = String(op.grupo || '').trim();
+      const normalized = enrichOperationWithAgencyContext(op);
+      const agency = String(normalized.agency || '').trim();
+      const grupo = String(normalized.grupo || '').trim();
       if (agency && grupo) return `${agency} · ${grupo}`;
       return agency || grupo || 'No registrado';
     }
@@ -4823,7 +4904,7 @@ renderTransferencias();
     }
 
     function renderMediaGrid(items = [], options = {}) {
-      const list = Array.isArray(items) ? items.filter(Boolean) : [];
+      const list = getSafeMediaList(items);
       if (!list.length) return '';
       const title = options.title === undefined ? 'Archivos' : options.title;
       const minWidth = options.minWidth || 240;
@@ -4840,11 +4921,11 @@ renderTransferencias();
                 <div class="ops-media-stage" style="min-height:${height}px;">
                   ${isVideoMedia(src)
                     ? `<video controls preload="metadata" playsinline><source src="${src}"></video>`
-                    : `<img src="${src}" alt="Archivo ${index + 1}" loading="lazy" />`}
+                    : `<img src="${src}" alt="Archivo ${index + 1}" loading="lazy" onerror="this.closest('.ops-media-stage').innerHTML='<div style=&quot;padding:16px;text-align:center;&quot;><a href=&quot;${src}&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; style=&quot;color:#0ea5c6;font-weight:700;&quot;>Abrir archivo</a></div>';" />`}
                 </div>
                 <div class="ops-media-caption">
                   <span>${isVideoMedia(src) ? 'Video' : 'Imagen'}</span>
-                  <strong>Ver archivo</strong>
+                  <strong>Abrir archivo</strong>
                 </div>
               </button>
             `).join('')}
@@ -4855,8 +4936,9 @@ renderTransferencias();
     function renderEditableImageGrid(containerId, images = [], onRemoveName, id) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      if (!images.length) { container.innerHTML = ''; return; }
-      container.innerHTML = images.map((img, index) => `
+      const safeImages = getSafeMediaList(images);
+      if (!safeImages.length) { container.innerHTML = ''; return; }
+      container.innerHTML = safeImages.map((img, index) => `
         <div class="image-card">
           ${renderMediaPreview(img, 'Archivo')}
           <button type="button" class="image-remove" onclick="${onRemoveName}('${id}', ${index})">✕</button>
@@ -5121,7 +5203,7 @@ renderTransferencias();
         const history = Array.isArray(op.history) ? op.history : [];
         return history.map(item => ({
           operationId: op.id,
-          code: op.code,
+          code: normalized.code,
           title: op.title,
           agency: op.agency,
           type: op.type,
@@ -5699,31 +5781,32 @@ renderTransferencias();
     }
 
     function buildSupabasePayloadFromOperation(op) {
-      const locationAgency = String(op.agency || '').trim();
+      const normalized = enrichOperationWithAgencyContext(op);
+      const locationAgency = String(normalized.agency || '').trim();
       return {
-        id: op.id,
-        code: op.code,
-        tipo_reporte: op.type,
-        categoria: op.title,
-        descripcion: op.description,
+        id: normalized.id,
+        code: normalized.code,
+        tipo_reporte: normalized.type,
+        categoria: normalized.title,
+        descripcion: normalized.description,
         agencia: locationAgency,
-        grupo: op.grupo || '',
-        nombre_encargado: op.nombre_encargado || op.created_by || 'Sistema web',
-        creado_por: op.created_by || op.nombre_encargado || getCurrentUserEmail(),
-        fecha_reporte: op.createdAt || nowIso(),
-        estado: normalizeRemoteStatus(op.status),
-        prioridad: op.priority || 'Media',
-        asignado_a: op.type === 'Trabajo' ? (op.technician || 'Sin asignar') : normalizeStoredAssignee(op.technician, op.type),
-        selected_types: Array.isArray(op.selectedTypes) ? op.selectedTypes : getOperationSpecificTypes(op),
-        images: Array.isArray(op.images) ? op.images : [],
-        result_images: Array.isArray(op.resultImages) ? op.resultImages : [],
-        assigned_at: op.assignedAt || null,
-        started_at: op.startedAt || null,
-        completed_at: op.completedAt || null,
-        resolution_time: op.resolutionTime || '',
-        closed_at: op.closedAt || null,
-        source: op.source || 'web_operacional',
-        history: Array.isArray(op.history) ? op.history : []
+        grupo: normalized.grupo || '',
+        nombre_encargado: normalized.nombre_encargado || normalized.created_by || 'Sistema web',
+        creado_por: normalized.created_by || normalized.nombre_encargado || getCurrentUserEmail(),
+        fecha_reporte: normalized.createdAt || nowIso(),
+        estado: normalizeRemoteStatus(normalized.status),
+        prioridad: normalized.priority || 'Media',
+        asignado_a: normalized.type === 'Trabajo' ? (normalized.technician || 'Sin asignar') : normalizeStoredAssignee(normalized.technician, normalized.type),
+        selected_types: Array.isArray(normalized.selectedTypes) ? normalized.selectedTypes : getOperationSpecificTypes(normalized),
+        images: getSafeMediaList(normalized.images),
+        result_images: getSafeMediaList(normalized.resultImages),
+        assigned_at: normalized.assignedAt || null,
+        started_at: normalized.startedAt || null,
+        completed_at: normalized.completedAt || null,
+        resolution_time: normalized.resolutionTime || '',
+        closed_at: normalized.closedAt || null,
+        source: normalized.source || 'web_operacional',
+        history: Array.isArray(normalized.history) ? normalized.history : []
       };
     }
 
@@ -5736,7 +5819,7 @@ renderTransferencias();
       const selectedTypes = Array.isArray(item.selected_types) && item.selected_types.length
         ? item.selected_types
         : (Array.isArray(existing?.selectedTypes) && existing.selectedTypes.length ? existing.selectedTypes : (title ? [title] : []));
-      return {
+      return enrichOperationWithAgencyContext({
         id: item.id || existing?.id || crypto.randomUUID(),
         code: item.code || existing?.code || `REP-${String(fallbackIndex + 1).padStart(4, '0')}`,
         type,
@@ -5748,8 +5831,8 @@ renderTransferencias();
         description: item.descripcion || existing?.description || '',
         selectedTypes,
         createdAt: item.fecha_reporte || item.created_at || existing?.createdAt || nowIso(),
-        images: Array.isArray(item.images) ? item.images : (Array.isArray(existing?.images) ? existing.images : []),
-        resultImages: Array.isArray(item.result_images) ? item.result_images : (Array.isArray(existing?.resultImages) ? existing.resultImages : []),
+        images: getSafeMediaList(item.images).length ? getSafeMediaList(item.images) : getSafeMediaList(existing?.images),
+        resultImages: getSafeMediaList(item.result_images).length ? getSafeMediaList(item.result_images) : getSafeMediaList(existing?.resultImages),
         assignedAt: item.assigned_at || existing?.assignedAt || null,
         startedAt: item.started_at || existing?.startedAt || null,
         completedAt: item.completed_at || existing?.completedAt || null,
@@ -5760,7 +5843,7 @@ renderTransferencias();
         grupo: item.grupo || existing?.grupo || '',
         nombre_encargado: item.nombre_encargado || existing?.nombre_encargado || item.creado_por || '',
         created_by: item.creado_por || existing?.created_by || item.nombre_encargado || ''
-      };
+      });
     }
 
     async function syncOperationToSupabase(op) {
@@ -5951,7 +6034,7 @@ renderTransferencias();
         [...localOnly, ...mergedRemote].forEach(op => {
           map.set(op.id, op);
         });
-        const next = Array.from(map.values());
+        const next = Array.from(map.values()).map(op => enrichOperationWithAgencyContext(op));
         saveOperations(next);
         renderOperations();
         renderHistory();
@@ -6094,7 +6177,7 @@ renderTransferencias();
       }
 
       const operations = loadOperations();
-      const newOperation = {
+      let newOperation = {
         id: crypto.randomUUID(),
         code: nextCode(operations),
         type,
@@ -6121,6 +6204,8 @@ renderTransferencias();
           ...(status === 'Completado' ? [createHistoryEntry({ action: 'Finalización', detail: 'Operación completada', user: getCurrentUserEmail(), prevStatus: technician && technician !== 'Sin asignar' ? 'Asignada' : 'Pendiente', newStatus: 'Completado' })] : [])
         ]
       };
+
+      newOperation = enrichOperationWithAgencyContext(newOperation);
 
       if (imageFiles.length) {
         let loaded = 0;
@@ -6224,8 +6309,9 @@ renderTransferencias();
     function showDetail(id) {
       currentDetailOperationId = id;
       if (detailPrintBtn) detailPrintBtn.onclick = () => printOperation(id);
-      const op = loadOperations().find(item => item.id === id);
-      if (!op) return;
+      const loadedOperation = loadOperations().find(item => item.id === id);
+      if (!loadedOperation) return;
+      const op = enrichOperationWithAgencyContext(loadedOperation);
       const assignedLabel = op.type === 'Trabajo' ? 'Suplidor asignado' : 'Técnico asignado';
       const assignedDisplay = getAssigneeDisplayName(op.technician, op.type);
       const headline = getOperationHeadline(op);
@@ -6233,14 +6319,19 @@ renderTransferencias();
       const lastUpdate = op.status === 'Completado'
         ? (op.completedAt || op.closedAt || op.createdAt)
         : (op.startedAt || op.assignedAt || op.createdAt);
+      const agencyRecord = findAgencyRecord(op.agency);
       const summaryCards = [
         { label: 'Tipo', value: op.type || 'No registrado' },
-        { label: 'Ubicación', value: headline.location },
+        { label: 'Agencia', value: op.agency || 'No registrada' },
+        { label: 'Grupo', value: op.grupo || (agencyRecord?.grupo || 'No registrado') },
         { label: 'Reportado por', value: getOperationReporter(op) },
         { label: assignedLabel, value: assignedDisplay },
         { label: 'Fecha de reporte', value: formatDate(op.createdAt) },
         { label: 'Última actualización', value: formatDate(lastUpdate) }
       ];
+      const mapsUrl = agencyRecord ? buildAgencyMapsSearchUrl(agencyRecord) : '#';
+      const directionsUrl = agencyRecord ? buildAgencyMapsDirectionsUrl(agencyRecord) : '#';
+      const geoText = agencyRecord ? formatAgencyGeoText(agencyRecord) : 'Sin coordenadas registradas';
 
       detailContent.innerHTML = `
         <div class="ops-detail-shell">
@@ -6264,6 +6355,26 @@ renderTransferencias();
               </div>
             `).join('')}
           </div>
+
+          ${agencyRecord ? `
+            <div class="ops-detail-section">
+              <h4>Ubicación de la agencia</h4>
+              <div class="ops-detail-summary" style="margin-bottom:12px;">
+                <div class="ops-detail-card">
+                  <span>Dirección / referencia</span>
+                  <strong>${agencyRecord.direccion || agencyRecord.nombre || op.agency}</strong>
+                </div>
+                <div class="ops-detail-card">
+                  <span>Coordenadas</span>
+                  <strong>${geoText}</strong>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <a href="${mapsUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;"><i class="fas fa-location-dot"></i> Ver ubicación</a>
+                <a href="${directionsUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;"><i class="fas fa-route"></i> Cómo llegar</a>
+              </div>
+            </div>
+          ` : ''}
 
           ${selectedTypes.length ? `
             <div class="ops-detail-section">
@@ -6754,6 +6865,8 @@ function openEditModal(id) {
       renderTypeOptions('editOperationTypeOptions', op.type, op.selectedTypes || []);
       updateTechnicianLabel('editOperationType', 'editLabelTechnician', 'editOperationTechnician');
       renderAssigneeOptions('editOperationTechnician', op.type, op.technician || '');
+      op.images = getSafeMediaList(op.images);
+      op.resultImages = getSafeMediaList(op.resultImages);
       if (op.images && op.images.length) {
         renderEditableImageGrid('editImagesPreviewGrid', op.images, 'removeReportedImage', op.id);
         document.getElementById('editImagesPreview').classList.remove('hidden');
@@ -6794,7 +6907,7 @@ function openEditModal(id) {
       const newDescription = document.getElementById('editOperationDescription').value.trim();
       const newSelectedTypes = getSelectedValues('editOperationTypeOptions');
       const resultImageFiles = Array.from(document.getElementById('editResultImage').files || []);
-      const currentEvidence = Array.isArray(operations[index].resultImages) ? operations[index].resultImages : [];
+      const currentEvidence = getSafeMediaList(operations[index].resultImages);
 
       if (!newTitle || !newAgency || !newDescription) {
         alert('Completa título, agencia y descripción antes de guardar.');
@@ -6842,6 +6955,7 @@ function openEditModal(id) {
       operations[index].grupo = operations[index].grupo || '';
       operations[index].nombre_encargado = operations[index].nombre_encargado || operations[index].created_by || '';
       operations[index].created_by = operations[index].created_by || operations[index].nombre_encargado || getCurrentUserEmail();
+      operations[index] = enrichOperationWithAgencyContext(operations[index]);
 
       if (!Array.isArray(operations[index].history)) operations[index].history = [];
 
@@ -6929,7 +7043,7 @@ function openEditModal(id) {
             results[idx] = e.target.result;
             loaded++;
             if (loaded === resultImageFiles.length) {
-              const current = Array.isArray(operations[index].resultImages) ? operations[index].resultImages : [];
+              const current = getSafeMediaList(operations[index].resultImages);
               const validResults = results.filter(Boolean);
               operations[index].resultImages = current.concat(validResults);
               operations[index].history.push(createHistoryEntry({
