@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0ea5c6">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LOTEKA">
+
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inventario</title>
@@ -7739,6 +7747,14 @@ function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
     <div class="ops-media-lightbox-caption" id="opsMediaLightboxCaption"></div>
   </div>
 </div>
-
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js")
+      .then(() => console.log("PWA lista"))
+      .catch(err => console.error("Error SW", err));
+  });
+}
+</script>
 </body>
 </html>
