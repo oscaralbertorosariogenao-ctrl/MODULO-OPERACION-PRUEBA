@@ -1130,7 +1130,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <div class="report-box-header"><h4>Detalle de operaciones</h4><div class="report-helper">Listado completo según los filtros aplicados.</div></div>
 <div class="report-box-body table-wrap">
 <table>
-<thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Responsable</th><th>Estado</th><th>Tiempo</th><th>Acciones</th></tr></thead>
+<thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Encargado</th><th>Técnico</th><th>Estado</th><th>Asignación</th><th>Resolución</th><th>Acciones</th></tr></thead>
 <tbody id="reportDetailBody"></tbody>
 </table>
 </div>
@@ -4804,22 +4804,37 @@ renderTransferencias();
         const reportFilterFrom = document.getElementById('reportFilterFrom');
     const reportFilterTo = document.getElementById('reportFilterTo');
     const reportFilterSummary = document.getElementById('reportFilterSummary');
-    function getEncargadoUsers() {
-      return (USERS || []).filter(user => String(user.area || '').toLowerCase().includes('encargado'));
+    function isEncargadoUser(user) {
+      const area = String(user?.area || '').toLowerCase();
+      const username = slugifyUsername(user?.username || '');
+      const name = String(user?.name || '').toLowerCase();
+      return area.includes('encargado') || username.includes('encargado') || name.includes('encargado');
     }
 
-    function getAssignableOwnerOptions() {
-      const technicianUsers = (USERS || []).filter(user => !String(user.area || '').toLowerCase().includes('encargado'));
-      const userOptions = technicianUsers.map(user => ({ value: user.username, label: user.name }));
-      const supplierOptions = (SUPPLIERS || []).map(item => ({ value: item.name, label: item.name }));
-      const merged = [...userOptions, ...supplierOptions];
+    function isTechnicianUser(user) {
+      const area = String(user?.area || '').toLowerCase();
+      const username = slugifyUsername(user?.username || '');
+      const name = String(user?.name || '').toLowerCase();
+      return area.includes('tecnico') || area.includes('técnico') || area.includes('soporte') || area.includes('taller') || username.includes('tecnico') || name.includes('tecnico') || name.includes('técnico');
+    }
+
+    function getEncargadoUsers() {
+      return (USERS || []).filter(isEncargadoUser);
+    }
+
+    function getTechnicalUsers() {
+      const candidates = (USERS || []).filter(user => isTechnicianUser(user) && !isEncargadoUser(user));
       const seen = new Set();
-      return merged.filter(item => {
-        const key = String(item.value || '').toLowerCase();
+      return candidates.filter(user => {
+        const key = slugifyUsername(user?.username || user?.name || '');
         if (!key || seen.has(key)) return false;
         seen.add(key);
         return true;
       });
+    }
+
+    function getAssignableOwnerOptions() {
+      return getTechnicalUsers().map(user => ({ value: user.username, label: user.name }));
     }
 
     function populateAdvancedReportDropdowns() {
@@ -5241,13 +5256,15 @@ renderTransferencias();
         ].map(item => String(item || '').toLowerCase().trim()).filter(Boolean);
         const ownerNeedle = String(ownerValue || '').toLowerCase().trim();
         const reporterNeedle = String(reporterValue || '').toLowerCase().trim();
+        const ownerNeedleSlug = slugifyUsername(ownerValue || '');
+        const reporterNeedleSlug = slugifyUsername(reporterValue || '');
         const matchType = !typeValue || op.type === typeValue;
         const matchStatus = !statusValue || op.status === statusValue;
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
         const matchAgency = !agencyValue || locationText.includes(agencyValue.toLowerCase()) || agencyText.includes(agencyValue.toLowerCase());
-        const matchOwner = !ownerNeedle || ownerKeywords.some(value => value.includes(ownerNeedle));
+        const matchOwner = !ownerNeedle || ownerKeywords.some(value => value.includes(ownerNeedle) || slugifyUsername(value) === ownerNeedleSlug);
         const matchGroup = !groupValue || groupText.includes(groupValue.toLowerCase()) || locationText.includes(groupValue.toLowerCase());
-        const matchReporter = !reporterNeedle || reporterKeywords.some(value => value.includes(reporterNeedle));
+        const matchReporter = !reporterNeedle || reporterKeywords.some(value => value.includes(reporterNeedle) || slugifyUsername(value) === reporterNeedleSlug);
         const matchPriority = !priorityValue || String(op.priority || '') === priorityValue;
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
@@ -5369,11 +5386,11 @@ renderTransferencias();
             <strong>${op.title}</strong>
             <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
               <span class="chip priority-${String(op.priority || 'media').toLowerCase()}">${op.priority || 'Media'}</span>
-              <span class="chip">${getOperationReporter(op)}</span>
               ${operationHasAnyEvidence(op) ? '<span class="chip">Con evidencia</span>' : '<span class="chip">Sin evidencia</span>'}
             </div>
           </td>
           <td>${getOperationLocation(op)}</td>
+          <td>${getOperationReporter(op)}</td>
           <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
           <td>${statusBadge(op.status)}</td>
           <td>${formatMinutesHuman(getAssignmentMinutes(op) || 0)}</td>
