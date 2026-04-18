@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <meta charset="UTF-8" />
   <meta
     name="viewport"
@@ -4793,5 +4795,16 @@ async function guardarGestionTecnica(report) {
   }
 }
   </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+          .then(() => console.log("PWA lista"))
+          .catch(err => console.error("Error SW", err));
+      });
+    }
+  </script>
+
 </body>
 </html>
