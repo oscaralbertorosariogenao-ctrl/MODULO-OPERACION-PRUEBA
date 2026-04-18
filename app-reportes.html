@@ -1077,6 +1077,8 @@
     }
 
     .logout-btn {
+      position: relative;
+      z-index: 5;
       background: #ffffff;
       color: #0b7896;
       border: none;
@@ -2165,7 +2167,7 @@
       </div>
     </div>
 
-    <button id="btnLogout" class="logout-btn">
+    <button id="btnLogout" class="logout-btn" type="button" onclick="logout()">
       Cerrar sesión
     </button>
   </div>
@@ -2689,8 +2691,10 @@
     }
 
     function clearSavedUser() {
-      localStorage.removeItem(getAppSessionKey());
-      clearSavedUser();
+      try {
+        localStorage.removeItem(getAppSessionKey());
+        localStorage.removeItem("usuarioActual");
+      } catch (_) {}
     }
 
     function saveLastTab(mode) {
@@ -3957,19 +3961,29 @@ if (savedUser) {
 }
 
 function logout() {
-  clearSavedUser();
-  stopReportAutoRefresh();
+  try {
+    closeDetail();
+  } catch (_) {}
+  try {
+    clearSavedUser();
+  } catch (_) {}
+  try {
+    stopReportAutoRefresh();
+  } catch (_) {}
   usuarioActual = null;
   notificationsInitialized = false;
   lastKnownStatuses = {};
 
-  document.getElementById("appView").style.display = "none";
-  document.getElementById("loginView").style.display = "block";
-  document.getElementById("loginUser").value = "";
-
-  document.getElementById("tabCreate").style.display = "block";
-  switchTab("create");
+  try {
+    document.getElementById("appView").style.display = "none";
+    document.getElementById("loginView").style.display = "block";
+    document.getElementById("loginUser").value = "";
+    document.getElementById("tabCreate").style.display = "block";
+    switchTab("create");
+    showStatus("statusBox", "Sesión cerrada correctamente.", "ok");
+  } catch (_) {}
 }
+window.logout = logout;
 
 const btnLogin = document.getElementById("btnLogin");
 if (btnLogin) {
