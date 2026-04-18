@@ -1,25 +1,20 @@
 {
-  "name": "LOTEKA Operaciones Móvil",
+  "name": "LOTEKA Operaciones",
   "short_name": "LOTEKA",
   "start_url": "/app-reportes.html",
-  "scope": "/",
   "display": "standalone",
-  "background_color": "#eef5f9",
+  "background_color": "#ffffff",
   "theme_color": "#0ea5c6",
-  "orientation": "portrait",
-  "description": "App móvil de reportes, técnicos y evidencias de LOTEKA.",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml"
     }
   ]
 }
