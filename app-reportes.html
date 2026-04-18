@@ -2267,6 +2267,105 @@
       }
     }
 
+  
+
+    .detail-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0 0;
+    }
+
+    .detail-kpi {
+      border: 1px solid #d8e8f0;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
+      padding: 14px 12px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .detail-kpi span {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      color: #7390a1;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 6px;
+    }
+
+    .detail-kpi strong {
+      display: block;
+      font-size: 14px;
+      color: #173346;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .detail-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .detail-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #d8e8f0;
+      background: #f5fbfe;
+      color: #1a566f;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .detail-pill.priority-alta,
+    .detail-pill.priority-urgente {
+      background: #fff1f1;
+      color: #9c1f1f;
+      border-color: #f5caca;
+    }
+
+    .detail-pill.priority-media {
+      background: #fff9df;
+      color: #8b6200;
+      border-color: #efe2a3;
+    }
+
+    .validation-banner {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid #f4d1d1;
+      background: #fff4f4;
+      color: #8e2020;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .validation-banner.ok {
+      border-color: #cdebdc;
+      background: #f2fcf6;
+      color: #156b45;
+    }
+
+    .detail-note.strong {
+      background: #f7fbfd;
+      border: 1px solid #dce8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    @media (max-width: 520px) {
+      .detail-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2590,37 +2689,52 @@
     };
 
 
-    const AGENCIAS_POR_GRUPO = {
-      "Grupo 44": [
-        "Agencia 1088",
-        "Agencia 1112",
-        "Agencia 1130",
-        "Agencia 1188"
-      ],
-      "Grupo 18": [
-        "Agencia 1801",
-        "Agencia 1802",
-        "Agencia 1803",
-        "Agencia 1804"
-      ],
-      "Grupo 07": [
-        "Agencia 0701",
-        "Agencia 0702",
-        "Agencia 0703"
-      ],
-      "Grupo 06": [
-        "Agencia 0601",
-        "Agencia 0602",
-        "Agencia 0603"
-      ]
+    const AGENCIAS_OPERACIONALES = {
+      1088: { lat: 18.53926, lng: -69.93532, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1088 · Grupo 44' },
+      1112: { lat: 18.5417, lng: -69.94032, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1112 · Grupo 44' },
+      1130: { lat: 18.54045, lng: -69.93627, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1130 · Grupo 44' },
+      1188: { lat: 18.53521, lng: -69.93818, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1188 · Grupo 44' },
+      1801: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1801 · Grupo 18' },
+      1802: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1802 · Grupo 18' },
+      1803: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1803 · Grupo 18' },
+      1804: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1804 · Grupo 18' },
+      701: { encargado: 'encargado2', grupo: 'Grupo 07', direccion: 'Agencia 0701 · Grupo 07' },
+      702: { encargado: 'encargado2', grupo: 'Grupo 07', direccion: 'Agencia 0702 · Grupo 07' },
+      703: { encargado: 'encargado2', grupo: 'Grupo 07', direccion: 'Agencia 0703 · Grupo 07' },
+      601: { encargado: 'encargado3', grupo: 'Grupo 06', direccion: 'Agencia 0601 · Grupo 06' },
+      602: { encargado: 'encargado3', grupo: 'Grupo 06', direccion: 'Agencia 0602 · Grupo 06' },
+      603: { encargado: 'encargado3', grupo: 'Grupo 06', direccion: 'Agencia 0603 · Grupo 06' }
     };
 
-    const AGENCIAS_GEO = {
-      "Agencia 1088": { lat: 18.53926, lng: -69.93532, direccion: "Agencia 1088 · Grupo 44" },
-      "Agencia 1112": { lat: 18.5417, lng: -69.94032, direccion: "Agencia 1112 · Grupo 44" },
-      "Agencia 1130": { lat: 18.54045, lng: -69.93627, direccion: "Agencia 1130 · Grupo 44" },
-      "Agencia 1188": { lat: 18.53521, lng: -69.93818, direccion: "Agencia 1188 · Grupo 44" }
+    const GRUPOS_OPERACIONALES = {
+      'Grupo 44': { encargado: 'encargado1', agencias: [1088, 1112, 1130, 1188] },
+      'Grupo 18': { encargado: 'encargado2', agencias: [1801, 1802, 1803, 1804] },
+      'Grupo 07': { encargado: 'encargado2', agencias: [701, 702, 703] },
+      'Grupo 06': { encargado: 'encargado3', agencias: [601, 602, 603] }
     };
+
+    const AGENCIAS_POR_GRUPO = Object.fromEntries(
+      Object.entries(GRUPOS_OPERACIONALES).map(([grupo, config]) => [
+        grupo,
+        (config.agencias || []).map(numero => {
+          const digits = String(numero).padStart(4, '0');
+          return `Agencia ${digits}`;
+        })
+      ])
+    );
+
+    const AGENCIAS_GEO = Object.fromEntries(
+      Object.entries(AGENCIAS_OPERACIONALES).map(([numero, geo]) => {
+        const digits = String(numero).padStart(4, '0');
+        return [`Agencia ${digits}`, {
+          lat: typeof geo.lat === 'number' ? geo.lat : null,
+          lng: typeof geo.lng === 'number' ? geo.lng : null,
+          direccion: geo.direccion || `Agencia ${digits}`,
+          grupo: geo.grupo || '',
+          encargado: geo.encargado || ''
+        }];
+      })
+    );
 
     const TODAS_LAS_AGENCIAS = Array.from(
       new Set(Object.values(AGENCIAS_POR_GRUPO).flat())
@@ -2636,14 +2750,115 @@
       return digits ? `Agencia ${digits[0]}` : raw;
     }
 
+    function getAgencyDigits(value) {
+      const match = String(value || '').match(/\d+/);
+      return match ? String(match[0]).padStart(4, '0') : '';
+    }
+
+    function findAgencyRecord(value) {
+      const digits = getAgencyDigits(value);
+      if (!digits) return null;
+      const numericKey = String(Number(digits));
+      const agencyLabel = `Agencia ${digits}`;
+      const base = AGENCIAS_OPERACIONALES[numericKey] || AGENCIAS_GEO[agencyLabel];
+      if (!base) return null;
+      return {
+        agencyLabel,
+        numero: digits,
+        grupo: base.grupo || '',
+        encargado: base.encargado || '',
+        direccion: base.direccion || agencyLabel,
+        lat: typeof base.lat === 'number' ? base.lat : null,
+        lng: typeof base.lng === 'number' ? base.lng : null
+      };
+    }
+
+    function enrichReportWithOperationalData(report) {
+      const source = report && typeof report === 'object' ? { ...report } : {};
+      const agencyRecord = findAgencyRecord(source.agencia || source.agency || source.agency_code || source.location);
+      if (agencyRecord) {
+        source.agencia = source.agencia || agencyRecord.agencyLabel;
+        source.grupo = source.grupo || agencyRecord.grupo || '';
+        source.nombre_encargado = source.nombre_encargado || source.creado_por || agencyRecord.encargado || '';
+        source.agency_address = source.agency_address || source.direccion || agencyRecord.direccion || '';
+        if (!source.agency_latitude && !source.agency_lat && typeof agencyRecord.lat === 'number') {
+          source.agency_latitude = agencyRecord.lat;
+        }
+        if (!source.agency_longitude && !source.agency_lng && typeof agencyRecord.lng === 'number') {
+          source.agency_longitude = agencyRecord.lng;
+        }
+      }
+      if (!source.grupo && source.nombre_encargado) {
+        const userKey = String(source.nombre_encargado).trim().toLowerCase();
+        const matchedGroup = Object.entries(GRUPOS_OPERACIONALES).find(([, cfg]) => String(cfg.encargado || '').toLowerCase() === userKey);
+        if (matchedGroup) source.grupo = matchedGroup[0];
+      }
+      return source;
+    }
+
+    function normalizeMediaItems(input) {
+      if (!input) return [];
+      let items = input;
+
+      if (typeof items === 'string') {
+        const trimmed = items.trim();
+        if (!trimmed) return [];
+        try {
+          const parsed = JSON.parse(trimmed);
+          items = parsed;
+        } catch (_err) {
+          items = trimmed.includes(',') ? trimmed.split(',') : [trimmed];
+        }
+      }
+
+      if (!Array.isArray(items)) {
+        items = [items];
+      }
+
+      return items
+        .flatMap(item => {
+          if (item == null) return [];
+          if (typeof item === 'string') return [item];
+          if (typeof item === 'object') {
+            return [item.publicUrl, item.url, item.path, item.name].filter(Boolean);
+          }
+          return [String(item)];
+        })
+        .map(value => String(value || '').trim())
+        .filter(Boolean);
+    }
+
+    function resolveStorageMediaUrl(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      if (/^blob:/i.test(raw) || /^data:/i.test(raw) || /^https?:\/\//i.test(raw)) return raw;
+      const sanitized = raw.replace(/^\/+/, '');
+      const bucketPrefix = `${BUCKET_NAME}/`;
+      const filePath = sanitized.startsWith(bucketPrefix)
+        ? sanitized.slice(bucketPrefix.length)
+        : sanitized.replace(/^reportes-operaciones\//i, '');
+      return supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath).data?.publicUrl || raw;
+    }
+
+    function isLikelyImageUrl(url) {
+      return /\.(png|jpe?g|gif|webp|bmp|svg|heic|heif)(\?|#|$)/i.test(String(url || ''));
+    }
+
     function getAgencyGeoData(reportOrAgency) {
       const agencyLabel = typeof reportOrAgency === "string"
         ? normalizeAgencyLabel(reportOrAgency)
         : normalizeAgencyLabel(reportOrAgency?.agencia || reportOrAgency?.agency || reportOrAgency?.agency_code);
 
-      const direct = AGENCIAS_GEO[agencyLabel];
-      if (direct) {
-        return { agencyLabel, ...direct };
+      const record = findAgencyRecord(agencyLabel || reportOrAgency?.agencia || reportOrAgency?.agency_code);
+      if (record && Number.isFinite(Number(record.lat)) && Number.isFinite(Number(record.lng))) {
+        return {
+          agencyLabel: record.agencyLabel,
+          lat: Number(record.lat),
+          lng: Number(record.lng),
+          direccion: record.direccion || agencyLabel || 'Ubicación registrada',
+          grupo: record.grupo || '',
+          encargado: record.encargado || ''
+        };
       }
 
       const lat = Number(
@@ -2662,7 +2877,7 @@
           agencyLabel,
           lat,
           lng,
-          direccion: agencyLabel || "Ubicación registrada"
+          direccion: reportOrAgency?.agency_address || reportOrAgency?.direccion || agencyLabel || "Ubicación registrada"
         };
       }
 
@@ -2805,7 +3020,7 @@
         : button.dataset.originalHtml;
     }
 
-    function showFriendlyError(message, fallback = "Ocurrió un error inesperado. Intenta de nuevo.") {
+    function showFriendlyError(message, fallback = "Ocurrió un error inesperado. Verifica la conexión e inténtalo otra vez.") {
       const finalMessage = String(message || fallback).trim() || fallback;
       showStatus(finalMessage, "error");
       showInAppNotification("Algo salió mal", finalMessage);
@@ -3423,7 +3638,8 @@
     }
 
     function isVideoUrl(url) {
-      return /\.(mp4|mov|webm|ogg)(\?|#|$)/i.test(String(url || ""));
+      const value = String(url || "");
+      return /\.(mp4|mov|webm|ogg|m4v)(\?|#|$)/i.test(value) || /video/i.test(value);
     }
 
     function validateEvidenceFile(file) {
@@ -3510,7 +3726,8 @@
 
       const tipoValue = tipo.value.trim();
       const prioridadValue = prioridad.value.trim();
-      const agenciaValue = agencia.value.trim();
+      const agenciaValue = normalizeAgencyLabel(agencia.value.trim());
+      const agenciaRecord = findAgencyRecord(agenciaValue);
       const categoriaValue = resolveSelectedCategory();
       const descripcionValue = descripcion.value.trim();
       const encargadoValue = usuarioActual?.user || "App móvil";
@@ -3554,7 +3771,7 @@
   categoria: categoriaValue,
   descripcion: descripcionValue || "",
   agencia: agenciaValue,
-  grupo: usuarioActual?.grupo || "",
+  grupo: usuarioActual?.grupo || agenciaRecord?.grupo || "",
   nombre_encargado: encargadoValue,
   creado_por: usuarioActual?.user || "",
   fecha_reporte: now,
@@ -3606,6 +3823,31 @@
       }) || null;
     }
 
+
+    function normalizePriority(priority) {
+      const raw = String(priority || '').trim().toLowerCase();
+      if (!raw) return { label: 'Sin prioridad', className: '' };
+      if (raw.includes('urg')) return { label: 'Urgente', className: 'priority-urgente' };
+      if (raw.includes('alta')) return { label: 'Alta', className: 'priority-alta' };
+      if (raw.includes('media')) return { label: 'Media', className: 'priority-media' };
+      if (raw.includes('baja')) return { label: 'Baja', className: 'priority-baja' };
+      return { label: String(priority), className: '' };
+    }
+
+    function getCompletionValidation(report) {
+      const status = normalizeStatus(report.estado).value;
+      const finalDescription = String(report.resultado_tecnico || report.comentario_tecnico || report.observaciones || '').trim();
+      const resultImages = normalizeMediaItems(report.result_images).map(resolveStorageMediaUrl).filter(Boolean);
+      const requiresAttention = status === 'completado' && (finalDescription.length < 8 || !resultImages.length);
+      if (status !== 'completado') {
+        return { className: 'ok', text: 'La operación sigue abierta. Cuando se complete, debe quedar con descripción técnica y evidencia final.' };
+      }
+      if (requiresAttention) {
+        return { className: '', text: 'Atención: este cierre necesita revisión. Falta descripción técnica completa o evidencia final registrada.' };
+      }
+      return { className: 'ok', text: 'Cierre validado: la operación tiene evidencia final y detalle técnico registrado.' };
+    }
+
     function buildTimeline(report, history) {
       const assignedEvent = getHistoryEvent(history, ["asign", "asignad"]);
       const processEvent = getHistoryEvent(history, ["proceso", "en proceso"]);
@@ -3641,15 +3883,23 @@
     }
 
     function renderMediaGrid(items, label) {
+      const mediaItems = normalizeMediaItems(items)
+        .map(resolveStorageMediaUrl)
+        .filter(Boolean);
+
+      if (!mediaItems.length) {
+        return '';
+      }
+
       return `
         <div class="detail-section">
           <h4>${label}</h4>
           <div class="detail-image-grid">
-            ${items.map(img => `
+            ${mediaItems.map((mediaUrl, index) => `
               <div class="detail-image-box">
-                ${isVideoUrl(img)
-                  ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${img}" type="video/mp4"></video>`
-                  : `<img src="${img}" alt="${label}" />`}
+                ${isVideoUrl(mediaUrl)
+                  ? `<video controls playsinline preload="metadata" style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${mediaUrl}" type="video/mp4"></video>`
+                  : `<img src="${mediaUrl}" alt="${label} ${index + 1}" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.detail-image-box').innerHTML='<div class=&quot;upload-helper-line&quot;>No se pudo mostrar este archivo.</div><a class=&quot;btn-map&quot; href=&quot;${mediaUrl}&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>Abrir archivo</a>';" />`}
               </div>
             `).join("")}
           </div>
@@ -3659,14 +3909,18 @@
 
     function openDetail(report) {
       const status = normalizeStatus(report.estado);
-      const images = Array.isArray(report.images) ? report.images.filter(Boolean) : [];
-      const resultImages = Array.isArray(report.result_images) ? report.result_images.filter(Boolean) : [];
+      const priority = normalizePriority(report.prioridad);
+      const images = normalizeMediaItems(report.images).map(resolveStorageMediaUrl).filter(Boolean);
+      const resultImages = normalizeMediaItems(report.result_images).map(resolveStorageMediaUrl).filter(Boolean);
       const history = Array.isArray(report.history) ? report.history : [];
       const timeline = buildTimeline(report, history);
       const summaryLocation = [report.grupo, report.agencia].filter(Boolean).join(" · ") || "No registrado";
       const summaryCategory = report.categoria || report.tipo_reporte || "No registrado";
       const summaryComment = report.descripcion || report.comentario || "";
       const techComment = report.resultado_tecnico || report.comentario_tecnico || "";
+      const assignedDate = report.fecha_asignacion || report.assigned_at || history.find(item => String(item?.action || '').toLowerCase().includes('asign'))?.date || '';
+      const resolution = report.resolution_time || (normalizeStatus(report.estado).value === 'completado' ? calculateResolutionTime(report.fecha_reporte || report.created_at, report.completed_at || report.updated_at) : 'En curso');
+      const validationState = getCompletionValidation(report);
 
       detailBody.innerHTML = `
         <div class="detail-hero">
@@ -3695,35 +3949,43 @@
           </div>
 
           ${buildLocationButtons(report, true)}
-        </div>
 
-        <div class="detail-compact-grid">
-          <div class="detail-item">
-            <span>Tipo</span>
-            <strong>${report.tipo_reporte || "No registrado"}</strong>
+          <div class="detail-pill-row">
+            <span class="detail-pill ${priority.className}">Prioridad: ${priority.label}</span>
+            <span class="detail-pill">Tipo: ${report.tipo_reporte || 'No registrado'}</span>
+            <span class="detail-pill">Agencia: ${report.agencia || 'No registrada'}</span>
           </div>
-          <div class="detail-item">
-            <span>Agencia</span>
-            <strong>${report.agencia || "No registrada"}</strong>
-          </div>
-          <div class="detail-item">
-            <span>Grupo</span>
-            <strong>${report.grupo || "No registrado"}</strong>
-          </div>
-          <div class="detail-item">
-            <span>Última actualización</span>
-            <strong>${formatDate(history[history.length - 1]?.date || report.updated_at || report.created_at)}</strong>
-          </div>
-        </div>
 
-        ${renderLocationSection(report)}
+          <div class="detail-kpi-grid">
+            <div class="detail-kpi">
+              <span>Grupo</span>
+              <strong>${report.grupo || "No registrado"}</strong>
+            </div>
+            <div class="detail-kpi">
+              <span>Asignado desde</span>
+              <strong>${assignedDate ? formatDate(assignedDate) : 'Pendiente'}</strong>
+            </div>
+            <div class="detail-kpi">
+              <span>Última actualización</span>
+              <strong>${formatDate(history[history.length - 1]?.date || report.updated_at || report.created_at)}</strong>
+            </div>
+            <div class="detail-kpi">
+              <span>Tiempo de resolución</span>
+              <strong>${resolution || 'En curso'}</strong>
+            </div>
+          </div>
+
+          <div class="validation-banner ${validationState.className}">${validationState.text}</div>
+        </div>
 
         ${summaryComment ? `
           <div class="detail-section">
             <h4>Comentario del reporte</h4>
-            <p class="detail-note">${summaryComment}</p>
+            <p class="detail-note strong">${summaryComment}</p>
           </div>
         ` : ""}
+
+        ${renderLocationSection(report)}
 
         <div class="detail-section">
           <h4>Seguimiento</h4>
@@ -3747,12 +4009,19 @@
         ${images.length ? renderMediaGrid(images, "Evidencia inicial") : ""}
         ${resultImages.length ? renderMediaGrid(resultImages, "Evidencia final") : ""}
 
-        ${techComment ? `
-          <div class="detail-section">
-            <h4>Resultado técnico</h4>
-            <p class="detail-note">${techComment}</p>
+        <div class="detail-section">
+          <h4>Resumen técnico</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span>Resultado técnico</span>
+              <strong>${techComment || 'Aún sin resultado técnico registrado'}</strong>
+            </div>
+            <div class="detail-item">
+              <span>Estado actual</span>
+              <strong>${status.label}</strong>
+            </div>
           </div>
-        ` : ""}
+        </div>
 
         <button class="btn-detail-close" id="btnCloseDetailInside">Cerrar</button>
       `;
@@ -3811,13 +4080,14 @@
 
         let data = await fetchReportsWithRetry(2);
         data = (data || []).map(report => {
-          const agencyGeo = getAgencyGeoData(report);
+          const enriched = enrichReportWithOperationalData(report);
+          const agencyGeo = getAgencyGeoData(enriched);
           return {
-            ...report,
-            agency_latitude: report?.agency_latitude ?? agencyGeo?.lat ?? null,
-            agency_longitude: report?.agency_longitude ?? agencyGeo?.lng ?? null,
-            agency_maps_url: report?.agency_maps_url || (agencyGeo ? buildGoogleMapsSearchUrl(agencyGeo) : ""),
-            agency_directions_url: report?.agency_directions_url || (agencyGeo ? buildGoogleMapsDirectionsUrl(agencyGeo) : "")
+            ...enriched,
+            agency_latitude: enriched?.agency_latitude ?? agencyGeo?.lat ?? null,
+            agency_longitude: enriched?.agency_longitude ?? agencyGeo?.lng ?? null,
+            agency_maps_url: enriched?.agency_maps_url || (agencyGeo ? buildGoogleMapsSearchUrl(agencyGeo) : ""),
+            agency_directions_url: enriched?.agency_directions_url || (agencyGeo ? buildGoogleMapsDirectionsUrl(agencyGeo) : "")
           };
         }).sort((a, b) => {
           const dateA = new Date(a?.fecha_reporte || a?.created_at || 0).getTime();
@@ -4203,7 +4473,7 @@ async function cambiarEstadoTecnico(report, nuevoEstado) {
 
   if (error) {
     hideAppLoader();
-    showFriendlyError("No se pudo actualizar el estado del reporte.");
+    showFriendlyError("No se pudo actualizar el estado del reporte. Verifica tu conexión e inténtalo otra vez.");
     console.error(error);
     return;
   }
@@ -4304,7 +4574,7 @@ function wireTechnicalDetailInteractions(existingCount = 0) {
 
 function openTechnicalDetail(report) {
   const status = normalizeStatus(report.estado);
-  const resultImages = Array.isArray(report.result_images) ? report.result_images.filter(Boolean) : [];
+  const resultImages = normalizeMediaItems(report.result_images).map(resolveStorageMediaUrl).filter(Boolean);
   const guidance = String(report.estado || '').toLowerCase() === 'completado'
     ? 'Esta operación ya aparece como completada. Puedes revisar evidencias o reforzar el detalle técnico si necesitas actualizarlo.'
     : 'Marca en proceso cuando inicies y usa completado solo cuando el trabajo quede terminado con evidencia.';
@@ -4380,20 +4650,7 @@ function openTechnicalDetail(report) {
 
       <div class="tech-checklist" id="techChecklist"></div>
 
-      ${resultImages.length ? `
-        <div class="detail-section" style="margin-top:12px;">
-          <h4>Evidencias actuales</h4>
-          <div class="detail-image-grid">
-            ${resultImages.map(fileUrl => `
-              <div class="detail-image-box">
-                ${isVideoUrl(fileUrl)
-                  ? `<video controls playsinline style="width:100%;max-height:320px;border-radius:10px;background:#000;"><source src="${fileUrl}" type="video/mp4"></video>`
-                  : `<img src="${fileUrl}" alt="Evidencia técnica" />`}
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      ` : ''}
+      ${resultImages.length ? renderMediaGrid(resultImages, "Evidencias actuales") : ''}
 
       <div class="detail-section" style="margin-top:12px;">
         <h4 class="tech-preview-title">Vista previa de nuevos archivos</h4>
@@ -4422,7 +4679,7 @@ async function guardarGestionTecnica(report) {
   const techDescription = document.getElementById("techDescription")?.value?.trim() || "";
   const evidenceFiles = getTechnicalSelectedFiles();
 
-  const currentResultImages = Array.isArray(report.result_images) ? [...report.result_images] : [];
+  const currentResultImages = normalizeMediaItems(report.result_images).map(resolveStorageMediaUrl).filter(Boolean);
   let nuevasEvidencias = [];
 
   if (!usuarioActual?.user) {
@@ -4430,8 +4687,14 @@ async function guardarGestionTecnica(report) {
     return;
   }
 
-  if (techStatus === "Completado" && techDescription.length < 8) {
+  if (techStatus === "Completado" && techDescription.length < 12) {
     showInAppNotification("Descripción requerida", "Escribe una descripción técnica más completa antes de completar la operación.");
+    showFriendlyError("La descripción técnica debe tener al menos 12 caracteres para cerrar correctamente la operación.");
+    return;
+  }
+
+  if (techStatus === "En proceso" && !report.asignado_a) {
+    showFriendlyError("No puedes iniciar esta operación sin un técnico asignado desde la web operacional.");
     return;
   }
 
@@ -4456,7 +4719,7 @@ async function guardarGestionTecnica(report) {
     const resultImagesFinal = currentResultImages.concat(nuevasEvidencias);
 
     if (techStatus === "Completado" && !resultImagesFinal.length) {
-      throw new Error("Debes subir al menos una evidencia antes de completar.");
+      throw new Error("Debes subir al menos una evidencia antes de completar. Agrega foto o video del trabajo realizado.");
     }
 
     const history = Array.isArray(report.history) ? [...report.history] : [];
@@ -4496,7 +4759,7 @@ async function guardarGestionTecnica(report) {
       resultado_tecnico: techDescription,
       result_images: Array.isArray(resultImagesFinal) ? resultImagesFinal : [],
       history: history,
-      started_at: techStatus === "En proceso"
+      started_at: ["En proceso", "Completado"].includes(techStatus)
         ? (report.started_at || now)
         : report.started_at,
       completed_at: techStatus === "Completado"
