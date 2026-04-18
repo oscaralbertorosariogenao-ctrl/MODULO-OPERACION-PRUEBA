@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0ea5c6"/>
+  <g fill="white">
+    <path d="M152 313c-28 0-51-23-51-51 0-23 15-42 35-49l76-101c6-8 18-8 25 0l19 19c7 7 7 19 0 25l-100 76c5 23-13 45-39 45 18 0 35 16 35 36z"/>
+    <path d="M318 146c52 0 94 42 94 94 0 72-94 160-94 160s-94-88-94-160c0-52 42-94 94-94zm0 50a44 44 0 1 0 0 88 44 44 0 0 0 0-88z"/>
+  </g>
+  <text x="256" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" font-weight="700" fill="white">LOTEKA</text>
+</svg>
