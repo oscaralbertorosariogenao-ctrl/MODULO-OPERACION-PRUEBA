@@ -1108,7 +1108,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 </select>
 <input class="input" id="reportFilterAgency" placeholder="Filtrar por agencia"/>
 <select class="select" id="reportFilterOwner">
-<option value="">Todos los técnicos / suplidores</option>
+<option value="">Todos los técnicos</option>
 </select>
 <input class="input" id="reportFilterGroup" placeholder="Filtrar por grupo"/>
 <select class="select" id="reportFilterReporter">
@@ -4826,7 +4826,7 @@ renderTransferencias();
       if (reportFilterOwner) {
         const current = reportFilterOwner.value;
         const options = getAssignableOwnerOptions();
-        reportFilterOwner.innerHTML = '<option value="">Todos los técnicos / suplidores</option>' + options.map(item => `\n<option value="${item.value}">${item.label}</option>`).join('');
+        reportFilterOwner.innerHTML = '<option value="">Todos los técnicos</option>' + options.map(item => `\n<option value="${item.value}">${item.label}</option>`).join('');
         reportFilterOwner.value = options.some(item => item.value === current) ? current : '';
       }
       if (reportFilterReporter) {
@@ -5225,15 +5225,29 @@ renderTransferencias();
         const locationText = getOperationLocation(op).toLowerCase();
         const agencyText = String(op.agency || '').toLowerCase();
         const groupText = String(op.grupo || '').toLowerCase();
-        const ownerText = `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.trim();
-        const reporterText = `${String(op.nombre_encargado || '').toLowerCase()} ${String(op.created_by || '').toLowerCase()} ${getOperationReporter(op).toLowerCase()}`.trim();
+        const ownerKeywords = [
+          String(op.technician || ''),
+          getAssigneeDisplayName(op.technician, op.type),
+          slugifyUsername(op.technician || ''),
+          slugifyUsername(getAssigneeDisplayName(op.technician, op.type))
+        ].map(item => String(item || '').toLowerCase().trim()).filter(Boolean);
+        const reporterKeywords = [
+          String(op.nombre_encargado || ''),
+          String(op.created_by || ''),
+          getOperationReporter(op),
+          slugifyUsername(op.nombre_encargado || ''),
+          slugifyUsername(op.created_by || ''),
+          slugifyUsername(getOperationReporter(op))
+        ].map(item => String(item || '').toLowerCase().trim()).filter(Boolean);
+        const ownerNeedle = String(ownerValue || '').toLowerCase().trim();
+        const reporterNeedle = String(reporterValue || '').toLowerCase().trim();
         const matchType = !typeValue || op.type === typeValue;
         const matchStatus = !statusValue || op.status === statusValue;
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
         const matchAgency = !agencyValue || locationText.includes(agencyValue.toLowerCase()) || agencyText.includes(agencyValue.toLowerCase());
-        const matchOwner = !ownerValue || ownerText.includes(ownerValue.toLowerCase());
+        const matchOwner = !ownerNeedle || ownerKeywords.some(value => value.includes(ownerNeedle));
         const matchGroup = !groupValue || groupText.includes(groupValue.toLowerCase()) || locationText.includes(groupValue.toLowerCase());
-        const matchReporter = !reporterValue || reporterText.includes(reporterValue.toLowerCase());
+        const matchReporter = !reporterNeedle || reporterKeywords.some(value => value.includes(reporterNeedle));
         const matchPriority = !priorityValue || String(op.priority || '') === priorityValue;
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
@@ -5377,7 +5391,7 @@ renderTransferencias();
         reportFilterStatus.value ? { label: 'Estado', value: reportFilterStatus.value } : null,
         reportFilterSpecificType.value ? { label: 'Tipo específico', value: reportFilterSpecificType.value } : null,
         reportFilterAgency.value ? { label: 'Agencia', value: reportFilterAgency.value } : null,
-        reportFilterOwner.value ? { label: 'Técnico / suplidor', value: reportFilterOwner.options[reportFilterOwner.selectedIndex]?.text || reportFilterOwner.value } : null,
+        reportFilterOwner.value ? { label: 'Técnico', value: reportFilterOwner.options[reportFilterOwner.selectedIndex]?.text || reportFilterOwner.value } : null,
         reportFilterGroup.value ? { label: 'Grupo', value: reportFilterGroup.value } : null,
         reportFilterReporter.value ? { label: 'Encargado', value: reportFilterReporter.options[reportFilterReporter.selectedIndex]?.text || reportFilterReporter.value } : null,
         reportFilterPriority.value ? { label: 'Prioridad', value: reportFilterPriority.value } : null,
@@ -6704,7 +6718,7 @@ renderTransferencias();
         formatFilterLabel('Estado', reportFilterStatus.value),
         formatFilterLabel('Tipo específico', reportFilterSpecificType.value),
         formatFilterLabel('Agencia', reportFilterAgency.value),
-        formatFilterLabel('Responsable', reportFilterOwner.value),
+        formatFilterLabel('Técnico', reportFilterOwner.options[reportFilterOwner.selectedIndex]?.text || reportFilterOwner.value),
         formatFilterLabel('Desde', reportFilterFrom.value),
         formatFilterLabel('Hasta', reportFilterTo.value)
       ].join('');
