@@ -242,6 +242,11 @@ textarea{resize:vertical;min-height:90px}
 .ops-modal .modal-body{padding:22px;overflow-y:auto;flex:1}
 .ops-modal .footer-actions{padding:18px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;background:#fcfcfd;flex-shrink:0}
 .ops-helper{display:none !important}
+.ops-report-filter-summary{display:flex;flex-wrap:wrap;gap:8px;padding:14px 20px 18px;border-top:1px solid var(--line);background:#fcfdff}
+.ops-report-filter-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:#eef6fb;color:#24506d;font-size:12px;font-weight:700;border:1px solid #d7e6f0}
+.ops-report-filter-chip strong{font-weight:800;color:#183b52}
+.ops-report-filter-summary.empty{color:var(--text-soft);font-size:13px;font-weight:600}
+
 @media (max-width:1180px){.ops-scope .stats,.ops-scope .mini-stats,.ops-scope .history-highlight,.ops-scope .report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-scope .filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:680px){.ops-scope .stats,.ops-scope .filters,.ops-scope .grid-2,.ops-scope .detail-grid,.ops-scope .mini-stats,.ops-scope .history-highlight,.ops-scope .report-grid{grid-template-columns:1fr}.ops-scope .topbar h2,.ops-scope .catalog-topbar h2{font-size:22px}}
 
@@ -1103,9 +1108,31 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 </select>
 <input class="input" id="reportFilterAgency" placeholder="Filtrar por agencia"/>
 <input class="input" id="reportFilterOwner" placeholder="Filtrar por técnico / suplidor"/>
+<input class="input" id="reportFilterGroup" placeholder="Filtrar por grupo"/>
+<input class="input" id="reportFilterReporter" placeholder="Filtrar por reportado por"/>
+<select class="select" id="reportFilterPriority">
+<option value="">Todas las prioridades</option>
+<option value="Baja">Baja</option>
+<option value="Media">Media</option>
+<option value="Alta">Alta</option>
+<option value="Urgente">Urgente</option>
+</select>
+<select class="select" id="reportFilterEvidence">
+<option value="">Todas las evidencias</option>
+<option value="con_inicial">Con evidencia inicial</option>
+<option value="con_resultado">Con evidencia de resultado</option>
+<option value="sin_evidencia">Sin evidencias</option>
+</select>
+<select class="select" id="reportFilterSource">
+<option value="">Todos los orígenes</option>
+<option value="app_movil">App móvil</option>
+<option value="web_operacional">Web operacional</option>
+<option value="supabase">Supabase</option>
+</select>
 <input class="input" id="reportFilterFrom" type="date"/>
 <input class="input" id="reportFilterTo" type="date"/>
 </div>
+<div id="reportFilterSummary" class="ops-report-filter-summary empty">Sin filtros avanzados activos.</div>
 </div>
 <div class="report-box" style="margin-top:18px;">
 <div class="report-box-header"><h4>Detalle de operaciones</h4><div class="report-helper">Listado completo según los filtros aplicados.</div></div>
@@ -4778,8 +4805,14 @@ renderTransferencias();
     const reportFilterSpecificType = document.getElementById('reportFilterSpecificType');
     const reportFilterAgency = document.getElementById('reportFilterAgency');
     const reportFilterOwner = document.getElementById('reportFilterOwner');
+    const reportFilterGroup = document.getElementById('reportFilterGroup');
+    const reportFilterReporter = document.getElementById('reportFilterReporter');
+    const reportFilterPriority = document.getElementById('reportFilterPriority');
+    const reportFilterEvidence = document.getElementById('reportFilterEvidence');
+    const reportFilterSource = document.getElementById('reportFilterSource');
     const reportFilterFrom = document.getElementById('reportFilterFrom');
     const reportFilterTo = document.getElementById('reportFilterTo');
+    const reportFilterSummary = document.getElementById('reportFilterSummary');
     const agencyReportFilterType = document.getElementById('agencyReportFilterType');
     const agencyReportFilterStatus = document.getElementById('agencyReportFilterStatus');
     const agencyReportFilterAgency = document.getElementById('agencyReportFilterAgency');
@@ -4850,6 +4883,43 @@ renderTransferencias();
 
     function getOperationReporter(op = {}) {
       return String(op.nombre_encargado || op.created_by || '').trim() || 'No registrado';
+    }
+
+    function getOperationSourceLabel(op = {}) {
+      const source = String(op.source || '').trim().toLowerCase();
+      if (source === 'app_movil') return 'App móvil';
+      if (source === 'web_operacional') return 'Web operacional';
+      if (source === 'supabase') return 'Supabase';
+      return source ? source : 'No registrado';
+    }
+
+    function operationHasAnyEvidence(op = {}) {
+      const initial = Array.isArray(op.images) ? op.images.filter(Boolean).length : 0;
+      const result = Array.isArray(op.resultImages) ? op.resultImages.filter(Boolean).length : 0;
+      return initial + result > 0;
+    }
+
+    function operationMatchesEvidenceFilter(op = {}, evidenceValue = '') {
+      const initial = Array.isArray(op.images) ? op.images.filter(Boolean).length : 0;
+      const result = Array.isArray(op.resultImages) ? op.resultImages.filter(Boolean).length : 0;
+      if (!evidenceValue) return true;
+      if (evidenceValue === 'con_inicial') return initial > 0;
+      if (evidenceValue === 'con_resultado') return result > 0;
+      if (evidenceValue === 'sin_evidencia') return initial === 0 && result === 0;
+      return true;
+    }
+
+    function renderReportFilterSummary(activeFilters = []) {
+      if (!reportFilterSummary) return;
+      if (!activeFilters.length) {
+        reportFilterSummary.classList.add('empty');
+        reportFilterSummary.innerHTML = 'Sin filtros avanzados activos.';
+        return;
+      }
+      reportFilterSummary.classList.remove('empty');
+      reportFilterSummary.innerHTML = activeFilters.map(item => `
+        <span class="ops-report-filter-chip"><strong>${item.label}:</strong> ${item.value}</span>
+      `).join('');
     }
 
     function getOperationSpecificTypes(op = {}) {
@@ -5126,18 +5196,29 @@ renderTransferencias();
       }
     }
 
-    function getOperationsByFilters({ typeValue = '', statusValue = '', specificTypeValue = '', agencyValue = '', ownerValue = '', fromValue = '', toValue = '' } = {}) {
+    function getOperationsByFilters({ typeValue = '', statusValue = '', specificTypeValue = '', agencyValue = '', ownerValue = '', groupValue = '', reporterValue = '', priorityValue = '', evidenceValue = '', sourceValue = '', fromValue = '', toValue = '' } = {}) {
       const operations = loadOperations();
       return operations.filter(op => {
+        const locationText = getOperationLocation(op).toLowerCase();
+        const agencyText = String(op.agency || '').toLowerCase();
+        const groupText = String(op.grupo || '').toLowerCase();
+        const ownerText = `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.trim();
+        const reporterText = getOperationReporter(op).toLowerCase();
+        const sourceText = String(op.source || '').toLowerCase();
         const matchType = !typeValue || op.type === typeValue;
         const matchStatus = !statusValue || op.status === statusValue;
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
-        const matchAgency = !agencyValue || op.agency.toLowerCase().includes(agencyValue.toLowerCase());
-        const matchOwner = !ownerValue || `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.includes(ownerValue.toLowerCase());
+        const matchAgency = !agencyValue || locationText.includes(agencyValue.toLowerCase()) || agencyText.includes(agencyValue.toLowerCase());
+        const matchOwner = !ownerValue || ownerText.includes(ownerValue.toLowerCase());
+        const matchGroup = !groupValue || groupText.includes(groupValue.toLowerCase()) || locationText.includes(groupValue.toLowerCase());
+        const matchReporter = !reporterValue || reporterText.includes(reporterValue.toLowerCase());
+        const matchPriority = !priorityValue || String(op.priority || '') === priorityValue;
+        const matchEvidence = operationMatchesEvidenceFilter(op, evidenceValue);
+        const matchSource = !sourceValue || sourceText === sourceValue.toLowerCase();
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
         const toOk = !toValue || createdDate <= new Date(toValue + 'T23:59:59');
-        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && fromOk && toOk;
+        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && matchGroup && matchReporter && matchPriority && matchEvidence && matchSource && fromOk && toOk;
       });
     }
 
@@ -5148,6 +5229,11 @@ renderTransferencias();
         specificTypeValue: reportFilterSpecificType.value,
         agencyValue: reportFilterAgency.value,
         ownerValue: reportFilterOwner.value,
+        groupValue: reportFilterGroup.value,
+        reporterValue: reportFilterReporter.value,
+        priorityValue: reportFilterPriority.value,
+        evidenceValue: reportFilterEvidence.value,
+        sourceValue: reportFilterSource.value,
         fromValue: reportFilterFrom.value,
         toValue: reportFilterTo.value
       });
@@ -5245,9 +5331,16 @@ renderTransferencias();
     function renderOperationDetailRows(targetBodyId, operations, emptyMessage = 'No hay operaciones para este reporte.') {
       renderSimpleSummaryRows(targetBodyId, operations.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(op => `
         <tr>
-          <td><strong>${op.code}</strong></td>
+          <td><strong>${op.code}</strong><div style="margin-top:6px;font-size:12px;color:var(--muted);">${getOperationSourceLabel(op)}</div></td>
           <td>${op.type}</td>
-          <td>${op.title}</td>
+          <td>
+            <strong>${op.title}</strong>
+            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
+              <span class="chip priority-${String(op.priority || 'media').toLowerCase()}">${op.priority || 'Media'}</span>
+              <span class="chip">${getOperationReporter(op)}</span>
+              ${operationHasAnyEvidence(op) ? '<span class="chip">Con evidencia</span>' : '<span class="chip">Sin evidencia</span>'}
+            </div>
+          </td>
           <td>${getOperationLocation(op)}</td>
           <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
           <td>${statusBadge(op.status)}</td>
@@ -5261,6 +5354,20 @@ renderTransferencias();
     function renderReports() {
       populateReportSpecificTypeOptions();
       const operations = getReportFilteredOperations();
+      renderReportFilterSummary([
+        reportFilterType.value ? { label: 'Tipo', value: reportFilterType.value } : null,
+        reportFilterStatus.value ? { label: 'Estado', value: reportFilterStatus.value } : null,
+        reportFilterSpecificType.value ? { label: 'Tipo específico', value: reportFilterSpecificType.value } : null,
+        reportFilterAgency.value ? { label: 'Agencia', value: reportFilterAgency.value } : null,
+        reportFilterOwner.value ? { label: 'Responsable', value: reportFilterOwner.value } : null,
+        reportFilterGroup.value ? { label: 'Grupo', value: reportFilterGroup.value } : null,
+        reportFilterReporter.value ? { label: 'Reportado por', value: reportFilterReporter.value } : null,
+        reportFilterPriority.value ? { label: 'Prioridad', value: reportFilterPriority.value } : null,
+        reportFilterEvidence.value ? { label: 'Evidencia', value: reportFilterEvidence.options[reportFilterEvidence.selectedIndex]?.text || reportFilterEvidence.value } : null,
+        reportFilterSource.value ? { label: 'Origen', value: reportFilterSource.options[reportFilterSource.selectedIndex]?.text || reportFilterSource.value } : null,
+        reportFilterFrom.value ? { label: 'Desde', value: reportFilterFrom.value } : null,
+        reportFilterTo.value ? { label: 'Hasta', value: reportFilterTo.value } : null
+      ].filter(Boolean));
       const done = operations.filter(op => op.status === 'Completado');
       const pending = operations.filter(op => op.status !== 'Completado');
       const resolutionValues = done.map(getResolutionMinutes).filter(value => value !== null);
@@ -7250,7 +7357,7 @@ function openEditModal(id) {
       el.addEventListener('change', renderOperations);
     });
 
-    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterFrom, reportFilterTo].forEach(el => {
+    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterGroup, reportFilterReporter, reportFilterPriority, reportFilterEvidence, reportFilterSource, reportFilterFrom, reportFilterTo].forEach(el => {
       el.addEventListener('input', renderReports);
       el.addEventListener('change', renderReports);
     });
@@ -7281,6 +7388,11 @@ function openEditModal(id) {
       reportFilterSpecificType.value = '';
       reportFilterAgency.value = '';
       reportFilterOwner.value = '';
+      reportFilterGroup.value = '';
+      reportFilterReporter.value = '';
+      reportFilterPriority.value = '';
+      reportFilterEvidence.value = '';
+      reportFilterSource.value = '';
       reportFilterFrom.value = '';
       reportFilterTo.value = '';
       populateReportSpecificTypeOptions();
