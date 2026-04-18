@@ -1107,27 +1107,19 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <option value="">Todos los tipos específicos</option>
 </select>
 <input class="input" id="reportFilterAgency" placeholder="Filtrar por agencia"/>
-<input class="input" id="reportFilterOwner" placeholder="Filtrar por técnico / suplidor"/>
+<select class="select" id="reportFilterOwner">
+<option value="">Todos los técnicos / suplidores</option>
+</select>
 <input class="input" id="reportFilterGroup" placeholder="Filtrar por grupo"/>
-<input class="input" id="reportFilterReporter" placeholder="Filtrar por reportado por"/>
+<select class="select" id="reportFilterReporter">
+<option value="">Todos los encargados</option>
+</select>
 <select class="select" id="reportFilterPriority">
 <option value="">Todas las prioridades</option>
 <option value="Baja">Baja</option>
 <option value="Media">Media</option>
 <option value="Alta">Alta</option>
 <option value="Urgente">Urgente</option>
-</select>
-<select class="select" id="reportFilterEvidence">
-<option value="">Todas las evidencias</option>
-<option value="con_inicial">Con evidencia inicial</option>
-<option value="con_resultado">Con evidencia de resultado</option>
-<option value="sin_evidencia">Sin evidencias</option>
-</select>
-<select class="select" id="reportFilterSource">
-<option value="">Todos los orígenes</option>
-<option value="app_movil">App móvil</option>
-<option value="web_operacional">Web operacional</option>
-<option value="supabase">Supabase</option>
 </select>
 <input class="input" id="reportFilterFrom" type="date"/>
 <input class="input" id="reportFilterTo" type="date"/>
@@ -4696,6 +4688,7 @@ renderTransferencias();
       localStorage.setItem('operations_catalog_suppliers', JSON.stringify(SUPPLIERS));
       localStorage.setItem('operations_catalog_work_types', JSON.stringify(WORK_TYPES));
       localStorage.setItem('operations_catalog_issue_types', JSON.stringify(ISSUE_TYPES));
+      try { populateAdvancedReportDropdowns(); } catch (_error) {}
     }
 
     const ASSIGNEE_DISPLAY_BY_USERNAME = {
@@ -4808,11 +4801,41 @@ renderTransferencias();
     const reportFilterGroup = document.getElementById('reportFilterGroup');
     const reportFilterReporter = document.getElementById('reportFilterReporter');
     const reportFilterPriority = document.getElementById('reportFilterPriority');
-    const reportFilterEvidence = document.getElementById('reportFilterEvidence');
-    const reportFilterSource = document.getElementById('reportFilterSource');
-    const reportFilterFrom = document.getElementById('reportFilterFrom');
+        const reportFilterFrom = document.getElementById('reportFilterFrom');
     const reportFilterTo = document.getElementById('reportFilterTo');
     const reportFilterSummary = document.getElementById('reportFilterSummary');
+    function getEncargadoUsers() {
+      return (USERS || []).filter(user => String(user.area || '').toLowerCase().includes('encargado'));
+    }
+
+    function getAssignableOwnerOptions() {
+      const technicianUsers = (USERS || []).filter(user => !String(user.area || '').toLowerCase().includes('encargado'));
+      const userOptions = technicianUsers.map(user => ({ value: user.username, label: user.name }));
+      const supplierOptions = (SUPPLIERS || []).map(item => ({ value: item.name, label: item.name }));
+      const merged = [...userOptions, ...supplierOptions];
+      const seen = new Set();
+      return merged.filter(item => {
+        const key = String(item.value || '').toLowerCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function populateAdvancedReportDropdowns() {
+      if (reportFilterOwner) {
+        const current = reportFilterOwner.value;
+        const options = getAssignableOwnerOptions();
+        reportFilterOwner.innerHTML = '<option value="">Todos los técnicos / suplidores</option>' + options.map(item => `\n<option value="${item.value}">${item.label}</option>`).join('');
+        reportFilterOwner.value = options.some(item => item.value === current) ? current : '';
+      }
+      if (reportFilterReporter) {
+        const current = reportFilterReporter.value;
+        const options = getEncargadoUsers();
+        reportFilterReporter.innerHTML = '<option value="">Todos los encargados</option>' + options.map(item => `\n<option value="${item.username}">${item.name}</option>`).join('');
+        reportFilterReporter.value = options.some(item => item.username === current) ? current : '';
+      }
+    }
     const agencyReportFilterType = document.getElementById('agencyReportFilterType');
     const agencyReportFilterStatus = document.getElementById('agencyReportFilterStatus');
     const agencyReportFilterAgency = document.getElementById('agencyReportFilterAgency');
@@ -5203,8 +5226,7 @@ renderTransferencias();
         const agencyText = String(op.agency || '').toLowerCase();
         const groupText = String(op.grupo || '').toLowerCase();
         const ownerText = `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.trim();
-        const reporterText = getOperationReporter(op).toLowerCase();
-        const sourceText = String(op.source || '').toLowerCase();
+        const reporterText = `${String(op.nombre_encargado || '').toLowerCase()} ${String(op.created_by || '').toLowerCase()} ${getOperationReporter(op).toLowerCase()}`.trim();
         const matchType = !typeValue || op.type === typeValue;
         const matchStatus = !statusValue || op.status === statusValue;
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
@@ -5213,12 +5235,10 @@ renderTransferencias();
         const matchGroup = !groupValue || groupText.includes(groupValue.toLowerCase()) || locationText.includes(groupValue.toLowerCase());
         const matchReporter = !reporterValue || reporterText.includes(reporterValue.toLowerCase());
         const matchPriority = !priorityValue || String(op.priority || '') === priorityValue;
-        const matchEvidence = operationMatchesEvidenceFilter(op, evidenceValue);
-        const matchSource = !sourceValue || sourceText === sourceValue.toLowerCase();
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
         const toOk = !toValue || createdDate <= new Date(toValue + 'T23:59:59');
-        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && matchGroup && matchReporter && matchPriority && matchEvidence && matchSource && fromOk && toOk;
+        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && matchGroup && matchReporter && matchPriority && fromOk && toOk;
       });
     }
 
@@ -5232,8 +5252,6 @@ renderTransferencias();
         groupValue: reportFilterGroup.value,
         reporterValue: reportFilterReporter.value,
         priorityValue: reportFilterPriority.value,
-        evidenceValue: reportFilterEvidence.value,
-        sourceValue: reportFilterSource.value,
         fromValue: reportFilterFrom.value,
         toValue: reportFilterTo.value
       });
@@ -5359,12 +5377,10 @@ renderTransferencias();
         reportFilterStatus.value ? { label: 'Estado', value: reportFilterStatus.value } : null,
         reportFilterSpecificType.value ? { label: 'Tipo específico', value: reportFilterSpecificType.value } : null,
         reportFilterAgency.value ? { label: 'Agencia', value: reportFilterAgency.value } : null,
-        reportFilterOwner.value ? { label: 'Responsable', value: reportFilterOwner.value } : null,
+        reportFilterOwner.value ? { label: 'Técnico / suplidor', value: reportFilterOwner.options[reportFilterOwner.selectedIndex]?.text || reportFilterOwner.value } : null,
         reportFilterGroup.value ? { label: 'Grupo', value: reportFilterGroup.value } : null,
-        reportFilterReporter.value ? { label: 'Reportado por', value: reportFilterReporter.value } : null,
+        reportFilterReporter.value ? { label: 'Encargado', value: reportFilterReporter.options[reportFilterReporter.selectedIndex]?.text || reportFilterReporter.value } : null,
         reportFilterPriority.value ? { label: 'Prioridad', value: reportFilterPriority.value } : null,
-        reportFilterEvidence.value ? { label: 'Evidencia', value: reportFilterEvidence.options[reportFilterEvidence.selectedIndex]?.text || reportFilterEvidence.value } : null,
-        reportFilterSource.value ? { label: 'Origen', value: reportFilterSource.options[reportFilterSource.selectedIndex]?.text || reportFilterSource.value } : null,
         reportFilterFrom.value ? { label: 'Desde', value: reportFilterFrom.value } : null,
         reportFilterTo.value ? { label: 'Hasta', value: reportFilterTo.value } : null
       ].filter(Boolean));
@@ -7193,6 +7209,7 @@ function openEditModal(id) {
       renderOperations();
       renderDashboard();
       renderHistory();
+      populateAdvancedReportDropdowns();
       renderReports();
       renderAgencyReports();
       renderOwnerReports();
@@ -7208,6 +7225,7 @@ function openEditModal(id) {
       openEditModal(id);
       renderOperations();
       renderHistory();
+      populateAdvancedReportDropdowns();
       renderReports();
       renderAgencyReports();
       renderOwnerReports();
@@ -7223,6 +7241,7 @@ function openEditModal(id) {
       openEditModal(id);
       renderOperations();
       renderHistory();
+      populateAdvancedReportDropdowns();
       renderReports();
       renderAgencyReports();
       renderOwnerReports();
@@ -7342,6 +7361,7 @@ function openEditModal(id) {
       populateReportSpecificTypeOptions();
       renderOperations();
       renderHistory();
+      populateAdvancedReportDropdowns();
       renderReports();
       renderAgencyReports();
       renderOwnerReports();
@@ -7357,7 +7377,7 @@ function openEditModal(id) {
       el.addEventListener('change', renderOperations);
     });
 
-    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterGroup, reportFilterReporter, reportFilterPriority, reportFilterEvidence, reportFilterSource, reportFilterFrom, reportFilterTo].forEach(el => {
+    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterGroup, reportFilterReporter, reportFilterPriority, reportFilterFrom, reportFilterTo].forEach(el => {
       el.addEventListener('input', renderReports);
       el.addEventListener('change', renderReports);
     });
@@ -7391,8 +7411,6 @@ function openEditModal(id) {
       reportFilterGroup.value = '';
       reportFilterReporter.value = '';
       reportFilterPriority.value = '';
-      reportFilterEvidence.value = '';
-      reportFilterSource.value = '';
       reportFilterFrom.value = '';
       reportFilterTo.value = '';
       populateReportSpecificTypeOptions();
