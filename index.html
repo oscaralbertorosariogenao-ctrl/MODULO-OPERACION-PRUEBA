@@ -5402,6 +5402,7 @@ renderTransferencias();
 
     function renderReports() {
       populateReportSpecificTypeOptions();
+      populateAdvancedReportDropdowns();
       const operations = getReportFilteredOperations();
       renderReportFilterSummary([
         reportFilterType.value ? { label: 'Tipo', value: reportFilterType.value } : null,
@@ -7285,6 +7286,7 @@ function openEditModal(id) {
       appView.classList.remove('hidden');
       refreshOpenTypeSelectors();
       populateReportSpecificTypeOptions();
+      populateAdvancedReportDropdowns();
       renderOperations();
       renderGenericTable('users', userSearch.value || '');
       renderGenericTable('suppliers', supplierSearch.value || '');
