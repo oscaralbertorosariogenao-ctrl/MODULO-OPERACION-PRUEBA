@@ -1,5 +1,4 @@
-const CACHE_NAME = "loteka-app-v1";
-
+const CACHE_NAME = "loteka-v2";
 // Archivos básicos a cachear
 const urlsToCache = [
   "/",
