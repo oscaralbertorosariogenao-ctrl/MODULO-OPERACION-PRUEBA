@@ -4738,6 +4738,74 @@ renderTransferencias();
       return session?.email || 'admin@empresa.com';
     }
 
+    function getPushEncargadoUsername(op = {}) {
+      return slugifyUsername(op.nombre_encargado || op.created_by || '');
+    }
+
+    function getPushTechnicianUsername(op = {}) {
+      if (String(op.type || '').trim() === 'Trabajo') return '';
+      const value = normalizeStoredAssignee(op.technician || 'Sin asignar', op.type || 'Avería');
+      if (!value || String(value).trim().toLowerCase() === 'sin asignar') return '';
+      return slugifyUsername(value);
+    }
+
+    async function sendPushNotificationToUsername(username, title, body, url = '/app-reportes.html') {
+      const cleanUsername = slugifyUsername(username);
+      if (!cleanUsername) return { ok: false, skipped: true };
+      try {
+        const response = await fetch('/api/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: cleanUsername, title, body, url })
+        });
+        const data = await response.json().catch(() => ({}));
+        console.log('Push enviado a', cleanUsername, data);
+        return data;
+      } catch (error) {
+        console.error('Error enviando push a', cleanUsername, error);
+        return { ok: false, error: error?.message || String(error) };
+      }
+    }
+
+    async function notifyOperationPushes(previousOp = null, currentOp = {}) {
+      const prevStatus = String(previousOp?.status || '').trim();
+      const newStatus = String(currentOp?.status || '').trim();
+      const prevTech = getPushTechnicianUsername(previousOp || {});
+      const newTech = getPushTechnicianUsername(currentOp || {});
+      const encargado = getPushEncargadoUsername(currentOp);
+      const operationCode = String(currentOp.code || 'Operación').trim();
+      const location = String(currentOp.agency || currentOp.agencia || currentOp.grupo || 'la agencia').trim();
+
+      if (newTech && newTech !== prevTech) {
+        await sendPushNotificationToUsername(
+          newTech,
+          'Nueva asignación',
+          `Se te asignó la operación ${operationCode} en ${location}.`
+        );
+      }
+
+      if (encargado && newTech && newTech !== prevTech) {
+        await sendPushNotificationToUsername(
+          encargado,
+          'Operación asignada',
+          `${operationCode} fue asignada a ${getAssigneeDisplayName(currentOp.technician, currentOp.type)}.`
+        );
+      }
+
+      if (encargado && newStatus !== prevStatus && ['Asignada', 'En proceso', 'Completado'].includes(newStatus)) {
+        let message = `${operationCode} cambió a ${newStatus}.`;
+        if (newStatus === 'Asignada') {
+          message = `${operationCode} quedó asignada a ${getAssigneeDisplayName(currentOp.technician, currentOp.type)}.`;
+        } else if (newStatus === 'En proceso') {
+          message = `${operationCode} ya está en proceso en ${location}.`;
+        } else if (newStatus === 'Completado') {
+          message = `${operationCode} fue completada en ${location}.`;
+        }
+        await sendPushNotificationToUsername(encargado, 'Cambio de estado', message);
+      }
+    }
+
+
     function createHistoryEntry(actionOrConfig, detail = '', user = 'admin@empresa.com') {
       const config = typeof actionOrConfig === 'object' && actionOrConfig !== null
         ? actionOrConfig
@@ -6029,98 +6097,6 @@ renderTransferencias();
     }
 
 
-    function getEncargadoUsernameForOperation(op) {
-      const enriched = enrichOperationWithAgencyContext(op || {});
-      const direct = slugifyUsername(enriched.nombre_encargado || enriched.created_by || '');
-      if (direct) return direct;
-      const groupName = String(enriched.grupo || '').trim();
-      if (groupName && typeof GRUPOS_OPERACIONALES !== 'undefined' && GRUPOS_OPERACIONALES[groupName]?.encargado) {
-        return slugifyUsername(GRUPOS_OPERACIONALES[groupName].encargado);
-      }
-      return '';
-    }
-
-    function getPushLocationLabel(op) {
-      const enriched = enrichOperationWithAgencyContext(op || {});
-      return String(enriched.agency || enriched.grupo || 'tu zona').trim() || 'tu zona';
-    }
-
-    async function sendPushToUsername(username, title, body, url = '/app-reportes.html') {
-      const normalizedUsername = slugifyUsername(username);
-      if (!normalizedUsername) return;
-      try {
-        const response = await fetch('/api/send-push', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: normalizedUsername,
-            title,
-            body,
-            url
-          })
-        });
-        if (!response.ok) {
-          const raw = await response.text().catch(() => '');
-          console.error('Error enviando push:', normalizedUsername, raw || response.status);
-        }
-      } catch (error) {
-        console.error('Error enviando push a usuario:', normalizedUsername, error);
-      }
-    }
-
-    function notifyOperationPushes(previousOp, currentOp) {
-      const before = previousOp && typeof previousOp === 'object' ? previousOp : {};
-      const after = currentOp && typeof currentOp === 'object' ? currentOp : {};
-
-      const previousAssignee = String(before.technician || 'Sin asignar').trim();
-      const currentAssignee = String(after.technician || 'Sin asignar').trim();
-      const previousStatus = String(before.status || 'Pendiente').trim();
-      const currentStatus = String(after.status || 'Pendiente').trim();
-      const code = String(after.code || 'Operación').trim() || 'Operación';
-      const locationLabel = getPushLocationLabel(after);
-      const encargadoUsername = getEncargadoUsernameForOperation(after);
-
-      const assigneeChanged = previousAssignee !== currentAssignee;
-      const hasCurrentAssignee = currentAssignee && currentAssignee.toLowerCase() !== 'sin asignar';
-      const statusChanged = previousStatus !== currentStatus;
-
-      if (assigneeChanged && hasCurrentAssignee) {
-        sendPushToUsername(
-          currentAssignee,
-          'Nueva asignación',
-          `${code} fue asignada para ${locationLabel}.`,
-          '/app-reportes.html'
-        );
-      }
-
-      if (encargadoUsername && assigneeChanged && hasCurrentAssignee) {
-        sendPushToUsername(
-          encargadoUsername,
-          'Operación asignada',
-          `${code} fue asignada a ${getAssigneeDisplayName(currentAssignee, after.type)}.`,
-          '/app-reportes.html'
-        );
-      }
-
-      if (encargadoUsername && statusChanged) {
-        let message = `${code} cambió de ${previousStatus} a ${currentStatus}.`;
-        if (currentStatus === 'Asignada') {
-          message = `${code} quedó en estado Asignada para ${locationLabel}.`;
-        } else if (currentStatus === 'En proceso') {
-          message = `${code} ya está En proceso en ${locationLabel}.`;
-        } else if (currentStatus === 'Completado') {
-          message = `${code} fue Completada en ${locationLabel}.`;
-        }
-        sendPushToUsername(
-          encargadoUsername,
-          'Cambio de estado',
-          message,
-          '/app-reportes.html'
-        );
-      }
-    }
-
-
     const NOTIFY_STORAGE_KEY = 'loteka_ops_notifications_enabled';
     let notificationsEnabled = localStorage.getItem(NOTIFY_STORAGE_KEY) === 'true';
     let syncInitialized = false;
@@ -6475,6 +6451,7 @@ renderTransferencias();
               operations.push(newOperation);
               saveOperations(operations);
               syncOperationToSupabase(newOperation);
+              notifyOperationPushes(null, newOperation);
               renderOperations();
               renderHistory();
               renderReports();
@@ -6487,6 +6464,7 @@ renderTransferencias();
         operations.push(newOperation);
         saveOperations(operations);
         syncOperationToSupabase(newOperation);
+        notifyOperationPushes(null, newOperation);
         renderOperations();
         renderHistory();
         renderReports();
@@ -7151,7 +7129,7 @@ function openEditModal(id) {
       }
 
       const actor = getCurrentUserEmail();
-      const previousOperation = JSON.parse(JSON.stringify(operations[index]));
+      const previousOp = JSON.parse(JSON.stringify(operations[index]));
       const previousStatus = operations[index].status;
       const previousAssignee = operations[index].technician || 'Sin asignar';
       const newType = document.getElementById('editOperationType').value;
@@ -7311,7 +7289,7 @@ function openEditModal(id) {
               }));
               saveOperations(operations);
               syncOperationToSupabase(operations[index]);
-              notifyOperationPushes(previousOperation, operations[index]);
+              notifyOperationPushes(previousOp, operations[index]);
               closeEditModal();
               renderOperations();
               renderHistory();
@@ -7326,7 +7304,7 @@ function openEditModal(id) {
       } else {
         saveOperations(operations);
         syncOperationToSupabase(operations[index]);
-        notifyOperationPushes(previousOperation, operations[index]);
+        notifyOperationPushes(previousOp, operations[index]);
         closeEditModal();
         renderOperations();
         renderHistory();
