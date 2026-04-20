@@ -2610,6 +2610,8 @@
     const TABLE_NAME = "reportes_operaciones";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const PUSH_SUBSCRIPTIONS_TABLE = "push_subscriptions";
+    const VAPID_PUBLIC_KEY = "BGVivbsGCQ-EWLaSYpdEvsuFtvGBjmoFAWdN9aO9kuFbigwy969HxyHWAdxtGeduVrV7kEwFy11Tr3YRL-4nkcw";
 
     const ASSIGNEE_LABELS = { tecnico1: 'Técnico 1', tecnico2: 'Técnico 2', encargado1: 'Encargado 1' };
     function formatAssigneeLabel(value) {
@@ -3127,26 +3129,153 @@
       btnEnableAlerts.textContent = enabled ? "Alertas activas" : "Activar alertas";
     }
 
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    function getCurrentPushUserPayload() {
+      return {
+        username: String(usuarioActual?.user || "").trim().toLowerCase(),
+        role: String(usuarioActual?.rol || "").trim().toLowerCase(),
+        device_label: navigator.userAgent || "mobile-browser",
+        user_agent: navigator.userAgent || "mobile-browser"
+      };
+    }
+
+    async function getActiveServiceWorkerRegistration() {
+      if (!("serviceWorker" in navigator)) {
+        throw new Error("Este navegador no soporta service worker.");
+      }
+
+      let registration = await navigator.serviceWorker.getRegistration("/");
+      if (!registration) {
+        registration = await navigator.serviceWorker.register("/service-worker.js");
+      }
+
+      await navigator.serviceWorker.ready;
+      return registration;
+    }
+
+    async function savePushSubscriptionToSupabase(subscription) {
+      const userData = getCurrentPushUserPayload();
+      if (!userData.username || !userData.role) {
+        throw new Error("No se pudo identificar el usuario actual para guardar la suscripción push.");
+      }
+
+      const subscriptionJson = subscription?.toJSON ? subscription.toJSON() : null;
+      const endpoint = subscriptionJson?.endpoint || "";
+      const p256dh = subscriptionJson?.keys?.p256dh || "";
+      const auth = subscriptionJson?.keys?.auth || "";
+
+      if (!endpoint || !p256dh || !auth) {
+        throw new Error("La suscripción push no contiene los datos requeridos.");
+      }
+
+      const payload = {
+        username: userData.username,
+        role: userData.role,
+        endpoint,
+        p256dh,
+        auth,
+        device_label: userData.device_label,
+        user_agent: userData.user_agent,
+        is_active: true,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from(PUSH_SUBSCRIPTIONS_TABLE)
+        .upsert(payload, { onConflict: "endpoint" });
+
+      if (error) {
+        throw error;
+      }
+
+      return payload;
+    }
+
+    async function syncExistingPushSubscriptionSilently() {
+      try {
+        if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+        if (!usuarioActual?.user) return false;
+        const registration = await getActiveServiceWorkerRegistration();
+        const subscription = await registration.pushManager.getSubscription();
+        if (!subscription) return false;
+        await savePushSubscriptionToSupabase(subscription);
+        return true;
+      } catch (error) {
+        console.warn("No se pudo sincronizar la suscripción push existente:", error);
+        return false;
+      }
+    }
+
+    async function subscribeCurrentDeviceToPush(options = {}) {
+      const { forceResubscribe = false } = options;
+
+      if (!("PushManager" in window)) {
+        throw new Error("Este navegador no soporta notificaciones push web.");
+      }
+
+      if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY === "PEGA_AQUI_TU_VAPID_PUBLIC_KEY") {
+        throw new Error("Falta configurar la VAPID public key en app-reportes.html.");
+      }
+
+      const registration = await getActiveServiceWorkerRegistration();
+      let subscription = await registration.pushManager.getSubscription();
+
+      if (subscription && forceResubscribe) {
+        await subscription.unsubscribe().catch(() => {});
+        subscription = null;
+      }
+
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+      }
+
+      await savePushSubscriptionToSupabase(subscription);
+      return subscription;
+    }
+
     async function requestBrowserAlerts() {
       localStorage.setItem("loteka_alerts_enabled", "true");
       updateAlertsButtonUI();
+
       if (!("Notification" in window)) {
         showInAppNotification("Alertas activadas", "Este navegador no permite notificaciones del sistema, pero sí verás avisos dentro de la app.");
         return;
       }
-      if (Notification.permission === "granted") {
-        showInAppNotification("Alertas activadas", "Recibirás avisos importantes según tu rol en la app.");
+
+      if (!usuarioActual?.user) {
+        showInAppNotification("Inicia sesión primero", "Debes entrar con un usuario antes de activar las notificaciones push.");
         return;
       }
-      if (Notification.permission !== "denied") {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-          showInAppNotification("Alertas activadas", "Recibirás avisos importantes según tu rol en la app.");
-        } else {
-          showInAppNotification("Avisos internos activos", "El navegador bloqueó las notificaciones del sistema. Aun así verás alertas dentro de la app.");
-        }
-      } else {
-        showInAppNotification("Avisos internos activos", "Las notificaciones del sistema están bloqueadas en este navegador. Aun así verás alertas dentro de la app.");
+
+      let permission = Notification.permission;
+      if (permission !== "granted" && permission !== "denied") {
+        permission = await Notification.requestPermission();
+      }
+
+      if (permission !== "granted") {
+        showInAppNotification("Avisos internos activos", "El navegador no permitió las notificaciones del sistema. Aun así verás alertas dentro de la app.");
+        return;
+      }
+
+      try {
+        await subscribeCurrentDeviceToPush();
+        showInAppNotification("Alertas activadas", "Este dispositivo quedó registrado para recibir notificaciones push reales.");
+      } catch (error) {
+        console.error("Error configurando push:", error);
+        showInAppNotification("No se pudo activar el push", error?.message || "Revisa la VAPID key y la tabla push_subscriptions en Supabase.");
       }
     }
 
@@ -3197,6 +3326,7 @@
       const categoria = report?.categoria || "Reporte";
       const agenciaTexto = report?.agencia || report?.grupo || "Tu agencia";
       updateConnectionBadge();
+  syncExistingPushSubscriptionSilently();
 
   if (usuarioActual?.rol === "tecnico") {
         return {
@@ -4302,6 +4432,7 @@ function login() {
   localStorage.setItem("usuarioActual", JSON.stringify(user));
   notificationsInitialized = false;
   loadStoredStatusCache();
+  syncExistingPushSubscriptionSilently();
   iniciarApp();
 }
     window.login = login;
