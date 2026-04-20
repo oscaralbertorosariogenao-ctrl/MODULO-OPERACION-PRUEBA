@@ -1,10 +1,12 @@
-import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ error: "Metodo no permitido" });
+      return res.status(200).json({
+        ok: true,
+        step: "alive"
+      });
     }
 
     const supabase = createClient(
@@ -12,72 +14,45 @@ export default async function handler(req, res) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT,
-      process.env.VAPID_PUBLIC_KEY,
-      process.env.VAPID_PRIVATE_KEY
-    );
+    const body =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body || {});
 
-    const { username, title, body, url } = req.body || {};
+    const username = String(body.username || "").trim().toLowerCase();
 
     if (!username) {
-      return res.status(400).json({ error: "Falta username" });
-    }
-
-    const { data: subs, error } = await supabase
-      .from("push_subscriptions")
-      .select("*")
-      .eq("is_active", true)
-      .eq("username", String(username).toLowerCase());
-
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-
-    if (!subs || subs.length === 0) {
-      return res.status(200).json({
-        ok: true,
-        sent: 0,
-        message: "No hay dispositivos registrados"
+      return res.status(400).json({
+        ok: false,
+        step: "missing-username"
       });
     }
 
-    const payload = JSON.stringify({
-      title: title || "LOTEKA",
-      body: body || "Nueva notificación",
-      url: url || "/app-reportes.html",
-      icon: "/icon-192.svg",
-      badge: "/icon-192.svg"
-    });
+    const { data, error } = await supabase
+      .from("push_subscriptions")
+      .select("id, username, endpoint, is_active")
+      .eq("is_active", true)
+      .eq("username", username);
 
-    let sent = 0;
-
-    for (const sub of subs) {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: {
-              p256dh: sub.p256dh,
-              auth: sub.auth
-            }
-          },
-          payload
-        );
-        sent++;
-      } catch (err) {
-        console.log("Error enviando push:", err.message);
-      }
+    if (error) {
+      return res.status(500).json({
+        ok: false,
+        step: "supabase-error",
+        error: error.message
+      });
     }
 
     return res.status(200).json({
       ok: true,
-      sent
+      step: "supabase-ok",
+      found: data?.length || 0,
+      rows: data || []
     });
-
   } catch (err) {
     return res.status(500).json({
-      error: err.message
+      ok: false,
+      step: "crash",
+      error: err.message || "error interno"
     });
   }
 }
