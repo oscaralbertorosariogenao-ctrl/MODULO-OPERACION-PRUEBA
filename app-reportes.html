@@ -3140,10 +3140,28 @@
       return outputArray;
     }
 
+    function normalizePushUsername(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "");
+    }
+
+    function normalizePushRole(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "_");
+    }
+
     function getCurrentPushUserPayload() {
       return {
-        username: String(usuarioActual?.user || "").trim().toLowerCase(),
-        role: String(usuarioActual?.rol || "").trim().toLowerCase(),
+        username: normalizePushUsername(usuarioActual?.user || ""),
+        role: normalizePushRole(usuarioActual?.rol || ""),
         device_label: navigator.userAgent || "mobile-browser",
         user_agent: navigator.userAgent || "mobile-browser"
       };
