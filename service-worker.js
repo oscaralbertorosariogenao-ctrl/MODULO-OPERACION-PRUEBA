@@ -1,4 +1,4 @@
-const CACHE_NAME = "loteka-pwa-v3";
+const CACHE_NAME = "loteka-pwa-v4";
 const APP_SHELL = [
   "/",
   "/app-reportes.html",
@@ -45,9 +45,15 @@ self.addEventListener("activate", (event) => {
 // =========================
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  const url = new URL(request.url);
 
-  // Solo manejamos GET
   if (request.method !== "GET") return;
+
+  // ❌ NO cachear API
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
@@ -55,11 +61,10 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(request)
         .then((networkResponse) => {
-          // Guardar una copia en cache si es válida
           if (
             networkResponse &&
             networkResponse.status === 200 &&
-            request.url.startsWith(self.location.origin)
+            url.origin === self.location.origin
           ) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -70,7 +75,6 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         })
         .catch(() => {
-          // fallback opcional si falla la red
           if (request.mode === "navigate") {
             return caches.match("/app-reportes.html");
           }
@@ -80,7 +84,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 // =========================
-// PUSH REAL
+// PUSH
 // =========================
 self.addEventListener("push", (event) => {
   let data = {};
@@ -90,7 +94,7 @@ self.addEventListener("push", (event) => {
   } catch (error) {
     data = {
       title: "LOTEKA",
-      body: event.data ? event.data.text() : "Nueva notificación",
+      body: event.data ? event.data.text() : "Nueva notificación"
     };
   }
 
@@ -131,24 +135,14 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        // Si la app ya está abierta, enfocarla
         if (client.url.includes("/app-reportes.html") && "focus" in client) {
           return client.focus();
         }
       }
 
-      // Si no está abierta, abrirla
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }
     })
   );
-});
-
-// =========================
-// CIERRE DE NOTIFICACIÓN
-// =========================
-self.addEventListener("notificationclose", (event) => {
-  // Aquí luego, si quieres, podemos guardar logs en background
-  // por ahora no hacemos nada para no complicar la prueba
 });
