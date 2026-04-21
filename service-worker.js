@@ -1,10 +1,11 @@
-const CACHE_NAME = "loteka-pwa-v10";
+const CACHE_NAME = "loteka-pwa-v8";
 const APP_SHELL = [
   "/",
   "/app-reportes.html",
   "/manifest.json",
   "/icon-192.svg",
-  "/icon-512.svg"
+  "/icon-512.svg",
+  "/sounds/whatsapp.mp3"
 ];
 
 // INSTALACIÓN
