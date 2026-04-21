@@ -3282,7 +3282,6 @@ function playNotificationSound() {
 
     audio.muted = false;
     audio.volume = 1;
-    audio.pause();
     audio.currentTime = 0;
 
     const p = audio.play();
@@ -3291,24 +3290,18 @@ function playNotificationSound() {
         console.warn("No se pudo reproducir el sonido:", error);
       });
     }
+
   } catch (error) {
     console.warn("No se pudo reproducir el sonido:", error);
   }
 }
-    function unlockNotificationSound() {
+function unlockNotificationSound() {
   const audio = document.getElementById("notificationSound");
   if (!audio) return;
 
   audio.muted = false;
   audio.volume = 1;
-
-  const p = audio.play();
-  if (p && typeof p.then === "function") {
-    p.then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-    }).catch(() => {});
-  }
+}
 }
 function testAudioNow() {
   unlockNotificationSound();
