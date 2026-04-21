@@ -1,4 +1,4 @@
-const CACHE_NAME = "loteka-pwa-v4";
+const CACHE_NAME = "loteka-pwa-v5";
 const APP_SHELL = [
   "/",
   "/app-reportes.html",
@@ -7,22 +7,16 @@ const APP_SHELL = [
   "/icon-512.svg"
 ];
 
-// =========================
 // INSTALACIÓN
-// =========================
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
 });
 
-// =========================
 // ACTIVACIÓN
-// =========================
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
@@ -34,23 +28,23 @@ self.addEventListener("activate", (event) => {
           }
         })
       );
-
       await self.clients.claim();
     })()
   );
 });
 
-// =========================
 // FETCH
-// =========================
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
   if (request.method !== "GET") return;
 
-  // ❌ NO cachear API
-  if (url.pathname.startsWith("/api/")) {
+  // Nunca cachear API ni Supabase
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.hostname.includes("supabase.co")
+  ) {
     event.respondWith(fetch(request));
     return;
   }
@@ -83,15 +77,13 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// =========================
 // PUSH
-// =========================
 self.addEventListener("push", (event) => {
   let data = {};
 
   try {
     data = event.data ? event.data.json() : {};
-  } catch (error) {
+  } catch {
     data = {
       title: "LOTEKA",
       body: event.data ? event.data.text() : "Nueva notificación"
@@ -121,9 +113,7 @@ self.addEventListener("push", (event) => {
   );
 });
 
-// =========================
 // CLICK EN NOTIFICACIÓN
-// =========================
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
