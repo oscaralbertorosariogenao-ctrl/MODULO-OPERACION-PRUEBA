@@ -3263,40 +3263,18 @@
       await savePushSubscriptionToSupabase(subscription);
       return subscription;
     }
+async function requestBrowserAlerts() {
+  localStorage.setItem("loteka_alerts_enabled", "true");
+  updateAlertsButtonUI();
 
-    async function requestBrowserAlerts() {
-      localStorage.setItem("loteka_alerts_enabled", "true");
-      updateAlertsButtonUI();
+  showInAppNotification(
+    "Alertas activadas",
+    "Recibirás avisos dentro de la app cuando cambien tus reportes."
+  );
 
-      if (!("Notification" in window)) {
-        showInAppNotification("Alertas activadas", "Este navegador no permite notificaciones del sistema, pero sí verás avisos dentro de la app.");
-        return;
-      }
-
-      if (!usuarioActual?.user) {
-        showInAppNotification("Inicia sesión primero", "Debes entrar con un usuario antes de activar las notificaciones push.");
-        return;
-      }
-
-      let permission = Notification.permission;
-      if (permission !== "granted" && permission !== "denied") {
-        permission = await Notification.requestPermission();
-      }
-
-      if (permission !== "granted") {
-        showInAppNotification("Avisos internos activos", "El navegador no permitió las notificaciones del sistema. Aun así verás alertas dentro de la app.");
-        return;
-      }
-
-      try {
-        await subscribeCurrentDeviceToPush();
-        showInAppNotification("Alertas activadas", "Este dispositivo quedó registrado para recibir notificaciones push reales.");
-      } catch (error) {
-        console.error("Error configurando push:", error);
-        showInAppNotification("No se pudo activar el push", error?.message || "Revisa la VAPID key y la tabla push_subscriptions en Supabase.");
-      }
-    }
-
+  playNotificationSound();
+}
+    
     function playNotificationSound() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -3331,28 +3309,21 @@
       }, 5200);
     }
 
-    function showSystemNotification(title, body) {
-      try {
-        if ("Notification" in window && Notification.permission === "granted") {
-          const n = new Notification(title, { body, icon: document.querySelector('.header-brand img')?.src || undefined });
-          setTimeout(() => n.close(), 5000);
-        }
-      } catch (_) {}
-    }
-
+   function showSystemNotification(title, body) {
+  return;
+}
     function buildStatusChangeMessage(report, statusKey) {
-      const categoria = report?.categoria || "Reporte";
-      const agenciaTexto = report?.agencia || report?.grupo || "Tu agencia";
-      updateConnectionBadge();
-  syncExistingPushSubscriptionSilently();
+  const categoria = report?.categoria || "Reporte";
+  const agenciaTexto = report?.agencia || report?.grupo || "Tu agencia";
 
   if (usuarioActual?.rol === "tecnico") {
-        return {
-          title: "Nueva asignación",
-          body: `Se te asignó ${categoria} para trabajar en ${agenciaTexto}.`,
-          mini: `${report?.code || "Sin código"}`
-        };
-      }
+    return {
+      title: "Nueva asignación",
+      body: `Se te asignó ${categoria} para trabajar en ${agenciaTexto}.`,
+      mini: `${report?.code || "Sin código"}`
+    };
+  }
+}
       if (statusKey === "asignada") {
         return {
           title: "Reporte asignado",
@@ -3400,9 +3371,8 @@
           if (previousStatus && previousStatus !== currentStatus) {
             const payload = buildStatusChangeMessage(report, currentStatus);
             if (payload) {
-              playNotificationSound();
-              showInAppNotification(payload.title, payload.body, payload.mini);
-              showSystemNotification(payload.title, `${payload.body} ${payload.mini}`.trim());
+             playNotificationSound();
+showInAppNotification(payload.title, payload.body, payload.mini);
             }
           }
           return;
