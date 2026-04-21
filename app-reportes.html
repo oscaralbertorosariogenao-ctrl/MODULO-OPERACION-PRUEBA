@@ -2369,156 +2369,48 @@
     }
 
 
-    .agency-section-shell {
-      display: grid;
-      gap: 14px;
+    /* ===== Agencias móvil ===== */
+    .tabs.tabs-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .agency-shell { display:grid; gap:14px; }
+    .agency-search { margin-bottom: 14px; }
+    .agency-search input { width:100%; border:1px solid #cfe0ea; border-radius:16px; padding:14px; font-size:15px; background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%); }
+    .agency-grid, .group-grid, .equipment-grid, .history-grid { display:grid; gap:12px; }
+    .group-card, .agency-card, .equipment-card, .history-card, .agency-hero-card, .agency-block-card {
+      border:1px solid #d8e8f0; border-radius:22px; background:linear-gradient(180deg,#ffffff 0%,#f8fcfe 100%); box-shadow: var(--shadow-soft);
     }
-
-    .agency-search-box {
-      margin-bottom: 14px;
-    }
-
-    .agency-search-box input {
-      width: 100%;
-      border: 1px solid #cfe0ea;
-      border-radius: 16px;
-      padding: 14px 14px;
-      font-size: 15px;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-      color: var(--text);
-      outline: none;
-    }
-
-    .agency-search-box input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(14,165,198,.14);
-    }
-
-    .group-card-list,
-    .agency-card-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .group-card,
-    .agency-card {
-      border: 1px solid #d8e8f0;
-      border-radius: 20px;
-      background: linear-gradient(180deg, #ffffff 0%, #f7fbfd 100%);
-      box-shadow: var(--shadow-soft);
-      padding: 16px;
-      cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-    }
-
-    .group-card:hover,
-    .agency-card:hover {
-      transform: translateY(-1px);
-      border-color: #b6ddea;
-      box-shadow: 0 16px 28px rgba(16, 59, 85, 0.10);
-    }
-
-    .group-card-top,
-    .agency-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .group-card-title,
-    .agency-card-title {
-      font-size: 17px;
-      font-weight: 900;
-      color: #183447;
-      line-height: 1.2;
-    }
-
-    .group-card-sub,
-    .agency-card-sub {
-      font-size: 13px;
-      color: #5f7585;
-      line-height: 1.45;
-      margin-top: 4px;
-    }
-
-    .group-card-count,
-    .agency-card-chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #e9f8fd;
-      color: #0b7896;
-      font-size: 12px;
-      font-weight: 900;
-      white-space: nowrap;
-      border: 1px solid #cdeef6;
-    }
-
-    .group-card-meta,
-    .agency-card-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .group-mini-chip,
-    .agency-mini-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      background: #f0f6fa;
-      border: 1px solid #d9e8f0;
-      color: #5a7181;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 7px 10px;
-    }
-
-    .agency-section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .agency-back-btn {
-      border: none;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-weight: 800;
-      cursor: pointer;
-      background: linear-gradient(180deg, #f2f7fa 0%, #e9f1f6 100%);
-      border: 1px solid #dbe8ef;
-      color: #173346;
-      min-height: 48px;
-    }
-
-    .agency-detail-stack {
-      display: grid;
-      gap: 14px;
-    }
-
-    @media (max-width: 520px) {
-      .group-card-top,
-      .agency-card-top,
-      .agency-section-head {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .group-card-count,
-      .agency-card-chip,
-      .agency-back-btn {
-        width: fit-content;
-      }
-    }
+    .group-card, .agency-card { padding:16px; cursor:pointer; }
+    .group-card:hover, .agency-card:hover, .equipment-card:hover { transform:translateY(-1px); }
+    .group-top, .agency-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .group-name, .agency-name { font-size:18px; font-weight:900; color:#173346; line-height:1.2; }
+    .group-sub, .agency-sub { margin-top:8px; color:#5d7585; font-size:13px; line-height:1.5; }
+    .group-meta, .agency-meta-inline, .equipment-meta, .history-meta-inline { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .mini-pill { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:#eef7fb; border:1px solid #d8e8f0; color:#1e5b73; font-size:12px; font-weight:800; }
+    .agency-hero-card, .agency-block-card { padding:16px; }
+    .agency-hero-title { font-size:22px; font-weight:900; color:#173346; margin:0 0 6px; }
+    .agency-hero-text { margin:0; color:#5d7585; line-height:1.5; font-size:14px; }
+    .agency-actions-stack { display:grid; gap:10px; margin-top:14px; }
+    .agency-nav-btn, .agency-inline-btn { width:100%; min-height:52px; border:none; border-radius:16px; font-weight:900; font-size:15px; cursor:pointer; }
+    .agency-nav-btn { background:linear-gradient(180deg,#f1f7fa 0%,#e8f0f5 100%); color:#153447; border:1px solid #dbe8ef; }
+    .agency-nav-btn.primary { background:linear-gradient(135deg,#0ea5c6 0%,#0a88a6 100%); color:#fff; border-color:transparent; box-shadow:0 14px 26px rgba(14,165,198,.20); }
+    .agency-back-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .agency-back-btn { border:none; border-radius:14px; padding:12px 14px; background:#eaf2f7; color:#173346; font-weight:900; cursor:pointer; }
+    .agency-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:14px; }
+    .agency-kpi { border:1px solid #d8e8f0; border-radius:18px; background:#fff; padding:12px; }
+    .agency-kpi span { display:block; font-size:11px; font-weight:900; color:#7a8f9f; text-transform:uppercase; margin-bottom:6px; }
+    .agency-kpi strong { display:block; font-size:15px; color:#173346; }
+    .equipment-card { padding:14px; display:grid; gap:10px; }
+    .equipment-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .equipment-title { font-size:16px; font-weight:900; color:#173346; }
+    .equipment-sub { font-size:13px; color:#5f7585; line-height:1.45; }
+    .equipment-status { display:inline-flex; align-items:center; justify-content:center; padding:7px 11px; border-radius:999px; font-size:11px; font-weight:900; }
+    .equipment-status.activo { background:#e8f6ef; color:#2f7d57; }
+    .equipment-status.revision { background:#fff6df; color:#8b6200; }
+    .equipment-status.danado { background:#fff1f1; color:#a12626; }
+    .history-card { padding:14px; }
+    .history-title { font-size:15px; font-weight:900; color:#173346; margin-bottom:6px; }
+    .history-card p { margin:0; color:#4d6474; font-size:13px; line-height:1.5; }
+    .agency-empty { text-align:center; padding:28px 18px; color:var(--muted); font-weight:700; border:1px dashed #d7e0e8; border-radius:18px; background:#fff; }
+    @media (max-width:520px){ .tabs.tabs-3{grid-template-columns:1fr;} .agency-kpis{grid-template-columns:1fr 1fr;} }
 
   </style>
 </head>
@@ -2577,7 +2469,7 @@
   </div>
 </div>
 
-    <div class="tabs">
+    <div class="tabs tabs-3">
       <button class="tab-btn active" id="tabCreate">Nuevo reporte</button>
       <button class="tab-btn" id="tabReports">Mis reportes</button>
       <button class="tab-btn" id="tabAgencies">Agencias</button>
@@ -2735,14 +2627,19 @@
 
       <section class="section" id="sectionAgencies">
         <div class="card">
-          <div class="section-heading"><div><h3 id="agenciesSectionTitle">Agencias</h3><p id="agenciesSectionSubtitle">Consulta grupos y agencias con acceso rápido a su ubicación.</p></div><span class="section-badge">Ubicación</span></div><div class="soft-divider"></div>
-
-          <div class="agency-section-shell">
-            <div class="agency-search-box" id="agencySearchWrap">
-              <input type="text" id="agencySearchInput" placeholder="Buscar agencia o grupo">
+          <div class="section-heading">
+            <div>
+              <h3 id="agenciesSectionTitle">Agencias</h3>
+              <p id="agenciesSectionSubtitle">Consulta grupos, agencias, equipos y el historial operativo desde móvil.</p>
             </div>
-
-            <div id="agencySectionContent"></div>
+            <span class="section-badge" id="agenciesSectionBadge">Consulta móvil</span>
+          </div>
+          <div class="soft-divider"></div>
+          <div class="agency-shell" id="agencyShell">
+            <div class="agency-search">
+              <input type="text" id="agencySearchInput" placeholder="Buscar grupo, agencia o serial">
+            </div>
+            <div id="agencyViewContainer"></div>
           </div>
         </div>
       </section>
@@ -2862,44 +2759,10 @@
 
 
     const AGENCIAS_OPERACIONALES = {
-      435: { lat: 18.5383784, lng: -69.9395547, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 0435 · Grupo 44' },
-      1000: { lat: 18.539837, lng: -69.935708, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1000 · Grupo 44' },
-      1002: { lat: 18.537551854, lng: -69.93503565, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1002 · Grupo 44' },
-      1005: { lat: 18.5299566, lng: -69.9447317, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1005 · Grupo 44' },
-      1006: { lat: 18.53366, lng: -69.94227, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1006 · Grupo 44' },
-      1009: { lat: 18.52999, lng: -69.94656, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1009 · Grupo 44' },
-      1012: { lat: 18.53146, lng: -69.94703, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1012 · Grupo 44' },
-      1014: { lat: 18.534781, lng: -69.937492, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1014 · Grupo 44' },
-      1016: { lat: 18.534701, lng: -69.936428, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1016 · Grupo 44' },
-      1078: { lat: 18.54044, lng: -69.93808, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1078 · Grupo 44' },
-      1079: { lat: 18.5327, lng: -69.93778, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1079 · Grupo 44' },
-      1081: { lat: 18.538744, lng: -69.934412, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1081 · Grupo 44' },
-      1082: { lat: 18.54013, lng: -69.9388, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1082 · Grupo 44' },
-      1083: { lat: 18.53792994, lng: -69.9345332, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1083 · Grupo 44' },
-      1084: { lat: 18.5332, lng: -69.93671, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1084 · Grupo 44' },
-      1085: { lat: 18.5367476, lng: -69.9318985, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1085 · Grupo 44' },
-      1086: { lat: 18.533562, lng: -69.928482, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1086 · Grupo 44' },
       1088: { lat: 18.53926, lng: -69.93532, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1088 · Grupo 44' },
-      1099: { lat: 18.5386, lng: -69.93836, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1099 · Grupo 44' },
-      1107: { lat: 18.53655, lng: -69.94318, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1107 · Grupo 44' },
-      1111: { lat: 18.54126, lng: -69.93838, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1111 · Grupo 44' },
       1112: { lat: 18.5417, lng: -69.94032, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1112 · Grupo 44' },
-      1123: { lat: 18.54313, lng: -69.93831, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1123 · Grupo 44' },
       1130: { lat: 18.54045, lng: -69.93627, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1130 · Grupo 44' },
-      1133: { lat: 18.53939, lng: -69.93793, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1133 · Grupo 44' },
-      1134: { lat: 18.53912, lng: -69.93677, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1134 · Grupo 44' },
-      1137: { lat: 18.54093, lng: -69.93948, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1137 · Grupo 44' },
-      1139: { lat: 18.54098, lng: -69.93827, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1139 · Grupo 44' },
-      1152: { lat: 18.53875, lng: -69.93989, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1152 · Grupo 44' },
-      1166: { lat: 18.53615, lng: -69.93937, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1166 · Grupo 44' },
-      1170: { lat: 18.5364788, lng: -69.9319777, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1170 · Grupo 44' },
-      1183: { lat: 18.53836, lng: -69.94222, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1183 · Grupo 44' },
-      1184: { lat: 18.53829, lng: -69.94306, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1184 · Grupo 44' },
-      1185: { lat: 18.54187, lng: -69.93909, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1185 · Grupo 44' },
-      1186: { lat: 18.54281, lng: -69.93962, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1186 · Grupo 44' },
-      1187: { lat: 18.53729, lng: -69.93586, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1187 · Grupo 44' },
       1188: { lat: 18.53521, lng: -69.93818, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1188 · Grupo 44' },
-      1189: { lat: 18.53295, lng: -69.94509, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1189 · Grupo 44' },
       1801: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1801 · Grupo 18' },
       1802: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1802 · Grupo 18' },
       1803: { encargado: 'encargado2', grupo: 'Grupo 18', direccion: 'Agencia 1803 · Grupo 18' },
@@ -2913,7 +2776,7 @@
     };
 
     const GRUPOS_OPERACIONALES = {
-      'Grupo 44': { encargado: 'encargado1', agencias: [435, 1000, 1002, 1005, 1006, 1009, 1012, 1014, 1016, 1078, 1079, 1081, 1082, 1083, 1084, 1085, 1086, 1088, 1099, 1107, 1111, 1112, 1123, 1130, 1133, 1134, 1137, 1139, 1152, 1166, 1170, 1183, 1184, 1185, 1186, 1187, 1188, 1189] },
+      'Grupo 44': { encargado: 'encargado1', agencias: [1088, 1112, 1130, 1188] },
       'Grupo 18': { encargado: 'encargado2', agencias: [1801, 1802, 1803, 1804] },
       'Grupo 07': { encargado: 'encargado2', agencias: [701, 702, 703] },
       'Grupo 06': { encargado: 'encargado3', agencias: [601, 602, 603] }
@@ -2945,6 +2808,25 @@
     const TODAS_LAS_AGENCIAS = Array.from(
       new Set(Object.values(AGENCIAS_POR_GRUPO).flat())
     ).sort((a, b) => a.localeCompare(b, "es"));
+
+
+    const GRUPO_44_COORDENADAS_ADICIONALES = {
+      435:{lat:18.5383784,lng:-69.9395547},1000:{lat:18.539837,lng:-69.935708},1002:{lat:18.537551854,lng:-69.93503565},1005:{lat:18.5299566,lng:-69.9447317},1006:{lat:18.53366,lng:-69.94227},1009:{lat:18.52999,lng:-69.94656},1012:{lat:18.53146,lng:-69.94703},1014:{lat:18.534781,lng:-69.937492},1016:{lat:18.534701,lng:-69.936428},1078:{lat:18.54044,lng:-69.93808},1079:{lat:18.5327,lng:-69.93778},1081:{lat:18.538744,lng:-69.934412},1082:{lat:18.54013,lng:-69.9388},1083:{lat:18.53792994,lng:-69.9345332},1084:{lat:18.5332,lng:-69.93671},1085:{lat:18.5367476,lng:-69.9318985},1086:{lat:18.533562,lng:-69.928482},1088:{lat:18.53926,lng:-69.93532},1099:{lat:18.5386,lng:-69.93836},1107:{lat:18.53655,lng:-69.94318},1111:{lat:18.54126,lng:-69.93838},1112:{lat:18.5417,lng:-69.94032},1123:{lat:18.54313,lng:-69.93831},1130:{lat:18.54045,lng:-69.93627},1133:{lat:18.53939,lng:-69.93793},1134:{lat:18.53912,lng:-69.93677},1137:{lat:18.54093,lng:-69.93948},1139:{lat:18.54098,lng:-69.93827},1152:{lat:18.53875,lng:-69.93989},1166:{lat:18.53615,lng:-69.93937},1170:{lat:18.5364788,lng:-69.9319777},1183:{lat:18.53836,lng:-69.94222},1184:{lat:18.53829,lng:-69.94306},1185:{lat:18.54187,lng:-69.93909},1186:{lat:18.54281,lng:-69.93962},1187:{lat:18.53729,lng:-69.93586},1188:{lat:18.53521,lng:-69.93818},1189:{lat:18.53295,lng:-69.94509}
+    };
+    const AGENCIAS_GRUPO_44_COMPLETAS = [435,1000,1002,1005,1006,1009,1012,1014,1016,1078,1079,1081,1082,1083,1084,1085,1086,1088,1099,1107,1111,1112,1123,1130,1133,1134,1137,1139,1152,1166,1170,1183,1184,1185,1186,1187,1188,1189];
+    AGENCIAS_GRUPO_44_COMPLETAS.forEach((numero) => {
+      const digits = String(numero).padStart(4, '0');
+      const geo = GRUPO_44_COORDENADAS_ADICIONALES[numero] || {};
+      AGENCIAS_OPERACIONALES[numero] = {
+        ...(AGENCIAS_OPERACIONALES[numero] || {}),
+        ...(typeof geo.lat === 'number' ? { lat: geo.lat } : {}),
+        ...(typeof geo.lng === 'number' ? { lng: geo.lng } : {}),
+        encargado: 'encargado1',
+        grupo: 'Grupo 44',
+        direccion: `Agencia ${digits} · Grupo 44`
+      };
+    });
+    GRUPOS_OPERACIONALES['Grupo 44'] = { encargado: 'encargado1', agencias: AGENCIAS_GRUPO_44_COMPLETAS.slice() };
 
 
     function normalizeAgencyLabel(value) {
@@ -3186,13 +3068,13 @@
 
     const btnRefreshReports = document.getElementById("btnRefreshReports");
     const reportSearchInput = document.getElementById("reportSearchInput");
+    const tabAgencies = document.getElementById("tabAgencies");
+    const sectionAgencies = document.getElementById("sectionAgencies");
+    const agencyViewContainer = document.getElementById("agencyViewContainer");
+    const agencySearchInput = document.getElementById("agencySearchInput");
     const reportFilterCards = Array.from(document.querySelectorAll("[data-report-filter]"));
     let currentReportFilter = "pendiente";
     const reportList = document.getElementById("reportList");
-    const tabAgencies = document.getElementById("tabAgencies");
-    const sectionAgencies = document.getElementById("sectionAgencies");
-    const agencySectionContent = document.getElementById("agencySectionContent");
-    const agencySearchInput = document.getElementById("agencySearchInput");
 
     const detailBackdrop = document.getElementById("detailBackdrop");
     const detailBody = document.getElementById("detailBody");
@@ -3202,6 +3084,17 @@
     let mobileRealtimeChannel = null;
 let mobileRealtimeReconnectTimer = null;
 let mobileRealtimeConnected = false;
+
+    const MOBILE_EQUIPMENT_BASE = [
+      { categoria:'Printer', icon:'🖨️', producto:'Printer térmica', marca:'Epson', modelo:'TM-T20III', serial:'PR', ubicacion:'Counter principal' },
+      { categoria:'Cámara', icon:'📷', producto:'Cámara de seguridad', marca:'Hikvision', modelo:'Turret 4MP', serial:'CM', ubicacion:'Área de caja' },
+      { categoria:'Router', icon:'📡', producto:'Router', marca:'TP-Link', modelo:'Archer C80', serial:'RT', ubicacion:'Mueble técnico' },
+      { categoria:'UPS', icon:'🔋', producto:'UPS', marca:'CDP', modelo:'R-Smart 1010', serial:'UP', ubicacion:'Bajo mostrador' },
+      { categoria:'Scanner', icon:'📠', producto:'Scanner', marca:'Witek', modelo:'MIS200 OMR A6', serial:'SC', ubicacion:'Puesto de ventas' }
+    ];
+    let latestReports = [];
+    let agencyViewState = { mode: 'root', selectedGroup: null, selectedAgency: null };
+
     let usuarioActual = null;
     let reportRefreshInterval = null;
     let notificationsInitialized = false;
@@ -3833,26 +3726,23 @@ function startReportAutoRefresh() {
   const reportsActive = mode === "reports";
   const agenciesActive = mode === "agencies";
 
-  tabCreate?.classList.toggle("active", createActive);
-  tabReports?.classList.toggle("active", reportsActive);
+  tabCreate.classList.toggle("active", createActive);
+  tabReports.classList.toggle("active", reportsActive);
   tabAgencies?.classList.toggle("active", agenciesActive);
 
-  sectionCreate?.classList.toggle("active", createActive);
-  sectionReports?.classList.toggle("active", reportsActive);
+  sectionCreate.classList.toggle("active", createActive);
+  sectionReports.classList.toggle("active", reportsActive);
   sectionAgencies?.classList.toggle("active", agenciesActive);
 
-  if (sectionCreate) sectionCreate.style.display = createActive ? "block" : "none";
-  if (sectionReports) sectionReports.style.display = reportsActive ? "block" : "none";
+  sectionCreate.style.display = createActive ? "block" : "none";
+  sectionReports.style.display = reportsActive ? "block" : "none";
   if (sectionAgencies) sectionAgencies.style.display = agenciesActive ? "block" : "none";
 
   if (reportsActive) {
-    setTimeout(() => {
-      loadReports();
-    }, 180);
+    setTimeout(() => { loadReports(); }, 180);
   }
-
   if (agenciesActive) {
-    renderAgenciasView();
+    setTimeout(() => { renderAgencySection(); }, 60);
   }
 }
 
@@ -3872,11 +3762,6 @@ function startReportAutoRefresh() {
     categoriaSelect.addEventListener("change", () => {
       syncOtherFieldVisibility();
       renderCategoryCards();
-    });
-
-    agencySearchInput?.addEventListener("input", () => {
-      agencyViewState.search = agencySearchInput.value || "";
-      renderAgenciasView();
     });
 
     function showStatus(message, type = "ok") {
@@ -3990,210 +3875,6 @@ function startReportAutoRefresh() {
         agencia.disabled = true;
       } else {
         agencia.disabled = false;
-      }
-    }
-
-    function formatAgencyDisplay(value) {
-      const digits = getAgencyDigits(value);
-      if (!digits) return String(value || "").trim();
-      const agencyLabel = `Agencia ${digits}`;
-      const record = findAgencyRecord(agencyLabel);
-      const grupo = record?.grupo || "Sin grupo";
-      const compactGroup = grupo.replace(/Grupo\s*/i, 'G-');
-      return `${agencyLabel}, ${compactGroup}`;
-    }
-
-    function getGroupsForAgencyView() {
-      if (usuarioActual?.rol === "encargado" && usuarioActual?.grupo) {
-        return [usuarioActual.grupo];
-      }
-      return Object.keys(GRUPOS_OPERACIONALES);
-    }
-
-    function getAgenciesForAgencyView(selectedGroup = "") {
-      if (usuarioActual?.rol === "encargado" && usuarioActual?.grupo) {
-        return (AGENCIAS_POR_GRUPO[usuarioActual.grupo] || []).slice();
-      }
-      if (selectedGroup) {
-        return (AGENCIAS_POR_GRUPO[selectedGroup] || []).slice();
-      }
-      return TODAS_LAS_AGENCIAS.slice();
-    }
-
-    let agencyViewState = {
-      selectedGroup: "",
-      search: ""
-    };
-
-    function openAgencyDetail(agencyLabel) {
-      const record = findAgencyRecord(agencyLabel);
-      if (!record) {
-        showInAppNotification("Agencia no encontrada", "No se pudo cargar la información de esa agencia.");
-        return;
-      }
-
-      const compactGroup = (record.grupo || "Sin grupo").replace(/Grupo\s*/i, 'G-');
-      const hasCoords = typeof record.lat === 'number' && typeof record.lng === 'number';
-      const mapsUrl = hasCoords ? buildGoogleMapsSearchUrl(record) : '';
-      const directionsUrl = hasCoords ? buildGoogleMapsDirectionsUrl(record) : '';
-
-      detailBody.innerHTML = `
-        <div class="detail-hero">
-          <div class="detail-hero-top">
-            <div>
-              <span class="detail-eyebrow">Consulta de agencia</span>
-              <h4>${formatAgencyDisplay(agencyLabel)}</h4>
-              <p>${record.direccion || agencyLabel}</p>
-            </div>
-            <span class="agency-card-chip">${compactGroup}</span>
-          </div>
-
-          <div class="detail-kpi-grid">
-            <div class="detail-kpi">
-              <span>Agencia</span>
-              <strong>${record.numero || 'No registrada'}</strong>
-            </div>
-            <div class="detail-kpi">
-              <span>Grupo</span>
-              <strong>${record.grupo || 'No registrado'}</strong>
-            </div>
-            <div class="detail-kpi">
-              <span>Encargado</span>
-              <strong>${record.encargado || 'No registrado'}</strong>
-            </div>
-            <div class="detail-kpi">
-              <span>Coordenadas</span>
-              <strong>${hasCoords ? `${record.lat}, ${record.lng}` : 'Pendientes'}</strong>
-            </div>
-          </div>
-
-          <div class="detail-section agency-detail-stack">
-            <h4>Información de ubicación</h4>
-            <div class="detail-item">
-              <span>Dirección</span>
-              <strong>${record.direccion || 'No registrada'}</strong>
-            </div>
-            <div class="detail-compact-grid">
-              <div class="detail-item">
-                <span>Latitud</span>
-                <strong>${record.lat ?? 'No registrada'}</strong>
-              </div>
-              <div class="detail-item">
-                <span>Longitud</span>
-                <strong>${record.lng ?? 'No registrada'}</strong>
-              </div>
-            </div>
-            <div class="detail-inline-actions">
-              ${hasCoords ? `<a class="btn-map-strong secondary" href="${directionsUrl}" target="_blank" rel="noopener">📍 Ver ubicación</a>` : `<button type="button" class="btn-map-strong" disabled>📍 Sin coordenadas</button>`}
-              ${hasCoords ? `<a class="btn-map-strong" href="${mapsUrl}" target="_blank" rel="noopener">🗺️ Abrir mapa</a>` : ``}
-            </div>
-          </div>
-        </div>
-      `;
-
-      detailBackdrop.classList.add("open");
-      detailBackdrop.setAttribute("aria-hidden", "false");
-    }
-
-    function renderAgenciasView() {
-      if (!agencySectionContent) return;
-      const groups = getGroupsForAgencyView();
-      const search = String(agencyViewState.search || '').trim().toLowerCase();
-      const selectedGroup = agencyViewState.selectedGroup || '';
-      const onlyEncargadoGroup = usuarioActual?.rol === 'encargado' && usuarioActual?.grupo;
-
-      if (agencySearchInput) {
-        agencySearchInput.placeholder = selectedGroup ? 'Buscar agencia por número o grupo' : (usuarioActual?.rol === 'tecnico' ? 'Buscar grupo o agencia' : 'Buscar agencia');
-        agencySearchInput.value = agencyViewState.search || '';
-      }
-
-      const groupsMarkup = !selectedGroup && usuarioActual?.rol === 'tecnico'
-        ? `<div class="group-card-list">${groups.filter(grupo => {
-            const cfg = GRUPOS_OPERACIONALES[grupo] || {};
-            const haystack = [grupo, cfg.encargado || '', ...(AGENCIAS_POR_GRUPO[grupo] || [])].join(' ').toLowerCase();
-            return !search || haystack.includes(search);
-          }).map(grupo => {
-            const cfg = GRUPOS_OPERACIONALES[grupo] || {};
-            const total = (cfg.agencias || []).length;
-            return `
-              <button type="button" class="group-card" data-group-select="${grupo}">
-                <div class="group-card-top">
-                  <div>
-                    <div class="group-card-title">${grupo}</div>
-                    <div class="group-card-sub">Encargado: ${cfg.encargado || 'No registrado'}</div>
-                  </div>
-                  <span class="group-card-count">${total} agencias</span>
-                </div>
-                <div class="group-card-meta">
-                  <span class="group-mini-chip">👤 ${cfg.encargado || 'No registrado'}</span>
-                  <span class="group-mini-chip">📍 Consulta rápida</span>
-                </div>
-              </button>
-            `;
-          }).join('')}</div>`
-        : '';
-
-      const agencyList = getAgenciesForAgencyView(selectedGroup).filter(label => {
-        const record = findAgencyRecord(label);
-        const haystack = [label, record?.grupo || '', record?.direccion || '', record?.encargado || ''].join(' ').toLowerCase();
-        return !search || haystack.includes(search);
-      });
-
-      const showAgencyList = onlyEncargadoGroup || !!selectedGroup;
-      const selectedGroupTitle = onlyEncargadoGroup ? (usuarioActual?.grupo || 'Tu grupo') : selectedGroup;
-
-      const agenciesMarkup = showAgencyList
-        ? `
-          <div class="agency-section-head">
-            <div>
-              <div class="group-card-title">${onlyEncargadoGroup ? 'Agencias de tu grupo' : `Agencias de ${selectedGroupTitle}`}</div>
-              <div class="group-card-sub">Toca una tarjeta para ver información y abrir la ubicación automáticamente.</div>
-            </div>
-            ${usuarioActual?.rol === 'tecnico' && selectedGroup ? `<button type="button" class="agency-back-btn" id="btnBackToGroups">← Volver a grupos</button>` : ''}
-          </div>
-          <div class="agency-card-list">
-            ${agencyList.length ? agencyList.map(label => {
-              const record = findAgencyRecord(label);
-              const compactGroup = (record?.grupo || 'Sin grupo').replace(/Grupo\s*/i, 'G-');
-              return `
-                <button type="button" class="agency-card" data-agency-open="${label}">
-                  <div class="agency-card-top">
-                    <div>
-                      <div class="agency-card-title">${formatAgencyDisplay(label)}</div>
-                      <div class="agency-card-sub">${record?.direccion || label}</div>
-                    </div>
-                    <span class="agency-card-chip">${compactGroup}</span>
-                  </div>
-                  <div class="agency-card-meta">
-                    <span class="agency-mini-chip">👤 ${record?.encargado || 'No registrado'}</span>
-                    <span class="agency-mini-chip">📍 ${record?.lat != null && record?.lng != null ? 'Ubicación lista' : 'Sin coordenadas'}</span>
-                  </div>
-                </button>
-              `;
-            }).join('') : `<div class="empty-state">No hay agencias que coincidan con la búsqueda actual.</div>`}
-          </div>
-        `
-        : '';
-
-      agencySectionContent.innerHTML = groupsMarkup || agenciesMarkup || `<div class="empty-state">No hay grupos ni agencias disponibles para este usuario.</div>`;
-
-      agencySectionContent.querySelectorAll('[data-group-select]').forEach(button => {
-        button.addEventListener('click', () => {
-          agencyViewState.selectedGroup = button.dataset.groupSelect || '';
-          renderAgenciasView();
-        });
-      });
-
-      agencySectionContent.querySelectorAll('[data-agency-open]').forEach(button => {
-        button.addEventListener('click', () => openAgencyDetail(button.dataset.agencyOpen || ''));
-      });
-
-      const backBtn = document.getElementById('btnBackToGroups');
-      if (backBtn) {
-        backBtn.addEventListener('click', () => {
-          agencyViewState.selectedGroup = '';
-          renderAgenciasView();
-        });
       }
     }
 
@@ -4819,6 +4500,249 @@ function startReportAutoRefresh() {
       throw lastError;
     }
 
+
+    function getVisibleAgencyGroups() {
+      const allGroups = Object.entries(GRUPOS_OPERACIONALES).map(([nombre, config]) => ({
+        nombre,
+        encargado: config?.encargado || 'Sin encargado',
+        agencias: (config?.agencias || []).map((numero) => {
+          const digits = String(numero).padStart(4, '0');
+          return {
+            numero: digits,
+            agencyLabel: `Agencia ${digits}`,
+            grupo: nombre,
+            encargado: config?.encargado || '',
+            direccion: AGENCIAS_OPERACIONALES[numero]?.direccion || `Agencia ${digits} · ${nombre}`,
+            lat: typeof AGENCIAS_OPERACIONALES[numero]?.lat === 'number' ? AGENCIAS_OPERACIONALES[numero].lat : null,
+            lng: typeof AGENCIAS_OPERACIONALES[numero]?.lng === 'number' ? AGENCIAS_OPERACIONALES[numero].lng : null
+          };
+        })
+      }));
+      if (usuarioActual?.rol === 'encargado' && usuarioActual?.grupo) {
+        return allGroups.filter(item => item.nombre === usuarioActual.grupo);
+      }
+      return allGroups;
+    }
+
+    function getVisibleAgenciesForGroup(groupName) {
+      const groups = getVisibleAgencyGroups();
+      const target = groups.find(item => item.nombre === groupName);
+      return target?.agencias || [];
+    }
+
+    function getAgencyByLabel(label) {
+      const normalized = normalizeAgencyLabel(label);
+      const all = getVisibleAgencyGroups().flatMap(item => item.agencias);
+      return all.find(item => item.agencyLabel === normalized) || null;
+    }
+
+    function getAgencyEquipmentList(agency) {
+      if (!agency) return [];
+      const digits = String(agency.numero || getAgencyDigits(agency.agencyLabel)).padStart(4, '0');
+      const statuses = ['activo', 'activo', 'activo', 'revision', 'danado'];
+      return MOBILE_EQUIPMENT_BASE.map((item, index) => ({
+        ...item,
+        id: `${digits}-${index + 1}`,
+        serial: `${item.serial}-${digits}-${index + 1}`,
+        estado: statuses[index] || 'activo'
+      }));
+    }
+
+    function getAgencyHistoryItems(agency) {
+      if (!agency) return [];
+      const label = normalizeAgencyLabel(agency.agencyLabel);
+      return (latestReports || [])
+        .filter(report => normalizeAgencyLabel(report?.agencia) === label)
+        .sort((a, b) => new Date(b?.fecha_reporte || b?.created_at || 0) - new Date(a?.fecha_reporte || a?.created_at || 0));
+    }
+
+    function escapeAttr(value) {
+      return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setAgencyView(mode, selectedGroup = null, selectedAgency = null) {
+      agencyViewState = { mode, selectedGroup, selectedAgency };
+      renderAgencySection();
+    }
+
+    function startReportFromAgency(agencyLabel) {
+      const label = normalizeAgencyLabel(agencyLabel);
+      if (agencia) agencia.value = label;
+      switchTab('create');
+      showInAppNotification('Agencia seleccionada', `El nuevo reporte se preparó para ${label}.`, 'Completa la categoría y guarda.');
+      try { agencia.scrollIntoView({ behavior: 'smooth', block: 'center' }); agencia.focus(); } catch (_) {}
+    }
+
+    function buildAgencyHomeView(agency) {
+      if (!agency) return '<div class="agency-empty">No se encontró la agencia seleccionada.</div>';
+      const mapsUrl = buildGoogleMapsSearchUrl({ agencyLabel: agency.agencyLabel, lat: agency.lat, lng: agency.lng, direccion: agency.direccion });
+      const equipmentCount = getAgencyEquipmentList(agency).length;
+      const historyCount = getAgencyHistoryItems(agency).length;
+      return `
+        <div class="agency-back-row">
+          <button type="button" class="agency-back-btn" data-agency-back="agencies">← Volver a agencias</button>
+          ${usuarioActual?.rol === 'tecnico' ? '<button type="button" class="agency-back-btn" data-agency-back="groups">Ver grupos</button>' : ''}
+        </div>
+        <div class="agency-hero-card">
+          <h4 class="agency-hero-title">${agency.agencyLabel}, ${agency.grupo.replace('Grupo ','G-')}</h4>
+          <p class="agency-hero-text">${agency.direccion || 'Ubicación registrada'}<br>Encargado: ${agency.encargado || 'Sin encargado'}</p>
+          <div class="agency-meta-inline">
+            <span class="mini-pill">📍 ${agency.lat ?? 'N/D'}, ${agency.lng ?? 'N/D'}</span>
+            <span class="mini-pill">🏪 ${agency.grupo}</span>
+            <span class="mini-pill">🧰 ${equipmentCount} equipos</span>
+            <span class="mini-pill">🧾 ${historyCount} movimientos</span>
+          </div>
+          <div class="agency-actions-stack">
+            <button type="button" class="agency-nav-btn primary" data-agency-action="report" data-agency="${escapeAttr(agency.agencyLabel)}">➕ Reportar avería aquí</button>
+            <button type="button" class="agency-nav-btn" data-agency-action="equipos" data-agency="${escapeAttr(agency.agencyLabel)}">🧰 Equipos de la agencia</button>
+            <button type="button" class="agency-nav-btn" data-agency-action="historial" data-agency="${escapeAttr(agency.agencyLabel)}">🧾 Historial de agencia</button>
+            <a class="btn-map-strong secondary" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">📍 Ver ubicación</a>
+          </div>
+        </div>`;
+    }
+
+    function buildAgencyEquipmentView(agency) {
+      const items = getAgencyEquipmentList(agency);
+      const q = (agencySearchInput?.value || '').trim().toLowerCase();
+      const filtered = items.filter(item => !q || `${item.producto} ${item.serial} ${item.marca} ${item.modelo} ${item.categoria}`.toLowerCase().includes(q));
+      const total = items.length;
+      const activos = items.filter(item => item.estado === 'activo').length;
+      const revision = items.filter(item => item.estado === 'revision').length;
+      const danados = items.filter(item => item.estado === 'danado').length;
+      return `
+        <div class="agency-back-row">
+          <button type="button" class="agency-back-btn" data-agency-back="agency-home">← Volver a la agencia</button>
+        </div>
+        <div class="agency-block-card">
+          <h4 class="agency-hero-title">Equipos de ${agency.agencyLabel}</h4>
+          <p class="agency-hero-text">Consulta rápida para técnicos y encargados. Esta vista está organizada por bloques para no recargar la pestaña.</p>
+          <div class="agency-kpis">
+            <div class="agency-kpi"><span>Total</span><strong>${total}</strong></div>
+            <div class="agency-kpi"><span>Activos</span><strong>${activos}</strong></div>
+            <div class="agency-kpi"><span>En revisión</span><strong>${revision}</strong></div>
+            <div class="agency-kpi"><span>Dañados</span><strong>${danados}</strong></div>
+          </div>
+        </div>
+        <div class="equipment-grid">
+          ${filtered.length ? filtered.map(item => `
+            <div class="equipment-card">
+              <div class="equipment-head">
+                <div>
+                  <div class="equipment-title">${item.icon} ${item.producto}</div>
+                  <div class="equipment-sub">${item.marca} · ${item.modelo}</div>
+                </div>
+                <span class="equipment-status ${item.estado}">${item.estado === 'activo' ? 'Activo' : item.estado === 'revision' ? 'En revisión' : 'Dañado'}</span>
+              </div>
+              <div class="equipment-meta">
+                <span class="mini-pill">🔖 ${item.serial}</span>
+                <span class="mini-pill">📍 ${item.ubicacion}</span>
+                <span class="mini-pill">🏷 ${item.categoria}</span>
+              </div>
+            </div>`).join('') : '<div class="agency-empty">No hay equipos que coincidan con la búsqueda.</div>'}
+        </div>`;
+    }
+
+    function buildAgencyHistoryView(agency) {
+      const items = getAgencyHistoryItems(agency);
+      return `
+        <div class="agency-back-row">
+          <button type="button" class="agency-back-btn" data-agency-back="agency-home">← Volver a la agencia</button>
+        </div>
+        <div class="agency-block-card">
+          <h4 class="agency-hero-title">Historial de ${agency.agencyLabel}</h4>
+          <p class="agency-hero-text">Revisa las averías y trabajos relacionados con esta agencia sin mezclarlo con otras vistas.</p>
+        </div>
+        <div class="history-grid">
+          ${items.length ? items.map(item => `
+            <div class="history-card">
+              <div class="history-title">${item.code || 'Sin código'} · ${item.categoria || 'Sin categoría'}</div>
+              <div class="history-meta-inline">
+                <span class="mini-pill">${item.tipo_reporte || 'Reporte'}</span>
+                <span class="mini-pill">${item.estado || 'Sin estado'}</span>
+                <span class="mini-pill">${formatDate(item.fecha_reporte || item.created_at)}</span>
+              </div>
+              <p>${item.descripcion || item.comentario || 'Sin comentario adicional.'}</p>
+            </div>`).join('') : '<div class="agency-empty">Todavía no hay historial registrado para esta agencia.</div>'}
+        </div>`;
+    }
+
+    function renderAgencySection() {
+      if (!agencyViewContainer) return;
+      const mode = agencyViewState.mode || 'root';
+      const query = (agencySearchInput?.value || '').trim().toLowerCase();
+      const visibleGroups = getVisibleAgencyGroups();
+
+      if (mode === 'groups' || (mode === 'root' && usuarioActual?.rol === 'tecnico')) {
+        const groups = visibleGroups.filter(group => !query || `${group.nombre} ${group.encargado} ${group.agencias.map(a => a.numero).join(' ')}`.toLowerCase().includes(query));
+        agencyViewContainer.innerHTML = groups.length ? `<div class="group-grid">${groups.map(group => `
+          <div class="group-card" data-group-name="${escapeAttr(group.nombre)}">
+            <div class="group-top">
+              <div>
+                <div class="group-name">${group.nombre}</div>
+                <div class="group-sub">Encargado: ${group.encargado}</div>
+              </div>
+              <span class="mini-pill">🏪 ${group.agencias.length} agencias</span>
+            </div>
+            <div class="group-meta">
+              <span class="mini-pill">📍 Consulta por grupo</span>
+              <span class="mini-pill">🔎 Toca para ver agencias</span>
+            </div>
+          </div>`).join('')}</div>` : '<div class="agency-empty">No hay grupos que coincidan con la búsqueda.</div>';
+      } else if (mode === 'agencies' || (mode === 'root' && usuarioActual?.rol === 'encargado')) {
+        const groupName = agencyViewState.selectedGroup || visibleGroups[0]?.nombre || usuarioActual?.grupo || '';
+        const agencies = getVisibleAgenciesForGroup(groupName).filter(item => !query || `${item.agencyLabel} ${item.numero} ${item.grupo}`.toLowerCase().includes(query));
+        agencyViewContainer.innerHTML = `
+          <div class="agency-back-row">
+            ${usuarioActual?.rol === 'tecnico' ? '<button type="button" class="agency-back-btn" data-agency-back="groups">← Volver a grupos</button>' : ''}
+          </div>
+          ${agencies.length ? `<div class="agency-grid">${agencies.map(agency => `
+            <div class="agency-card" data-agency-name="${escapeAttr(agency.agencyLabel)}">
+              <div class="agency-top">
+                <div>
+                  <div class="agency-name">${agency.agencyLabel}, ${agency.grupo.replace('Grupo ','G-')}</div>
+                  <div class="agency-sub">${agency.direccion}</div>
+                </div>
+                <span class="mini-pill">📍 ${agency.lat ?? 'N/D'}</span>
+              </div>
+              <div class="agency-meta-inline">
+                <span class="mini-pill">👤 ${agency.encargado}</span>
+                <span class="mini-pill">🧰 ${getAgencyEquipmentList(agency).length} equipos</span>
+              </div>
+            </div>`).join('')}</div>` : '<div class="agency-empty">No hay agencias que coincidan con la búsqueda.</div>'}`;
+      } else if (mode === 'agency-home') {
+        agencyViewContainer.innerHTML = buildAgencyHomeView(agencyViewState.selectedAgency);
+      } else if (mode === 'agency-equipment') {
+        agencyViewContainer.innerHTML = buildAgencyEquipmentView(agencyViewState.selectedAgency);
+      } else if (mode === 'agency-history') {
+        agencyViewContainer.innerHTML = buildAgencyHistoryView(agencyViewState.selectedAgency);
+      }
+
+      agencyViewContainer.querySelectorAll('[data-group-name]').forEach(card => {
+        card.addEventListener('click', () => setAgencyView('agencies', card.dataset.groupName, null));
+      });
+      agencyViewContainer.querySelectorAll('[data-agency-name]').forEach(card => {
+        card.addEventListener('click', () => setAgencyView('agency-home', agencyViewState.selectedGroup, getAgencyByLabel(card.dataset.agencyName)));
+      });
+      agencyViewContainer.querySelectorAll('[data-agency-back]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.agencyBack;
+          if (target === 'groups') setAgencyView('groups', null, null);
+          else if (target === 'agencies') setAgencyView('agencies', agencyViewState.selectedGroup || usuarioActual?.grupo || visibleGroups[0]?.nombre || '', null);
+          else setAgencyView('agency-home', agencyViewState.selectedGroup, agencyViewState.selectedAgency);
+        });
+      });
+      agencyViewContainer.querySelectorAll('[data-agency-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.agencyAction;
+          const agency = getAgencyByLabel(btn.dataset.agency);
+          if (!agency) return;
+          if (action === 'report') startReportFromAgency(agency.agencyLabel);
+          if (action === 'equipos') setAgencyView('agency-equipment', agency.grupo, agency);
+          if (action === 'historial') setAgencyView('agency-history', agency.grupo, agency);
+        });
+      });
+    }
+
     async function loadReports(isBackgroundRefresh = false) {
       if (!isBackgroundRefresh) {
         reportList.innerHTML = `<div class="empty-state">Cargando reportes...</div>`;
@@ -4853,6 +4777,8 @@ function startReportAutoRefresh() {
               No hay reportes registrados todavía.
             </div>
           `;
+          latestReports = [];
+          renderAgencySection();
           return;
         }
 
@@ -4873,8 +4799,10 @@ function startReportAutoRefresh() {
           }
         }
 
+        latestReports = reportsFiltrados.slice();
         processStatusNotifications(reportsFiltrados);
         updateReportSummaryCounts(reportsFiltrados);
+        renderAgencySection();
 
         if (!reportsFiltrados.length) {
           reportList.innerHTML = `
@@ -4979,6 +4907,7 @@ if (techBtn) {
         applyReportCardFilter(cardElements);
       } catch (err) {
         console.error("Error cargando reportes:", err);
+        renderAgencySection();
         const isNetworkError = String(err?.message || "").toLowerCase().includes("load failed") || String(err?.message || "").toLowerCase().includes("failed to fetch");
         if (!isBackgroundRefresh) {
           reportList.innerHTML = `
@@ -5008,6 +4937,9 @@ if (techBtn) {
         const cards = Array.from(reportList.querySelectorAll(".report-card"));
         applyReportCardFilter(cards);
       });
+    }
+    if (agencySearchInput) {
+      agencySearchInput.addEventListener("input", () => renderAgencySection());
     }
 
     renderTypeCards();
@@ -5075,63 +5007,46 @@ function iniciarApp() {
 
   if (usuarioActual?.rol === "tecnico") {
     if (roleBadge) roleBadge.textContent = "Rol: Técnico";
-    appTitle.textContent = "Reportes (Averías) Asignados";
-    appSubtitle.textContent = "Consulta tus averías asignadas, cambia el estado y también navega por grupos y agencias.";
+    appTitle.textContent = "Operaciones y consultas móviles";
+    appSubtitle.textContent = "Consulta grupos, agencias, equipos, historial y tus averías asignadas desde una sola app.";
     const reportsSectionTitle = document.getElementById("reportsSectionTitle");
     const reportsSectionSubtitle = document.getElementById("reportsSectionSubtitle");
-    const agenciesSectionTitle = document.getElementById("agenciesSectionTitle");
-    const agenciesSectionSubtitle = document.getElementById("agenciesSectionSubtitle");
     if (reportsSectionTitle) reportsSectionTitle.textContent = "Averías asignadas";
     if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Gestiona las averías asignadas a tu usuario técnico y actualiza su estado.";
-    if (agenciesSectionTitle) agenciesSectionTitle.textContent = "Grupos y agencias";
-    if (agenciesSectionSubtitle) agenciesSectionSubtitle.textContent = "Selecciona un grupo para consultar sus agencias y abrir su ubicación.";
-
     document.getElementById("tabCreate").style.display = "none";
-    document.getElementById("tabReports").style.display = "block";
-    document.getElementById("tabAgencies").style.display = "block";
-    agencyViewState.selectedGroup = "";
+    tabAgencies.style.display = "block";
+    agencyViewState = { mode: 'groups', selectedGroup: null, selectedAgency: null };
     switchTab(readLastTab() === "agencies" ? "agencies" : "reports");
   } else if (usuarioActual?.rol === "encargado") {
     if (roleBadge) roleBadge.textContent = `Rol: Encargado · ${usuarioActual?.grupo || "Sin grupo"}`;
     appTitle.textContent = "LOTEKA Operaciones Móvil";
-    appSubtitle.textContent = "Crea reportes, consulta el estado de tus solicitudes y revisa las agencias de tu grupo.";
+    appSubtitle.textContent = "Crea reportes y consulta las agencias, equipos e historial operativo de tu grupo desde móvil.";
     const reportsSectionTitle = document.getElementById("reportsSectionTitle");
     const reportsSectionSubtitle = document.getElementById("reportsSectionSubtitle");
-    const agenciesSectionTitle = document.getElementById("agenciesSectionTitle");
-    const agenciesSectionSubtitle = document.getElementById("agenciesSectionSubtitle");
     if (reportsSectionTitle) reportsSectionTitle.textContent = "Mis reportes";
     if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Consulta el estado de los reportes que has creado, revisa su detalle y da seguimiento desde tu grupo.";
-    if (agenciesSectionTitle) agenciesSectionTitle.textContent = "Agencias";
-    if (agenciesSectionSubtitle) agenciesSectionSubtitle.textContent = "Consulta las agencias de tu grupo y abre su ubicación cuando la necesites.";
-
     document.getElementById("tabCreate").style.display = "block";
-    document.getElementById("tabReports").style.display = "block";
     document.getElementById("tabAgencies").style.display = "block";
-    agencyViewState.selectedGroup = usuarioActual?.grupo || "";
+    tabAgencies.style.display = "block";
+    agencyViewState = { mode: 'agencies', selectedGroup: usuarioActual?.grupo || 'Grupo 44', selectedAgency: null };
     switchTab(readLastTab() || "create");
   } else {
     if (roleBadge) roleBadge.textContent = "Rol: Administrador";
     appTitle.textContent = "LOTEKA Operaciones Móvil";
-    appSubtitle.textContent = "Crear reportes, revisar estados y consultar grupos y agencias desde la app.";
+    appSubtitle.textContent = "Crear reportes, consultar agencias y revisar historial operativo desde una interfaz corporativa.";
     const reportsSectionTitle = document.getElementById("reportsSectionTitle");
     const reportsSectionSubtitle = document.getElementById("reportsSectionSubtitle");
-    const agenciesSectionTitle = document.getElementById("agenciesSectionTitle");
-    const agenciesSectionSubtitle = document.getElementById("agenciesSectionSubtitle");
     if (reportsSectionTitle) reportsSectionTitle.textContent = "Todos los reportes";
     if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Visualiza todos los reportes registrados y revisa su estado general desde la app.";
-    if (agenciesSectionTitle) agenciesSectionTitle.textContent = "Agencias";
-    if (agenciesSectionSubtitle) agenciesSectionSubtitle.textContent = "Consulta todos los grupos y todas las agencias registradas.";
-
     document.getElementById("tabCreate").style.display = "block";
-    document.getElementById("tabReports").style.display = "block";
-    document.getElementById("tabAgencies").style.display = "block";
-    agencyViewState.selectedGroup = "";
+    tabAgencies.style.display = "block";
+    agencyViewState = { mode: 'groups', selectedGroup: null, selectedAgency: null };
     switchTab(readLastTab() || "create");
   }
 
   configurarSelectorAgencias();
-  renderAgenciasView();
-loadStoredStatusCache();
+  renderAgencySection();
+  loadStoredStatusCache();
 
 initializeMobileRealtime(); // 🔥 AQUÍ
 
