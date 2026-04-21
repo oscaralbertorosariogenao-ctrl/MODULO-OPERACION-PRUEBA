@@ -3275,15 +3275,20 @@ async function requestBrowserAlerts() {
   playNotificationSound();
 }
     
-   function playNotificationSound() {
+ function playNotificationSound() {
   try {
     const audio = document.getElementById("notificationSound");
     if (!audio) return;
 
+    audio.pause();
     audio.currentTime = 0;
-    audio.play().catch(() => {});
+    audio.play().then(() => {
+      console.log("sonido reproducido");
+    }).catch((error) => {
+      console.error("error reproduciendo sonido:", error);
+    });
   } catch (error) {
-    console.warn("No se pudo reproducir sonido:", error);
+    console.error("no se pudo reproducir sonido:", error);
   }
 }
 
@@ -4935,7 +4940,7 @@ async function guardarGestionTecnica(report) {
     }
   </script>
 <audio id="notificationSound" preload="auto">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
 </audio>
 </body>
 </html>
