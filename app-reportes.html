@@ -3002,6 +3002,8 @@ let mobileRealtimeConnected = false;
     let notificationsInitialized = false;
     let lastKnownStatuses = {};
     let audioContextRef = null;
+    let lastRealtimeNotificationKey = "";
+    let lastRealtimeNotificationAt = 0;
     const appLoader = document.getElementById("appLoader");
     const appLoaderTitle = document.getElementById("appLoaderTitle");
     const appLoaderText = document.getElementById("appLoaderText");
@@ -3105,6 +3107,27 @@ let mobileRealtimeConnected = false;
         .normalize("NFD")
         .replace(/[̀-ͯ]/g, "")
         .replace(/\s+/g, " ");
+    }
+
+    function normalizeUserKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9_@.-]/g, "");
+    }
+
+    function shouldNotifyRealtimeOnce(key, windowMs = 4000) {
+      const now = Date.now();
+      if (!key) return false;
+      if (lastRealtimeNotificationKey === key && now - lastRealtimeNotificationAt < windowMs) {
+        return false;
+      }
+      lastRealtimeNotificationKey = key;
+      lastRealtimeNotificationAt = now;
+      return true;
     }
 
     function getUserStatusStoreKey() {
@@ -3278,20 +3301,49 @@ async function requestBrowserAlerts() {
   playNotificationSound();
 }
 
+function ensureAudioContext() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!audioContextRef) audioContextRef = new AudioContextClass();
+    if (audioContextRef.state === "suspended") {
+      audioContextRef.resume().catch(() => {});
+    }
+    return audioContextRef;
+  } catch (error) {
+    console.warn("No se pudo preparar el contexto de audio:", error);
+    return null;
+  }
+}
+
 function playNotificationSound() {
   try {
+    const ctx = ensureAudioContext();
+    if (ctx) {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(920, now);
+      osc.frequency.linearRampToValueAtTime(700, now + 0.18);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.56);
+      return;
+    }
+
     const audio = document.getElementById("notificationSound");
     if (!audio) return;
-
     audio.muted = false;
     audio.volume = 1;
     audio.currentTime = 0;
-
     const p = audio.play();
-    if (p && typeof p.then === "function") {
-      p.then(() => {
-        console.log("sonido reproducido");
-      }).catch((error) => {
+    if (p && typeof p.catch === "function") {
+      p.catch((error) => {
         console.warn("No se pudo reproducir el sonido:", error);
       });
     }
@@ -3299,12 +3351,22 @@ function playNotificationSound() {
     console.warn("No se pudo reproducir el sonido:", error);
   }
 }
+
 function unlockNotificationSound() {
+  try {
+    ensureAudioContext();
+  } catch (_) {}
+
   const audio = document.getElementById("notificationSound");
   if (!audio) return;
-
   audio.muted = false;
   audio.volume = 1;
+  try {
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch(() => {});
+  } catch (_) {}
 }
 
 function testAudioNow() {
@@ -3392,98 +3454,113 @@ function showSystemNotification(title, body) {
     function processStatusNotifications(reports) {
       if (!usuarioActual || !["encargado", "tecnico"].includes(usuarioActual.rol)) return;
       const currentMap = {};
-      const enabled = localStorage.getItem("loteka_alerts_enabled") === "true";
       (reports || []).forEach(report => {
         const reportId = String(report?.id || report?.code || "");
         if (!reportId) return;
-        const currentStatus = getStatusKeyForNotifications(report?.estado);
-        const currentAssignee = String(report?.asignado_a || "").trim().toLowerCase();
         currentMap[reportId] = {
-          status: currentStatus,
-          assignedTo: currentAssignee
+          status: getStatusKeyForNotifications(report?.estado),
+          assignedTo: normalizeUserKey(report?.asignado_a)
         };
-        const previousEntry = lastKnownStatuses[reportId] || {};
-        const previousStatus = typeof previousEntry === "string" ? previousEntry : previousEntry.status;
-        const previousAssignedTo = typeof previousEntry === "string" ? "" : (previousEntry.assignedTo || "");
-
-        if (!notificationsInitialized || !enabled) return;
-
-        if (usuarioActual.rol === "encargado") {
-          if (previousStatus && previousStatus !== currentStatus) {
-            const payload = buildStatusChangeMessage(report, currentStatus);
-            if (payload) {
-             playNotificationSound();
-showInAppNotification(payload.title, payload.body, payload.mini);
-            }
-          }
-          return;
-        }
-
-        if (usuarioActual.rol === "tecnico") {
-          const isMineNow = currentAssignee === String(usuarioActual.user || "").trim().toLowerCase();
-          const wasMineBefore = previousAssignedTo === String(usuarioActual.user || "").trim().toLowerCase();
-          if (isMineNow && !wasMineBefore) {
-            const payload = buildStatusChangeMessage(report, currentStatus || "asignada");
-            if (payload) {
-              playNotificationSound();
-              showInAppNotification(payload.title, payload.body, payload.mini);
-              
-            }
-          }
-        }
       });
       lastKnownStatuses = currentMap;
       saveStoredStatusCache();
       notificationsInitialized = true;
     }
+
+function handleRealtimeInstantNotification(payload) {
+  try {
+    if (!usuarioActual || !["encargado", "tecnico"].includes(usuarioActual.rol)) return;
+    if (localStorage.getItem("loteka_alerts_enabled") !== "true") return;
+
+    const oldRow = payload?.old || {};
+    const newRow = payload?.new || {};
+    if (!newRow || !Object.keys(newRow).length) return;
+
+    const currentUser = normalizeUserKey(usuarioActual.user);
+    const oldStatus = getStatusKeyForNotifications(oldRow?.estado);
+    const newStatus = getStatusKeyForNotifications(newRow?.estado);
+    const oldAssignee = normalizeUserKey(oldRow?.asignado_a);
+    const newAssignee = normalizeUserKey(newRow?.asignado_a);
+
+    if (usuarioActual.rol === "encargado") {
+      const createdBy = normalizeUserKey(newRow?.creado_por || newRow?.created_by);
+      const ownerName = normalizeUserKey(newRow?.nombre_encargado);
+      const isMyReport = createdBy === currentUser || ownerName === currentUser;
+      if (!isMyReport) return;
+
+      if (newAssignee && oldAssignee !== newAssignee) {
+        const notifyKey = `assign:${newRow.id || newRow.code || "na"}:${newAssignee}`;
+        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+        const msg = buildStatusChangeMessage({ ...newRow, estado: "Asignada" }, "asignada");
+        if (msg) {
+          playNotificationSound();
+          showInAppNotification(msg.title, msg.body, msg.mini);
+        }
+        return;
+      }
+
+      if (oldStatus && newStatus && oldStatus !== newStatus) {
+        const notifyKey = `status:${newRow.id || newRow.code || "na"}:${oldStatus}:${newStatus}`;
+        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+        const msg = buildStatusChangeMessage(newRow, newStatus);
+        if (msg) {
+          playNotificationSound();
+          showInAppNotification(msg.title, msg.body, msg.mini);
+        }
+      }
+      return;
+    }
+
+    if (usuarioActual.rol === "tecnico") {
+      const assignedNowToMe = newAssignee === currentUser;
+      const wasAssignedToMe = oldAssignee === currentUser;
+
+      if (assignedNowToMe && !wasAssignedToMe) {
+        const notifyKey = `tech-assign:${newRow.id || newRow.code || "na"}:${newAssignee}`;
+        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+        const msg = buildStatusChangeMessage({ ...newRow, estado: "Asignada" }, "asignada");
+        if (msg) {
+          playNotificationSound();
+          showInAppNotification(msg.title, msg.body, msg.mini);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("No se pudo procesar la notificación realtime inmediata:", error);
+  }
+}
+
 function initializeMobileRealtime() {
   if (!supabase || mobileRealtimeChannel) return;
 
   mobileRealtimeChannel = supabase
     .channel("loteka-mobile-reportes-live")
     .on(
-  "postgres_changes",
-  {
-    event: "INSERT",
-    schema: "public",
-    table: TABLE_NAME
-  },
- async (payload) => {
-  console.log("[INSERT EVENT]", payload);
-
-  await loadReports(true);
-
-  if (typeof renderReports === "function") {
-    renderReports();
-  }
-
-  if (typeof updateReportsSummary === "function") {
-    updateReportsSummary();
-  }
-}
-)
-
-.on(
-  "postgres_changes",
-  {
-    event: "UPDATE",
-    schema: "public",
-    table: TABLE_NAME
-  },
- async (payload) => {
-  console.log("[UPDATE EVENT]", payload);
-
-  await loadReports(true);
-
-  if (typeof renderReports === "function") {
-    renderReports();
-  }
-
-  if (typeof updateReportsSummary === "function") {
-    updateReportsSummary();
-  }
-}
-)
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: TABLE_NAME
+      },
+      async (payload) => {
+        console.log("[INSERT EVENT]", payload);
+        handleRealtimeInstantNotification(payload);
+        await loadReports(true);
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: TABLE_NAME
+      },
+      async (payload) => {
+        console.log("[UPDATE EVENT]", payload);
+        handleRealtimeInstantNotification(payload);
+        await loadReports(true);
+      }
+    )
     .subscribe((status) => {
       console.log("[MOBILE REALTIME STATUS]", status);
 
@@ -3523,7 +3600,9 @@ function initializeMobileRealtime() {
       }
     });
 }
-    function startReportAutoRefresh() {
+
+function startReportAutoRefresh() {
+
       stopReportAutoRefresh();
       reportRefreshInterval = window.setInterval(() => {
         if (!usuarioActual) return;
@@ -4357,7 +4436,7 @@ function initializeMobileRealtime() {
         if (usuarioActual) {
           if (usuarioActual.rol === "tecnico") {
             reportsFiltrados = (data || []).filter(report =>
-              (report.asignado_a || "").toLowerCase().trim() === usuarioActual.user.toLowerCase().trim()
+              normalizeUserKey(report.asignado_a) === normalizeUserKey(usuarioActual.user)
             );
           } else if (usuarioActual.rol === "encargado") {
             reportsFiltrados = (data || []).filter(report =>
@@ -4439,7 +4518,7 @@ function initializeMobileRealtime() {
 
   ${
     usuarioActual?.rol === "tecnico" &&
-    (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase() &&
+    normalizeUserKey(report.asignado_a) === normalizeUserKey(usuarioActual.user) &&
     !["en proceso", "completado"].includes((report.estado || "").toLowerCase())
       ? `<button type="button" class="btn-secondary btn-start">Marcar en proceso</button>`
       : ""
@@ -4447,7 +4526,7 @@ function initializeMobileRealtime() {
 
   ${
     usuarioActual?.rol === "tecnico" &&
-    (report.asignado_a || "").toLowerCase() === usuarioActual.user.toLowerCase()
+    normalizeUserKey(report.asignado_a) === normalizeUserKey(usuarioActual.user)
       ? `<button type="button" class="btn-primary btn-tech">Gestión técnica</button>`
       : ""
   }
@@ -4643,6 +4722,11 @@ function logout() {
   try {
     stopReportAutoRefresh();
   } catch (_) {}
+  try {
+    if (mobileRealtimeChannel) supabase.removeChannel(mobileRealtimeChannel);
+  } catch (_) {}
+  mobileRealtimeChannel = null;
+  mobileRealtimeConnected = false;
   usuarioActual = null;
   notificationsInitialized = false;
   lastKnownStatuses = {};
