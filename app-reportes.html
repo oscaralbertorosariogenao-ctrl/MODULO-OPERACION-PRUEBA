@@ -2994,6 +2994,9 @@
     const btnEnableAlerts = document.getElementById("btnEnableAlerts");
     const notifyToastWrap = document.getElementById("notifyToastWrap");
 
+    let mobileRealtimeChannel = null;
+let mobileRealtimeReconnectTimer = null;
+let mobileRealtimeConnected = false;
     let usuarioActual = null;
     let reportRefreshInterval = null;
     let notificationsInitialized = false;
@@ -3433,7 +3436,65 @@ showInAppNotification(payload.title, payload.body, payload.mini);
       saveStoredStatusCache();
       notificationsInitialized = true;
     }
+function initializeMobileRealtime() {
+  if (!supabase || mobileRealtimeChannel) return;
 
+  mobileRealtimeChannel = supabase
+    .channel("loteka-mobile-reportes-live")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: TABLE_NAME
+      },
+      async (payload) => {
+        console.log("[MOBILE REALTIME EVENT]", payload);
+
+        // Cuando algo cambie en Supabase, recargamos de inmediato
+        // para que processStatusNotifications() compare el antes y después.
+        await loadReports(true);
+      }
+    )
+    .subscribe((status) => {
+      console.log("[MOBILE REALTIME STATUS]", status);
+
+      if (status === "SUBSCRIBED") {
+        mobileRealtimeConnected = true;
+        console.log("Realtime móvil activo");
+        if (mobileRealtimeReconnectTimer) {
+          clearTimeout(mobileRealtimeReconnectTimer);
+          mobileRealtimeReconnectTimer = null;
+        }
+      }
+
+      if (
+        status === "CHANNEL_ERROR" ||
+        status === "TIMED_OUT" ||
+        status === "CLOSED"
+      ) {
+        mobileRealtimeConnected = false;
+        console.warn("Realtime móvil desconectado:", status);
+
+        if (!mobileRealtimeReconnectTimer) {
+          mobileRealtimeReconnectTimer = setTimeout(() => {
+            mobileRealtimeReconnectTimer = null;
+
+            if (mobileRealtimeChannel) {
+              try {
+                supabase.removeChannel(mobileRealtimeChannel);
+              } catch (error) {
+                console.warn("No se pudo remover el canal realtime:", error);
+              }
+              mobileRealtimeChannel = null;
+            }
+
+            initializeMobileRealtime();
+          }, 3000);
+        }
+      }
+    });
+}
     function startReportAutoRefresh() {
       stopReportAutoRefresh();
       reportRefreshInterval = window.setInterval(() => {
@@ -4515,9 +4576,12 @@ function iniciarApp() {
   }
 
   configurarSelectorAgencias();
-  loadStoredStatusCache();
-  startReportAutoRefresh();
-  loadReports(true);
+loadStoredStatusCache();
+
+initializeMobileRealtime(); // 🔥 AQUÍ
+
+startReportAutoRefresh();
+loadReports(true);
   console.log("Usuario logueado:", usuarioActual);
 }
 // Auto login
