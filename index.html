@@ -934,21 +934,18 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       <button class="btn" onclick="abrirModalAgencia()">+ Crear Agencia</button>
     </div>
 
-    <div class="dashboard-cards">
+    <div class="dashboard-cards" style="grid-template-columns:minmax(220px,320px);">
       <div class="dashboard-card">
         <div class="dashboard-card-label">Total de agencias</div>
         <div class="dashboard-card-value" id="dashTotalAgencias">0</div>
-        <div class="dashboard-card-sub">Puntos de venta registrados</div>
+        <div class="dashboard-card-sub">Puntos de venta registrados en G-44</div>
       </div>
-      <div class="dashboard-card">
-        <div class="dashboard-card-label">Equipos instalados</div>
-        <div class="dashboard-card-value" id="dashEquiposAgencias">0</div>
-        <div class="dashboard-card-sub">Equipos asignados a las agencias</div>
-      </div>
-      <div class="dashboard-card">
-        <div class="dashboard-card-label">Seriales activos</div>
-        <div class="dashboard-card-value" id="dashSerialesAgencias">0</div>
-        <div class="dashboard-card-sub">Equipos con serial registrado</div>
+    </div>
+
+    <div class="filter-card" style="margin-bottom:14px;">
+      <div class="field-group">
+        <label for="agencySearchInput">Buscar Agencias</label>
+        <input id="agencySearchInput" type="text" placeholder="Ej. 1088 o Agencia 1088, G-44" oninput="renderAgencias()" />
       </div>
     </div>
 
@@ -959,8 +956,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
             <th>Agencia</th>
             <th>Grupo</th>
             <th>Encargado</th>
-            <th>Equipos</th>
-            <th>Seriales</th>
+            <th>Ubicación</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -2129,7 +2125,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <option value="Asignada">Asignada</option>
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
-</select></div><div class="field"><label for="operationTitle">Título</label><input class="input" id="operationTitle" placeholder="Ej. Cambio de printer en caja"/></div><div class="field"><label for="operationAgency">Agencia</label><select class="select" id="operationAgency"></select></div><div class="field"><label for="operationTechnician" id="labelTechnician">Técnico asignado</label><select class="select" id="operationTechnician"></select></div><div class="field"><label for="operationPriority">Prioridad</label><select class="select" id="operationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea class="textarea" id="operationDescription" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="operationTypeOptionsBtn" type="button"><span class="multi-select-value" id="operationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="operationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label>Archivos reportados (imagen o video, opcional)</label><input accept="image/*,video/*" class="input" id="operationImage" multiple="" type="file"/></div><div class="error hidden" id="createError"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button class="btn btn-primary" id="saveOperationBtn">Guardar operación</button></div></div></div>
+</select></div><div class="field"><label for="operationTitle">Título</label><input class="input" id="operationTitle" placeholder="Ej. Cambio de printer en caja"/></div><div class="field"><label for="operationAgency">Agencia</label><input class="input" id="operationAgency" list="operationAgencyOptions" placeholder="Selecciona o escribe una agencia" autocomplete="off"/><datalist id="operationAgencyOptions"></datalist></div><div class="field"><label for="operationTechnician" id="labelTechnician">Técnico asignado</label><select class="select" id="operationTechnician"></select></div><div class="field"><label for="operationPriority">Prioridad</label><select class="select" id="operationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea class="textarea" id="operationDescription" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="operationTypeOptionsBtn" type="button"><span class="multi-select-value" id="operationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="operationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label>Archivos reportados (imagen o video, opcional)</label><input accept="image/*,video/*" class="input" id="operationImage" multiple="" type="file"/></div><div class="error hidden" id="createError"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button class="btn btn-primary" id="saveOperationBtn">Guardar operación</button></div></div></div>
 <div class="ops-modal-backdrop hidden" id="detailModalBackdrop"><div class="ops-modal"><div class="modal-header"><h3>Detalle de la operación</h3><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div><div class="modal-body" id="detailContent"></div><div class="footer-actions"><button class="btn btn-primary" id="detailPrintBtn" type="button">Imprimir operación</button><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div></div></div>
 <div class="ops-modal-backdrop hidden" id="editModalBackdrop"><div class="ops-modal"><div class="modal-header"><h3>Editar operación</h3><button class="btn btn-secondary" onclick="closeEditModal()">Cerrar</button></div><div class="modal-body"><input id="editOperationId" type="hidden"/><div class="grid-2"><div class="field"><label for="editOperationType">Tipo</label><select class="select" id="editOperationType"><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select></div><div class="field"><label for="editOperationStatus">Estado</label><select class="select" id="editOperationStatus">
 <option value="Pendiente">Pendiente</option>
@@ -2294,10 +2290,44 @@ const equiposBaseAgencia = [
 ];
 
 const AGENCY_GEO_CATALOG = {
-  1088: { lat: 18.53926, lng: -69.93532, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1088 · Grupo 44' },
-  1112: { lat: 18.5417, lng: -69.94032, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1112 · Grupo 44' },
-  1130: { lat: 18.54045, lng: -69.93627, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1130 · Grupo 44' },
-  1188: { lat: 18.53521, lng: -69.93818, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1188 · Grupo 44' }
+  435: { lat: 18.5383784, lng: -69.9395547, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 0435, G-44' },
+  1000: { lat: 18.539837, lng: -69.935708, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1000, G-44' },
+  1002: { lat: 18.537551854, lng: -69.93503565, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1002, G-44' },
+  1005: { lat: 18.5299566, lng: -69.9447317, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1005, G-44' },
+  1006: { lat: 18.53366, lng: -69.94227, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1006, G-44' },
+  1009: { lat: 18.52999, lng: -69.94656, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1009, G-44' },
+  1012: { lat: 18.53146, lng: -69.94703, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1012, G-44' },
+  1014: { lat: 18.534781, lng: -69.937492, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1014, G-44' },
+  1016: { lat: 18.534701, lng: -69.936428, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1016, G-44' },
+  1078: { lat: 18.54044, lng: -69.93808, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1078, G-44' },
+  1079: { lat: 18.5327, lng: -69.93778, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1079, G-44' },
+  1081: { lat: 18.538744, lng: -69.934412, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1081, G-44' },
+  1082: { lat: 18.54013, lng: -69.9388, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1082, G-44' },
+  1083: { lat: 18.53792994, lng: -69.9345332, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1083, G-44' },
+  1084: { lat: 18.5332, lng: -69.93671, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1084, G-44' },
+  1085: { lat: 18.5367476, lng: -69.9318985, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1085, G-44' },
+  1086: { lat: 18.533562, lng: -69.928482, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1086, G-44' },
+  1088: { lat: 18.53926, lng: -69.93532, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1088, G-44' },
+  1099: { lat: 18.5386, lng: -69.93836, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1099, G-44' },
+  1107: { lat: 18.53655, lng: -69.94318, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1107, G-44' },
+  1111: { lat: 18.54126, lng: -69.93838, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1111, G-44' },
+  1112: { lat: 18.5417, lng: -69.94032, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1112, G-44' },
+  1123: { lat: 18.54313, lng: -69.93831, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1123, G-44' },
+  1130: { lat: 18.54045, lng: -69.93627, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1130, G-44' },
+  1133: { lat: 18.53939, lng: -69.93793, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1133, G-44' },
+  1134: { lat: 18.53912, lng: -69.93677, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1134, G-44' },
+  1137: { lat: 18.54093, lng: -69.93948, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1137, G-44' },
+  1139: { lat: 18.54098, lng: -69.93827, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1139, G-44' },
+  1152: { lat: 18.53875, lng: -69.93989, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1152, G-44' },
+  1166: { lat: 18.53615, lng: -69.93937, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1166, G-44' },
+  1170: { lat: 18.5364788, lng: -69.9319777, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1170, G-44' },
+  1183: { lat: 18.53836, lng: -69.94222, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1183, G-44' },
+  1184: { lat: 18.53829, lng: -69.94306, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1184, G-44' },
+  1185: { lat: 18.54187, lng: -69.93909, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1185, G-44' },
+  1186: { lat: 18.54281, lng: -69.93962, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1186, G-44' },
+  1187: { lat: 18.53729, lng: -69.93586, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1187, G-44' },
+  1188: { lat: 18.53521, lng: -69.93818, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1188, G-44' },
+  1189: { lat: 18.53295, lng: -69.94509, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1189, G-44' }
 };
 
 function createAgencyRecord(numero, grupo, encargado) {
@@ -2309,65 +2339,22 @@ function createAgencyRecord(numero, grupo, encargado) {
   }));
   return {
     numero,
-    nombre: `Agencia ${numero}`,
+    nombre: `Agencia ${String(numero).padStart(4, '0')}`,
     grupo: geo.grupo || grupo,
     encargado: geo.encargado || encargado,
-    direccion: geo.direccion || `Agencia ${numero}`,
+    direccion: geo.direccion || `Agencia ${String(numero).padStart(4, '0')}, G-44`,
     latitud: typeof geo.lat === 'number' ? geo.lat : null,
     longitud: typeof geo.lng === 'number' ? geo.lng : null,
     equipos
   };
 }
 
-const AGENCIAS_GRUPO_44_COMPLETAS = [435,1012,1014,1016,1078,1079,1081,1082,1083,1084,1085,1086,1088,1099,1107,1111,1112,1123,1130,1133,1134,1137,1139,1152,1166,1170,1183,1184,1185,1186,1187,1188,1189];
+const AGENCIAS_GRUPO_44_COMPLETAS = [435,1000,1002,1005,1006,1009,1012,1014,1016,1078,1079,1081,1082,1083,1084,1085,1086,1088,1099,1107,1111,1112,1123,1130,1133,1134,1137,1139,1152,1166,1170,1183,1184,1185,1186,1187,1188,1189];
 
-const GRUPO_44_COORDENADAS_ADICIONALES = {
-  435: { lat: 18.5383784, lng: -69.9395547 },
-  1012: { lat: 18.53146, lng: -69.94703 },
-  1014: { lat: 18.534781, lng: -69.937492 },
-  1016: { lat: 18.534701, lng: -69.936428 },
-  1078: { lat: 18.54044, lng: -69.93808 },
-  1079: { lat: 18.5327, lng: -69.93778 },
-  1081: { lat: 18.538744, lng: -69.934412 },
-  1082: { lat: 18.54013, lng: -69.9388 },
-  1083: { lat: 18.53792994, lng: -69.9345332 },
-  1084: { lat: 18.5332, lng: -69.93671 },
-  1085: { lat: 18.5367476, lng: -69.9318985 },
-  1086: { lat: 18.533562, lng: -69.928482 },
-  1099: { lat: 18.5386, lng: -69.93836 },
-  1107: { lat: 18.53655, lng: -69.94318 },
-  1111: { lat: 18.54126, lng: -69.93838 },
-  1123: { lat: 18.54313, lng: -69.93831 },
-  1133: { lat: 18.53939, lng: -69.93793 },
-  1134: { lat: 18.53912, lng: -69.93677 },
-  1137: { lat: 18.54093, lng: -69.93948 },
-  1139: { lat: 18.54098, lng: -69.93827 },
-  1152: { lat: 18.53875, lng: -69.93989 },
-  1166: { lat: 18.53615, lng: -69.93937 },
-  1170: { lat: 18.5364788, lng: -69.9319777 },
-  1183: { lat: 18.53836, lng: -69.94222 },
-  1184: { lat: 18.53829, lng: -69.94306 },
-  1185: { lat: 18.54187, lng: -69.93909 },
-  1186: { lat: 18.54281, lng: -69.93962 },
-  1187: { lat: 18.53729, lng: -69.93586 },
-  1189: { lat: 18.53295, lng: -69.94509 }
-};
+const GRUPO_44_COORDENADAS_ADICIONALES = {};
 
 let agencias = [
-  createAgencyRecord(1000, 'Grupo 08', 'Carlos Paulino'),
-  createAgencyRecord(1001, 'Grupo 08', 'Carlos Paulino'),
-  createAgencyRecord(1002, 'Grupo 08', 'Carlos Paulino'),
-  createAgencyRecord(1003, 'Grupo 08', 'Carlos Paulino'),
-  createAgencyRecord(1004, 'Grupo 08', 'Carlos Paulino'),
-  createAgencyRecord(1005, 'Grupo 15', 'Andrea Torres'),
-  createAgencyRecord(1006, 'Grupo 15', 'Andrea Torres'),
-  createAgencyRecord(1007, 'Grupo 15', 'Andrea Torres'),
-  createAgencyRecord(1008, 'Grupo 15', 'Andrea Torres'),
-  createAgencyRecord(1009, 'Grupo 15', 'Andrea Torres'),
-  createAgencyRecord(1088, 'Grupo 44', 'encargado1'),
-  createAgencyRecord(1112, 'Grupo 44', 'encargado1'),
-  createAgencyRecord(1130, 'Grupo 44', 'encargado1'),
-  createAgencyRecord(1188, 'Grupo 44', 'encargado1')
+  ...AGENCIAS_GRUPO_44_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 44', 'encargado1'))
 ];
 
 AGENCIAS_GRUPO_44_COMPLETAS.forEach((numero) => {
@@ -2386,15 +2373,13 @@ agencias = agencias.map((agencia) => {
     ...agencia,
     grupo: perteneceGrupo44 ? 'Grupo 44' : (geo.grupo || agencia.grupo),
     encargado: perteneceGrupo44 ? 'encargado1' : (geo.encargado || agencia.encargado),
-    direccion: perteneceGrupo44 ? `Agencia ${String(numero).padStart(4, '0')} · Grupo 44` : (geo.direccion || agencia.direccion),
+    direccion: perteneceGrupo44 ? `Agencia ${String(numero).padStart(4, '0')}, G-44` : (geo.direccion || agencia.direccion),
     latitud: typeof geo.lat === 'number' ? geo.lat : (typeof geoGrupo44.lat === 'number' ? geoGrupo44.lat : agencia.latitud),
     longitud: typeof geo.lng === 'number' ? geo.lng : (typeof geoGrupo44.lng === 'number' ? geoGrupo44.lng : agencia.longitud)
   };
 });
 
 let grupos = [
-  {numero:'08', nombre:'Grupo 08', color:'#f0c243', encargado:'Carlos Paulino', flota:'(829) 213-7183', extension:'1108', correo:'encargado_g08@grupoortiz.com.do', custodia:[], agencias:[1000,1001,1002,1003,1004]},
-  {numero:'15', nombre:'Grupo 15', color:'#22a7d6', encargado:'Andrea Torres', flota:'(809) 747-5258', extension:'1115', correo:'encargado_g15@grupoortiz.com.do', custodia:[], agencias:[1005,1006,1007,1008,1009]},
   {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'encargado1', flota:'(829) 340-6805', extension:'1144', correo:'encargado1@grupoortiz.com.do', custodia:[], agencias:AGENCIAS_GRUPO_44_COMPLETAS.slice()}
 ];
 let editGrupoIndex = null;
@@ -2423,34 +2408,26 @@ function getAgencyCoordinates(agencia) {
 function formatAgencyOptionLabel(agencia) {
   const numero = String(agencia?.numero ?? '').padStart(4, '0');
   const grupo = agencia?.grupo ? ` · ${agencia.grupo}` : '';
-  return `Agencia ${numero}${grupo}`;
+  return `Agencia ${numero}, ${grupo ? grupo.replace('Grupo ', 'G-') : 'G-44'}`;
 }
 
 function getOperationalAgencyOptions() {
   return [...agencias]
     .sort((a, b) => Number(a.numero) - Number(b.numero))
     .map((agencia) => ({
-      value: `Agencia ${String(agencia.numero).padStart(4, '0')}`,
+      value: formatAgencyOptionLabel(agencia),
       label: formatAgencyOptionLabel(agencia)
     }));
 }
 
 function populateOperationAgencyOptions(selectedValue = '') {
-  const select = document.getElementById('operationAgency');
-  if (!select) return;
+  const input = document.getElementById('operationAgency');
+  const datalist = document.getElementById('operationAgencyOptions');
+  if (!input || !datalist) return;
   const normalizedSelected = String(selectedValue || '').trim();
   const options = getOperationalAgencyOptions();
-  select.innerHTML = '<option value="">Seleccionar agencia</option>' + options.map((option) => {
-    const selected = option.value === normalizedSelected ? ' selected' : '';
-    return `<option value="${option.value}"${selected}>${option.label}</option>`;
-  }).join('');
-  if (normalizedSelected && !options.some((option) => option.value === normalizedSelected)) {
-    const extra = document.createElement('option');
-    extra.value = normalizedSelected;
-    extra.textContent = normalizedSelected;
-    extra.selected = true;
-    select.appendChild(extra);
-  }
+  datalist.innerHTML = options.map((option) => `<option value="${option.value}"></option>`).join('');
+  input.value = normalizedSelected || '';
 }
 
 function buildAgencyMapsSearchUrl(agencia) {
@@ -4079,7 +4056,7 @@ function guardarAgencia(){
   if(editAgenciaIndex === null){
     agencias.push({
       numero: Number(numero),
-      nombre: `Agencia ${numero}`,
+      nombre: `Agencia ${String(numero).padStart(4, '0')}`,
       grupo,
       encargado,
       direccion,
@@ -4089,7 +4066,7 @@ function guardarAgencia(){
     });
   } else {
     agencias[editAgenciaIndex].numero = Number(numero);
-    agencias[editAgenciaIndex].nombre = `Agencia ${numero}`;
+    agencias[editAgenciaIndex].nombre = `Agencia ${String(numero).padStart(4, '0')}`;
     agencias[editAgenciaIndex].grupo = grupo;
     agencias[editAgenciaIndex].encargado = encargado;
     agencias[editAgenciaIndex].direccion = direccion;
@@ -4105,24 +4082,32 @@ function guardarAgencia(){
 function renderAgencias(){
   const tbody = document.getElementById('tabla-agencias');
   if(!tbody) return;
+  const query = String(document.getElementById('agencySearchInput')?.value || '').trim().toLowerCase();
+  const filtered = agencias.filter((agencia) => {
+    if(!query) return true;
+    const numero = String(agencia.numero).padStart(4, '0');
+    const label = formatAgencyOptionLabel(agencia).toLowerCase();
+    const encargado = String(agencia.encargado || '').toLowerCase();
+    const grupo = String(agencia.grupo || '').toLowerCase();
+    return numero.includes(query) || label.includes(query) || encargado.includes(query) || grupo.includes(query);
+  });
   tbody.innerHTML = '';
-  agencias.forEach((agencia, i) => {
-    const totalSeriales = agencia.equipos.filter(item => item.serial).length;
+  filtered.forEach((agencia) => {
+    const realIndex = agencias.findIndex(item => Number(item.numero) === Number(agencia.numero));
     tbody.innerHTML += `
       <tr>
-        <td><strong>${agencia.nombre}</strong></td>
-        <td>${agencia.grupo}</td>
+        <td><strong>${formatAgencyOptionLabel(agencia)}</strong></td>
+        <td>${agencia.grupo.replace('Grupo ', 'G-')}</td>
         <td>${agencia.encargado}</td>
         <td>${formatAgencyGeoText(agencia)}</td>
-        <td>${agencia.equipos.length}</td>
-        <td>${totalSeriales}</td>
-        <td class="actions"><i class="fas fa-eye" onclick="verDetalleAgencia(${i})" title="Consultar"></i><i class="fas fa-edit" onclick="editarAgencia(${i})" title="Editar"></i></td>
+        <td class="actions"><i class="fas fa-eye" onclick="verDetalleAgencia(${realIndex})" title="Consultar"></i><i class="fas fa-edit" onclick="editarAgencia(${realIndex})" title="Editar"></i></td>
       </tr>
     `;
   });
+  if(!filtered.length){
+    tbody.innerHTML = '<tr><td colspan="5" class="entry-empty">No se encontraron agencias para esa búsqueda.</td></tr>';
+  }
   document.getElementById('dashTotalAgencias').innerText = agencias.length;
-  document.getElementById('dashEquiposAgencias').innerText = agencias.reduce((acc,a)=>acc+a.equipos.length,0);
-  document.getElementById('dashSerialesAgencias').innerText = agencias.reduce((acc,a)=>acc+a.equipos.filter(e=>e.serial).length,0);
 }
 
 function verDetalleAgencia(i){
