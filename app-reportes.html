@@ -3442,20 +3442,30 @@ function initializeMobileRealtime() {
   mobileRealtimeChannel = supabase
     .channel("loteka-mobile-reportes-live")
     .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: TABLE_NAME
-      },
-      async (payload) => {
-        console.log("[MOBILE REALTIME EVENT]", payload);
+  "postgres_changes",
+  {
+    event: "INSERT",
+    schema: "public",
+    table: TABLE_NAME
+  },
+  async (payload) => {
+    console.log("[INSERT EVENT]", payload);
+    await loadReports(true);
+  }
+)
 
-        // Cuando algo cambie en Supabase, recargamos de inmediato
-        // para que processStatusNotifications() compare el antes y después.
-        await loadReports(true);
-      }
-    )
+.on(
+  "postgres_changes",
+  {
+    event: "UPDATE",
+    schema: "public",
+    table: TABLE_NAME
+  },
+  async (payload) => {
+    console.log("[UPDATE EVENT]", payload);
+    await loadReports(true);
+  }
+)
     .subscribe((status) => {
       console.log("[MOBILE REALTIME STATUS]", status);
 
