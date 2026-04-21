@@ -3265,6 +3265,7 @@
       return subscription;
     }
 async function requestBrowserAlerts() {
+      unlockNotificationSound();
   localStorage.setItem("loteka_alerts_enabled", "true");
   updateAlertsButtonUI();
   showInAppNotification(
@@ -3278,11 +3279,15 @@ function playNotificationSound() {
   try {
     const audio = document.getElementById("notificationSound");
     if (!audio) return;
+
+    audio.muted = false;
+    audio.volume = 1;
     audio.pause();
     audio.currentTime = 0;
-    const playPromise = audio.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch((error) => {
+
+    const p = audio.play();
+    if (p && typeof p.catch === "function") {
+      p.catch((error) => {
         console.warn("No se pudo reproducir el sonido:", error);
       });
     }
@@ -3290,8 +3295,23 @@ function playNotificationSound() {
     console.warn("No se pudo reproducir el sonido:", error);
   }
 }
+    function unlockNotificationSound() {
+  const audio = document.getElementById("notificationSound");
+  if (!audio) return;
 
+  audio.muted = false;
+  audio.volume = 1;
+
+  const p = audio.play();
+  if (p && typeof p.then === "function") {
+    p.then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch(() => {});
+  }
+}
 function testAudioNow() {
+  unlockNotificationSound();
   try {
     playNotificationSound();
     showInAppNotification("Prueba de sonido", "Se intentó reproducir el audio de notificación.");
@@ -4950,7 +4970,8 @@ async function guardarGestionTecnica(report) {
     }
   </script>
 <audio id="notificationSound" preload="auto">
-  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
+  <source src="/notification.mp3" type="audio/mpeg">
+</audio>
 </audio>
 </body>
 </html>
