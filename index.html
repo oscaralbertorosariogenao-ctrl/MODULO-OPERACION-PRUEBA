@@ -442,6 +442,100 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .ops-media-lightbox-caption{font-size:14px;font-weight:700;color:#365874}
 @media (max-width:780px){.ops-media-lightbox{padding:14px}.ops-media-lightbox-dialog{padding:14px;border-radius:20px}.ops-media-stage{min-height:220px}}
 
+
+
+/* ===== Operadoras empresarial ===== */
+.opx-shell{display:grid;gap:18px}
+.opx-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;padding:24px;border-radius:24px;background:linear-gradient(135deg,#1b5f95 0%,#119ecf 55%,#88cff0 100%);color:#fff;box-shadow:0 20px 45px rgba(17,158,207,.18)}
+.opx-hero h2{margin:0 0 8px;font-size:30px;color:#fff}
+.opx-hero p{margin:0;max-width:760px;color:rgba(255,255,255,.92);line-height:1.55}
+.opx-hero-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.opx-hero-tag{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);font-size:12px;font-weight:800;letter-spacing:.03em}
+.opx-hero-side{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:12px;min-width:320px}
+.opx-hero-stat{padding:16px;border-radius:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+.opx-hero-stat span{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.82);margin-bottom:6px;font-weight:800}
+.opx-hero-stat strong{font-size:26px;line-height:1;color:#fff}
+.opx-grid-4,.opx-grid-3,.opx-grid-2{display:grid;gap:16px}
+.opx-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.opx-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opx-grid-2{grid-template-columns:1.15fr .85fr}
+.opx-card,.opx-panel{background:#fff;border:1px solid #d9e7f1;border-radius:22px;box-shadow:0 12px 28px rgba(20,70,105,.07)}
+.opx-card{padding:18px;position:relative;overflow:hidden}
+.opx-card::after{content:'';position:absolute;right:-20px;top:-20px;width:82px;height:82px;border-radius:50%;background:rgba(17,158,207,.08)}
+.opx-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#6e879d;font-weight:900;margin-bottom:10px}
+.opx-card .value{font-size:34px;line-height:1;color:#204b6a;font-weight:900;margin-bottom:8px}
+.opx-card .sub{font-size:13px;color:#72869a}
+.opx-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #e8f0f6;flex-wrap:wrap}
+.opx-panel-head h3{margin:0;font-size:19px;color:#214c6a}
+.opx-panel-head p{margin:0;font-size:13px;color:#7a90a3}
+.opx-panel-body{padding:18px 20px}
+.opx-filters{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:14px}
+.opx-filters-second{display:grid;grid-template-columns:repeat(3,1fr) auto auto auto;gap:14px;margin-top:14px;align-items:end}
+.opx-field{display:flex;flex-direction:column;gap:6px}
+.opx-field label{font-size:12px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#60788d}
+.opx-field input,.opx-field select,.opx-field textarea{width:100%;padding:11px 13px;border:1px solid #cfdeea;border-radius:14px;background:#fbfdff;color:#27435c;font-size:14px;outline:none}
+.opx-field textarea{min-height:100px;resize:vertical}
+.opx-field input:focus,.opx-field select:focus,.opx-field textarea:focus{border-color:#1ab0df;box-shadow:0 0 0 3px rgba(17,158,207,.12)}
+.opx-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.opx-btn{border:none;border-radius:14px;padding:11px 15px;font-weight:800;font-size:13px;cursor:pointer;transition:.18s ease}
+.opx-btn.primary{background:linear-gradient(180deg,#22b4e2 0%,#119ecf 100%);color:#fff;box-shadow:0 10px 20px rgba(17,158,207,.18)}
+.opx-btn.primary:hover{transform:translateY(-1px)}
+.opx-btn.light{background:#eef5fb;color:#315b79}
+.opx-btn.dark{background:#2d5878;color:#fff}
+.opx-table-wrap{overflow:auto}
+.opx-table{width:100%;border-collapse:collapse;min-width:1180px}
+.opx-table th,.opx-table td{padding:14px 12px;border-bottom:1px solid #edf3f8;text-align:left;vertical-align:middle}
+.opx-table th{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#59758b;background:#f7fbfe}
+.opx-table td{font-size:14px;color:#2f4c62}
+.opx-table tbody tr:hover td{background:#fbfdff}
+.opx-badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.opx-badge.blue{background:#e7f6fd;color:#0f7ea8}.opx-badge.green{background:#e8f6ef;color:#2f7d57}.opx-badge.gold{background:#fff4d9;color:#9a6b12}.opx-badge.red{background:#ffe8e8;color:#b93737}.opx-badge.gray{background:#eef3f7;color:#60788d}
+.opx-mini-actions{display:flex;gap:8px;flex-wrap:wrap}
+.opx-icon-btn{width:36px;height:36px;border:none;border-radius:12px;background:#eef5fb;color:#29516d;cursor:pointer;font-size:14px}
+.opx-icon-btn:hover{background:#dff1fa}
+.opx-empty{padding:28px;border:1px dashed #d8e4ee;border-radius:18px;text-align:center;color:#7a8fa3;background:#fbfdff;font-weight:700}
+.opx-bars{display:grid;gap:14px}
+.opx-bar-row{display:grid;grid-template-columns:160px 1fr 62px;gap:12px;align-items:center}
+.opx-bar-label{font-size:14px;font-weight:800;color:#3b5870}
+.opx-bar-track{height:12px;background:#edf4fa;border-radius:999px;overflow:hidden}
+.opx-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2b7fc3,#69aee9)}
+.opx-rank-list{display:grid;gap:12px}
+.opx-rank-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border:1px solid #e8f0f6;border-radius:18px;background:#f9fbfd}
+.opx-rank-item strong{display:block;font-size:14px;color:#294a68}.opx-rank-item span{display:block;font-size:12px;color:#7a8d9f;margin-top:3px}
+.opx-rank-item em{font-style:normal;font-weight:900;color:#1f5f9f;font-size:24px}
+.opx-modal{position:fixed;inset:0;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:22px;z-index:9998}
+.opx-modal.open{display:flex}
+.opx-dialog{width:min(1220px,100%);max-height:92vh;background:#fff;border-radius:26px;border:1px solid #d9e7f1;box-shadow:0 28px 80px rgba(15,23,42,.25);display:flex;flex-direction:column;overflow:hidden}
+.opx-dialog.small{width:min(760px,100%)}
+.opx-modal-head{padding:20px 24px;border-bottom:1px solid #e7eef5;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff}
+.opx-modal-head h3{margin:0;font-size:23px;color:#214c6a}
+.opx-modal-head p{margin:6px 0 0;color:#6e879d;font-size:14px}
+.opx-close{border:none;background:#eef5fb;color:#29516d;width:42px;height:42px;border-radius:14px;cursor:pointer;font-size:18px}
+.opx-modal-body{padding:22px 24px;overflow:auto;display:grid;gap:18px;background:#fbfdff}
+.opx-profile{display:grid;grid-template-columns:280px 1fr;gap:18px}
+.opx-photo-card,.opx-section{background:#fff;border:1px solid #d9e7f1;border-radius:22px;padding:18px}
+.opx-photo-box{width:100%;height:330px;border-radius:18px;border:1px solid #d9e7f1;background:linear-gradient(135deg,#eff7fc,#dbeff9);display:flex;align-items:center;justify-content:center;text-align:center;color:#55758f;font-weight:800;overflow:hidden}
+.opx-photo-box img{width:100%;height:100%;object-fit:cover}
+.opx-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.opx-detail-item{background:#f8fbfe;border:1px solid #e3edf5;border-radius:16px;padding:12px}
+.opx-detail-item .k{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:900;color:#6e879d;margin-bottom:6px}
+.opx-detail-item .v{display:block;font-size:14px;color:#204b6a;line-height:1.45;font-weight:700}
+.opx-tabs{display:flex;gap:10px;flex-wrap:wrap}
+.opx-tab{border:1px solid #d7e6f1;background:#fff;color:#315b79;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:800;font-size:13px}
+.opx-tab.active{background:#1b9fd0;color:#fff;border-color:#1b9fd0;box-shadow:0 10px 20px rgba(17,158,207,.18)}
+.opx-tabpane{display:none}.opx-tabpane.active{display:grid;gap:16px}
+.opx-two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.opx-subtable{width:100%;border-collapse:collapse}
+.opx-subtable th,.opx-subtable td{padding:12px 10px;border-bottom:1px solid #edf3f8;text-align:left}
+.opx-subtable th{background:#f7fbfe;color:#5b758b;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.opx-subtable td{font-size:14px;color:#2f4c62}
+.opx-inline-info{display:flex;flex-wrap:wrap;gap:8px}
+.opx-info-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:#eef5fb;color:#315b79;font-size:12px;font-weight:900}
+.opx-modal-actions{padding:18px 24px;border-top:1px solid #e7eef5;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.opx-muted{color:#7a8d9f;font-size:13px}
+@media (max-width:1200px){.opx-grid-4,.opx-grid-3,.opx-grid-2,.opx-filters,.opx-filters-second,.opx-profile,.opx-two-col,.opx-detail-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.opx-grid-4,.opx-grid-3,.opx-grid-2,.opx-filters,.opx-filters-second,.opx-profile,.opx-two-col,.opx-detail-grid{grid-template-columns:1fr}.opx-hero h2{font-size:24px}.opx-hero-side{grid-template-columns:1fr 1fr;min-width:0}.opx-bar-row{grid-template-columns:1fr}.opx-table{min-width:920px}}
+
 </style>
 </head>
 <body>
@@ -489,6 +583,13 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
     <a id="navSuppliers" onclick="abrirVistaOperaciones('suppliers','ops-suplidores', this)"><i class="fas fa-truck"></i> Suplidores</a>
     <a id="navWorks" onclick="abrirVistaOperaciones('works','ops-trabajos', this)"><i class="fas fa-hammer"></i> Trabajos</a>
     <a id="navIssues" onclick="abrirVistaOperaciones('issues','ops-averias', this)"><i class="fas fa-triangle-exclamation"></i> Averías</a>
+  </div>
+
+
+
+  <div class="menu-section-title">Módulo de RRHH</div>
+  <div class="menu">
+    <a id="navOperadoras" onclick="cambiarVista('operadoras', this)"><i class="fas fa-id-badge"></i> Operadoras</a>
   </div>
 
 </div>
@@ -2036,6 +2137,92 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
 </select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input class="input" id="editOperationAgency"/></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value" id="editOperationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Evidencias de resultado (imagen o video)</label><input accept="image/*,video/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
+
+<div id="vista-operadoras" class="hidden">
+  <div class="opx-shell">
+    <div class="opx-hero">
+      <div>
+        <h2>Gestión de Operadoras</h2>
+        <p>Expediente empresarial de representantes de ventas con dashboard, filtros, historial interno y tabs de seguimiento para certificaciones, vacaciones, incentivos, faltantes, observaciones y visitas.</p>
+        <div class="opx-hero-tags">
+          <span class="opx-hero-tag"><i class="fas fa-building"></i> Azul LOTEKA</span>
+          <span class="opx-hero-tag"><i class="fas fa-id-card"></i> Expediente completo</span>
+          <span class="opx-hero-tag"><i class="fas fa-chart-line"></i> Dashboard operativo</span>
+        </div>
+      </div>
+      <div class="opx-hero-side">
+        <div class="opx-hero-stat"><span>Total operadoras</span><strong id="opxHeroTotal">0</strong></div>
+        <div class="opx-hero-stat"><span>Premium</span><strong id="opxHeroPremium">0</strong></div>
+        <div class="opx-hero-stat"><span>Matutino</span><strong id="opxHeroMatutino">0</strong></div>
+        <div class="opx-hero-stat"><span>Agencias activas</span><strong id="opxHeroAgencias">0</strong></div>
+      </div>
+    </div>
+
+    <div class="opx-grid-4">
+      <div class="opx-card"><div class="label">Total registradas</div><div class="value" id="opxKpiTotal">0</div><div class="sub">Representantes en el módulo</div></div>
+      <div class="opx-card"><div class="label">Tipo premium</div><div class="value" id="opxKpiPremium">0</div><div class="sub">Operadoras premium</div></div>
+      <div class="opx-card"><div class="label">Con condición reportada</div><div class="value" id="opxKpiSalud">0</div><div class="sub">Seguimiento de salud</div></div>
+      <div class="opx-card"><div class="label">Antigüedad promedio</div><div class="value" id="opxKpiAntiguedad">0</div><div class="sub">Meses laborando</div></div>
+    </div>
+
+    <div class="opx-panel">
+      <div class="opx-panel-head">
+        <div>
+          <h3>Filtros estratégicos</h3>
+          <p>Tal como la presentación: búsqueda por identidad, asignación, tipo, turno, antigüedad y edad.</p>
+        </div>
+        <div class="opx-actions">
+          <button class="opx-btn light" type="button" onclick="opxResetFilters()">Limpiar filtros</button>
+          <button class="opx-btn dark" type="button" onclick="opxExportCSV()">Generar Excel / CSV</button>
+          <button class="opx-btn primary" type="button" onclick="opxOpenEdit()">+ Nueva operadora</button>
+        </div>
+      </div>
+      <div class="opx-panel-body">
+        <div class="opx-filters">
+          <div class="opx-field"><label>Nombre</label><input id="opxFilterNombre" placeholder="Buscar por nombre o apellido"></div>
+          <div class="opx-field"><label>Cédula</label><input id="opxFilterCedula" placeholder="000-0000000-0"></div>
+          <div class="opx-field"><label>Grupo</label><select id="opxFilterGrupo"></select></div>
+          <div class="opx-field"><label>Agencia</label><select id="opxFilterAgencia"></select></div>
+          <div class="opx-field"><label>Tipo</label><select id="opxFilterTipo"><option value="">Todos</option><option>Normal</option><option>Premium</option></select></div>
+        </div>
+        <div class="opx-filters-second">
+          <div class="opx-field"><label>Turno</label><select id="opxFilterTurno"><option value="">Todos</option><option>Matutino</option><option>Vespertino</option><option>Nocturno</option></select></div>
+          <div class="opx-field"><label>Tiempo laborando</label><select id="opxFilterTiempo"><option value="">Todos</option><option value="0-12">0 - 12 meses</option><option value="13-24">13 - 24 meses</option><option value="25-60">25 - 60 meses</option><option value="61-999">Más de 5 años</option></select></div>
+          <div class="opx-field"><label>Rango de edad</label><select id="opxFilterEdad"><option value="">Todos</option><option value="18-25">18 - 25</option><option value="26-35">26 - 35</option><option value="36-45">36 - 45</option><option value="46-99">46+</option></select></div>
+          <button class="opx-btn light" type="button" onclick="opxSeedIfEmpty()">Cargar ejemplo</button>
+          <button class="opx-btn primary" type="button" onclick="opxApplyFilters()">Aplicar filtro</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="opx-grid-2">
+      <div class="opx-panel">
+        <div class="opx-panel-head"><div><h3>Listado de operadoras</h3><p id="opxTableCount">0 resultados</p></div></div>
+        <div class="opx-panel-body opx-table-wrap">
+          <table class="opx-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Nombre</th><th>Cédula</th><th>Grupo</th><th>Agencia</th><th>Tipo</th><th>Turno</th><th>Edad</th><th>Tiempo laborando</th><th>Estado laboral</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="opxTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="display:grid;gap:16px">
+        <div class="opx-panel">
+          <div class="opx-panel-head"><div><h3>Distribución por grupos</h3><p>Vista rápida del crecimiento por asignación.</p></div></div>
+          <div class="opx-panel-body"><div class="opx-bars" id="opxGroupBars"></div></div>
+        </div>
+        <div class="opx-panel">
+          <div class="opx-panel-head"><div><h3>Top agencias</h3><p>Agencias con mayor cantidad de operadoras.</p></div></div>
+          <div class="opx-panel-body"><div class="opx-rank-list" id="opxAgencyRank"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 
 let productos = [
@@ -7806,7 +7993,7 @@ function openEditModal(id) {
 <script>
 function cambiarVista(vista, el){
   const ids = [
-    'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
+    'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos','vista-operadoras',
     'vista-ops-dashboard','vista-ops-operaciones','vista-ops-historial','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
   ];
   ids.forEach(id => {
@@ -7818,6 +8005,335 @@ function cambiarVista(vista, el){
   document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
   if(el) el.classList.add('active');
 }
+
+
+const OPX_STORAGE_KEY = 'loteka_operadoras_module_v1';
+let opxOperadoras = [];
+let opxFiltered = [];
+let opxCurrentId = null;
+let opxTab = 'general';
+
+function opxSafeAgencias(){
+  try { return Array.isArray(agencias) ? agencias : []; } catch(e){ return []; }
+}
+function opxSafeGrupos(){
+  try { return Array.isArray(grupos) ? grupos : []; } catch(e){ return []; }
+}
+function opxTodayISO(){ return new Date().toISOString().slice(0,10); }
+function opxParseDate(v){ return v ? new Date(v+'T00:00:00') : null; }
+function opxAge(birth){
+  const b=opxParseDate(birth); if(!b || Number.isNaN(b.getTime())) return 0;
+  const t=new Date(); let age=t.getFullYear()-b.getFullYear();
+  const m=t.getMonth()-b.getMonth();
+  if(m<0 || (m===0 && t.getDate()<b.getDate())) age--;
+  return Math.max(age,0);
+}
+function opxMonthsSince(dateStr){
+  const d=opxParseDate(dateStr); if(!d || Number.isNaN(d.getTime())) return 0;
+  const t=new Date(); let months=(t.getFullYear()-d.getFullYear())*12 + (t.getMonth()-d.getMonth());
+  if(t.getDate()<d.getDate()) months--;
+  return Math.max(months,0);
+}
+function opxHumanMonths(m){
+  const years=Math.floor(m/12), months=m%12;
+  if(years && months) return `${years} año${years>1?'s':''}, ${months} mes${months>1?'es':''}`;
+  if(years) return `${years} año${years>1?'s':''}`;
+  return `${months} mes${months!==1?'es':''}`;
+}
+function opxEstadoBadgeClass(v){
+  const s=(v||'').toLowerCase();
+  if(s.includes('act')) return 'green';
+  if(s.includes('vac')) return 'blue';
+  if(s.includes('lic')) return 'gold';
+  if(s.includes('cancel') || s.includes('aband') || s.includes('renun')) return 'red';
+  return 'gray';
+}
+function opxLoad(){
+  try {
+    const raw=localStorage.getItem(OPX_STORAGE_KEY);
+    opxOperadoras = raw ? JSON.parse(raw) : [];
+  } catch(e){ opxOperadoras=[]; }
+  if(!Array.isArray(opxOperadoras) || !opxOperadoras.length) opxOperadoras = opxDefaultData();
+  opxNormalize();
+  opxSave();
+}
+function opxSave(){ localStorage.setItem(OPX_STORAGE_KEY, JSON.stringify(opxOperadoras)); }
+function opxNormalize(){
+  opxOperadoras = opxOperadoras.map((item,idx)=>({
+    id: item.id || `opx-${Date.now()}-${idx}`,
+    nombre: item.nombre || '', apellido: item.apellido || '',
+    cedula: item.cedula || '', grupo: item.grupo || '', agencia: String(item.agencia || ''),
+    tipo: item.tipo || 'Normal', turno: item.turno || 'Matutino',
+    fechaEntrada: item.fechaEntrada || opxTodayISO(), fechaNacimiento: item.fechaNacimiento || '2000-01-01',
+    salario: item.salario || '', celular: item.celular || '', observacionGeneral: item.observacionGeneral || '',
+    estadoLaboral: item.estadoLaboral || 'Activa',
+    salud: item.salud || 'No', saludDescripcion: item.saludDescripcion || '',
+    foto: item.foto || '', cv: item.cv || '', documentoCedula: item.documentoCedula || '',
+    certificaciones: Array.isArray(item.certificaciones)?item.certificaciones:[],
+    vacaciones: Array.isArray(item.vacaciones)?item.vacaciones:[],
+    incentivos: Array.isArray(item.incentivos)?item.incentivos:[],
+    faltantes: Array.isArray(item.faltantes)?item.faltantes:[],
+    observaciones: Array.isArray(item.observaciones)?item.observaciones:[],
+    visitas: Array.isArray(item.visitas)?item.visitas:[]
+  }));
+}
+function opxDefaultData(){
+  return [
+    {id:'opx-1',nombre:'Maria Laura',apellido:'De Jesus',cedula:'001-6548518-5',grupo:'06',agencia:'676',tipo:'Premium',turno:'Matutino',fechaEntrada:'2023-03-20',fechaNacimiento:'2000-04-05',salario:'20000',celular:'809-567-5424',estadoLaboral:'Activa',salud:'Sí',saludDescripcion:'Hernia discal lumbar',observacionGeneral:'Operadora premium con buen desempeño y seguimiento mensual.',certificaciones:[{tipo:'Médica',fechaInicio:'2024-04-24',fechaFin:'2024-04-30',emitidoPor:'Instituto medicalnat',motivo:'Dengue',comentario:'Reposo médico aprobado',documento:'PDF',usuario:'etperez@grupoortiz.com.do'}],vacaciones:[{anio:'2026',fechaEnvio:'2026-02-24',tipo:'Mixta',diasLibres:'4',diasPagados:'4',desde:'2026-04-21',hasta:'2026-04-25',archivo:'PDF',comentario:'Vacaciones aprobadas',usuario:'etperez@grupoortiz.com.do'}],incentivos:[{pago:'Nómina',monto:'1000',fecha:'2024-03-10',estatus:'Pagado',comentario:'Bono por cumplimiento',archivo:'PDF',usuario:'peramos@grupoortiz.com.do'}],faltantes:[{fecha:'2026-03-02',detalle:'Faltante en caja detectado al cierre',monto:'350',estatus:'En proceso',usuario:'supervision@grupoortiz.com.do'}],observaciones:[{fecha:'2026-02-18',detalle:'Buen trato al cliente y excelente puntualidad.',usuario:'rrhh@grupoortiz.com.do'}],visitas:[{fecha:'2026-03-12',tipo:'Supervisión',comentario:'Agencia en orden y operación correcta.',usuario:'supervision@grupoortiz.com.do'}]},
+    {id:'opx-2',nombre:'Carmen',apellido:'Santos',cedula:'001-5899758-5',grupo:'08',agencia:'705',tipo:'Normal',turno:'Vespertino',fechaEntrada:'2018-11-20',fechaNacimiento:'1994-09-12',salario:'18000',celular:'809-444-7721',estadoLaboral:'Vacaciones',salud:'No',saludDescripcion:'',observacionGeneral:'Operadora con alta experiencia.',certificaciones:[{tipo:'Familiar',fechaInicio:'2025-06-10',fechaFin:'2025-06-12',emitidoPor:'Instituto La Niñez',motivo:'Gestión familiar',comentario:'Documento cargado',documento:'PDF',usuario:'peramos@grupoortiz.com.do'}],vacaciones:[],incentivos:[{pago:'Efectivo',monto:'350',fecha:'2023-09-06',estatus:'En proceso',comentario:'Apoyo operativo',archivo:'PDF',usuario:'peramos@grupoortiz.com.do'}],faltantes:[],observaciones:[{fecha:'2026-01-05',detalle:'Necesita seguimiento en cuadre de cierre.',usuario:'rrhh@grupoortiz.com.do'}],visitas:[]},
+    {id:'opx-3',nombre:'Ana',apellido:'Rosario',cedula:'402-5897458-4',grupo:'06',agencia:'676',tipo:'Premium',turno:'Matutino',fechaEntrada:'2022-03-09',fechaNacimiento:'1998-07-28',salario:'22000',celular:'809-321-4456',estadoLaboral:'Activa',salud:'No',saludDescripcion:'',observacionGeneral:'Alto rendimiento en ventas.',certificaciones:[],vacaciones:[],incentivos:[],faltantes:[],observaciones:[],visitas:[]}
+  ];
+}
+function opxGroupOptions(){
+  const fromSystem = opxSafeGrupos().map(g=>String(g.numero||g.nombre||'').replace('Grupo ','').trim()).filter(Boolean);
+  const fromData = opxOperadoras.map(o=>String(o.grupo||'').trim()).filter(Boolean);
+  return ['', ...Array.from(new Set([...fromSystem, ...fromData])).sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))];
+}
+function opxAgencyOptions(){
+  const fromSystem = opxSafeAgencias().map(a=>String(a.numero||a.agencia||'')).filter(Boolean);
+  const fromData = opxOperadoras.map(o=>String(o.agencia||'')).filter(Boolean);
+  return ['', ...Array.from(new Set([...fromSystem, ...fromData])).sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))];
+}
+function opxPopulateFilters(){
+  const grupoSel=document.getElementById('opxFilterGrupo');
+  const agenciaSel=document.getElementById('opxFilterAgencia');
+  if(!grupoSel || !agenciaSel) return;
+  const currentGrupo=grupoSel.value, currentAgencia=agenciaSel.value;
+  grupoSel.innerHTML = opxGroupOptions().map(v=>`<option value="${v}">${v?`Grupo ${v}`:'Todos'}</option>`).join('');
+  agenciaSel.innerHTML = opxAgencyOptions().map(v=>`<option value="${v}">${v||'Todas'}</option>`).join('');
+  grupoSel.value=currentGrupo; agenciaSel.value=currentAgencia;
+}
+function opxApplyFilters(){
+  const nombre=(document.getElementById('opxFilterNombre')?.value||'').trim().toLowerCase();
+  const cedula=(document.getElementById('opxFilterCedula')?.value||'').trim().toLowerCase();
+  const grupo=document.getElementById('opxFilterGrupo')?.value||'';
+  const agencia=document.getElementById('opxFilterAgencia')?.value||'';
+  const tipo=document.getElementById('opxFilterTipo')?.value||'';
+  const turno=document.getElementById('opxFilterTurno')?.value||'';
+  const tiempo=document.getElementById('opxFilterTiempo')?.value||'';
+  const edad=document.getElementById('opxFilterEdad')?.value||'';
+  opxFiltered = opxOperadoras.filter(o=>{
+    const full = `${o.nombre} ${o.apellido}`.toLowerCase();
+    const months = opxMonthsSince(o.fechaEntrada); const yearsAge = opxAge(o.fechaNacimiento);
+    if(nombre && !full.includes(nombre)) return false;
+    if(cedula && !String(o.cedula).toLowerCase().includes(cedula)) return false;
+    if(grupo && String(o.grupo)!==grupo) return false;
+    if(agencia && String(o.agencia)!==agencia) return false;
+    if(tipo && o.tipo!==tipo) return false;
+    if(turno && o.turno!==turno) return false;
+    if(tiempo){ const [a,b]=tiempo.split('-').map(Number); if(months<a || months>b) return false; }
+    if(edad){ const [a,b]=edad.split('-').map(Number); if(yearsAge<a || yearsAge>b) return false; }
+    return true;
+  });
+  opxRender();
+}
+function opxResetFilters(){
+  ['opxFilterNombre','opxFilterCedula'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['opxFilterGrupo','opxFilterAgencia','opxFilterTipo','opxFilterTurno','opxFilterTiempo','opxFilterEdad'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  opxApplyFilters();
+}
+function opxRender(){
+  const data = Array.isArray(opxFiltered) ? opxFiltered : opxOperadoras;
+  document.getElementById('opxTableCount').textContent = `${data.length} resultado${data.length!==1?'s':''}`;
+  const body=document.getElementById('opxTableBody');
+  if(!body) return;
+  if(!data.length){ body.innerHTML=`<tr><td colspan="11"><div class="opx-empty">No hay operadoras que coincidan con los filtros.</div></td></tr>`; }
+  else {
+    body.innerHTML = data.map((o,i)=>{
+      const edad=opxAge(o.fechaNacimiento), meses=opxMonthsSince(o.fechaEntrada), full=`${o.nombre} ${o.apellido}`.trim();
+      return `<tr>
+        <td>${i+1}</td>
+        <td><strong>${full}</strong></td>
+        <td>${o.cedula||'-'}</td>
+        <td>${o.grupo?`Grupo ${o.grupo}`:'-'}</td>
+        <td>${o.agencia||'-'}</td>
+        <td><span class="opx-badge ${o.tipo==='Premium'?'gold':'blue'}">${o.tipo}</span></td>
+        <td>${o.turno||'-'}</td>
+        <td>${edad?edad+' años':'-'}</td>
+        <td>${opxHumanMonths(meses)}</td>
+        <td><span class="opx-badge ${opxEstadoBadgeClass(o.estadoLaboral)}">${o.estadoLaboral}</span></td>
+        <td><div class="opx-mini-actions">
+          <button class="opx-icon-btn" title="Ver expediente" onclick="opxOpenDetail('${o.id}')"><i class="fas fa-eye"></i></button>
+          <button class="opx-icon-btn" title="Editar" onclick="opxOpenEdit('${o.id}')"><i class="fas fa-pen"></i></button>
+          <button class="opx-icon-btn" title="Eliminar" onclick="opxDeleteOperadora('${o.id}')"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+  opxRenderDashboard();
+}
+function opxRenderDashboard(){
+  const total=opxOperadoras.length;
+  const premium=opxOperadoras.filter(o=>o.tipo==='Premium').length;
+  const salud=opxOperadoras.filter(o=>String(o.salud).toLowerCase()==='sí' || String(o.salud).toLowerCase()==='si').length;
+  const avgMonths= total ? Math.round(opxOperadoras.reduce((s,o)=>s+opxMonthsSince(o.fechaEntrada),0)/total) : 0;
+  const mat=opxOperadoras.filter(o=>o.turno==='Matutino').length;
+  const agenciasCount = new Set(opxOperadoras.map(o=>o.agencia).filter(Boolean)).size;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('opxHeroTotal',total); set('opxHeroPremium',premium); set('opxHeroMatutino',mat); set('opxHeroAgencias',agenciasCount);
+  set('opxKpiTotal',total); set('opxKpiPremium',premium); set('opxKpiSalud',salud); set('opxKpiAntiguedad',avgMonths);
+  const groups={}; opxOperadoras.forEach(o=>{ const k=o.grupo||'Sin grupo'; groups[k]=(groups[k]||0)+1; });
+  const max=Math.max(1,...Object.values(groups));
+  document.getElementById('opxGroupBars').innerHTML = Object.keys(groups).sort((a,b)=>groups[b]-groups[a]).map(k=>`<div class="opx-bar-row"><div class="opx-bar-label">${k==='Sin grupo'?k:`Grupo ${k}`}</div><div class="opx-bar-track"><div class="opx-bar-fill" style="width:${(groups[k]/max)*100}%"></div></div><div class="opx-bar-value">${groups[k]}</div></div>`).join('') || `<div class="opx-empty">Sin datos por grupo.</div>`;
+  const agency={}; opxOperadoras.forEach(o=>{ const k=o.agencia||'Sin agencia'; agency[k]=(agency[k]||0)+1; });
+  document.getElementById('opxAgencyRank').innerHTML = Object.keys(agency).sort((a,b)=>agency[b]-agency[a]).slice(0,5).map((k,idx)=>`<div class="opx-rank-item"><div><strong>${k}</strong><span>${agency[k]} operadora${agency[k]!==1?'s':''}</span></div><em>#${idx+1}</em></div>`).join('') || `<div class="opx-empty">Sin agencias registradas.</div>`;
+}
+function opxGetById(id){ return opxOperadoras.find(o=>o.id===id); }
+function opxDeleteOperadora(id){
+  if(!confirm('¿Eliminar esta operadora?')) return;
+  opxOperadoras = opxOperadoras.filter(o=>o.id!==id); opxSave(); opxApplyFilters();
+}
+function opxOpenDetail(id){
+  opxCurrentId=id; opxTab='general';
+  const o=opxGetById(id); if(!o) return;
+  const full=`${o.nombre} ${o.apellido}`.trim();
+  const edad=opxAge(o.fechaNacimiento), meses=opxMonthsSince(o.fechaEntrada);
+  let modal=document.getElementById('opxDetailModal');
+  if(!modal){
+    document.body.insertAdjacentHTML('beforeend', `<div class="opx-modal" id="opxDetailModal"><div class="opx-dialog"><div class="opx-modal-head"><div><h3 id="opxDetailTitle"></h3><p id="opxDetailSubtitle"></p></div><button class="opx-close" onclick="opxCloseDetail()"><i class="fas fa-xmark"></i></button></div><div class="opx-modal-body" id="opxDetailBody"></div><div class="opx-modal-actions"><div class="opx-muted">Expediente interno de RRHH</div><div class="opx-actions"><button class="opx-btn light" onclick="opxCloseDetail()">Cerrar</button><button class="opx-btn primary" onclick="opxOpenEdit(opxCurrentId)">Editar operadora</button></div></div></div></div>`);
+    modal=document.getElementById('opxDetailModal');
+  }
+  document.getElementById('opxDetailTitle').textContent=full;
+  document.getElementById('opxDetailSubtitle').textContent=`Grupo ${o.grupo||'-'} · Agencia ${o.agencia||'-'} · ${o.tipo||'-'} · ${o.turno||'-'}`;
+  document.getElementById('opxDetailBody').innerHTML = `
+    <div class="opx-profile">
+      <div class="opx-photo-card">
+        <div class="opx-photo-box">${o.foto?`<img src="${o.foto}" alt="${full}">`:'Foto personal'}</div>
+        <div class="opx-inline-info" style="margin-top:12px"><span class="opx-info-chip"><i class="fas fa-id-card"></i> ${o.cedula||'Sin cédula'}</span><span class="opx-info-chip"><i class="fas fa-phone"></i> ${o.celular||'Sin celular'}</span></div>
+      </div>
+      <div class="opx-section">
+        <div class="opx-detail-grid">
+          <div class="opx-detail-item"><span class="k">Nombre completo</span><span class="v">${full}</span></div>
+          <div class="opx-detail-item"><span class="k">Fecha de entrada</span><span class="v">${o.fechaEntrada||'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Tiempo laborando</span><span class="v">${opxHumanMonths(meses)}</span></div>
+          <div class="opx-detail-item"><span class="k">Fecha de nacimiento</span><span class="v">${o.fechaNacimiento||'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Edad</span><span class="v">${edad?edad+' años':'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Estado laboral</span><span class="v">${o.estadoLaboral||'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Tipo</span><span class="v">${o.tipo||'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Turno</span><span class="v">${o.turno||'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Salario</span><span class="v">${o.salario?`$${Number(o.salario).toLocaleString('en-US')}`:'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Grupo</span><span class="v">${o.grupo?`Grupo ${o.grupo}`:'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Agencia</span><span class="v">${o.agencia||'-'}</span></div>
+          <div class="opx-detail-item"><span class="k">Condición de salud</span><span class="v">${o.salud||'No'}${o.saludDescripcion?` · ${o.saludDescripcion}`:''}</span></div>
+          <div class="opx-detail-item" style="grid-column:1/-1"><span class="k">Observación general</span><span class="v">${o.observacionGeneral||'Sin observaciones generales.'}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="opx-section">
+      <div class="opx-tabs">
+        ${[['general','General'],['certificaciones','Certificaciones'],['vacaciones','Vacaciones'],['incentivo','Incentivo'],['faltantes','Faltantes'],['observacion','Observación'],['visita','Visita']].map(([k,l])=>`<button class="opx-tab ${k==='general'?'active':''}" data-tab="${k}" onclick="opxSwitchTab('${k}',this)">${l}</button>`).join('')}
+      </div>
+      <div id="opxTabGeneral" class="opx-tabpane active" style="margin-top:16px"><div class="opx-empty">Usa las demás pestañas para ver y agregar registros del expediente.</div></div>
+      <div id="opxTabCertificaciones" class="opx-tabpane" style="margin-top:16px">${opxRenderTabTable(o.certificaciones,['Tipo','Inicio','Fin','Emitido por','Documento','Usuario'],r=>[r.tipo,r.fechaInicio,r.fechaFin,r.emitidoPor,r.documento||'-',r.usuario||'-'])}${opxRenderSimpleForm('certificaciones')}</div>
+      <div id="opxTabVacaciones" class="opx-tabpane" style="margin-top:16px">${opxRenderTabTable(o.vacaciones,['Año','Fecha envío','Vacaciones','Días libres','Días pagados','Usuario'],r=>[r.anio,r.fechaEnvio,r.tipo,r.diasLibres,r.diasPagados,r.usuario||'-'])}${opxRenderSimpleForm('vacaciones')}</div>
+      <div id="opxTabIncentivo" class="opx-tabpane" style="margin-top:16px">${opxRenderTabTable(o.incentivos,['Pago','Monto','Fecha','Estatus','Usuario'],r=>[r.pago,r.monto?`$${r.monto}`:'-',r.fecha,r.estatus,r.usuario||'-'])}${opxRenderSimpleForm('incentivo')}</div>
+      <div id="opxTabFaltantes" class="opx-tabpane" style="margin-top:16px">${opxRenderTabTable(o.faltantes,['Fecha','Detalle','Monto','Estatus','Usuario'],r=>[r.fecha,r.detalle,r.monto?`$${r.monto}`:'-',r.estatus||'-',r.usuario||'-'])}${opxRenderSimpleForm('faltantes')}</div>
+      <div id="opxTabObservacion" class="opx-tabpane" style="margin-top:16px">${opxRenderTabTable(o.observaciones,['Fecha','Detalle','Usuario'],r=>[r.fecha,r.detalle,r.usuario||'-'])}${opxRenderSimpleForm('observacion')}</div>
+      <div id="opxTabVisita" class="opx-tabpane" style="margin-top:16px">${opxRenderTabTable(o.visitas,['Fecha','Tipo','Comentario','Usuario'],r=>[r.fecha,r.tipo,r.comentario,r.usuario||'-'])}${opxRenderSimpleForm('visita')}</div>
+    </div>`;
+  modal.classList.add('open');
+}
+function opxRenderTabTable(items, headers, mapper){
+  if(!items || !items.length) return `<div class="opx-empty">No hay registros todavía en esta pestaña.</div>`;
+  return `<div class="opx-section"><div class="opx-table-wrap"><table class="opx-subtable"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${items.map(row=>`<tr>${mapper(row).map(v=>`<td>${v||'-'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+}
+function opxRenderSimpleForm(type){
+  const map={
+    certificaciones:`<div class="opx-two-col"><div class="opx-section"><div class="opx-field"><label>Tipo de certificación</label><input id="opxFormCertTipo"></div><div class="opx-field"><label>Fecha de inicio</label><input type="date" id="opxFormCertInicio"></div><div class="opx-field"><label>Fecha de finalización</label><input type="date" id="opxFormCertFin"></div></div><div class="opx-section"><div class="opx-field"><label>Emitido por</label><input id="opxFormCertEmitido"></div><div class="opx-field"><label>Motivo / comentario</label><textarea id="opxFormCertComentario"></textarea></div><button class="opx-btn primary" onclick="opxAddRecord('certificaciones')">Crear certificación</button></div></div>`,
+    vacaciones:`<div class="opx-two-col"><div class="opx-section"><div class="opx-field"><label>Año</label><input id="opxFormVacAnio"></div><div class="opx-field"><label>Fecha de envío</label><input type="date" id="opxFormVacEnvio"></div><div class="opx-field"><label>Tipo de vacaciones</label><input id="opxFormVacTipo"></div></div><div class="opx-section"><div class="opx-field"><label>Días libres</label><input id="opxFormVacLibres"></div><div class="opx-field"><label>Días pagados</label><input id="opxFormVacPagados"></div><div class="opx-field"><label>Comentario</label><textarea id="opxFormVacComentario"></textarea></div><button class="opx-btn primary" onclick="opxAddRecord('vacaciones')">Crear vacaciones</button></div></div>`,
+    incentivo:`<div class="opx-two-col"><div class="opx-section"><div class="opx-field"><label>Pago</label><input id="opxFormIncPago"></div><div class="opx-field"><label>Monto</label><input id="opxFormIncMonto"></div></div><div class="opx-section"><div class="opx-field"><label>Fecha</label><input type="date" id="opxFormIncFecha"></div><div class="opx-field"><label>Estatus</label><input id="opxFormIncEstatus"></div><div class="opx-field"><label>Comentario</label><textarea id="opxFormIncComentario"></textarea></div><button class="opx-btn primary" onclick="opxAddRecord('incentivos')">Crear incentivo</button></div></div>`,
+    faltantes:`<div class="opx-two-col"><div class="opx-section"><div class="opx-field"><label>Fecha</label><input type="date" id="opxFormFalFecha"></div><div class="opx-field"><label>Monto</label><input id="opxFormFalMonto"></div></div><div class="opx-section"><div class="opx-field"><label>Estatus</label><input id="opxFormFalEstatus"></div><div class="opx-field"><label>Detalle</label><textarea id="opxFormFalDetalle"></textarea></div><button class="opx-btn primary" onclick="opxAddRecord('faltantes')">Crear faltante</button></div></div>`,
+    observacion:`<div class="opx-section"><div class="opx-field"><label>Observación</label><textarea id="opxFormObsDetalle"></textarea></div><button class="opx-btn primary" onclick="opxAddRecord('observaciones')">Agregar observación</button></div>`,
+    visita:`<div class="opx-two-col"><div class="opx-section"><div class="opx-field"><label>Fecha</label><input type="date" id="opxFormVisFecha"></div><div class="opx-field"><label>Tipo</label><input id="opxFormVisTipo"></div></div><div class="opx-section"><div class="opx-field"><label>Comentario</label><textarea id="opxFormVisComentario"></textarea></div><button class="opx-btn primary" onclick="opxAddRecord('visitas')">Agregar visita</button></div></div>`
+  };
+  return map[type] || '';
+}
+function opxSwitchTab(tab,el){
+  document.querySelectorAll('#opxDetailBody .opx-tab').forEach(btn=>btn.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('#opxDetailBody .opx-tabpane').forEach(p=>p.classList.remove('active'));
+  const id='opxTab'+tab.charAt(0).toUpperCase()+tab.slice(1);
+  const pane=document.getElementById(id); if(pane) pane.classList.add('active');
+}
+function opxCloseDetail(){ document.getElementById('opxDetailModal')?.classList.remove('open'); }
+function opxOpenEdit(id=''){
+  const o=id?opxGetById(id):null;
+  let modal=document.getElementById('opxEditModal');
+  if(!modal){
+    document.body.insertAdjacentHTML('beforeend', `<div class="opx-modal" id="opxEditModal"><div class="opx-dialog small"><div class="opx-modal-head"><div><h3 id="opxEditTitle">Nueva operadora</h3><p>Completa el expediente base de RRHH.</p></div><button class="opx-close" onclick="opxCloseEdit()"><i class="fas fa-xmark"></i></button></div><div class="opx-modal-body"><div class="opx-detail-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="opx-field"><label>Nombre</label><input id="opxEditNombre"></div>
+      <div class="opx-field"><label>Apellido</label><input id="opxEditApellido"></div>
+      <div class="opx-field"><label>Cédula</label><input id="opxEditCedula"></div>
+      <div class="opx-field"><label>Grupo</label><input id="opxEditGrupo"></div>
+      <div class="opx-field"><label>Agencia</label><input id="opxEditAgencia"></div>
+      <div class="opx-field"><label>Tipo</label><select id="opxEditTipo"><option>Normal</option><option>Premium</option></select></div>
+      <div class="opx-field"><label>Turno</label><select id="opxEditTurno"><option>Matutino</option><option>Vespertino</option><option>Nocturno</option></select></div>
+      <div class="opx-field"><label>Estado laboral</label><select id="opxEditEstado"><option>Activa</option><option>Vacaciones</option><option>Licencia</option><option>Cancelada/o</option><option>Abandono</option><option>Renuncia</option></select></div>
+      <div class="opx-field"><label>Fecha de entrada</label><input type="date" id="opxEditEntrada"></div>
+      <div class="opx-field"><label>Fecha de nacimiento</label><input type="date" id="opxEditNacimiento"></div>
+      <div class="opx-field"><label>Salario</label><input id="opxEditSalario"></div>
+      <div class="opx-field"><label>Celular</label><input id="opxEditCelular"></div>
+      <div class="opx-field"><label>Condición de salud</label><select id="opxEditSalud"><option>No</option><option>Sí</option></select></div>
+      <div class="opx-field"><label>Descripción de salud</label><input id="opxEditSaludDesc"></div>
+      <div class="opx-field" style="grid-column:1/-1"><label>Observación general</label><textarea id="opxEditObservacion"></textarea></div>
+    </div></div><div class="opx-modal-actions"><div class="opx-muted">Se guarda local para pruebas</div><div class="opx-actions"><button class="opx-btn light" onclick="opxCloseEdit()">Cancelar</button><button class="opx-btn primary" onclick="opxSaveEdit()">Guardar</button></div></div></div></div>`);
+    modal=document.getElementById('opxEditModal');
+  }
+  modal.dataset.id=id||'';
+  document.getElementById('opxEditTitle').textContent=id?'Editar operadora':'Nueva operadora';
+  const fill=(id,v)=>document.getElementById(id).value=v||'';
+  fill('opxEditNombre',o?.nombre); fill('opxEditApellido',o?.apellido); fill('opxEditCedula',o?.cedula); fill('opxEditGrupo',o?.grupo); fill('opxEditAgencia',o?.agencia);
+  fill('opxEditTipo',o?.tipo||'Normal'); fill('opxEditTurno',o?.turno||'Matutino'); fill('opxEditEstado',o?.estadoLaboral||'Activa'); fill('opxEditEntrada',o?.fechaEntrada||opxTodayISO()); fill('opxEditNacimiento',o?.fechaNacimiento||'2000-01-01'); fill('opxEditSalario',o?.salario); fill('opxEditCelular',o?.celular); fill('opxEditSalud',o?.salud||'No'); fill('opxEditSaludDesc',o?.saludDescripcion); fill('opxEditObservacion',o?.observacionGeneral);
+  modal.classList.add('open');
+}
+function opxCloseEdit(){ document.getElementById('opxEditModal')?.classList.remove('open'); }
+function opxSaveEdit(){
+  const modal=document.getElementById('opxEditModal'); const id=modal?.dataset.id||'';
+  const obj=id?opxGetById(id):{id:`opx-${Date.now()}`,certificaciones:[],vacaciones:[],incentivos:[],faltantes:[],observaciones:[],visitas:[],foto:'',cv:'',documentoCedula:''};
+  obj.nombre=document.getElementById('opxEditNombre').value.trim();
+  obj.apellido=document.getElementById('opxEditApellido').value.trim();
+  obj.cedula=document.getElementById('opxEditCedula').value.trim();
+  obj.grupo=document.getElementById('opxEditGrupo').value.trim();
+  obj.agencia=document.getElementById('opxEditAgencia').value.trim();
+  obj.tipo=document.getElementById('opxEditTipo').value;
+  obj.turno=document.getElementById('opxEditTurno').value;
+  obj.estadoLaboral=document.getElementById('opxEditEstado').value;
+  obj.fechaEntrada=document.getElementById('opxEditEntrada').value;
+  obj.fechaNacimiento=document.getElementById('opxEditNacimiento').value;
+  obj.salario=document.getElementById('opxEditSalario').value.trim();
+  obj.celular=document.getElementById('opxEditCelular').value.trim();
+  obj.salud=document.getElementById('opxEditSalud').value;
+  obj.saludDescripcion=document.getElementById('opxEditSaludDesc').value.trim();
+  obj.observacionGeneral=document.getElementById('opxEditObservacion').value.trim();
+  if(!obj.nombre || !obj.apellido){ alert('Completa nombre y apellido.'); return; }
+  if(id){ opxOperadoras = opxOperadoras.map(o=>o.id===id?obj:o); }
+  else { opxOperadoras.unshift(obj); }
+  opxSave(); opxPopulateFilters(); opxApplyFilters(); opxCloseEdit();
+}
+function opxAddRecord(type){
+  const o=opxGetById(opxCurrentId); if(!o) return;
+  const user='rrhh@grupoortiz.com.do';
+  if(type==='certificaciones') o.certificaciones.unshift({tipo:document.getElementById('opxFormCertTipo').value,fechaInicio:document.getElementById('opxFormCertInicio').value,fechaFin:document.getElementById('opxFormCertFin').value,emitidoPor:document.getElementById('opxFormCertEmitido').value,motivo:'',comentario:document.getElementById('opxFormCertComentario').value,documento:'PDF',usuario:user});
+  if(type==='vacaciones') o.vacaciones.unshift({anio:document.getElementById('opxFormVacAnio').value,fechaEnvio:document.getElementById('opxFormVacEnvio').value,tipo:document.getElementById('opxFormVacTipo').value,diasLibres:document.getElementById('opxFormVacLibres').value,diasPagados:document.getElementById('opxFormVacPagados').value,comentario:document.getElementById('opxFormVacComentario').value,usuario:user});
+  if(type==='incentivos') o.incentivos.unshift({pago:document.getElementById('opxFormIncPago').value,monto:document.getElementById('opxFormIncMonto').value,fecha:document.getElementById('opxFormIncFecha').value,estatus:document.getElementById('opxFormIncEstatus').value,comentario:document.getElementById('opxFormIncComentario').value,usuario:user});
+  if(type==='faltantes') o.faltantes.unshift({fecha:document.getElementById('opxFormFalFecha').value,monto:document.getElementById('opxFormFalMonto').value,estatus:document.getElementById('opxFormFalEstatus').value,detalle:document.getElementById('opxFormFalDetalle').value,usuario:user});
+  if(type==='observaciones') o.observaciones.unshift({fecha:opxTodayISO(),detalle:document.getElementById('opxFormObsDetalle').value,usuario:user});
+  if(type==='visitas') o.visitas.unshift({fecha:document.getElementById('opxFormVisFecha').value,tipo:document.getElementById('opxFormVisTipo').value,comentario:document.getElementById('opxFormVisComentario').value,usuario:user});
+  opxSave(); opxApplyFilters(); opxOpenDetail(opxCurrentId);
+}
+function opxSeedIfEmpty(){ if(opxOperadoras.length) { opxApplyFilters(); return; } opxOperadoras = opxDefaultData(); opxSave(); opxPopulateFilters(); opxApplyFilters(); }
+function opxExportCSV(){
+  const rows=(opxFiltered?.length?opxFiltered:opxOperadoras).map((o,i)=>({No:i+1,Nombre:`${o.nombre} ${o.apellido}`.trim(),Cedula:o.cedula,Grupo:o.grupo,Agencia:o.agencia,Tipo:o.tipo,Turno:o.turno,Edad:opxAge(o.fechaNacimiento),Tiempo_laborando:opxHumanMonths(opxMonthsSince(o.fechaEntrada)),Estado:o.estadoLaboral,Salario:o.salario,Celular:o.celular}));
+  if(!rows.length){ alert('No hay datos para exportar.'); return; }
+  const headers=Object.keys(rows[0]);
+  const csv=[headers.join(','), ...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='operadoras.csv'; a.click(); URL.revokeObjectURL(url);
+}
+function opxInit(){
+  opxLoad(); opxPopulateFilters(); opxFiltered=[...opxOperadoras]; opxRender();
+}
+window.addEventListener('DOMContentLoaded', opxInit);
+
 function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
   cambiarVista(vistaWrapper, el);
   if(typeof showView === 'function') showView(nombreVista);
