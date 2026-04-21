@@ -3277,18 +3277,15 @@ async function requestBrowserAlerts() {
     
    function playNotificationSound() {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
+    const audio = document.getElementById("notificationSound");
+    if (!audio) return;
 
-    if (!audioContextRef) {
-      audioContextRef = new AudioCtx();
-    }
-
-    const ctx = audioContextRef;
-
-    if (ctx.state === "suspended") {
-      ctx.resume();
-    }
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  } catch (error) {
+    console.warn("No se pudo reproducir sonido:", error);
+  }
+}
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -4937,6 +4934,8 @@ async function guardarGestionTecnica(report) {
       });
     }
   </script>
-
+<audio id="notificationSound" preload="auto">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
 </body>
 </html>
