@@ -3338,30 +3338,33 @@ async function requestBrowserAlerts() {
       mini: `${report?.code || "Sin código"}`
     };
   }
+
+  if (statusKey === "asignada") {
+    return {
+      title: "Reporte asignado",
+      body: `${categoria} ya fue asignado a ${formatAssigneeLabel(report?.asignado_a)}.`,
+      mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
+    };
+  }
+
+  if (statusKey === "en proceso") {
+    return {
+      title: "Reporte en proceso",
+      body: `${categoria} ya está siendo trabajado por ${formatAssigneeLabel(report?.asignado_a)}.`,
+      mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
+    };
+  }
+
+  if (statusKey === "completado") {
+    return {
+      title: "Reporte completado",
+      body: `${categoria} fue completado correctamente.`,
+      mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
+    };
+  }
+
+  return null;
 }
-      if (statusKey === "asignada") {
-        return {
-          title: "Reporte asignado",
-          body: `${categoria} ya fue asignado a ${formatAssigneeLabel(report?.asignado_a)}.`,
-          mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
-        };
-      }
-      if (statusKey === "en proceso") {
-        return {
-          title: "Reporte en proceso",
-          body: `${categoria} ya está siendo trabajado por ${formatAssigneeLabel(report?.asignado_a)}.`,
-          mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
-        };
-      }
-      if (statusKey === "completado") {
-        return {
-          title: "Reporte completado",
-          body: `${categoria} fue completado correctamente.`,
-          mini: `${agenciaTexto} · ${report?.code || "Sin código"}`
-        };
-      }
-      return null;
-    }
 
     function processStatusNotifications(reports) {
       if (!usuarioActual || !["encargado", "tecnico"].includes(usuarioActual.rol)) return;
