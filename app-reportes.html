@@ -3321,13 +3321,20 @@ function playNotificationSound() {
     const audio = document.getElementById("notificationSound");
     if (!audio) return;
 
+    try {
+      ensureAudioContext();
+    } catch (_) {}
+
     audio.muted = false;
     audio.volume = 1;
+    audio.preload = "auto";
     audio.currentTime = 0;
 
     const p = audio.play();
-    if (p && typeof p.catch === "function") {
-      p.catch((error) => {
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        window.__lotekaNotificationAudioUnlocked = true;
+      }).catch((error) => {
         console.warn("No se pudo reproducir el sonido:", error);
       });
     }
@@ -3346,6 +3353,7 @@ function unlockNotificationSound() {
 
   audio.muted = false;
   audio.volume = 1;
+  audio.preload = "auto";
   audio.load();
 
   try {
@@ -3354,9 +3362,14 @@ function unlockNotificationSound() {
       p.then(() => {
         audio.pause();
         audio.currentTime = 0;
-      }).catch(() => {});
+        window.__lotekaNotificationAudioUnlocked = true;
+      }).catch((error) => {
+        console.warn("No se pudo desbloquear el sonido:", error);
+      });
     }
-  } catch (_) {}
+  } catch (error) {
+    console.warn("No se pudo desbloquear el sonido:", error);
+  }
 }
 
 function testAudioNow() {
@@ -3479,25 +3492,25 @@ function handleRealtimeInstantNotification(payload) {
       if (!isMyReport) return;
 
       if (newAssignee && oldAssignee !== newAssignee) {
-  const notifyKey = `assign:${newRow.id || newRow.code || "na"}:${newAssignee}`;
-  // if (!shouldNotifyRealtimeOnce(notifyKey)) return;
-  const msg = buildStatusChangeMessage({ ...newRow, estado: "Asignada" }, "asignada");
-  if (msg) {
-    playNotificationSound();
-    showInAppNotification(msg.title, msg.body, msg.mini);
-  }
-  return;
-}
+        const notifyKey = `assign:${newRow.id || newRow.code || "na"}:${newAssignee}`;
+        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+        const msg = buildStatusChangeMessage({ ...newRow, estado: "Asignada" }, "asignada");
+        if (msg) {
+          playNotificationSound();
+          showInAppNotification(msg.title, msg.body, msg.mini);
+        }
+        return;
+      }
 
-if (oldStatus && newStatus && oldStatus !== newStatus) {
-  const notifyKey = `status:${newRow.id || newRow.code || "na"}:${oldStatus}:${newStatus}`;
-  // if (!shouldNotifyRealtimeOnce(notifyKey)) return;
-  const msg = buildStatusChangeMessage(newRow, newStatus);
-  if (msg) {
-    playNotificationSound();
-    showInAppNotification(msg.title, msg.body, msg.mini);
-  }
-}
+      if (oldStatus && newStatus && oldStatus !== newStatus) {
+        const notifyKey = `status:${newRow.id || newRow.code || "na"}:${oldStatus}:${newStatus}`;
+        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+        const msg = buildStatusChangeMessage(newRow, newStatus);
+        if (msg) {
+          playNotificationSound();
+          showInAppNotification(msg.title, msg.body, msg.mini);
+        }
+      }
       return;
     }
 
@@ -5129,6 +5142,6 @@ async function guardarGestionTecnica(report) {
       });
     }
   </script>
-<audio id="notificationSound" src="/sounds/whatsapp.mp3" preload="auto"></audio>
+<audio id="notificationSound" src="/sounds/whatsapp.mp3" preload="auto" playsinline></audio>
 </body>
 </html>
