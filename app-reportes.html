@@ -2414,7 +2414,7 @@
       </div>
       <div class="header-actions-row">
         <button id="btnEnableAlerts" class="notify-btn" type="button">Activar alertas</button>
-        <button id="btnTestSound" class="notify-btn" type="button" onclick="testAudioNow()">Probar sonido</button>
+        <button id="btnTestSound" class="notify-btn" type="button">Probar sonido</button>
         <span class="network-chip" id="networkChip"><span class="network-dot"></span><span id="networkChipText">Conexión estable</span></span>
       </div>
     </div>
@@ -3299,6 +3299,36 @@ function testAudioNow() {
     console.error("Error probando sonido:", error);
   }
 }
+
+function showInAppNotification(title, message, mini = "") {
+  try {
+    if (!notifyToastWrap) return;
+
+    const toast = document.createElement("div");
+    toast.className = "notify-toast";
+
+    const safeTitle = String(title || "Aviso");
+    const safeMessage = String(message || "");
+    const safeMini = String(mini || "");
+
+    toast.innerHTML = `
+      <strong>${escapeHtml(safeTitle)}</strong>
+      <p>${escapeHtml(safeMessage)}</p>
+      ${safeMini ? `<span class="mini">${escapeHtml(safeMini)}</span>` : ""}
+    `;
+
+    notifyToastWrap.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("hide");
+      setTimeout(() => toast.remove(), 220);
+    }, 5200);
+  } catch (error) {
+    console.warn("No se pudo mostrar el aviso interno:", error);
+  }
+}
+
+window.testAudioNow = testAudioNow;
 
 function showSystemNotification(title, body) {
   return;
@@ -4379,6 +4409,7 @@ if (techBtn) {
     configurarSelectorAgencias();
     updateAlertsButtonUI();
     btnEnableAlerts?.addEventListener("click", requestBrowserAlerts);
+    btnTestSound?.addEventListener("click", testAudioNow);
 
   // loadReports();
 const usuariosApp = [
