@@ -3470,25 +3470,25 @@ function handleRealtimeInstantNotification(payload) {
       if (!isMyReport) return;
 
       if (newAssignee && oldAssignee !== newAssignee) {
-        const notifyKey = `assign:${newRow.id || newRow.code || "na"}:${newAssignee}`;
-        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
-        const msg = buildStatusChangeMessage({ ...newRow, estado: "Asignada" }, "asignada");
-        if (msg) {
-          playNotificationSound();
-          showInAppNotification(msg.title, msg.body, msg.mini);
-        }
-        return;
-      }
+  const notifyKey = `assign:${newRow.id || newRow.code || "na"}:${newAssignee}`;
+  // if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+  const msg = buildStatusChangeMessage({ ...newRow, estado: "Asignada" }, "asignada");
+  if (msg) {
+    playNotificationSound();
+    showInAppNotification(msg.title, msg.body, msg.mini);
+  }
+  return;
+}
 
-      if (oldStatus && newStatus && oldStatus !== newStatus) {
-        const notifyKey = `status:${newRow.id || newRow.code || "na"}:${oldStatus}:${newStatus}`;
-        if (!shouldNotifyRealtimeOnce(notifyKey)) return;
-        const msg = buildStatusChangeMessage(newRow, newStatus);
-        if (msg) {
-          playNotificationSound();
-          showInAppNotification(msg.title, msg.body, msg.mini);
-        }
-      }
+if (oldStatus && newStatus && oldStatus !== newStatus) {
+  const notifyKey = `status:${newRow.id || newRow.code || "na"}:${oldStatus}:${newStatus}`;
+  // if (!shouldNotifyRealtimeOnce(notifyKey)) return;
+  const msg = buildStatusChangeMessage(newRow, newStatus);
+  if (msg) {
+    playNotificationSound();
+    showInAppNotification(msg.title, msg.body, msg.mini);
+  }
+}
       return;
     }
 
