@@ -3448,10 +3448,19 @@ function initializeMobileRealtime() {
     schema: "public",
     table: TABLE_NAME
   },
-  async (payload) => {
-    console.log("[INSERT EVENT]", payload);
-    await loadReports(true);
+ async (payload) => {
+  console.log("[INSERT EVENT]", payload);
+
+  await loadReports(true);
+
+  if (typeof renderReports === "function") {
+    renderReports();
   }
+
+  if (typeof updateReportsSummary === "function") {
+    updateReportsSummary();
+  }
+}
 )
 
 .on(
@@ -3461,10 +3470,19 @@ function initializeMobileRealtime() {
     schema: "public",
     table: TABLE_NAME
   },
-  async (payload) => {
-    console.log("[UPDATE EVENT]", payload);
-    await loadReports(true);
+ async (payload) => {
+  console.log("[UPDATE EVENT]", payload);
+
+  await loadReports(true);
+
+  if (typeof renderReports === "function") {
+    renderReports();
   }
+
+  if (typeof updateReportsSummary === "function") {
+    updateReportsSummary();
+  }
+}
 )
     .subscribe((status) => {
       console.log("[MOBILE REALTIME STATUS]", status);
