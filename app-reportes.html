@@ -3318,32 +3318,13 @@ function ensureAudioContext() {
 
 function playNotificationSound() {
   try {
-    const ctx = ensureAudioContext();
-    if (ctx) {
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(920, now);
-      osc.frequency.linearRampToValueAtTime(700, now + 0.18);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.56);
-      return;
-    }
-
-    const audio = document.getElementById("notificationSound");
-    if (!audio) return;
-    audio.muted = false;
-    audio.volume = 1;
+    const audio = new Audio("/sounds/whatsapp.mp3");
+    audio.volume = 1.0;
     audio.currentTime = 0;
+
     const p = audio.play();
     if (p && typeof p.catch === "function") {
-      p.catch((error) => {
+      p.catch(error => {
         console.warn("No se pudo reproducir el sonido:", error);
       });
     }
