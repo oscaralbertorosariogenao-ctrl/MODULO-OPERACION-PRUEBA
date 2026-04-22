@@ -2402,6 +2402,10 @@
     .equipment-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
     .equipment-title { font-size:16px; font-weight:900; color:#173346; }
     .equipment-sub { font-size:13px; color:#5f7585; line-height:1.45; }
+    .equipment-status { display:inline-flex; align-items:center; justify-content:center; padding:7px 11px; border-radius:999px; font-size:11px; font-weight:900; }
+    .equipment-status.activo { background:#e8f6ef; color:#2f7d57; }
+    .equipment-status.revision { background:#fff6df; color:#8b6200; }
+    .equipment-status.danado { background:#fff1f1; color:#a12626; }
     .history-card { padding:14px; }
     .history-title { font-size:15px; font-weight:900; color:#173346; margin-bottom:6px; }
     .history-card p { margin:0; color:#4d6474; font-size:13px; line-height:1.5; }
@@ -3095,7 +3099,7 @@ let mobileRealtimeConnected = false;
       { categoria:'Scanner', icon:'📠', producto:'Scanner', marca:'Witek', modelo:'MIS200 OMR A6', serial:'SC', ubicacion:'Puesto de ventas' }
     ];
     let latestReports = [];
-    let agencyViewState = { mode: 'root', selectedGroup: null, selectedAgency: null };
+    let agencyViewState = { mode: 'root', selectedGroup: null, selectedAgency: null, selectedEquipment: null };
     const agencyHistoryCache = new Map();
 
     let usuarioActual = null;
@@ -4542,13 +4546,15 @@ function startReportAutoRefresh() {
     function getAgencyEquipmentList(agency) {
       if (!agency) return [];
       const digits = String(agency.numero || getAgencyDigits(agency.agencyLabel)).padStart(4, '0');
-      const statuses = ['activo', 'activo', 'activo', 'revision', 'danado'];
       return MOBILE_EQUIPMENT_BASE.map((item, index) => ({
         ...item,
         id: `${digits}-${index + 1}`,
-        serial: `${item.serial}-${digits}-${index + 1}`,
-        estado: statuses[index] || 'activo'
+        serial: `${item.serial}-${digits}-${index + 1}`
       }));
+    }
+
+    function getAgencyEquipmentById(agency, equipmentId) {
+      return getAgencyEquipmentList(agency).find(item => item.id === equipmentId) || null;
     }
 
     function getAgencyHistoryItems(agency) {
@@ -4584,19 +4590,28 @@ function startReportAutoRefresh() {
         const status = normalizeStatus(item?.estado || 'Pendiente');
         const assignee = formatAssigneeLabel(item?.asignado_a || item?.tecnico || item?.responsable || 'Sin asignar');
         const createdBy = item?.creado_por || item?.reportado_por || 'App móvil';
+        const reportType = item?.tipo_reporte || 'Reporte';
+        const category = item?.categoria || 'Sin categoría';
         return `
             <div class="history-card">
-              <div class="history-title">${item.code || 'Sin código'} · ${item.categoria || 'Sin categoría'}</div>
-              <div class="history-meta-inline">
-                <span class="mini-pill">${item.tipo_reporte || 'Reporte'}</span>
-                <span class="mini-pill">${status.label}</span>
-                <span class="mini-pill">${formatHistoryDateTime(item.fecha_reporte || item.created_at)}</span>
+              <div class="history-top">
+                <div>
+                  <span class="history-code-badge">${item.code || 'Sin código'}</span>
+                  <div class="history-title">${category}</div>
+                </div>
+                <span class="history-status-badge ${status.className}">${status.label}</span>
               </div>
-              <div class="history-meta-inline">
+              <div class="history-body">
+                <div class="history-meta-inline">
+                  <span class="mini-pill">${reportType}</span>
+                  <span class="mini-pill">📅 ${formatHistoryDateTime(item.fecha_reporte || item.created_at)}</span>
+                </div>
+                <p class="history-description">${item.descripcion || item.comentario || 'Sin comentario adicional.'}</p>
+              </div>
+              <div class="history-footer">
                 <span class="mini-pill">👤 ${assignee}</span>
                 <span class="mini-pill">🧾 ${createdBy}</span>
               </div>
-              <p>${item.descripcion || item.comentario || 'Sin comentario adicional.'}</p>
             </div>`;
       }).join('') : '<div class="agency-empty">Todavía no hay historial registrado para esta agencia.</div>';
     }
@@ -4645,8 +4660,8 @@ function startReportAutoRefresh() {
       return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    function setAgencyView(mode, selectedGroup = null, selectedAgency = null) {
-      agencyViewState = { mode, selectedGroup, selectedAgency };
+    function setAgencyView(mode, selectedGroup = null, selectedAgency = null, selectedEquipment = null) {
+      agencyViewState = { mode, selectedGroup, selectedAgency, selectedEquipment };
       renderAgencySection();
     }
 
@@ -4689,7 +4704,7 @@ function startReportAutoRefresh() {
     function buildAgencyEquipmentView(agency) {
       const items = getAgencyEquipmentList(agency);
       const q = (agencySearchInput?.value || '').trim().toLowerCase();
-      const filtered = items.filter(item => !q || `${item.producto} ${item.serial} ${item.marca} ${item.modelo} ${item.categoria}`.toLowerCase().includes(q));
+      const filtered = items.filter(item => !q || `${item.producto} ${item.serial} ${item.marca} ${item.modelo} ${item.categoria} ${item.ubicacion}`.toLowerCase().includes(q));
       const total = items.length;
       return `
         <div class="agency-back-row">
@@ -4697,19 +4712,20 @@ function startReportAutoRefresh() {
         </div>
         <div class="agency-block-card">
           <h4 class="agency-hero-title">Equipos de ${agency.agencyLabel}</h4>
-          <p class="agency-hero-text">Consulta rápida para técnicos y encargados. Esta vista está organizada por bloques para no recargar la pestaña.</p>
+          <p class="agency-hero-text">Consulta rápida para técnicos y encargados. Toca un equipo para ver su detalle individual sin recargar la vista principal.</p>
           <div class="agency-kpis">
             <div class="agency-kpi"><span>Total de equipos</span><strong>${total}</strong></div>
           </div>
         </div>
         <div class="equipment-grid">
           ${filtered.length ? filtered.map(item => `
-            <div class="equipment-card">
+            <div class="equipment-card" data-equipment-id="${escapeAttr(item.id)}">
               <div class="equipment-head">
                 <div>
                   <div class="equipment-title">${item.icon} ${item.producto}</div>
                   <div class="equipment-sub">${item.marca} · ${item.modelo}</div>
                 </div>
+                <span class="mini-pill">Ver detalle</span>
               </div>
               <div class="equipment-meta">
                 <span class="mini-pill">🔖 ${item.serial}</span>
@@ -4717,6 +4733,28 @@ function startReportAutoRefresh() {
                 <span class="mini-pill">🏷 ${item.categoria}</span>
               </div>
             </div>`).join('') : '<div class="agency-empty">No hay equipos que coincidan con la búsqueda.</div>'}
+        </div>`;
+    }
+
+    function buildAgencyEquipmentDetailView(agency, equipment) {
+      if (!agency || !equipment) {
+        return '<div class="agency-empty">No se encontró el equipo seleccionado.</div>';
+      }
+      return `
+        <div class="agency-back-row">
+          <button type="button" class="agency-back-btn" data-agency-back="agency-equipment">← Volver a equipos</button>
+        </div>
+        <div class="agency-block-card">
+          <h4 class="agency-hero-title">${equipment.icon} ${equipment.producto}</h4>
+          <p class="agency-hero-text">Detalle individual del equipo instalado en ${agency.agencyLabel}.</p>
+        </div>
+        <div class="equipment-detail-grid">
+          <div class="equipment-detail-item"><span>Serial</span><strong>${equipment.serial}</strong></div>
+          <div class="equipment-detail-item"><span>Marca</span><strong>${equipment.marca}</strong></div>
+          <div class="equipment-detail-item"><span>Modelo</span><strong>${equipment.modelo}</strong></div>
+          <div class="equipment-detail-item"><span>Categoría</span><strong>${equipment.categoria}</strong></div>
+          <div class="equipment-detail-item"><span>Ubicación</span><strong>${equipment.ubicacion}</strong></div>
+          <div class="equipment-detail-item"><span>Agencia</span><strong>${agency.agencyLabel}, ${agency.grupo.replace('Grupo ','G-')}</strong></div>
         </div>`;
     }
 
@@ -4802,6 +4840,8 @@ function startReportAutoRefresh() {
         agencyViewContainer.innerHTML = buildAgencyEquipmentView(agencyViewState.selectedAgency);
       } else if (mode === 'agency-history') {
         agencyViewContainer.innerHTML = buildAgencyHistoryView(agencyViewState.selectedAgency);
+      } else if (mode === 'agency-equipment-detail') {
+        agencyViewContainer.innerHTML = buildAgencyEquipmentDetailView(agencyViewState.selectedAgency, agencyViewState.selectedEquipment);
       }
 
       agencyViewContainer.querySelectorAll('[data-group-name]').forEach(card => {
@@ -4813,9 +4853,10 @@ function startReportAutoRefresh() {
       agencyViewContainer.querySelectorAll('[data-agency-back]').forEach(btn => {
         btn.addEventListener('click', () => {
           const target = btn.dataset.agencyBack;
-          if (target === 'groups') setAgencyView('groups', null, null);
-          else if (target === 'agencies') setAgencyView('agencies', agencyViewState.selectedGroup || usuarioActual?.grupo || visibleGroups[0]?.nombre || '', null);
-          else setAgencyView('agency-home', agencyViewState.selectedGroup, agencyViewState.selectedAgency);
+          if (target === 'groups') setAgencyView('groups', null, null, null);
+          else if (target === 'agencies') setAgencyView('agencies', agencyViewState.selectedGroup || usuarioActual?.grupo || visibleGroups[0]?.nombre || '', null, null);
+          else if (target === 'agency-equipment') setAgencyView('agency-equipment', agencyViewState.selectedGroup, agencyViewState.selectedAgency, null);
+          else setAgencyView('agency-home', agencyViewState.selectedGroup, agencyViewState.selectedAgency, null);
         });
       });
       agencyViewContainer.querySelectorAll('[data-agency-action]').forEach(btn => {
@@ -4824,8 +4865,16 @@ function startReportAutoRefresh() {
           const agency = getAgencyByLabel(btn.dataset.agency);
           if (!agency) return;
           if (action === 'report') startReportFromAgency(agency.agencyLabel);
-          if (action === 'equipos') setAgencyView('agency-equipment', agency.grupo, agency);
-          if (action === 'historial') setAgencyView('agency-history', agency.grupo, agency);
+          if (action === 'equipos') setAgencyView('agency-equipment', agency.grupo, agency, null);
+          if (action === 'historial') setAgencyView('agency-history', agency.grupo, agency, null);
+        });
+      });
+      agencyViewContainer.querySelectorAll('[data-equipment-id]').forEach(card => {
+        card.addEventListener('click', () => {
+          const agency = agencyViewState.selectedAgency;
+          const equipment = getAgencyEquipmentById(agency, card.dataset.equipmentId);
+          if (!agency || !equipment) return;
+          setAgencyView('agency-equipment-detail', agency.grupo, agency, equipment);
         });
       });
     }
@@ -5102,7 +5151,7 @@ function iniciarApp() {
     if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Gestiona las averías asignadas a tu usuario técnico y actualiza su estado.";
     document.getElementById("tabCreate").style.display = "none";
     tabAgencies.style.display = "block";
-    agencyViewState = { mode: 'groups', selectedGroup: null, selectedAgency: null };
+    agencyViewState = { mode: 'groups', selectedGroup: null, selectedAgency: null, selectedEquipment: null };
     switchTab(readLastTab() === "agencies" ? "agencies" : "reports");
   } else if (usuarioActual?.rol === "encargado") {
     if (roleBadge) roleBadge.textContent = `Rol: Encargado · ${usuarioActual?.grupo || "Sin grupo"}`;
@@ -5115,7 +5164,7 @@ function iniciarApp() {
     document.getElementById("tabCreate").style.display = "block";
     document.getElementById("tabAgencies").style.display = "block";
     tabAgencies.style.display = "block";
-    agencyViewState = { mode: 'agencies', selectedGroup: usuarioActual?.grupo || 'Grupo 44', selectedAgency: null };
+    agencyViewState = { mode: 'agencies', selectedGroup: usuarioActual?.grupo || 'Grupo 44', selectedAgency: null, selectedEquipment: null };
     switchTab(readLastTab() || "create");
   } else {
     if (roleBadge) roleBadge.textContent = "Rol: Administrador";
@@ -5127,7 +5176,7 @@ function iniciarApp() {
     if (reportsSectionSubtitle) reportsSectionSubtitle.textContent = "Visualiza todos los reportes registrados y revisa su estado general desde la app.";
     document.getElementById("tabCreate").style.display = "block";
     tabAgencies.style.display = "block";
-    agencyViewState = { mode: 'groups', selectedGroup: null, selectedAgency: null };
+    agencyViewState = { mode: 'groups', selectedGroup: null, selectedAgency: null, selectedEquipment: null };
     switchTab(readLastTab() || "create");
   }
 
