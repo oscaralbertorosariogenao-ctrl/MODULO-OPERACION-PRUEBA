@@ -2829,18 +2829,24 @@
     GRUPOS_OPERACIONALES['Grupo 44'] = { encargado: 'encargado1', agencias: AGENCIAS_GRUPO_44_COMPLETAS.slice() };
 
 
+    function getAgencyDigits(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      const match = raw.match(/(\d{3,4})/);
+      return match ? String(match[1]).padStart(4, '0') : '';
+    }
+
     function normalizeAgencyLabel(value) {
       const raw = String(value || "").trim();
       if (!raw) return "";
+      const digits = getAgencyDigits(raw);
+      if (digits) return `Agencia ${digits}`;
       if (/^agencia\s+/i.test(raw)) return raw.replace(/\s+/g, " ").trim();
-      if (/^\d+$/.test(raw)) return `Agencia ${raw}`;
-      const digits = raw.match(/\d+/);
-      return digits ? `Agencia ${digits[0]}` : raw;
+      return raw.replace(/\s+/g, ' ').trim();
     }
 
-    function getAgencyDigits(value) {
-      const match = String(value || '').match(/\d+/);
-      return match ? String(match[0]).padStart(4, '0') : '';
+    function normalizeAgencyKey(value) {
+      return getAgencyDigits(value);
     }
 
     function findAgencyRecord(value) {
@@ -4551,9 +4557,9 @@ function startReportAutoRefresh() {
 
     function getAgencyHistoryItems(agency) {
       if (!agency) return [];
-      const label = normalizeAgencyLabel(agency.agencyLabel);
+      const agencyKey = normalizeAgencyKey(agency?.agencyLabel || agency?.numero || '');
       return (latestReports || [])
-        .filter(report => normalizeAgencyLabel(report?.agencia) === label)
+        .filter(report => normalizeAgencyKey(report?.agencia || report?.agency || report?.agency_code) === agencyKey)
         .sort((a, b) => new Date(b?.fecha_reporte || b?.created_at || 0) - new Date(a?.fecha_reporte || a?.created_at || 0));
     }
 
@@ -4570,7 +4576,7 @@ function startReportAutoRefresh() {
     }
 
     function getReportAgencyDigits(report) {
-      return getAgencyDigits(report?.agencia || report?.grupo || '');
+      return normalizeAgencyKey(report?.agencia || report?.agency || report?.agency_code || report?.grupo || '');
     }
 
     function agencyHistoryCacheKey(agency) {
@@ -4605,7 +4611,7 @@ function startReportAutoRefresh() {
       const existing = agencyHistoryCache.get(cacheKey);
       if (existing?.promise && !force) return existing.promise;
 
-      const digits = String(cacheKey).padStart(4, '0');
+      const digits = normalizeAgencyKey(cacheKey);
       const queryDigits = Number(digits);
       const promise = (async () => {
         agencyHistoryCache.set(cacheKey, { status: 'loading', data: existing?.data || [], error: null, promise: null });
@@ -4891,7 +4897,7 @@ function startReportAutoRefresh() {
           }
         }
 
-        latestReports = reportsFiltrados.slice();
+        latestReports = reportsFiltrados.map(report => enrichReportWithOperationalData(report)).slice();
         processStatusNotifications(reportsFiltrados);
         updateReportSummaryCounts(reportsFiltrados);
         renderAgencySection();
