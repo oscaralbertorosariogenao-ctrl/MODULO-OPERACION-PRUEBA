@@ -294,6 +294,8 @@ body{background:linear-gradient(180deg,#f4f9fd 0%, #eef5fb 100%);}
 .brand-subtitle{font-size:11px;letter-spacing:.18em;line-height:1.45;text-align:center;max-width:210px}
 .sidebar-nav{display:flex;flex-direction:column;gap:12px}
 .sidebar-group{background:rgba(255,255,255,.72);border:1px solid #d8e7f1;border-radius:20px;padding:8px;box-shadow:0 8px 22px rgba(20,70,105,.05)}
+.sidebar-group.sidebar-group-terminal{margin-top:10px;position:relative}
+.sidebar-group.sidebar-group-terminal::before{content:"";position:absolute;left:16px;right:16px;top:-11px;height:1px;background:linear-gradient(90deg,rgba(111,140,163,0),rgba(111,140,163,.45),rgba(111,140,163,0));}
 .sidebar-group-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 14px;border:none;background:transparent;border-radius:16px;cursor:pointer;color:#32556f;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
 .sidebar-group-btn:hover{background:#eef7fc}
 .sidebar-group-main{display:flex;align-items:center;gap:12px;text-align:left}
@@ -1156,30 +1158,19 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       </div>
     </div>
 
-    <div class="sidebar-group" data-section="consultas">
-      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('consultas')">
-        <span class="sidebar-group-main"><i class="fas fa-magnifying-glass-chart"></i><span>Centro de consultas</span></span>
-        <i class="fas fa-chevron-down sidebar-group-arrow"></i>
-      </button>
-      <div class="sidebar-group-menu">
-        <a class="sidebar-link" onclick="cambiarVista('agencias', this)"><i class="fas fa-store"></i><span>Agencias</span></a>
-        <a class="sidebar-link" onclick="cambiarVista('grupos', this)"><i class="fas fa-users"></i><span>Grupos</span></a>
-      </div>
-    </div>
-
     <div class="sidebar-group" data-section="operaciones">
       <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('operaciones')">
-        <span class="sidebar-group-main"><i class="fas fa-screwdriver-wrench"></i><span>Módulo de operaciones</span></span>
+        <span class="sidebar-group-main"><i class="fas fa-screwdriver-wrench"></i><span>OPERACIONES</span></span>
         <i class="fas fa-chevron-down sidebar-group-arrow"></i>
       </button>
       <div class="sidebar-group-menu">
-        <a id="navDashboard" class="sidebar-link" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i><span>Resumen Operativo</span></a>
-        <a id="navOperations" class="sidebar-link" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i><span>Gestión de Operaciones</span></a>
+        <a id="navDashboard" class="sidebar-link" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i><span>Resumen operativo</span></a>
+        <a id="navOperations" class="sidebar-link" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i><span>Gestión de operaciones</span></a>
         <a id="navHistory" class="sidebar-link" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
-        <a id="navReports" class="sidebar-link" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i><span>Reportes de Operaciones</span></a>
-        <a id="navReportsAgency" class="sidebar-link" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i><span>Reportes por Agencia</span></a>
-        <a id="navReportsOwner" class="sidebar-link" onclick="abrirVistaOperaciones('reportsOwner','ops-reportes-responsable', this)"><i class="fas fa-user-gear"></i><span>Reportes por Responsable</span></a>
-        <a id="navReportsSpecific" class="sidebar-link" onclick="abrirVistaOperaciones('reportsSpecific','ops-reportes-tipos', this)"><i class="fas fa-layer-group"></i><span>Reportes por Tipos</span></a>
+        <a id="navReports" class="sidebar-link" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i><span>Reportes de operaciones</span></a>
+        <a id="navReportsAgency" class="sidebar-link" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i><span>Reportes por agencia</span></a>
+        <a id="navReportsOwner" class="sidebar-link" onclick="abrirVistaOperaciones('reportsOwner','ops-reportes-responsable', this)"><i class="fas fa-user-gear"></i><span>Reportes por responsable</span></a>
+        <a id="navReportsSpecific" class="sidebar-link" onclick="abrirVistaOperaciones('reportsSpecific','ops-reportes-tipos', this)"><i class="fas fa-layer-group"></i><span>Reportes por tipos</span></a>
         <a id="navUsers" class="sidebar-link" onclick="abrirVistaOperaciones('users','ops-usuarios', this)"><i class="fas fa-user"></i><span>Usuarios</span></a>
         <a id="navSuppliers" class="sidebar-link" onclick="abrirVistaOperaciones('suppliers','ops-suplidores', this)"><i class="fas fa-truck"></i><span>Suplidores</span></a>
         <a id="navWorks" class="sidebar-link" onclick="abrirVistaOperaciones('works','ops-trabajos', this)"><i class="fas fa-hammer"></i><span>Trabajos</span></a>
@@ -1189,7 +1180,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 
     <div class="sidebar-group" data-section="rrhh">
       <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('rrhh')">
-        <span class="sidebar-group-main"><i class="fas fa-id-card-clip"></i><span>Módulo de RRHH</span></span>
+        <span class="sidebar-group-main"><i class="fas fa-id-card-clip"></i><span>RECURSOS HUMANOS</span></span>
         <i class="fas fa-chevron-down sidebar-group-arrow"></i>
       </button>
       <div class="sidebar-group-menu">
@@ -1197,6 +1188,17 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <a id="navSolicitudes" class="sidebar-link" onclick="cambiarVista('solicitudes', this)"><i class="fas fa-file-signature"></i><span>Solicitudes</span></a>
         <a id="navOperadoras" class="sidebar-link" onclick="cambiarVista('operadoras', this)"><i class="fas fa-id-badge"></i><span>Gestión de empleados/as</span></a>
         <a id="navHistorialRrhh" class="sidebar-link" onclick="cambiarVista('historial-rrhh', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
+      </div>
+    </div>
+
+    <div class="sidebar-group sidebar-group-terminal" data-section="consultas">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('consultas')">
+        <span class="sidebar-group-main"><i class="fas fa-magnifying-glass-chart"></i><span>Centro de consultas</span></span>
+        <i class="fas fa-chevron-down sidebar-group-arrow"></i>
+      </button>
+      <div class="sidebar-group-menu">
+        <a class="sidebar-link" onclick="cambiarVista('agencias', this)"><i class="fas fa-store"></i><span>Agencias</span></a>
+        <a class="sidebar-link" onclick="cambiarVista('grupos', this)"><i class="fas fa-users"></i><span>Grupos</span></a>
       </div>
     </div>
   </div>
@@ -9856,7 +9858,8 @@ function sidebarSectionForView(vista){
 }
 
 function activateSidebarLink(el, vista){
-  activateSidebarLink(el, vista);
+  document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+  if(el && el.classList) el.classList.add('active');
   const section = sidebarSectionForView(vista);
   setSidebarSectionOpen(section, true);
 }
