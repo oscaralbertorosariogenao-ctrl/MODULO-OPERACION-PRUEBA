@@ -288,7 +288,7 @@ body{background:linear-gradient(180deg,#f4f9fd 0%, #eef5fb 100%);}
 .brand-logo{width:118px;height:62px;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(17,158,207,.16));}.brand-logo-shell{width:148px;height:84px;border-radius:24px;background:linear-gradient(180deg,#ffffff 0%,#f2fbff 100%);display:grid;place-items:center;border:1px solid #d8edf5;box-shadow:0 14px 28px rgba(17,158,207,.10);padding:10px 12px;}
 .brand-title{font-size:22px;font-weight:900;color:#119ecf;letter-spacing:.08em;line-height:1;}
 .brand-subtitle{font-size:11px;font-weight:800;color:#6f8ca3;letter-spacing:.14em;text-transform:uppercase;}
-.sidebar{width:320px;padding:18px 16px 20px;overflow-y:auto;overflow-x:hidden;position:sticky;top:0;height:100vh}
+.sidebar{width:320px;padding:18px 16px 20px;overflow-y:auto;overflow-x:hidden;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:0}.sidebar-nav{flex:1}
 .brand-wrap{gap:10px;padding:12px 10px 18px;margin-bottom:16px}
 .brand-title{font-size:24px;letter-spacing:.06em}
 .brand-subtitle{font-size:11px;letter-spacing:.18em;line-height:1.45;text-align:center;max-width:210px}
@@ -310,6 +310,15 @@ body{background:linear-gradient(180deg,#f4f9fd 0%, #eef5fb 100%);}
 .sidebar-link:hover i{color:#179ec9}
 .sidebar-link.active{background:linear-gradient(90deg,#e8f8fd 0%,#dff4fb 100%);color:#148fbc;box-shadow:inset 0 0 0 1px #cfeaf4}
 .sidebar-link.active i{color:#148fbc}
+.sidebar-user-card{margin-top:18px;padding:16px 16px 18px;border-radius:22px;background:linear-gradient(135deg,#1b5f95 0%,#119ecf 58%,#7ed2f1 100%);color:#fff;box-shadow:0 18px 34px rgba(17,158,207,.20);position:relative;overflow:hidden}
+.sidebar-user-card::before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.12)}
+.sidebar-user-head{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.sidebar-user-avatar{width:52px;height:52px;border-radius:18px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.sidebar-user-meta{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sidebar-user-name{font-size:15px;font-weight:900;letter-spacing:.03em;line-height:1.2;color:#fff}
+.sidebar-user-role{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.86)}
+.sidebar-user-line{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:700;color:rgba(255,255,255,.92);position:relative;z-index:1}
+.sidebar-user-line i{font-size:12px;opacity:.95}
 .menu-section-title,.menu,.sidebar h2{display:none !important}
 @media (max-width:1100px){.sidebar{width:290px}}
 
@@ -1201,6 +1210,17 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <a class="sidebar-link" onclick="cambiarVista('grupos', this)"><i class="fas fa-users"></i><span>Grupos</span></a>
       </div>
     </div>
+    </div>
+
+  <div class="sidebar-user-card">
+    <div class="sidebar-user-head">
+      <div class="sidebar-user-avatar"><i class="fas fa-user-shield"></i></div>
+      <div class="sidebar-user-meta">
+        <div class="sidebar-user-name">Oscar Rosario</div>
+        <div class="sidebar-user-role">OPERACIONES</div>
+      </div>
+    </div>
+    <div class="sidebar-user-line"><i class="fas fa-briefcase"></i><span>Departamento activo del sistema</span></div>
   </div>
 </div>
 
