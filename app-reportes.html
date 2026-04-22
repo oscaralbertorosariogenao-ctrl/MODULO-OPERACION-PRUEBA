@@ -3094,6 +3094,7 @@ let mobileRealtimeConnected = false;
     ];
     let latestReports = [];
     let agencyViewState = { mode: 'root', selectedGroup: null, selectedAgency: null };
+    const agencyHistoryCache = new Map();
 
     let usuarioActual = null;
     let reportRefreshInterval = null;
@@ -4556,6 +4557,88 @@ function startReportAutoRefresh() {
         .sort((a, b) => new Date(b?.fecha_reporte || b?.created_at || 0) - new Date(a?.fecha_reporte || a?.created_at || 0));
     }
 
+    function formatHistoryDateTime(value) {
+      const date = new Date(value || '');
+      if (Number.isNaN(date.getTime())) return 'Fecha no disponible';
+      return date.toLocaleString('es-DO', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function getReportAgencyDigits(report) {
+      return getAgencyDigits(report?.agencia || report?.grupo || '');
+    }
+
+    function agencyHistoryCacheKey(agency) {
+      return String(agency?.numero || getAgencyDigits(agency?.agencyLabel || '')).padStart(4, '0');
+    }
+
+    function buildAgencyHistoryMarkupFromItems(items) {
+      return items.length ? items.map(item => {
+        const status = normalizeStatus(item?.estado || 'Pendiente');
+        const assignee = formatAssigneeLabel(item?.asignado_a || item?.tecnico || item?.responsable || 'Sin asignar');
+        const createdBy = item?.creado_por || item?.reportado_por || 'App móvil';
+        return `
+            <div class="history-card">
+              <div class="history-title">${item.code || 'Sin código'} · ${item.categoria || 'Sin categoría'}</div>
+              <div class="history-meta-inline">
+                <span class="mini-pill">${item.tipo_reporte || 'Reporte'}</span>
+                <span class="mini-pill">${status.label}</span>
+                <span class="mini-pill">${formatHistoryDateTime(item.fecha_reporte || item.created_at)}</span>
+              </div>
+              <div class="history-meta-inline">
+                <span class="mini-pill">👤 ${assignee}</span>
+                <span class="mini-pill">🧾 ${createdBy}</span>
+              </div>
+              <p>${item.descripcion || item.comentario || 'Sin comentario adicional.'}</p>
+            </div>`;
+      }).join('') : '<div class="agency-empty">Todavía no hay historial registrado para esta agencia.</div>';
+    }
+
+    async function loadAgencyHistoryFromSupabase(agency, { force = false } = {}) {
+      if (!agency) return [];
+      const cacheKey = agencyHistoryCacheKey(agency);
+      const existing = agencyHistoryCache.get(cacheKey);
+      if (existing?.promise && !force) return existing.promise;
+
+      const digits = String(cacheKey).padStart(4, '0');
+      const queryDigits = Number(digits);
+      const promise = (async () => {
+        agencyHistoryCache.set(cacheKey, { status: 'loading', data: existing?.data || [], error: null, promise: null });
+        try {
+          const { data, error } = await supabase
+            .from(TABLE_NAME)
+            .select('*')
+            .or(`agencia.ilike.%${digits}%,agencia.eq.${queryDigits}`)
+            .order('created_at', { ascending: false });
+          if (error) throw error;
+          const filtered = (data || [])
+            .filter(report => getReportAgencyDigits(report) === digits)
+            .sort((a, b) => new Date(b?.fecha_reporte || b?.created_at || 0) - new Date(a?.fecha_reporte || a?.created_at || 0));
+          agencyHistoryCache.set(cacheKey, { status: 'ready', data: filtered, error: null, promise: null, updatedAt: Date.now() });
+          if (agencyViewState.mode === 'agency-history' && agencyHistoryCacheKey(agencyViewState.selectedAgency) === cacheKey) {
+            renderAgencySection();
+          }
+          return filtered;
+        } catch (error) {
+          console.error('Error cargando historial de agencia desde Supabase:', error);
+          const fallback = getAgencyHistoryItems(agency);
+          agencyHistoryCache.set(cacheKey, { status: 'error', data: fallback, error, promise: null, updatedAt: Date.now() });
+          if (agencyViewState.mode === 'agency-history' && agencyHistoryCacheKey(agencyViewState.selectedAgency) === cacheKey) {
+            renderAgencySection();
+          }
+          return fallback;
+        }
+      })();
+
+      agencyHistoryCache.set(cacheKey, { status: 'loading', data: existing?.data || [], error: null, promise });
+      return promise;
+    }
+
     function escapeAttr(value) {
       return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -4643,27 +4726,36 @@ function startReportAutoRefresh() {
     }
 
     function buildAgencyHistoryView(agency) {
-      const items = getAgencyHistoryItems(agency);
+      const cacheKey = agencyHistoryCacheKey(agency);
+      const cached = agencyHistoryCache.get(cacheKey);
+      const state = cached?.status || 'idle';
+      const items = Array.isArray(cached?.data) ? cached.data : [];
+      let content = '';
+
+      if (state === 'loading') {
+        content = '<div class="agency-empty">Cargando historial real desde Supabase...</div>';
+      } else {
+        content = buildAgencyHistoryMarkupFromItems(items);
+      }
+
+      if (state === 'error') {
+        content = `
+          <div class="validation-banner">
+            No se pudo consultar Supabase en este momento. Se muestra el historial disponible cargado en la app para esta agencia.
+          </div>
+          ${content}`;
+      }
+
       return `
         <div class="agency-back-row">
           <button type="button" class="agency-back-btn" data-agency-back="agency-home">← Volver a la agencia</button>
+          <button type="button" class="agency-back-btn" data-agency-history-refresh="${escapeAttr(agency.agencyLabel)}">Actualizar historial</button>
         </div>
         <div class="agency-block-card">
           <h4 class="agency-hero-title">Historial de ${agency.agencyLabel}</h4>
-          <p class="agency-hero-text">Revisa las averías y trabajos relacionados con esta agencia sin mezclarlo con otras vistas.</p>
+          <p class="agency-hero-text">Revisa las averías y trabajos reales relacionados con esta agencia, consultados directamente desde Supabase.</p>
         </div>
-        <div class="history-grid">
-          ${items.length ? items.map(item => `
-            <div class="history-card">
-              <div class="history-title">${item.code || 'Sin código'} · ${item.categoria || 'Sin categoría'}</div>
-              <div class="history-meta-inline">
-                <span class="mini-pill">${item.tipo_reporte || 'Reporte'}</span>
-                <span class="mini-pill">${item.estado || 'Sin estado'}</span>
-                <span class="mini-pill">${formatDate(item.fecha_reporte || item.created_at)}</span>
-              </div>
-              <p>${item.descripcion || item.comentario || 'Sin comentario adicional.'}</p>
-            </div>`).join('') : '<div class="agency-empty">Todavía no hay historial registrado para esta agencia.</div>'}
-        </div>`;
+        <div class="history-grid">${content}</div>`;
     }
 
     function renderAgencySection() {
