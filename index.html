@@ -580,6 +580,83 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 
 
 
+
+
+/* ===== OPERACIONES - Levantamientos ===== */
+.lev-shell{display:grid;gap:18px}
+.lev-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,.9fr);gap:18px;background:linear-gradient(135deg,#0f5d89,#1388c2);color:#fff;border-radius:24px;padding:24px;border:1px solid rgba(255,255,255,.16);box-shadow:0 16px 36px rgba(15,93,137,.18)}
+.lev-hero h2{margin:0 0 8px;font-size:28px;font-weight:900;letter-spacing:.02em}
+.lev-hero p{margin:0;color:rgba(255,255,255,.9);line-height:1.55;font-size:14px}
+.lev-badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.lev-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);font-size:12px;font-weight:900}
+.lev-hero-side{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lev-hero-kpi{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;justify-content:space-between}
+.lev-hero-kpi span{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.78);font-weight:900}
+.lev-hero-kpi strong{font-size:22px;line-height:1.1}
+.lev-grid-4,.lev-grid-3,.lev-grid-2{display:grid;gap:16px}
+.lev-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.lev-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.lev-grid-2{grid-template-columns:1.4fr .8fr}
+.lev-card,.lev-panel{background:#fff;border:1px solid #d9e7f1;border-radius:22px;box-shadow:0 10px 24px rgba(20,70,105,.06)}
+.lev-card{padding:18px;position:relative;overflow:hidden}
+.lev-card::after{content:'';position:absolute;right:-18px;top:-22px;width:78px;height:78px;border-radius:50%;background:rgba(19,136,194,.08)}
+.lev-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#70889d;font-weight:900;margin-bottom:10px}
+.lev-card .value{font-size:34px;line-height:1;color:#214c6a;font-weight:900;margin-bottom:8px}
+.lev-card .sub{font-size:13px;color:#73879a}
+.lev-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #e8f0f6;flex-wrap:wrap}
+.lev-panel-head h3{margin:0;font-size:19px;color:#214c6a}
+.lev-panel-head p{margin:4px 0 0;font-size:13px;color:#7a90a3}
+.lev-panel-body{padding:18px 20px}
+.lev-filters{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr 1fr;gap:14px}
+.lev-field{display:flex;flex-direction:column;gap:6px}
+.lev-field label{font-size:12px;font-weight:900;letter-spacing:.03em;text-transform:uppercase;color:#60788d}
+.lev-field input,.lev-field select,.lev-field textarea{width:100%;padding:11px 13px;border:1px solid #cfdeea;border-radius:14px;background:#fbfdff;color:#27435c;font-size:14px;outline:none}
+.lev-field textarea{min-height:110px;resize:vertical}
+.lev-field input:focus,.lev-field select:focus,.lev-field textarea:focus{border-color:#1ab0df;box-shadow:0 0 0 3px rgba(17,158,207,.12)}
+.lev-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.lev-btn{border:none;border-radius:14px;padding:11px 15px;font-weight:800;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.lev-btn.primary{background:#1184bc;color:#fff}
+.lev-btn.primary:hover{background:#0d6e9d}
+.lev-btn.secondary{background:#eef5fb;color:#325774;border:1px solid #d3e2ee}
+.lev-btn.secondary:hover{background:#e4eff8}
+.lev-btn.ghost{background:#fff;color:#53728a;border:1px solid #d9e7f1}
+.lev-chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900}
+.lev-chip.blue{background:#e9f5ff;color:#2473a7}
+.lev-chip.green{background:#eaf8ef;color:#2f7d49}
+.lev-chip.gold{background:#fff6df;color:#9a7400}
+.lev-chip.red{background:#fff0ef;color:#b43d35}
+.lev-chip.gray{background:#f1f4f7;color:#5b7387}
+.lev-table-wrap{overflow:auto}
+.lev-table{width:100%;border-collapse:collapse;min-width:980px}
+.lev-table th,.lev-table td{padding:13px 12px;border-bottom:1px solid #ebf1f5;text-align:left;vertical-align:top}
+.lev-table th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#678197;background:#f8fbfd}
+.lev-table td{font-size:14px;color:#2f4c62}
+.lev-title-cell strong{display:block;color:#1f4763;font-size:14px;margin-bottom:4px}
+.lev-title-cell span{display:block;color:#71879b;font-size:12px}
+.lev-mini-list{display:grid;gap:12px}
+.lev-mini-item{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid #e6eef5;border-radius:16px;background:#fbfdff}
+.lev-mini-item strong{display:block;color:#234a67;font-size:14px}
+.lev-mini-item span{display:block;color:#7a8d9f;font-size:12px;margin-top:3px}
+.lev-mini-item b{font-size:16px;color:#0f6fa2}
+.lev-progress-list{display:grid;gap:12px}
+.lev-progress-item{display:grid;gap:8px}
+.lev-progress-top{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:#47657c;font-weight:800}
+.lev-progress-bar{height:10px;background:#edf3f8;border-radius:999px;overflow:hidden}
+.lev-progress-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#1498cf,#0f6e9f)}
+.lev-modal{position:fixed;inset:0;background:rgba(16,32,52,.38);display:none;align-items:center;justify-content:center;z-index:80;padding:16px}
+.lev-modal.open{display:flex}
+.lev-modal-dialog{width:min(980px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;border:1px solid #d9e7f1;box-shadow:0 18px 40px rgba(20,70,105,.2)}
+.lev-modal-head{padding:20px 22px;border-bottom:1px solid #e7eef5;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.lev-modal-head h3{margin:0;font-size:22px;color:#224c69}
+.lev-modal-body{padding:20px 22px;display:grid;gap:18px}
+.lev-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.lev-form-grid .span-2{grid-column:span 2}
+.lev-form-grid .span-3{grid-column:span 3}
+.lev-modal-actions{padding:18px 22px;border-top:1px solid #e7eef5;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.lev-empty{padding:28px 18px;text-align:center;color:#7b8d9e;font-weight:700}
+@media (max-width:1200px){.lev-grid-4,.lev-grid-3,.lev-grid-2,.lev-filters,.lev-form-grid{grid-template-columns:1fr 1fr}.lev-hero{grid-template-columns:1fr}.lev-hero-side{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.lev-grid-4,.lev-grid-3,.lev-grid-2,.lev-filters,.lev-form-grid{grid-template-columns:1fr}.lev-form-grid .span-2,.lev-form-grid .span-3{grid-column:span 1}.lev-hero h2{font-size:24px}.lev-hero-side{grid-template-columns:1fr}.lev-table{min-width:860px}}
+
 /* ===== RRHH - Solicitudes e Historial ===== */
 .hrx-shell{display:grid;gap:18px}
 .hrx-subnav{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
@@ -1133,6 +1210,61 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
   }
 }
 
+
+/* ===== LEVANTAMIENTOS · FICHA EMPRESARIAL ===== */
+.lev-hero-enterprise{grid-template-columns:minmax(0,1.55fr) minmax(340px,.95fr)}
+.lev-kpi-grid .lev-card .value{font-size:22px}
+.lev-main-grid{grid-template-columns:minmax(0,1.45fr) minmax(330px,.82fr)}
+.lev-enterprise-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+.lev-enterprise-table .lev-title-cell strong{display:block;font-size:14px;color:#12344b}
+.lev-enterprise-table .lev-title-cell span{display:block;margin-top:6px;color:#5c7487;font-size:12px;line-height:1.5}
+.lev-muted{color:#6d8598;font-size:12px}
+.lev-summary-stack{display:grid;gap:16px}
+.lev-detail-shell{display:grid;gap:18px}
+.lev-detail-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:6px 2px 2px}
+.lev-detail-title-block h2{margin:0;font-size:28px;color:#0d2e45;letter-spacing:.01em}
+.lev-detail-title-block p{margin:8px 0 0;color:#5c7487;line-height:1.55}
+.lev-detail-badges{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.lev-badge-soft{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:#eef6fb;border:1px solid #d6e8f2;color:#0e5278;font-size:12px;font-weight:900}
+.lev-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.lev-exec-box{background:linear-gradient(135deg,#f8fbfd,#eef6fb);border:1px solid #d5e7f1;border-radius:22px;padding:18px 20px}
+.lev-exec-box h4,.lev-section-head h4{margin:0 0 6px;color:#12344b;font-size:16px}
+.lev-exec-box p,.lev-section-head p{margin:0;color:#587185;line-height:1.6;font-size:13px}
+.lev-section{background:#fff;border:1px solid #d9e7f1;border-radius:22px;overflow:hidden;box-shadow:0 12px 24px rgba(14,82,120,.08)}
+.lev-section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px 20px;border-bottom:1px solid #e8f1f6;background:#fbfdff}
+.lev-table-clean{width:100%;border-collapse:collapse}
+.lev-table-clean th,.lev-table-clean td{padding:14px 16px;border-bottom:1px solid #edf3f7;text-align:left;font-size:13px;vertical-align:top}
+.lev-table-clean th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5c7487;background:#f8fbfd}
+.lev-table-clean tr:last-child td{border-bottom:none}
+.lev-state-pill{display:inline-flex;align-items:center;padding:8px 11px;border-radius:999px;font-weight:800;font-size:12px;background:#eef6fb;color:#0e5278}
+.lev-state-pill.good{background:#dff4ea;color:#157347}
+.lev-state-pill.ok{background:#efe8ff;color:#6b46c1}
+.lev-state-pill.warn{background:#fff1d6;color:#9a6a00}
+.lev-state-pill.bad{background:#fde5e7;color:#b42318}
+.lev-equip-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:18px}
+.lev-equip-card{border:1px solid #dce9f1;border-radius:18px;padding:16px;background:#fbfdff;display:grid;gap:10px}
+.lev-equip-card h5{margin:0;color:#12344b;font-size:15px}
+.lev-equip-meta{display:grid;gap:8px;font-size:13px;color:#547084}
+.lev-equip-photo{height:120px;border-radius:16px;background:linear-gradient(135deg,#eef6fb,#d7eaf4);display:flex;align-items:center;justify-content:center;color:#0e5278;font-weight:800;border:1px dashed #b9d6e6;text-align:center;padding:12px}
+.lev-gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:18px}
+.lev-gallery-card{border:1px solid #dce9f1;border-radius:18px;overflow:hidden;background:#fff}
+.lev-gallery-thumb{height:145px;background:linear-gradient(135deg,#eaf5fb,#d3e9f4);display:flex;align-items:center;justify-content:center;color:#0e5278;font-weight:800;text-align:center;padding:18px}
+.lev-gallery-card .meta{padding:14px 14px 16px;display:grid;gap:5px}
+.lev-gallery-card .meta strong{color:#12344b;font-size:14px}
+.lev-gallery-card .meta span{color:#60798d;font-size:12px;line-height:1.5}
+.lev-diagnostics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:18px}
+.lev-diag-card{border:1px solid #dce9f1;border-radius:18px;background:#fbfdff;padding:16px;display:grid;gap:10px}
+.lev-diag-card span{font-size:12px;color:#6d8598;text-transform:uppercase;letter-spacing:.05em;font-weight:900}
+.lev-diag-card strong{font-size:18px;color:#12344b;line-height:1.2}
+.lev-diag-card p{margin:0;color:#60798d;font-size:13px;line-height:1.5}
+.lev-action-list{display:grid;gap:12px;padding:18px}
+.lev-action-item{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid #ddeaf2;border-radius:16px;background:#fbfdff}
+.lev-action-item strong{display:block;color:#12344b;font-size:14px;margin-bottom:4px}
+.lev-action-item span{display:block;color:#5f778b;font-size:13px;line-height:1.45}
+.lev-modal-dialog.lev-detail-dialog{max-width:1240px;width:min(1240px,96vw)}
+@media (max-width:1100px){.lev-main-grid,.lev-hero-enterprise{grid-template-columns:1fr}.lev-detail-grid,.lev-diagnostics{grid-template-columns:repeat(2,minmax(0,1fr))}.lev-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.lev-enterprise-filters,.lev-detail-grid,.lev-equip-grid,.lev-gallery-grid,.lev-diagnostics{grid-template-columns:1fr}.lev-detail-header{flex-direction:column}.lev-action-item{flex-direction:column}.lev-modal-dialog.lev-detail-dialog{width:min(96vw,96vw)}}
+
 </style>
 </head>
 <body>
@@ -1177,6 +1309,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       <div class="sidebar-group-menu">
         <a id="navDashboard" class="sidebar-link" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i><span>Resumen operativo</span></a>
         <a id="navOperations" class="sidebar-link" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i><span>Gestión de operaciones</span></a>
+        <a id="navLevantamientos" class="sidebar-link" onclick="abrirVistaOperaciones('levantamientos','ops-levantamientos', this)"><i class="fas fa-clipboard-check"></i><span>Levantamientos</span></a>
         <a id="navHistory" class="sidebar-link" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
         <a id="navReports" class="sidebar-link" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i><span>Reportes de operaciones</span></a>
         <a id="navReportsAgency" class="sidebar-link" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i><span>Reportes por agencia</span></a>
@@ -1745,6 +1878,85 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <div class="topbar"><div><h2>Módulo de Operaciones</h2><p>Registro, seguimiento y control de averías y trabajos por agencia.</p></div><button class="btn btn-primary" id="openCreateModalBtn">+ Nueva operación</button></div>
 <div class="stats"><div class="stat-card"><span>Total de operaciones</span><strong id="statTotal">0</strong></div><div class="stat-card"><span>En proceso</span><strong id="statProceso">0</strong></div><div class="stat-card"><span>Completadas</span><strong id="statCompletado">0</strong></div><div class="stat-card"><span>Pendientes</span><strong id="statPendiente">0</strong></div></div>
 <div class="panel"><div class="panel-header"><h3>Listado de operaciones</h3><button class="btn btn-secondary" id="resetDataBtn">Restablecer datos</button></div><div class="filters"><select class="select" id="filterType"><option value="">Todos los tipos</option><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select><select class="select" id="filterStatus"><option value="">Todos los estados</option><option value="Pendiente">Pendiente</option><option value="Asignada">Asignada</option><option value="En proceso">En proceso</option><option value="Completado">Completado</option></select><input class="input" id="filterAgency" placeholder="Filtrar por agencia"/><input class="input" id="filterTech" placeholder="Filtrar por técnico / suplidor"/><input class="input" id="filterDateFrom" type="date"/><input class="input" id="filterDateTo" type="date"/></div><div class="table-wrap"><table><thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Asignado</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="operationsTableBody"></tbody></table></div></div>
+</div></div></div>
+<div id="vista-ops-levantamientos" class="hidden"><div class="ops-scope"><div class="view hidden" id="levantamientosView">
+<div class="lev-shell">
+  <div class="lev-hero lev-hero-enterprise">
+    <div>
+      <h2>Levantamientos de campo</h2>
+      <p>Submódulo empresarial para consolidar formularios de inspección en un solo expediente ejecutivo. Cada envío se interpreta como un levantamiento completo, con lectura rápida, diagnóstico resumido, hallazgos, equipos, fotografías y acciones operativas.</p>
+      <div class="lev-badges">
+        <div class="lev-badge"><i class="fas fa-file-circle-check"></i> 1 formulario = 1 expediente</div>
+        <div class="lev-badge"><i class="fas fa-camera-retro"></i> Evidencias por zonas y equipos</div>
+        <div class="lev-badge"><i class="fas fa-chart-line"></i> Lectura gerencial inmediata</div>
+      </div>
+    </div>
+    <div class="lev-hero-side">
+      <div class="lev-hero-kpi"><span>Total levantamientos</span><strong id="levStatTotal">0</strong></div>
+      <div class="lev-hero-kpi"><span>Pendientes de revisión</span><strong id="levStatPending">0</strong></div>
+      <div class="lev-hero-kpi"><span>Con acción operativa</span><strong id="levStatAction">0</strong></div>
+      <div class="lev-hero-kpi"><span>Último técnico cargado</span><strong id="levHeroTech">-</strong></div>
+    </div>
+  </div>
+
+  <div class="lev-grid-4 lev-kpi-grid">
+    <div class="lev-card"><div class="label">Agencia más auditada</div><div class="value" id="levHeroAgency">-</div><div class="sub">Mayor concentración de formularios recibidos</div></div>
+    <div class="lev-card"><div class="label">Grupo con mayor carga</div><div class="value" id="levHeroGroup">-</div><div class="sub">Zona operativa con más movimiento</div></div>
+    <div class="lev-card"><div class="label">Prioridad máxima abierta</div><div class="value" id="levHeroPriority">-</div><div class="sub">Caso más delicado pendiente</div></div>
+    <div class="lev-card"><div class="label">Último expediente cerrado</div><div class="value" id="levHeroClosed">-</div><div class="sub">Código del levantamiento más reciente completado</div></div>
+  </div>
+
+  <div class="lev-grid-2 lev-main-grid">
+    <div class="lev-panel">
+      <div class="lev-panel-head">
+        <div><h3>Expedientes de levantamientos</h3><p>Cada fila resume un formulario completo de campo con lectura clara para operaciones, soporte y gerencia.</p></div>
+        <div class="lev-actions">
+          <button type="button" class="lev-btn secondary" id="levExportBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
+          <button type="button" class="lev-btn secondary" id="levExportExcelBtn"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+          <button type="button" class="lev-btn ghost" id="levResetBtn"><i class="fas fa-rotate-left"></i> Restablecer demo</button>
+          <button type="button" class="lev-btn primary" id="levOpenCreateBtn"><i class="fas fa-plus"></i> Nuevo registro rápido</button>
+        </div>
+      </div>
+      <div class="lev-panel-body">
+        <div class="lev-filters lev-enterprise-filters">
+          <div class="lev-field"><label>Búsqueda general</label><input id="levFilterSearch" placeholder="Código, agencia, técnico, resumen o hallazgo"></div>
+          <div class="lev-field"><label>Tipo</label><select id="levFilterCategory"><option value="">Todos</option></select></div>
+          <div class="lev-field"><label>Estado de flujo</label><select id="levFilterStatus"><option value="">Todos</option><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+          <div class="lev-field"><label>Prioridad sugerida</label><select id="levFilterPriority"><option value="">Todas</option><option>Baja</option><option>Media</option><option>Alta</option><option>Urgente</option></select></div>
+          <div class="lev-field"><label>Grupo</label><select id="levFilterGroup"><option value="">Todos</option></select></div>
+          <div class="lev-field"><label>Agencia</label><input id="levFilterAgency" placeholder="Ej.: 1019"></div>
+          <div class="lev-field"><label>Técnico</label><input id="levFilterOwner" placeholder="Nombre del técnico"></div>
+        </div>
+        <div class="lev-table-wrap" style="margin-top:16px;">
+          <table class="lev-table lev-enterprise-table">
+            <thead>
+              <tr><th>Código</th><th>Resumen del levantamiento</th><th>Agencia / Grupo</th><th>Técnico</th><th>Estado general</th><th>Prioridad</th><th>Hallazgos</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="levTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:16px;">
+      <div class="lev-panel">
+        <div class="lev-panel-head"><div><h3>Lectura ejecutiva</h3><p>Vista rápida del comportamiento operativo de los formularios recibidos.</p></div></div>
+        <div class="lev-panel-body lev-summary-stack">
+          <div class="lev-mini-item"><div><strong id="levExecutiveTitle">Sin expediente seleccionado</strong><span id="levExecutiveText">Selecciona un levantamiento para visualizar su ficha empresarial completa.</span></div><b id="levExecutiveCode">-</b></div>
+          <div class="lev-progress-list" id="levCategoryBars"></div>
+        </div>
+      </div>
+      <div class="lev-panel">
+        <div class="lev-panel-head"><div><h3>Alertas prioritarias</h3><p>Expedientes con necesidad de seguimiento inmediato.</p></div></div>
+        <div class="lev-panel-body"><div class="lev-mini-list" id="levAlertList"></div></div>
+      </div>
+      <div class="lev-panel">
+        <div class="lev-panel-head"><div><h3>Agenda operativa sugerida</h3><p>Próximos expedientes que deben pasar a acción.</p></div></div>
+        <div class="lev-panel-body"><div class="lev-mini-list" id="levAgendaList"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
 </div></div></div>
 <div id="vista-ops-historial" class="hidden"><div class="ops-scope"><div class="view hidden" id="historyView">
 <div class="topbar">
@@ -7114,8 +7326,8 @@ renderTransferencias();
     }
 
     function showView(viewName) {
-      ['dashboardView','operationsView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView'].forEach(id => document.getElementById(id).classList.add('hidden'));
-      ['navDashboard','navOperations','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues'].forEach(id => document.getElementById(id).classList.remove('active'));
+      ['dashboardView','operationsView','levantamientosView','historyView','reportsView','reportsAgencyView','reportsOwnerView','reportsSpecificView','usersView','suppliersView','worksView','issuesView'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['navDashboard','navOperations','navLevantamientos','navHistory','navReports','navReportsAgency','navReportsOwner','navReportsSpecific','navUsers','navSuppliers','navWorks','navIssues'].forEach(id => document.getElementById(id).classList.remove('active'));
       if (viewName === 'dashboard') {
         document.getElementById('dashboardView').classList.remove('hidden');
         document.getElementById('navDashboard').classList.add('active');
@@ -7123,6 +7335,10 @@ renderTransferencias();
       } else if (viewName === 'operations') {
         document.getElementById('operationsView').classList.remove('hidden');
         document.getElementById('navOperations').classList.add('active');
+      } else if (viewName === 'levantamientos') {
+        document.getElementById('levantamientosView').classList.remove('hidden');
+        document.getElementById('navLevantamientos').classList.add('active');
+        if (typeof levRender === 'function') levRender();
       } else if (viewName === 'history') {
         document.getElementById('historyView').classList.remove('hidden');
         document.getElementById('navHistory').classList.add('active');
@@ -8450,6 +8666,117 @@ renderTransferencias();
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},220);};<\/script>
 
+
+
+<div class="lev-modal" id="levModal">
+  <div class="lev-modal-dialog" style="max-width:1280px; width:min(96vw,1280px);">
+    <div class="lev-modal-head"><h3 id="levFormTitle">Nuevo levantamiento</h3><button type="button" class="lev-btn ghost" onclick="levCloseModal()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <form id="levForm">
+      <div class="lev-modal-body">
+        <input type="hidden" id="levId">
+
+        <div id="levCreateBaseFields">
+          <div class="lev-form-grid">
+            <div class="lev-field"><label>Fecha de visita</label><input type="date" id="levVisitDate" required></div>
+            <div class="lev-field"><label>Agencia</label><input id="levAgency" list="levAgencyList" placeholder="Agencia 0141" required></div>
+            <div class="lev-field"><label>Grupo</label><input id="levGroup" list="levGroupList" placeholder="Grupo 08"></div>
+            <div class="lev-field"><label>Categoría</label><select id="levCategory"></select></div>
+            <div class="lev-field span-2"><label>Título del levantamiento</label><input id="levTitle" placeholder="Describe brevemente el objetivo de la visita" required></div>
+            <div class="lev-field"><label>Técnico / responsable</label><input id="levResponsible" placeholder="Supervisor o técnico responsable"></div>
+            <div class="lev-field"><label>Prioridad sugerida</label><select id="levPriority"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Urgente</option></select></div>
+            <div class="lev-field"><label>Estado de flujo</label><select id="levStatus"><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+            <div class="lev-field"><label>Estado general</label><input id="levOverallStatus" placeholder="Bueno con observaciones menores"></div>
+            <div class="lev-field span-3"><label>Resumen ejecutivo</label><textarea id="levFindings" placeholder="Resumen claro y empresarial del levantamiento."></textarea></div>
+          </div>
+        </div>
+
+        <div id="levEditAlignedShell" class="lev-section" style="display:none; margin-bottom:18px;">
+          <div class="lev-section-head">
+            <div>
+              <h4>Resumen editable del expediente</h4>
+              <p>Las opciones visibles aquí coinciden con la ficha de Ver levantamiento.</p>
+            </div>
+          </div>
+          <div style="padding:18px 20px 0;">
+            <div class="lev-tags" style="margin-bottom:18px;">
+              <span class="lev-tag"><i class="fas fa-building"></i> <strong id="levEditChipAgency">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-people-group"></i> <strong id="levEditChipGroup">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-user"></i> <strong id="levEditChipResponsible">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-calendar"></i> <strong id="levEditChipVisitDate">-</strong></span>
+            </div>
+            <div class="lev-form-grid">
+              <div class="lev-field span-2"><label>Tipo de levantamiento</label><input id="levEditTitle" placeholder="Chequeo técnico integral"></div>
+              <div class="lev-field"><label>Categoría</label><select id="levEditCategory"></select></div>
+              <div class="lev-field"><label>Estado de flujo</label><select id="levEditStatus"><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+              <div class="lev-field"><label>Estado general</label><input id="levEditOverallStatus" placeholder="Bueno con observaciones menores"></div>
+              <div class="lev-field"><label>Prioridad sugerida</label><select id="levEditPriority"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Urgente</option></select></div>
+              <div class="lev-field span-3"><label>Resumen ejecutivo</label><textarea id="levEditSummary" placeholder="Resumen claro y empresarial del levantamiento."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <textarea id="levRecommendations" style="display:none;"></textarea>
+        <textarea id="levNextAction" style="display:none;"></textarea>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Estado general de la agencia</h4><p>Estas opciones coinciden con la vista de Ver levantamiento.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Toldo</label><select id="levStructureState_toldo"></select></div><div class="lev-field"><label>Pecho</label><select id="levStructureState_pecho"></select></div><div class="lev-field"><label>Publicidades</label><select id="levStructureState_publicidades"></select></div><div class="lev-field"><label>Pintura / Filtraciones</label><select id="levStructureState_pintura_filtraciones"></select></div><div class="lev-field"><label>Piso</label><select id="levStructureState_piso"></select></div><div class="lev-field"><label>Hierros / Cristales</label><select id="levStructureState_hierros_cristales"></select></div><div class="lev-field"><label>Puerta enrollable / Eléctrica</label><select id="levStructureState_puerta_enrollable_el_ctrica"></select></div><div class="lev-field"><label>Caja registradora / Gaveta</label><select id="levStructureState_caja_registradora_gaveta"></select></div><div class="lev-field"><label>Abanico</label><select id="levStructureState_abanico"></select></div><div class="lev-field"><label>Taburete</label><select id="levStructureState_taburete"></select></div></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Instalación eléctrica y cableado</h4><p>Edita exactamente los componentes que salen en la ficha empresarial.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Cables de la calle</label><select id="levElectricalState_cables_de_la_calle"></select></div><div class="lev-field"><label>Estructura eléctrica</label><select id="levElectricalState_estructura_el_ctrica"></select></div><div class="lev-field"><label>Conectores</label><select id="levElectricalState_conectores"></select></div><div class="lev-field"><label>Fuentes y cables de equipos</label><select id="levElectricalState_fuentes_y_cables_de_equipos"></select></div><div class="lev-field"><label>Luces</label><select id="levElectricalState_luces"></select></div></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Equipos detectados en agencia</h4><p>Disponibilidad, estado, descripción y referencia de foto para cada equipo.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Inversor · Disponibilidad</label><select id="levEquipmentAvail_inversor"></select></div><div class="lev-field"><label>Inversor · Estado</label><select id="levEquipmentState_inversor"></select></div><div class="lev-field"><label>Inversor · Descripción / modelo</label><input id="levEquipmentDesc_inversor" placeholder="Detalle o modelo de inversor"></div><div class="lev-field span-3"><label>Inversor · Referencia de foto</label><input id="levEquipmentPhoto_inversor" placeholder="Foto de inversor"></div><div class="lev-field"><label>Baterías · Disponibilidad</label><select id="levEquipmentAvail_bater_as"></select></div><div class="lev-field"><label>Baterías · Estado</label><select id="levEquipmentState_bater_as"></select></div><div class="lev-field"><label>Baterías · Descripción / modelo</label><input id="levEquipmentDesc_bater_as" placeholder="Detalle o modelo de baterías"></div><div class="lev-field span-3"><label>Baterías · Referencia de foto</label><input id="levEquipmentPhoto_bater_as" placeholder="Foto de baterías"></div><div class="lev-field"><label>Máquina de venta · Disponibilidad</label><select id="levEquipmentAvail_m_quina_de_venta"></select></div><div class="lev-field"><label>Máquina de venta · Estado</label><select id="levEquipmentState_m_quina_de_venta"></select></div><div class="lev-field"><label>Máquina de venta · Descripción / modelo</label><input id="levEquipmentDesc_m_quina_de_venta" placeholder="Detalle o modelo de máquina de venta"></div><input type="hidden" id="levEquipmentPhoto_m_quina_de_venta" value=""><div class="lev-field"><label>Printer · Disponibilidad</label><select id="levEquipmentAvail_printer"></select></div><div class="lev-field"><label>Printer · Estado</label><select id="levEquipmentState_printer"></select></div><div class="lev-field"><label>Printer · Descripción / modelo</label><input id="levEquipmentDesc_printer" placeholder="Detalle o modelo de printer"></div><input type="hidden" id="levEquipmentPhoto_printer" value=""><div class="lev-field"><label>Scanner · Disponibilidad</label><select id="levEquipmentAvail_scanner"></select></div><div class="lev-field"><label>Scanner · Estado</label><select id="levEquipmentState_scanner"></select></div><div class="lev-field"><label>Scanner · Descripción / modelo</label><input id="levEquipmentDesc_scanner" placeholder="Detalle o modelo de scanner"></div><input type="hidden" id="levEquipmentPhoto_scanner" value=""><div class="lev-field"><label>2da Pantalla · Disponibilidad</label><select id="levEquipmentAvail_2da_pantalla"></select></div><div class="lev-field"><label>2da Pantalla · Estado</label><select id="levEquipmentState_2da_pantalla"></select></div><div class="lev-field"><label>2da Pantalla · Descripción / modelo</label><input id="levEquipmentDesc_2da_pantalla" placeholder="Detalle o modelo de 2da pantalla"></div><input type="hidden" id="levEquipmentPhoto_2da_pantalla" value=""><div class="lev-field"><label>Pantalla ATM · Disponibilidad</label><select id="levEquipmentAvail_pantalla_atm"></select></div><div class="lev-field"><label>Pantalla ATM · Estado</label><select id="levEquipmentState_pantalla_atm"></select></div><div class="lev-field"><label>Pantalla ATM · Descripción / modelo</label><input id="levEquipmentDesc_pantalla_atm" placeholder="Detalle o modelo de pantalla atm"></div><input type="hidden" id="levEquipmentPhoto_pantalla_atm" value=""></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Galería fotográfica</h4><p>Organiza las evidencias por zonas y equipos para que luego se lean fácil en Ver levantamiento.</p></div></div>
+          <div class="lev-form-grid">
+            <div class="lev-field span-3"><label>Exterior de la agencia</label><input type="file" accept="image/*" id="levGalleryFile_exterior_de_la_agencia" onchange="levHandleImageUpload(this,'levGalleryPreview_exterior_de_la_agencia','levGallery_exterior_de_la_agencia')"><input type="hidden" id="levGallery_exterior_de_la_agencia"><div class="lev-upload-preview"><img id="levGalleryPreview_exterior_de_la_agencia" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Exterior de la agencia"><div id="levGalleryEmpty_exterior_de_la_agencia" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Zona de cliente</label><input type="file" accept="image/*" id="levGalleryFile_zona_de_cliente" onchange="levHandleImageUpload(this,'levGalleryPreview_zona_de_cliente','levGallery_zona_de_cliente')"><input type="hidden" id="levGallery_zona_de_cliente"><div class="lev-upload-preview"><img id="levGalleryPreview_zona_de_cliente" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Zona de cliente"><div id="levGalleryEmpty_zona_de_cliente" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Zona de empleada</label><input type="file" accept="image/*" id="levGalleryFile_zona_de_empleada" onchange="levHandleImageUpload(this,'levGalleryPreview_zona_de_empleada','levGallery_zona_de_empleada')"><input type="hidden" id="levGallery_zona_de_empleada"><div class="lev-upload-preview"><img id="levGalleryPreview_zona_de_empleada" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Zona de empleada"><div id="levGalleryEmpty_zona_de_empleada" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Equipo: Inversor</label><input type="file" accept="image/*" id="levGalleryFile_equipo_inversor" onchange="levHandleImageUpload(this,'levGalleryPreview_equipo_inversor','levGallery_equipo_inversor')"><input type="hidden" id="levGallery_equipo_inversor"><div class="lev-upload-preview"><img id="levGalleryPreview_equipo_inversor" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Equipo Inversor"><div id="levGalleryEmpty_equipo_inversor" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Equipo: Baterías</label><input type="file" accept="image/*" id="levGalleryFile_equipo_bater_as" onchange="levHandleImageUpload(this,'levGalleryPreview_equipo_bater_as','levGallery_equipo_bater_as')"><input type="hidden" id="levGallery_equipo_bater_as"><div class="lev-upload-preview"><img id="levGalleryPreview_equipo_bater_as" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Equipo Baterías"><div id="levGalleryEmpty_equipo_bater_as" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+          </div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Diagnóstico automático</h4><p>Estos valores también coinciden con lo que se ve en la ficha empresarial.</p></div></div>
+          <div class="lev-form-grid">
+            <div class="lev-field"><label>Estado estructural</label><select id="levDiagStructure"></select></div>
+            <div class="lev-field"><label>Estado eléctrico</label><select id="levDiagElectrical"></select></div>
+            <div class="lev-field"><label>Equipos y mobiliario</label><select id="levDiagEquipment"></select></div>
+            <div class="lev-field span-2"><label>Incidencias</label><input id="levDiagIncidents" placeholder="Ejemplo: 2 observaciones menores"></div>
+            <div class="lev-field"><label>Acción recomendada</label><input id="levDiagRecommendation" placeholder="Seguimiento preventivo"></div>
+          </div>
+        </div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Observación de la agencia</h4><p>Única observación global del expediente para mantener el historial limpio y claro.</p></div></div>
+          <div style="padding:18px 20px 20px;"><textarea id="levAgencyObservation" placeholder="Escribe aquí la observación general de la agencia."></textarea></div>
+        </div>
+      </div>
+      <div class="lev-modal-actions">
+        <span style="color:#72879a;font-size:13px;">Registro interno del departamento de OPERACIONES. La edición coincide con la ficha de Ver levantamiento.</span>
+        <div class="lev-actions">
+          <button type="button" class="lev-btn ghost" onclick="levCloseModal()">Cancelar</button>
+          <button type="submit" class="lev-btn primary"><i class="fas fa-floppy-disk"></i> Guardar levantamiento</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="lev-modal" id="levDetailModal">
+  <div class="lev-modal-dialog lev-detail-dialog">
+    <div class="lev-modal-head"><h3 id="levDetailTitle">Detalle</h3><button type="button" class="lev-btn ghost" onclick="levCloseDetail()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <div class="lev-modal-body" id="levDetailBody"></div>
+  </div>
+</div>
+<datalist id="levAgencyList"></datalist>
+<datalist id="levGroupList"></datalist>
+
 <div class="ops-toast-wrap" id="opsToastWrap"></div>
 
 <div class="ops-media-lightbox hidden" id="opsMediaLightbox">
@@ -9124,6 +9451,117 @@ renderTransferencias();
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();},200);};<\/script>
 
+
+
+<div class="lev-modal" id="levModal">
+  <div class="lev-modal-dialog" style="max-width:1280px; width:min(96vw,1280px);">
+    <div class="lev-modal-head"><h3 id="levFormTitle">Nuevo levantamiento</h3><button type="button" class="lev-btn ghost" onclick="levCloseModal()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <form id="levForm">
+      <div class="lev-modal-body">
+        <input type="hidden" id="levId">
+
+        <div id="levCreateBaseFields">
+          <div class="lev-form-grid">
+            <div class="lev-field"><label>Fecha de visita</label><input type="date" id="levVisitDate" required></div>
+            <div class="lev-field"><label>Agencia</label><input id="levAgency" list="levAgencyList" placeholder="Agencia 0141" required></div>
+            <div class="lev-field"><label>Grupo</label><input id="levGroup" list="levGroupList" placeholder="Grupo 08"></div>
+            <div class="lev-field"><label>Categoría</label><select id="levCategory"></select></div>
+            <div class="lev-field span-2"><label>Título del levantamiento</label><input id="levTitle" placeholder="Describe brevemente el objetivo de la visita" required></div>
+            <div class="lev-field"><label>Técnico / responsable</label><input id="levResponsible" placeholder="Supervisor o técnico responsable"></div>
+            <div class="lev-field"><label>Prioridad sugerida</label><select id="levPriority"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Urgente</option></select></div>
+            <div class="lev-field"><label>Estado de flujo</label><select id="levStatus"><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+            <div class="lev-field"><label>Estado general</label><input id="levOverallStatus" placeholder="Bueno con observaciones menores"></div>
+            <div class="lev-field span-3"><label>Resumen ejecutivo</label><textarea id="levFindings" placeholder="Resumen claro y empresarial del levantamiento."></textarea></div>
+          </div>
+        </div>
+
+        <div id="levEditAlignedShell" class="lev-section" style="display:none; margin-bottom:18px;">
+          <div class="lev-section-head">
+            <div>
+              <h4>Resumen editable del expediente</h4>
+              <p>Las opciones visibles aquí coinciden con la ficha de Ver levantamiento.</p>
+            </div>
+          </div>
+          <div style="padding:18px 20px 0;">
+            <div class="lev-tags" style="margin-bottom:18px;">
+              <span class="lev-tag"><i class="fas fa-building"></i> <strong id="levEditChipAgency">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-people-group"></i> <strong id="levEditChipGroup">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-user"></i> <strong id="levEditChipResponsible">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-calendar"></i> <strong id="levEditChipVisitDate">-</strong></span>
+            </div>
+            <div class="lev-form-grid">
+              <div class="lev-field span-2"><label>Tipo de levantamiento</label><input id="levEditTitle" placeholder="Chequeo técnico integral"></div>
+              <div class="lev-field"><label>Categoría</label><select id="levEditCategory"></select></div>
+              <div class="lev-field"><label>Estado de flujo</label><select id="levEditStatus"><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+              <div class="lev-field"><label>Estado general</label><input id="levEditOverallStatus" placeholder="Bueno con observaciones menores"></div>
+              <div class="lev-field"><label>Prioridad sugerida</label><select id="levEditPriority"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Urgente</option></select></div>
+              <div class="lev-field span-3"><label>Resumen ejecutivo</label><textarea id="levEditSummary" placeholder="Resumen claro y empresarial del levantamiento."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <textarea id="levRecommendations" style="display:none;"></textarea>
+        <textarea id="levNextAction" style="display:none;"></textarea>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Estado general de la agencia</h4><p>Estas opciones coinciden con la vista de Ver levantamiento.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Toldo</label><select id="levStructureState_toldo"></select></div><div class="lev-field"><label>Pecho</label><select id="levStructureState_pecho"></select></div><div class="lev-field"><label>Publicidades</label><select id="levStructureState_publicidades"></select></div><div class="lev-field"><label>Pintura / Filtraciones</label><select id="levStructureState_pintura_filtraciones"></select></div><div class="lev-field"><label>Piso</label><select id="levStructureState_piso"></select></div><div class="lev-field"><label>Hierros / Cristales</label><select id="levStructureState_hierros_cristales"></select></div><div class="lev-field"><label>Puerta enrollable / Eléctrica</label><select id="levStructureState_puerta_enrollable_el_ctrica"></select></div><div class="lev-field"><label>Caja registradora / Gaveta</label><select id="levStructureState_caja_registradora_gaveta"></select></div><div class="lev-field"><label>Abanico</label><select id="levStructureState_abanico"></select></div><div class="lev-field"><label>Taburete</label><select id="levStructureState_taburete"></select></div></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Instalación eléctrica y cableado</h4><p>Edita exactamente los componentes que salen en la ficha empresarial.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Cables de la calle</label><select id="levElectricalState_cables_de_la_calle"></select></div><div class="lev-field"><label>Estructura eléctrica</label><select id="levElectricalState_estructura_el_ctrica"></select></div><div class="lev-field"><label>Conectores</label><select id="levElectricalState_conectores"></select></div><div class="lev-field"><label>Fuentes y cables de equipos</label><select id="levElectricalState_fuentes_y_cables_de_equipos"></select></div><div class="lev-field"><label>Luces</label><select id="levElectricalState_luces"></select></div></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Equipos detectados en agencia</h4><p>Disponibilidad, estado, descripción y referencia de foto para cada equipo.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Inversor · Disponibilidad</label><select id="levEquipmentAvail_inversor"></select></div><div class="lev-field"><label>Inversor · Estado</label><select id="levEquipmentState_inversor"></select></div><div class="lev-field"><label>Inversor · Descripción / modelo</label><input id="levEquipmentDesc_inversor" placeholder="Detalle o modelo de inversor"></div><div class="lev-field span-3"><label>Inversor · Referencia de foto</label><input id="levEquipmentPhoto_inversor" placeholder="Foto de inversor"></div><div class="lev-field"><label>Baterías · Disponibilidad</label><select id="levEquipmentAvail_bater_as"></select></div><div class="lev-field"><label>Baterías · Estado</label><select id="levEquipmentState_bater_as"></select></div><div class="lev-field"><label>Baterías · Descripción / modelo</label><input id="levEquipmentDesc_bater_as" placeholder="Detalle o modelo de baterías"></div><div class="lev-field span-3"><label>Baterías · Referencia de foto</label><input id="levEquipmentPhoto_bater_as" placeholder="Foto de baterías"></div><div class="lev-field"><label>Máquina de venta · Disponibilidad</label><select id="levEquipmentAvail_m_quina_de_venta"></select></div><div class="lev-field"><label>Máquina de venta · Estado</label><select id="levEquipmentState_m_quina_de_venta"></select></div><div class="lev-field"><label>Máquina de venta · Descripción / modelo</label><input id="levEquipmentDesc_m_quina_de_venta" placeholder="Detalle o modelo de máquina de venta"></div><input type="hidden" id="levEquipmentPhoto_m_quina_de_venta" value=""><div class="lev-field"><label>Printer · Disponibilidad</label><select id="levEquipmentAvail_printer"></select></div><div class="lev-field"><label>Printer · Estado</label><select id="levEquipmentState_printer"></select></div><div class="lev-field"><label>Printer · Descripción / modelo</label><input id="levEquipmentDesc_printer" placeholder="Detalle o modelo de printer"></div><input type="hidden" id="levEquipmentPhoto_printer" value=""><div class="lev-field"><label>Scanner · Disponibilidad</label><select id="levEquipmentAvail_scanner"></select></div><div class="lev-field"><label>Scanner · Estado</label><select id="levEquipmentState_scanner"></select></div><div class="lev-field"><label>Scanner · Descripción / modelo</label><input id="levEquipmentDesc_scanner" placeholder="Detalle o modelo de scanner"></div><input type="hidden" id="levEquipmentPhoto_scanner" value=""><div class="lev-field"><label>2da Pantalla · Disponibilidad</label><select id="levEquipmentAvail_2da_pantalla"></select></div><div class="lev-field"><label>2da Pantalla · Estado</label><select id="levEquipmentState_2da_pantalla"></select></div><div class="lev-field"><label>2da Pantalla · Descripción / modelo</label><input id="levEquipmentDesc_2da_pantalla" placeholder="Detalle o modelo de 2da pantalla"></div><input type="hidden" id="levEquipmentPhoto_2da_pantalla" value=""><div class="lev-field"><label>Pantalla ATM · Disponibilidad</label><select id="levEquipmentAvail_pantalla_atm"></select></div><div class="lev-field"><label>Pantalla ATM · Estado</label><select id="levEquipmentState_pantalla_atm"></select></div><div class="lev-field"><label>Pantalla ATM · Descripción / modelo</label><input id="levEquipmentDesc_pantalla_atm" placeholder="Detalle o modelo de pantalla atm"></div><input type="hidden" id="levEquipmentPhoto_pantalla_atm" value=""></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Galería fotográfica</h4><p>Organiza las evidencias por zonas y equipos para que luego se lean fácil en Ver levantamiento.</p></div></div>
+          <div class="lev-form-grid">
+            <div class="lev-field span-3"><label>Exterior de la agencia</label><input type="file" accept="image/*" id="levGalleryFile_exterior_de_la_agencia" onchange="levHandleImageUpload(this,'levGalleryPreview_exterior_de_la_agencia','levGallery_exterior_de_la_agencia')"><input type="hidden" id="levGallery_exterior_de_la_agencia"><div class="lev-upload-preview"><img id="levGalleryPreview_exterior_de_la_agencia" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Exterior de la agencia"><div id="levGalleryEmpty_exterior_de_la_agencia" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Zona de cliente</label><input type="file" accept="image/*" id="levGalleryFile_zona_de_cliente" onchange="levHandleImageUpload(this,'levGalleryPreview_zona_de_cliente','levGallery_zona_de_cliente')"><input type="hidden" id="levGallery_zona_de_cliente"><div class="lev-upload-preview"><img id="levGalleryPreview_zona_de_cliente" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Zona de cliente"><div id="levGalleryEmpty_zona_de_cliente" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Zona de empleada</label><input type="file" accept="image/*" id="levGalleryFile_zona_de_empleada" onchange="levHandleImageUpload(this,'levGalleryPreview_zona_de_empleada','levGallery_zona_de_empleada')"><input type="hidden" id="levGallery_zona_de_empleada"><div class="lev-upload-preview"><img id="levGalleryPreview_zona_de_empleada" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Zona de empleada"><div id="levGalleryEmpty_zona_de_empleada" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Equipo: Inversor</label><input type="file" accept="image/*" id="levGalleryFile_equipo_inversor" onchange="levHandleImageUpload(this,'levGalleryPreview_equipo_inversor','levGallery_equipo_inversor')"><input type="hidden" id="levGallery_equipo_inversor"><div class="lev-upload-preview"><img id="levGalleryPreview_equipo_inversor" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Equipo Inversor"><div id="levGalleryEmpty_equipo_inversor" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Equipo: Baterías</label><input type="file" accept="image/*" id="levGalleryFile_equipo_bater_as" onchange="levHandleImageUpload(this,'levGalleryPreview_equipo_bater_as','levGallery_equipo_bater_as')"><input type="hidden" id="levGallery_equipo_bater_as"><div class="lev-upload-preview"><img id="levGalleryPreview_equipo_bater_as" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Equipo Baterías"><div id="levGalleryEmpty_equipo_bater_as" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+          </div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Diagnóstico automático</h4><p>Estos valores también coinciden con lo que se ve en la ficha empresarial.</p></div></div>
+          <div class="lev-form-grid">
+            <div class="lev-field"><label>Estado estructural</label><select id="levDiagStructure"></select></div>
+            <div class="lev-field"><label>Estado eléctrico</label><select id="levDiagElectrical"></select></div>
+            <div class="lev-field"><label>Equipos y mobiliario</label><select id="levDiagEquipment"></select></div>
+            <div class="lev-field span-2"><label>Incidencias</label><input id="levDiagIncidents" placeholder="Ejemplo: 2 observaciones menores"></div>
+            <div class="lev-field"><label>Acción recomendada</label><input id="levDiagRecommendation" placeholder="Seguimiento preventivo"></div>
+          </div>
+        </div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Observación de la agencia</h4><p>Única observación global del expediente para mantener el historial limpio y claro.</p></div></div>
+          <div style="padding:18px 20px 20px;"><textarea id="levAgencyObservation" placeholder="Escribe aquí la observación general de la agencia."></textarea></div>
+        </div>
+      </div>
+      <div class="lev-modal-actions">
+        <span style="color:#72879a;font-size:13px;">Registro interno del departamento de OPERACIONES. La edición coincide con la ficha de Ver levantamiento.</span>
+        <div class="lev-actions">
+          <button type="button" class="lev-btn ghost" onclick="levCloseModal()">Cancelar</button>
+          <button type="submit" class="lev-btn primary"><i class="fas fa-floppy-disk"></i> Guardar levantamiento</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="lev-modal" id="levDetailModal">
+  <div class="lev-modal-dialog">
+    <div class="lev-modal-head"><h3 id="levDetailTitle">Detalle</h3><button type="button" class="lev-btn ghost" onclick="levCloseDetail()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <div class="lev-modal-body" id="levDetailBody"></div>
+  </div>
+</div>
+<datalist id="levAgencyList"></datalist>
+<datalist id="levGroupList"></datalist>
+
 <div class="ops-toast-wrap" id="opsToastWrap"></div>
 
 <div class="ops-media-lightbox hidden" id="opsMediaLightbox">
@@ -9478,6 +9916,7 @@ function openEditModal(id) {
 
     document.getElementById('navDashboard').addEventListener('click', () => showView('dashboard'));
     document.getElementById('navOperations').addEventListener('click', () => showView('operations'));
+    document.getElementById('navLevantamientos').addEventListener('click', () => showView('levantamientos'));
     document.getElementById('navHistory').addEventListener('click', () => showView('history'));
     document.getElementById('navReports').addEventListener('click', () => showView('reports'));
     document.getElementById('navReportsAgency').addEventListener('click', () => showView('reportsAgency'));
@@ -9874,7 +10313,7 @@ function sidebarSectionForView(vista){
   if(['productos','almacenes','entrada','transferencia'].includes(vista)) return 'inventario';
   if(['agencias','grupos'].includes(vista)) return 'consultas';
   if(['dashboard-rrhh','operadoras','solicitudes','historial-rrhh'].includes(vista)) return 'rrhh';
-  if(['ops-dashboard','ops-operaciones','ops-historial','ops-reportes','ops-reportes-agencia','ops-reportes-responsable','ops-reportes-tipos','ops-usuarios','ops-suplidores','ops-trabajos','ops-averias'].includes(vista)) return 'operaciones';
+  if(['ops-dashboard','ops-operaciones','ops-levantamientos','ops-historial','ops-reportes','ops-reportes-agencia','ops-reportes-responsable','ops-reportes-tipos','ops-usuarios','ops-suplidores','ops-trabajos','ops-averias'].includes(vista)) return 'operaciones';
   return 'inventario';
 }
 
@@ -9901,7 +10340,7 @@ function cambiarVista(vista, el){
   const ids = [
     'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
     'vista-dashboard-rrhh','vista-operadoras','vista-solicitudes','vista-historial-rrhh',
-    'vista-ops-dashboard','vista-ops-operaciones','vista-ops-historial','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
+    'vista-ops-dashboard','vista-ops-operaciones','vista-ops-levantamientos','vista-ops-historial','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
   ];
   ids.forEach(id => {
     const node = document.getElementById(id);
@@ -10285,6 +10724,666 @@ function opxInit(){
 }
 window.addEventListener('DOMContentLoaded', opxInit);
 
+
+const LEV_STORAGE_KEY = 'loteka_operaciones_levantamientos_v2';
+const LEV_CATEGORIES = ['Arqueo de agencia','Chequeo operativo','Reparación y estética de cables','Levantamiento técnico','Levantamiento comercial','Otro'];
+const LEV_STATE_OPTIONS = ['Buen Estado','Aceptable','Regular','Mal Estado','Crítico'];
+const LEV_DIAG_OPTIONS = ['Excelente','Bueno','Aceptable','Regular','Crítico'];
+const LEV_EQUIPMENT_STATE_OPTIONS = ['Buen Estado','Aceptable','Regular','Mal Estado','Crítico','No tiene'];
+const LEV_AVAILABILITY_OPTIONS = ['Sí tiene','No tiene','No aplica'];
+const LEV_STRUCTURE_FIELDS = ['Toldo','Pecho','Publicidades','Pintura / Filtraciones','Piso','Hierros / Cristales','Puerta enrollable / Eléctrica','Caja registradora / Gaveta','Abanico','Taburete'];
+const LEV_ELECTRICAL_FIELDS = ['Cables de la calle','Estructura eléctrica','Conectores','Fuentes y cables de equipos','Luces'];
+const LEV_EQUIPMENT_FIELDS = [
+  {name:'Inversor', photoLabel:'Foto de inversor'},
+  {name:'Baterías', photoLabel:'Foto de baterías'},
+  {name:'Máquina de venta', photoLabel:''},
+  {name:'Printer', photoLabel:''},
+  {name:'Scanner', photoLabel:''},
+  {name:'2da Pantalla', photoLabel:''},
+  {name:'Pantalla ATM', photoLabel:''}
+];
+const LEV_GALLERY_FIELDS = ['Exterior de la agencia','Zona de cliente','Zona de empleada','Equipo: Inversor','Equipo: Baterías'];
+let levRecords = [];
+let levFiltered = [];
+let levEditingId = null;
+
+function levNow(){ return new Date().toISOString(); }
+function levToday(){ return new Date().toISOString().slice(0,10); }
+function levSafe(v){ return String(v ?? '').trim(); }
+function levSlug(v){ return levSafe(v).toLowerCase(); }
+function levFmtDate(v){ if(!v) return '-'; const d = new Date(v.length===10 ? `${v}T00:00:00` : v); return Number.isNaN(d.getTime()) ? v : d.toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function levFmtDateTime(v){ if(!v) return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? v : d.toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function levCode(index){ return `LEV-${new Date().getFullYear()}-${String(index).padStart(4,'0')}`; }
+function levBadgeClass(value){ const s = levSlug(value); if(s.includes('complet')) return 'green'; if(s.includes('proceso')) return 'blue'; if(s.includes('aprob')) return 'gold'; if(s.includes('revis')) return 'blue'; if(s.includes('pend')) return 'gray'; return 'gray'; }
+function levPriorityClass(value){ const s = levSlug(value); if(s.includes('urg')) return 'red'; if(s.includes('alta')) return 'gold'; if(s.includes('media')) return 'blue'; return 'gray'; }
+function levStateClass(value){ const s = levSlug(value); if(s.includes('buen')) return 'good'; if(s.includes('acept')) return 'ok'; if(s.includes('reg')) return 'warn'; if(s.includes('critic') || s.includes('malo') || s.includes('dañ')) return 'bad'; return 'ok'; }
+function levStateOptions(options, selected=''){ return options.map(option => `<option value="${option}" ${String(selected||'')===option ? 'selected' : ''}>${option}</option>`).join(''); }
+function levSelect(id, options){ const select = document.getElementById(id); if(select) select.innerHTML = levStateOptions(options, select.value || select.dataset.default || ''); }
+function levKey(v){ return levSlug(v).replace(/[^a-z0-9]+/g,'_'); }
+function levGetRow(rows, key, field='item'){ return Array.isArray(rows) ? rows.find(row => row && row[field] === key) : null; }
+function levEstimateOverall(structure, electrical, equipment){
+  const values = [];
+  [...(structure||[]), ...(electrical||[]), ...(equipment||[])].forEach(row => {
+    const value = row?.state || row?.available || '';
+    if(value && !String(value).toLowerCase().includes('sí tiene')) values.push(String(value));
+  });
+  if(values.some(v => /cr[ií]tic|mal estado/i.test(v))) return 'Requiere atención correctiva';
+  if(values.some(v => /regular/i.test(v))) return 'Regular con seguimiento';
+  if(values.some(v => /aceptable/i.test(v))) return 'Bueno con observaciones menores';
+  return 'Bueno';
+}
+function levEstimateFindings(structure, electrical, equipment){
+  let total = 0;
+  [...(structure||[]), ...(electrical||[]), ...(equipment||[])].forEach(row => {
+    const value = String(row?.state || row?.available || '');
+    if(/aceptable|regular|mal estado|cr[ií]tico/i.test(value)) total += 1;
+  });
+  return total;
+}
+function levBuildStructureFromForm(){
+  return LEV_STRUCTURE_FIELDS.map(label => ({ item: label, state: document.getElementById(`levStructureState_${levKey(label)}`)?.value || 'Buen Estado' }));
+}
+function levBuildElectricalFromForm(){
+  return LEV_ELECTRICAL_FIELDS.map(label => ({ item: label, state: document.getElementById(`levElectricalState_${levKey(label)}`)?.value || 'Buen Estado' }));
+}
+function levBuildEquipmentFromForm(){
+  return LEV_EQUIPMENT_FIELDS.map(field => ({ name: field.name, available: document.getElementById(`levEquipmentAvail_${levKey(field.name)}`)?.value || 'Sí tiene', description: document.getElementById(`levEquipmentDesc_${levKey(field.name)}`)?.value || '', state: document.getElementById(`levEquipmentState_${levKey(field.name)}`)?.value || 'Buen Estado', photoLabel: document.getElementById(`levEquipmentPhoto_${levKey(field.name)}`)?.value || field.photoLabel || '', photoUrl: '' }));
+}
+function levBuildGalleryFromForm(){
+  return LEV_GALLERY_FIELDS.map(label => ({ label, url: document.getElementById(`levGallery_${levKey(label)}`)?.value || '' })).filter(item => item.url || item.label);
+}
+function levSetSelectValue(id, value, fallback=''){ const el = document.getElementById(id); if(el) el.value = value || fallback || el.value || ''; }
+function levSetValue(id, value=''){ const el = document.getElementById(id); if(el) el.value = value || ''; }
+function levResetImageField(key){ const hidden = document.getElementById(`levGallery_${key}`); const file = document.getElementById(`levGalleryFile_${key}`); const img = document.getElementById(`levGalleryPreview_${key}`); const empty = document.getElementById(`levGalleryEmpty_${key}`); if(hidden) hidden.value=''; if(file) file.value=''; if(img){ img.src=''; img.style.display='none'; } if(empty) empty.style.display='block'; }
+function levApplyImagePreview(key, url=''){ const img = document.getElementById(`levGalleryPreview_${key}`); const empty = document.getElementById(`levGalleryEmpty_${key}`); const hidden = document.getElementById(`levGallery_${key}`); if(hidden) hidden.value = url || ''; if(img){ img.src = url || ''; img.style.display = url ? 'block' : 'none'; } if(empty) empty.style.display = url ? 'none' : 'block'; }
+function levHandleImageUpload(input, previewId, hiddenId){ const file = input?.files?.[0]; if(!file) return; const reader = new FileReader(); reader.onload = e => { const url = e.target?.result || ''; const hidden = document.getElementById(hiddenId); const img = document.getElementById(previewId); const empty = document.getElementById(previewId.replace('Preview','Empty')); if(hidden) hidden.value = url; if(img){ img.src = url; img.style.display = url ? 'block' : 'none'; } if(empty) empty.style.display = url ? 'none' : 'block'; }; reader.readAsDataURL(file); }
+function levGetAgencias(){ try { return Array.isArray(agencias) ? agencias.map(a => a.codigo || a.nombre || a.agencia).filter(Boolean) : []; } catch(e){ return []; } }
+function levGetGrupos(){ try { return Array.isArray(grupos) ? grupos.map(g => g.codigo || g.nombre || g.grupo).filter(Boolean) : []; } catch(e){ return []; } }
+function levDemoPhoto(label, url=''){ return { label, url }; }
+function levDefaultRecords(){
+  const now = levNow();
+  return [
+    {
+      id:'lev-demo-1019', code:'LEV-2026-0001', category:'Arqueo de agencia', type:'Chequeo técnico integral', agency:'1019', group:'42', technician:'Luis Regalado', responsible:'Luis Regalado', visitDate:'2026-04-20', submittedAt:'2026-04-20T15:38:00',
+      workflowStatus:'Revisado', overallStatus:'Bueno con observaciones menores', priority:'Media', findingsCount:2, evidenceCount:5,
+      executiveSummary:'La agencia 1019 fue inspeccionada satisfactoriamente. La estructura general, el sistema eléctrico y los equipos principales presentan condiciones funcionales. Se identifican puntos aceptables que conviene programar para seguimiento preventivo, sin criticidad inmediata.',
+      findings:'Se detectan observaciones menores en puerta enrollable/elétrica, luces y taburete. El resto de los componentes evaluados se mantiene en buen estado.',
+      recommendations:'Mantener seguimiento preventivo, reforzar revisión visual de iluminación y confirmar futura intervención estética menor si la agencia presenta desgaste adicional.',
+      nextAction:'Registrar seguimiento preventivo en ruta y validar nuevamente en próxima visita de campo.',
+      structure:[
+        {item:'Toldo', state:'Buen Estado', observation:'Sin novedad visible.'},
+        {item:'Pecho', state:'Buen Estado', observation:'Correctamente presentado.'},
+        {item:'Publicidades', state:'Buen Estado', observation:'Rotulación estable.'},
+        {item:'Pintura / Filtraciones', state:'Buen Estado', observation:'Sin hallazgos relevantes.'},
+        {item:'Piso', state:'Buen Estado', observation:'Condición operativa adecuada.'},
+        {item:'Hierros / Cristales', state:'Buen Estado', observation:'Sin novedad.'},
+        {item:'Puerta enrollable / Eléctrica', state:'Aceptable', observation:'Requiere monitoreo preventivo.'},
+        {item:'Caja registradora / Gaveta', state:'Buen Estado', observation:'Funcional y ordenada.'},
+        {item:'Abanico', state:'Buen Estado', observation:'Operativo.'},
+        {item:'Taburete', state:'Aceptable', observation:'Se sugiere seguimiento por desgaste.'}
+      ],
+      electrical:[
+        {item:'Cables de la calle', state:'Buen Estado', observation:'Sin exposición crítica.'},
+        {item:'Estructura eléctrica', state:'Buen Estado', observation:'Estable.'},
+        {item:'Conectores', state:'Buen Estado', observation:'Sin daño visible.'},
+        {item:'Fuentes y cables de equipos', state:'Buen Estado', observation:'Organización adecuada.'},
+        {item:'Luces', state:'Aceptable', observation:'Conviene revisar preventivamente.'}
+      ],
+      equipment:[
+        {name:'Inversor', available:'Sí tiene', description:'Inversor criollo', state:'Buen Estado', photoLabel:'Foto de inversor'},
+        {name:'Baterías', available:'Sí tiene', description:'2 baterías Trojan', state:'Buen Estado', photoLabel:'Foto de baterías'},
+        {name:'Máquina de venta', available:'Sí tiene', description:'Loteka 4 GEN. (Cuello Ancho)', state:'Buen Estado', photoLabel:''},
+        {name:'Printer', available:'Sí tiene', description:'Seewo', state:'Buen Estado', photoLabel:''},
+        {name:'Scanner', available:'Sí tiene', description:'Witek', state:'Buen Estado', photoLabel:''},
+        {name:'2da Pantalla', available:'Sí tiene', description:'Loteka 32"', state:'Buen Estado', photoLabel:''},
+        {name:'Pantalla ATM', available:'No tiene', description:'No aplica en esta agencia', state:'No tiene', photoLabel:''}
+      ],
+      gallery:[
+        levDemoPhoto('Exterior de la agencia',''),
+        levDemoPhoto('Zona de cliente',''),
+        levDemoPhoto('Zona de empleada',''),
+        levDemoPhoto('Equipo: Inversor',''),
+        levDemoPhoto('Equipo: Baterías','')
+      ],
+      agencyObservation:'Agencia en condición operativa general estable. Solo se recomienda seguimiento preventivo en elementos menores reportados.',
+      diagnostics:{
+        structure:'Bueno', electrical:'Bueno', equipment:'Bueno', incidents:'2 observaciones menores', recommendation:'Seguimiento preventivo'
+      },
+      actions:[
+        {title:'Convertir en trabajo preventivo', description:'Si la supervisión lo considera, crear trabajo para mejorar estética menor y validar iluminación.'},
+        {title:'Mantener en seguimiento', description:'Programar nueva revisión en la próxima ruta operativa del grupo 42.'},
+        {title:'Cerrar como informativo', description:'Conservar el expediente como evidencia de chequeo satisfactorio.'}
+      ],
+      createdAt:now, updatedAt:now
+    },
+    {
+      id:'lev-demo-1268', code:'LEV-2026-0002', category:'Reparación y estética de cables', type:'Inspección de cableado y presentación técnica', agency:'1268', group:'44', technician:'Técnico 1', responsible:'Técnico 1', visitDate:levToday(), submittedAt:now,
+      workflowStatus:'Aprobado para acción', overallStatus:'Regular con intervención requerida', priority:'Alta', findingsCount:4, evidenceCount:4,
+      executiveSummary:'La visita detectó exposición visual de cables en counter y zona de energía. No se observa riesgo crítico inmediato, pero sí una presentación técnica deficiente que debe corregirse para mejorar seguridad visual y orden operativo.',
+      findings:'Cableado visible, canaletas incompletas, fuentes con mala presentación y necesidad de organizar rutas.',
+      recommendations:'Ejecutar corrección estética completa, ordenar trayectorias, asegurar canaletas y documentar evidencia final.',
+      nextAction:'Convertir en trabajo correctivo con evidencia de antes y después.',
+      structure:[
+        {item:'Área técnica visible', state:'Aceptable', observation:'Se percibe desorden por cableado expuesto.'},
+        {item:'Presentación del punto', state:'Aceptable', observation:'Requiere mejoría estética.'}
+      ],
+      electrical:[
+        {item:'Rutas de cables', state:'Regular', observation:'Expuestos parcialmente.'},
+        {item:'Canaletas', state:'Regular', observation:'Incompletas.'},
+        {item:'Fuentes y adaptadores', state:'Aceptable', observation:'Necesitan mejor organización.'},
+        {item:'Conectores', state:'Buen Estado', observation:'Sin daño crítico.'}
+      ],
+      equipment:[
+        {name:'Printer', available:'Sí tiene', description:'Equipo operativo', state:'Buen Estado', photoLabel:''},
+        {name:'Scanner', available:'Sí tiene', description:'Operativo', state:'Buen Estado', photoLabel:''}
+      ],
+      gallery:[levDemoPhoto('Exterior de la agencia',''), levDemoPhoto('Zona de cliente',''), levDemoPhoto('Zona de empleada',''), levDemoPhoto('Equipo: Inversor',''), levDemoPhoto('Equipo: Baterías','')],
+      agencyObservation:'Se requiere corrección visual del cableado y ordenamiento técnico para mejorar la presentación general de la agencia.',
+      diagnostics:{structure:'Aceptable', electrical:'Regular', equipment:'Bueno', incidents:'4 hallazgos de presentación', recommendation:'Acción correctiva recomendada'},
+      actions:[
+        {title:'Convertir en trabajo', description:'Crear trabajo de reparación y estética de cables dentro de OPERACIONES.'},
+        {title:'Asignar técnico', description:'Dejar responsable con evidencia obligatoria de cierre.'},
+        {title:'Validación final', description:'Revisar resultado estético final antes de cerrar expediente.'}
+      ],
+      createdAt:now, updatedAt:now
+    }
+  ];
+}
+function levNormalizeItem(item, index){
+  const fallback = levDefaultRecords()[0];
+  return {
+    id: item.id || `lev-${Date.now()}-${index}`,
+    code: item.code || levCode(index + 1),
+    category: item.category || 'Otro',
+    type: item.type || item.category || 'Levantamiento',
+    agency: levSafe(item.agency),
+    group: levSafe(item.group),
+    technician: levSafe(item.technician || item.responsible),
+    responsible: levSafe(item.responsible || item.technician),
+    visitDate: item.visitDate || levToday(),
+    submittedAt: item.submittedAt || item.createdAt || levNow(),
+    workflowStatus: item.workflowStatus || item.status || 'Pendiente de revisión',
+    overallStatus: item.overallStatus || 'Sin evaluación',
+    priority: item.priority || 'Media',
+    findingsCount: Number(item.findingsCount ?? 0) || 0,
+    evidenceCount: Number(item.evidenceCount ?? 0) || 0,
+    executiveSummary: item.executiveSummary || item.findings || 'Sin resumen ejecutivo registrado.',
+    agencyObservation: item.agencyObservation || '',
+    findings: item.findings || '',
+    recommendations: item.recommendations || '',
+    nextAction: item.nextAction || '',
+    structure: Array.isArray(item.structure) ? item.structure : [],
+    electrical: Array.isArray(item.electrical) ? item.electrical : [],
+    equipment: Array.isArray(item.equipment) ? item.equipment : [],
+    gallery: Array.isArray(item.gallery) ? item.gallery : [],
+    diagnostics: item.diagnostics || {structure:'-', electrical:'-', equipment:'-', incidents:'-', recommendation:'-'},
+    actions: Array.isArray(item.actions) ? item.actions : [],
+    createdAt: item.createdAt || levNow(),
+    updatedAt: item.updatedAt || levNow()
+  };
+}
+function levLoad(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(LEV_STORAGE_KEY) || 'null');
+    levRecords = Array.isArray(saved) && saved.length ? saved.map(levNormalizeItem) : levDefaultRecords().map(levNormalizeItem);
+  } catch(e){
+    levRecords = levDefaultRecords().map(levNormalizeItem);
+  }
+}
+function levSave(){ localStorage.setItem(LEV_STORAGE_KEY, JSON.stringify(levRecords)); }
+function levPopulateCategoryFilter(){
+  const select = document.getElementById('levFilterCategory');
+  const formSelect = document.getElementById('levCategory');
+  if(select) select.innerHTML = '<option value="">Todos</option>' + LEV_CATEGORIES.map(item => `<option value="${item}">${item}</option>`).join('');
+  if(formSelect) formSelect.innerHTML = LEV_CATEGORIES.map(item => `<option value="${item}">${item}</option>`).join('');
+}
+function levPopulateGroupFilter(){
+  const select = document.getElementById('levFilterGroup');
+  if(!select) return;
+  const current = select.value || '';
+  const values = [...new Set([...levGetGrupos(), ...levRecords.map(item => item.group).filter(Boolean)].map(v => String(v).trim()).filter(Boolean))]
+    .sort((a,b)=> String(a).localeCompare(String(b), 'es', {numeric:true, sensitivity:'base'}));
+  select.innerHTML = '<option value="">Todos</option>' + values.map(v => `<option value="${v}">${v}</option>`).join('');
+  if(values.includes(current)) select.value = current;
+}
+function levFillDatalists(){
+  const agencyList = document.getElementById('levAgencyList');
+  const groupList = document.getElementById('levGroupList');
+  if(agencyList) agencyList.innerHTML = [...new Set([...levGetAgencias(), ...levRecords.map(item => item.agency).filter(Boolean)])].map(v => `<option value="${v}"></option>`).join('');
+  if(groupList) groupList.innerHTML = [...new Set([...levGetGrupos(), ...levRecords.map(item => item.group).filter(Boolean)])].map(v => `<option value="${v}"></option>`).join('');
+}
+function levTopBy(key){
+  const counts = {};
+  levRecords.forEach(item => { const value = levSafe(item[key]) || '-'; counts[value] = (counts[value] || 0) + 1; });
+  const first = Object.entries(counts).sort((a,b) => b[1] - a[1])[0];
+  return { key: first ? first[0] : '-', total: first ? first[1] : 0 };
+}
+function levGetHighestOpenPriority(){
+  const order = { 'Urgente':4, 'Alta':3, 'Media':2, 'Baja':1 };
+  const open = levRecords.filter(item => !levSlug(item.workflowStatus).includes('complet') && !levSlug(item.workflowStatus).includes('archiv'));
+  if(!open.length) return '-';
+  return open.sort((a,b) => (order[b.priority]||0) - (order[a.priority]||0))[0].priority;
+}
+function levApplyFilters(){
+  const search = levSlug(document.getElementById('levFilterSearch')?.value || '');
+  const category = levSafe(document.getElementById('levFilterCategory')?.value || '');
+  const status = levSafe(document.getElementById('levFilterStatus')?.value || '');
+  const priority = levSafe(document.getElementById('levFilterPriority')?.value || '');
+  const group = levSafe(document.getElementById('levFilterGroup')?.value || '');
+  const agency = levSlug(document.getElementById('levFilterAgency')?.value || '');
+  const tech = levSlug(document.getElementById('levFilterOwner')?.value || '');
+  levFiltered = levRecords.filter(item => {
+    const blob = [item.code,item.type,item.category,item.agency,item.group,item.technician,item.executiveSummary,item.findings].join(' ').toLowerCase();
+    if(search && !blob.includes(search)) return false;
+    if(category && item.category !== category) return false;
+    if(status && item.workflowStatus !== status) return false;
+    if(priority && item.priority !== priority) return false;
+    if(group && String(item.group || '') !== group) return false;
+    if(agency && !`${item.agency} ${item.group}`.toLowerCase().includes(agency)) return false;
+    if(tech && !`${item.technician} ${item.responsible}`.toLowerCase().includes(tech)) return false;
+    return true;
+  });
+}
+function levRenderStats(){
+  const total = levRecords.length;
+  const pending = levRecords.filter(item => levSlug(item.workflowStatus).includes('pend')).length;
+  const action = levRecords.filter(item => levSlug(item.workflowStatus).includes('aprob') || levSlug(item.workflowStatus).includes('proceso')).length;
+  const latestTech = levRecords.slice().sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
+  const closedLast = levRecords.filter(item => levSlug(item.workflowStatus).includes('complet')).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+  document.getElementById('levStatTotal').textContent = total;
+  document.getElementById('levStatPending').textContent = pending;
+  document.getElementById('levStatAction').textContent = action;
+  document.getElementById('levHeroTech').textContent = latestTech ? latestTech.technician || '-' : '-';
+  document.getElementById('levHeroAgency').textContent = levTopBy('agency').key;
+  document.getElementById('levHeroGroup').textContent = levTopBy('group').key;
+  document.getElementById('levHeroPriority').textContent = levGetHighestOpenPriority();
+  document.getElementById('levHeroClosed').textContent = closedLast ? closedLast.code : '-';
+}
+function levRenderCategoryBars(){
+  const holder = document.getElementById('levCategoryBars');
+  if(!holder) return;
+  const total = levRecords.length || 1;
+  const rows = LEV_CATEGORIES.map(cat => ({ cat, total: levRecords.filter(item => item.category === cat).length })).filter(item => item.total > 0).sort((a,b)=> b.total - a.total);
+  holder.innerHTML = rows.length ? rows.map(item => `
+    <div class="lev-progress-item">
+      <div class="lev-progress-top"><span>${item.cat}</span><span>${item.total}</span></div>
+      <div class="lev-progress-bar"><span style="width:${Math.max(8, (item.total/total)*100)}%"></span></div>
+    </div>`).join('') : '<div class="lev-empty">Sin datos para mostrar.</div>';
+}
+function levRenderAlerts(){
+  const alertList = document.getElementById('levAlertList');
+  const agendaList = document.getElementById('levAgendaList');
+  if(alertList){
+    const alerts = levRecords.filter(item => item.priority === 'Urgente' || item.priority === 'Alta').slice(0,4);
+    alertList.innerHTML = alerts.length ? alerts.map(item => `<div class="lev-mini-item"><div><strong>${item.code} · Agencia ${item.agency || '-'}</strong><span>${item.executiveSummary}</span></div><b>${item.priority}</b></div>`).join('') : '<div class="lev-empty">No hay alertas prioritarias activas.</div>';
+  }
+  if(agendaList){
+    const agenda = levRecords.filter(item => !levSlug(item.workflowStatus).includes('complet') && !levSlug(item.workflowStatus).includes('archiv')).sort((a,b)=> new Date(a.visitDate) - new Date(b.visitDate)).slice(0,4);
+    agendaList.innerHTML = agenda.length ? agenda.map(item => `<div class="lev-mini-item"><div><strong>${item.code}</strong><span>${item.nextAction || 'Sin acción definida.'}</span></div><b>${levFmtDate(item.visitDate)}</b></div>`).join('') : '<div class="lev-empty">No hay agenda pendiente.</div>';
+  }
+}
+function levRenderExecutivePreview(){
+  const item = levFiltered[0] || levRecords[0];
+  document.getElementById('levExecutiveTitle').textContent = item ? `${item.type} · Agencia ${item.agency}` : 'Sin expediente seleccionado';
+  document.getElementById('levExecutiveText').textContent = item ? item.executiveSummary : 'Selecciona un levantamiento para visualizar su ficha empresarial completa.';
+  document.getElementById('levExecutiveCode').textContent = item ? item.code : '-';
+}
+function levRenderTable(){
+  const tbody = document.getElementById('levTableBody');
+  if(!tbody) return;
+  if(!levFiltered.length){ tbody.innerHTML = `<tr><td colspan="8"><div class="lev-empty">No hay levantamientos que coincidan con los filtros actuales.</div></td></tr>`; return; }
+  tbody.innerHTML = levFiltered.map(item => `
+    <tr>
+      <td><strong>${item.code}</strong><br><span class="lev-muted">${levFmtDate(item.submittedAt)}</span></td>
+      <td class="lev-title-cell"><strong>${item.type}</strong><span>${item.executiveSummary}</span></td>
+      <td><strong>${item.agency || '-'}</strong><br><span class="lev-muted">Grupo ${item.group || '-'}</span></td>
+      <td>${item.technician || '-'}</td>
+      <td><span class="lev-chip ${levBadgeClass(item.workflowStatus)}">${item.workflowStatus}</span><br><span class="lev-muted">${item.overallStatus}</span></td>
+      <td><span class="lev-chip ${levPriorityClass(item.priority)}">${item.priority}</span></td>
+      <td><strong>${item.findingsCount}</strong><br><span class="lev-muted">${item.evidenceCount} evidencias</span></td>
+      <td>
+        <div class="lev-actions" style="justify-content:flex-start;">
+          <button type="button" class="lev-btn secondary" onclick="levOpenDetail('${item.id}')"><i class="fas fa-eye"></i> Ver</button>
+          <button type="button" class="lev-btn ghost" onclick="levEdit('${item.id}')"><i class="fas fa-pen"></i></button>
+          <button type="button" class="lev-btn ghost" onclick="levRemove('${item.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+function levRender(){ levApplyFilters(); levRenderStats(); levRenderExecutivePreview(); levRenderTable(); levRenderCategoryBars(); levRenderAlerts(); }
+function levResetForm(){
+  levEditingId = null;
+  document.getElementById('levFormTitle').textContent = 'Nuevo registro rápido';
+  levSetValue('levId');
+  levSetValue('levVisitDate', levToday());
+  levSetValue('levAgency');
+  levSetValue('levGroup');
+  levSetSelectValue('levCategory', 'Arqueo de agencia');
+  levSetValue('levTitle');
+  levSetValue('levResponsible');
+  levSetSelectValue('levPriority', 'Media');
+  levSetSelectValue('levStatus', 'Pendiente de revisión');
+  levSetValue('levOverallStatus', 'Bueno');
+  levSetValue('levFindings');
+  levSetValue('levRecommendations');
+  levSetValue('levNextAction');
+  levSetSelectValue('levDiagStructure', 'Bueno');
+  levSetSelectValue('levDiagElectrical', 'Bueno');
+  levSetSelectValue('levDiagEquipment', 'Bueno');
+  levSetValue('levDiagIncidents');
+  levSetValue('levDiagRecommendation', 'Seguimiento preventivo');
+  LEV_STRUCTURE_FIELDS.forEach(label => { const key = levKey(label); levSetSelectValue(`levStructureState_${key}`, 'Buen Estado'); });
+  LEV_ELECTRICAL_FIELDS.forEach(label => { const key = levKey(label); levSetSelectValue(`levElectricalState_${key}`, 'Buen Estado'); });
+  LEV_EQUIPMENT_FIELDS.forEach(field => { const key = levKey(field.name); levSetSelectValue(`levEquipmentAvail_${key}`, field.name === 'Pantalla ATM' ? 'No tiene' : 'Sí tiene'); levSetSelectValue(`levEquipmentState_${key}`, field.name === 'Pantalla ATM' ? 'No tiene' : 'Buen Estado'); levSetValue(`levEquipmentDesc_${key}`); levSetValue(`levEquipmentPhoto_${key}`, field.photoLabel || ''); });
+  LEV_GALLERY_FIELDS.forEach(label => { levResetImageField(levKey(label)); });
+  levSetValue('levAgencyObservation');
+  levToggleEditLayout(false);
+  levSetValue('levEditTitle');
+  levSetValue('levEditOverallStatus', 'Bueno');
+  levSetValue('levEditSummary');
+}
+function levOpenModal(){ document.getElementById('levModal').classList.add('open'); }
+function levCloseModal(){ document.getElementById('levModal').classList.remove('open'); }
+function levToggleEditLayout(isEdit){
+  const createBlock = document.getElementById('levCreateBaseFields');
+  const editBlock = document.getElementById('levEditAlignedShell');
+  if(createBlock) createBlock.style.display = isEdit ? 'none' : '';
+  if(editBlock) editBlock.style.display = isEdit ? '' : 'none';
+}
+function levSyncEditSummaryFromBase(){
+  const agency = document.getElementById('levAgency')?.value || '-';
+  const group = document.getElementById('levGroup')?.value || '-';
+  const responsible = document.getElementById('levResponsible')?.value || '-';
+  const visitDate = document.getElementById('levVisitDate')?.value || '';
+  const dateLabel = visitDate ? formatDate(visitDate) : '-';
+  const setText = (id, value) => { const el = document.getElementById(id); if(el) el.textContent = value; };
+  setText('levEditChipAgency', `Agencia ${agency}`);
+  setText('levEditChipGroup', `Grupo ${group}`);
+  setText('levEditChipResponsible', responsible);
+  setText('levEditChipVisitDate', dateLabel);
+  levSetValue('levEditTitle', document.getElementById('levTitle')?.value || '');
+  levSetSelectValue('levEditCategory', document.getElementById('levCategory')?.value || 'Arqueo de agencia');
+  levSetSelectValue('levEditStatus', document.getElementById('levStatus')?.value || 'Pendiente de revisión');
+  levSetValue('levEditOverallStatus', document.getElementById('levOverallStatus')?.value || '');
+  levSetSelectValue('levEditPriority', document.getElementById('levPriority')?.value || 'Media');
+  levSetValue('levEditSummary', document.getElementById('levFindings')?.value || '');
+}
+function levSyncBaseFromEditSummary(){
+  if(!levEditingId) return;
+  levSetValue('levTitle', document.getElementById('levEditTitle')?.value || '');
+  levSetSelectValue('levCategory', document.getElementById('levEditCategory')?.value || 'Arqueo de agencia');
+  levSetSelectValue('levStatus', document.getElementById('levEditStatus')?.value || 'Pendiente de revisión');
+  levSetValue('levOverallStatus', document.getElementById('levEditOverallStatus')?.value || '');
+  levSetSelectValue('levPriority', document.getElementById('levEditPriority')?.value || 'Media');
+  levSetValue('levFindings', document.getElementById('levEditSummary')?.value || '');
+}
+function levOpenCreate(){ levResetForm(); levToggleEditLayout(false); levOpenModal(); }
+function levEdit(id){
+  const item = levRecords.find(row => row.id === id); if(!item) return;
+  levEditingId = id;
+  document.getElementById('levFormTitle').textContent = `Editar ${item.code}`;
+  levSetValue('levId', item.id);
+  levSetValue('levVisitDate', item.visitDate || levToday());
+  levSetValue('levAgency', item.agency || '');
+  levSetValue('levGroup', item.group || '');
+  levSetSelectValue('levCategory', item.category || 'Otro');
+  levSetValue('levTitle', item.type || '');
+  levSetValue('levResponsible', item.technician || item.responsible || '');
+  levSetSelectValue('levPriority', item.priority || 'Media');
+  levSetSelectValue('levStatus', item.workflowStatus || 'Pendiente de revisión');
+  levSetValue('levOverallStatus', item.overallStatus || '');
+  levSetValue('levFindings', item.executiveSummary || '');
+  levSetValue('levRecommendations', item.recommendations || '');
+  levSetValue('levNextAction', item.nextAction || '');
+  levSetSelectValue('levDiagStructure', item.diagnostics?.structure || 'Bueno');
+  levSetSelectValue('levDiagElectrical', item.diagnostics?.electrical || 'Bueno');
+  levSetSelectValue('levDiagEquipment', item.diagnostics?.equipment || 'Bueno');
+  levSetValue('levDiagIncidents', item.diagnostics?.incidents || '');
+  levSetValue('levDiagRecommendation', item.diagnostics?.recommendation || '');
+  LEV_STRUCTURE_FIELDS.forEach(label => { const key = levKey(label); const row = levGetRow(item.structure, label, 'item') || {}; levSetSelectValue(`levStructureState_${key}`, row.state || 'Buen Estado'); });
+  LEV_ELECTRICAL_FIELDS.forEach(label => { const key = levKey(label); const row = levGetRow(item.electrical, label, 'item') || {}; levSetSelectValue(`levElectricalState_${key}`, row.state || 'Buen Estado'); });
+  LEV_EQUIPMENT_FIELDS.forEach(field => { const key = levKey(field.name); const row = levGetRow(item.equipment, field.name, 'name') || {}; levSetSelectValue(`levEquipmentAvail_${key}`, row.available || (field.name === 'Pantalla ATM' ? 'No tiene' : 'Sí tiene')); levSetSelectValue(`levEquipmentState_${key}`, row.state || (field.name === 'Pantalla ATM' ? 'No tiene' : 'Buen Estado')); levSetValue(`levEquipmentDesc_${key}`, row.description || ''); levSetValue(`levEquipmentPhoto_${key}`, row.photoLabel || field.photoLabel || ''); });
+  LEV_GALLERY_FIELDS.forEach(label => { const row = levGetRow(item.gallery, label, 'label') || {}; levApplyImagePreview(levKey(label), row.url || ''); });
+  levSetValue('levAgencyObservation', item.agencyObservation || '');
+  levToggleEditLayout(true);
+  levSyncEditSummaryFromBase();
+  levOpenModal();
+}
+function levSaveForm(ev){
+  ev.preventDefault();
+  levSyncBaseFromEditSummary();
+  const id = document.getElementById('levId').value || `lev-${Date.now()}`;
+  const existing = levRecords.find(item => item.id === id);
+  const base = existing || {};
+  const structure = levBuildStructureFromForm();
+  const electrical = levBuildElectricalFromForm();
+  const equipment = levBuildEquipmentFromForm();
+  const gallery = levBuildGalleryFromForm();
+  const autoFindings = levEstimateFindings(structure, electrical, equipment);
+  const record = levNormalizeItem({
+    ...base,
+    id,
+    code: existing?.code || levCode(levRecords.length + 1),
+    category: document.getElementById('levCategory').value,
+    type: document.getElementById('levTitle').value || document.getElementById('levCategory').value,
+    agency: document.getElementById('levAgency').value,
+    group: document.getElementById('levGroup').value,
+    technician: document.getElementById('levResponsible').value,
+    responsible: document.getElementById('levResponsible').value,
+    visitDate: document.getElementById('levVisitDate').value,
+    submittedAt: base.submittedAt || levNow(),
+    workflowStatus: document.getElementById('levStatus').value,
+    overallStatus: document.getElementById('levOverallStatus').value || levEstimateOverall(structure, electrical, equipment),
+    priority: document.getElementById('levPriority').value,
+    findingsCount: autoFindings,
+    evidenceCount: gallery.filter(item => item.url).length,
+    executiveSummary: document.getElementById('levFindings').value,
+    findings: document.getElementById('levFindings').value,
+    recommendations: document.getElementById('levRecommendations').value,
+    nextAction: document.getElementById('levNextAction').value,
+    updatedAt: levNow(),
+    diagnostics: {
+      structure: document.getElementById('levDiagStructure').value,
+      electrical: document.getElementById('levDiagElectrical').value,
+      equipment: document.getElementById('levDiagEquipment').value,
+      incidents: document.getElementById('levDiagIncidents').value || `${autoFindings} hallazgos`,
+      recommendation: document.getElementById('levDiagRecommendation').value || 'Seguimiento preventivo'
+    },
+    actions: base.actions || [],
+    agencyObservation: document.getElementById('levAgencyObservation')?.value || '',
+    structure, electrical, equipment, gallery
+  });
+  if(existing) levRecords = levRecords.map(item => item.id === id ? record : item); else levRecords.unshift(record);
+  levSave(); levPopulateGroupFilter(); levFillDatalists(); levCloseModal(); levRender();
+}
+function levOpenDetail(id){
+  const item = levRecords.find(row => row.id === id); if(!item) return;
+  document.getElementById('levDetailTitle').textContent = `${item.code} · ${item.type}`;
+  const renderRows = (rows, cols='2') => rows.length ? rows.map(row => `<tr><td><strong>${row.item || row.name || '-'}</strong></td><td><span class="lev-state-pill ${levStateClass(row.state || row.available)}">${row.state || row.available || '-'}</span></td></tr>`).join('') : `<tr><td colspan="${cols}"><div class="lev-empty">Sin información registrada.</div></td></tr>`;
+  const gallery = item.gallery?.length ? item.gallery.map(photo => `
+    <div class="lev-gallery-card">
+      <div class="lev-gallery-thumb">${photo.url ? `<img src="${photo.url}" alt="${photo.label}" style="width:100%;height:100%;object-fit:cover;">` : `<div><i class="fas fa-camera"></i><br>${photo.label}</div>`}</div>
+      <div class="meta"><strong>${photo.label}</strong><span>${photo.url ? 'Foto cargada en el expediente.' : 'Sin fotografía cargada.'}</span></div>
+    </div>`).join('') : '<div class="lev-empty" style="padding:18px;">Sin fotografías vinculadas.</div>';
+  const equipment = item.equipment?.length ? item.equipment.map(eq => `
+    <div class="lev-equip-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+        <h5>${eq.name}</h5>
+        <span class="lev-state-pill ${levStateClass(eq.state || eq.available)}">${eq.state || eq.available || '-'}</span>
+      </div>
+      <div class="lev-equip-meta">
+        <div><strong>Disponibilidad:</strong> ${eq.available || '-'}</div>
+        <div><strong>Descripción / modelo:</strong> ${eq.description || '-'}</div>
+      </div>
+      ${eq.photoUrl ? `<div class="lev-equip-photo"><img src="${eq.photoUrl}" alt="${eq.name}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;"></div>` : (eq.photoLabel ? `<div class="lev-equip-photo"><div><i class="fas fa-image"></i><br>${eq.photoLabel}</div></div>` : '')}
+    </div>`).join('') : '<div class="lev-empty" style="padding:18px;">Sin equipos registrados.</div>';
+  const actions = item.actions?.length ? item.actions.map(action => `<div class="lev-action-item"><div><strong>${action.title}</strong><span>${action.description}</span></div><span class="lev-state-pill ok">Acción</span></div>`).join('') : '<div class="lev-empty" style="padding:18px;">Sin acciones definidas.</div>';
+  document.getElementById('levDetailBody').innerHTML = `
+    <div class="lev-detail-shell">
+      <div class="lev-detail-header">
+        <div class="lev-detail-title-block">
+          <h2>${item.code}</h2>
+          <p>${item.executiveSummary}</p>
+        </div>
+        <div class="lev-detail-badges">
+          <span class="lev-badge-soft"><i class="fas fa-building"></i> Agencia ${item.agency || '-'}</span>
+          <span class="lev-badge-soft"><i class="fas fa-people-group"></i> Grupo ${item.group || '-'}</span>
+          <span class="lev-badge-soft"><i class="fas fa-user-helmet-safety"></i> ${item.technician || '-'}</span>
+          <span class="lev-badge-soft"><i class="fas fa-calendar-day"></i> ${levFmtDate(item.visitDate)}</span>
+        </div>
+      </div>
+
+      <div class="lev-detail-grid">
+        <div class="lev-card"><div class="label">Tipo de levantamiento</div><div class="value" style="font-size:20px;">${item.type}</div><div class="sub">Categoría: ${item.category}</div></div>
+        <div class="lev-card"><div class="label">Estado de flujo</div><div class="value" style="font-size:20px;">${item.workflowStatus}</div><div class="sub">Lectura operacional del expediente</div></div>
+        <div class="lev-card"><div class="label">Estado general</div><div class="value" style="font-size:20px;">${item.overallStatus}</div><div class="sub">Resultado empresarial del formulario</div></div>
+        <div class="lev-card"><div class="label">Prioridad sugerida</div><div class="value" style="font-size:20px;">${item.priority}</div><div class="sub">${item.findingsCount} hallazgos · ${item.evidenceCount} evidencias</div></div>
+      </div>
+
+      <div class="lev-exec-box">
+        <h4>Resumen ejecutivo</h4>
+        <p>${item.executiveSummary}</p>
+      </div>
+
+      <div class="lev-section">
+        <div class="lev-section-head"><div><h4>Estado general de la agencia</h4><p>Lectura estructural y de mobiliario visible para entender la condición global del punto.</p></div></div>
+        <table class="lev-table-clean">
+          <thead><tr><th>Elemento</th><th>Estado</th></tr></thead>
+          <tbody>${renderRows(item.structure)}</tbody>
+        </table>
+      </div>
+
+      <div class="lev-section">
+        <div class="lev-section-head"><div><h4>Instalación eléctrica y cableado</h4><p>Resumen ordenado de energía, conectores, luces y presentación del cableado.</p></div></div>
+        <table class="lev-table-clean">
+          <thead><tr><th>Componente</th><th>Estado</th></tr></thead>
+          <tbody>${renderRows(item.electrical)}</tbody>
+        </table>
+      </div>
+
+      <div class="lev-section">
+        <div class="lev-section-head"><div><h4>Equipos detectados en agencia</h4><p>Equipos principales reportados por el formulario, organizados para lectura rápida y empresarial.</p></div></div>
+        <div class="lev-equip-grid">${equipment}</div>
+      </div>
+
+      <div class="lev-section">
+        <div class="lev-section-head"><div><h4>Galería fotográfica</h4><p>Evidencias separadas por zonas y equipos para que el caso sea fácil de entender.</p></div></div>
+        <div class="lev-gallery-grid">${gallery}</div>
+      </div>
+
+      <div class="lev-section">
+        <div class="lev-section-head"><div><h4>Diagnóstico automático</h4><p>Lectura resumida lista para supervisión, seguimiento y toma de decisiones.</p></div></div>
+        <div class="lev-diagnostics">
+          <div class="lev-diag-card"><span>Estado estructural</span><strong>${item.diagnostics?.structure || '-'}</strong><p>Condición visual general del local y elementos físicos evaluados.</p></div>
+          <div class="lev-diag-card"><span>Estado eléctrico</span><strong>${item.diagnostics?.electrical || '-'}</strong><p>Interpretación general del componente eléctrico y cableado.</p></div>
+          <div class="lev-diag-card"><span>Equipos y mobiliario</span><strong>${item.diagnostics?.equipment || '-'}</strong><p>Situación consolidada de equipos registrados por el formulario.</p></div>
+          <div class="lev-diag-card"><span>Acción recomendada</span><strong>${item.diagnostics?.recommendation || '-'}</strong><p>Incidencias: ${item.diagnostics?.incidents || '-'}</p></div>
+        </div>
+      </div>
+
+      <div class="lev-exec-box">
+        <h4>Observación de la agencia</h4>
+        <p>${item.agencyObservation || 'Sin observación global registrada.'}</p>
+      </div>
+
+    </div>`;
+  document.getElementById('levDetailModal').classList.add('open');
+}
+function levCloseDetail(){ document.getElementById('levDetailModal').classList.remove('open'); }
+function levRemove(id){ if(!confirm('¿Deseas eliminar este levantamiento?')) return; levRecords = levRecords.filter(item => item.id !== id); levSave(); levRender(); }
+function levGetExportBase(){
+  return (levFiltered.length ? levFiltered : levRecords);
+}
+function levStructureValue(item, label){
+  return item.structure?.find(row => row.item === label)?.state || '';
+}
+function levEquipmentState(item, label){
+  const eq = item.equipment?.find(row => row.name === label);
+  return eq ? (eq.state || eq.available || '') : '';
+}
+function levExcelRows(){
+  return levGetExportBase().map(item => ({
+    'Técnico': item.technician || '',
+    'Agencia': item.agency || '',
+    'Grupo': item.group || '',
+    'Fecha': levFmtDate(item.visitDate),
+    'Toldo': levStructureValue(item, 'Toldo'),
+    'Pecho': levStructureValue(item, 'Pecho'),
+    'Publicidades': levStructureValue(item, 'Publicidades'),
+    'Pintura / Filtraciones': levStructureValue(item, 'Pintura / Filtraciones'),
+    'Piso': levStructureValue(item, 'Piso'),
+    'Puerta enrollable / Eléctrica': levStructureValue(item, 'Puerta enrollable / Eléctrica'),
+    'Estado (Máquina de Venta)': levEquipmentState(item, 'Máquina de venta'),
+    'Comentario u observación': item.findings || item.recommendations || item.executiveSummary || ''
+  }));
+}
+function levExportCSV(){
+  const rows = levExcelRows();
+  if(!rows.length){ alert('No hay datos para exportar.'); return; }
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(','), ...rows.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const group = levSafe(document.getElementById('levFilterGroup')?.value || '');
+  const fileName = group ? `levantamientos_grupo_${group}.csv` : 'levantamientos_operaciones.csv';
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function levExportExcel(){
+  const rows = levExcelRows();
+  if(!rows.length){ alert('No hay datos para exportar.'); return; }
+  const headers = Object.keys(rows[0]);
+  const group = levSafe(document.getElementById('levFilterGroup')?.value || '');
+  const title = group ? `Levantamientos Grupo ${group}` : 'Levantamientos de Operaciones';
+  const esc = (value) => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const tableRows = rows.map(row => `<tr>${headers.map(h => `<td>${esc(row[h])}</td>`).join('')}</tr>`).join('');
+  const htmlDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}th,td{border:1px solid #b7c3d0;padding:6px 8px;text-align:left;vertical-align:top}
+    th{background:#cfeccc;font-weight:700}.title{font-size:16px;font-weight:700;margin-bottom:10px}
+  </style></head><body><div class="title">${esc(title)}</div><table><thead><tr>${headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
+  const blob = new Blob([htmlDoc], {type:'application/vnd.ms-excel;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = group ? `levantamientos_grupo_${group}.xls` : 'levantamientos_operaciones.xls';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function levInitFormControls(){
+  LEV_STRUCTURE_FIELDS.forEach(label => levSelect(`levStructureState_${levKey(label)}`, LEV_STATE_OPTIONS));
+  LEV_ELECTRICAL_FIELDS.forEach(label => levSelect(`levElectricalState_${levKey(label)}`, LEV_STATE_OPTIONS));
+  LEV_EQUIPMENT_FIELDS.forEach(field => { levSelect(`levEquipmentAvail_${levKey(field.name)}`, LEV_AVAILABILITY_OPTIONS); levSelect(`levEquipmentState_${levKey(field.name)}`, LEV_EQUIPMENT_STATE_OPTIONS); });
+  levSelect('levEditCategory', LEV_CATEGORIES);
+  levSelect('levDiagStructure', LEV_DIAG_OPTIONS);
+  levSelect('levDiagElectrical', LEV_DIAG_OPTIONS);
+  levSelect('levDiagEquipment', LEV_DIAG_OPTIONS);
+}
+function levInit(){
+  levLoad(); levPopulateCategoryFilter(); levPopulateGroupFilter(); levFillDatalists(); levInitFormControls();
+  ['levFilterSearch','levFilterCategory','levFilterStatus','levFilterPriority','levFilterGroup','levFilterAgency','levFilterOwner'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', levRender);
+    document.getElementById(id)?.addEventListener('change', levRender);
+  });
+  document.getElementById('levOpenCreateBtn')?.addEventListener('click', levOpenCreate);
+  document.getElementById('levExportBtn')?.addEventListener('click', levExportCSV);
+  document.getElementById('levExportExcelBtn')?.addEventListener('click', levExportExcel);
+  document.getElementById('levResetBtn')?.addEventListener('click', () => { localStorage.removeItem(LEV_STORAGE_KEY); levLoad(); levPopulateCategoryFilter(); levPopulateGroupFilter(); levFillDatalists(); levRender(); });
+  document.getElementById('levForm')?.addEventListener('submit', levSaveForm);
+  const statusSelect = document.getElementById('levStatus');
+  if(statusSelect && !statusSelect.dataset.upgraded){
+    statusSelect.innerHTML = '<option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option>';
+    statusSelect.dataset.upgraded = '1';
+  }
+  const note = document.getElementById('levQuickNote');
+  if(note) note.textContent = 'Este formulario rápido sirve para carga manual temporal. Luego podrá sustituirse por el formulario real conectado automáticamente.';
+  levRender();
+}
+window.addEventListener('DOMContentLoaded', levInit);
+
+
 function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
   cambiarVista(vistaWrapper, el);
   activateSidebarLink(el, vistaWrapper);
@@ -10292,6 +11391,117 @@ function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
 }
 </script>
 
+
+
+
+<div class="lev-modal" id="levModal">
+  <div class="lev-modal-dialog" style="max-width:1280px; width:min(96vw,1280px);">
+    <div class="lev-modal-head"><h3 id="levFormTitle">Nuevo levantamiento</h3><button type="button" class="lev-btn ghost" onclick="levCloseModal()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <form id="levForm">
+      <div class="lev-modal-body">
+        <input type="hidden" id="levId">
+
+        <div id="levCreateBaseFields">
+          <div class="lev-form-grid">
+            <div class="lev-field"><label>Fecha de visita</label><input type="date" id="levVisitDate" required></div>
+            <div class="lev-field"><label>Agencia</label><input id="levAgency" list="levAgencyList" placeholder="Agencia 0141" required></div>
+            <div class="lev-field"><label>Grupo</label><input id="levGroup" list="levGroupList" placeholder="Grupo 08"></div>
+            <div class="lev-field"><label>Categoría</label><select id="levCategory"></select></div>
+            <div class="lev-field span-2"><label>Título del levantamiento</label><input id="levTitle" placeholder="Describe brevemente el objetivo de la visita" required></div>
+            <div class="lev-field"><label>Técnico / responsable</label><input id="levResponsible" placeholder="Supervisor o técnico responsable"></div>
+            <div class="lev-field"><label>Prioridad sugerida</label><select id="levPriority"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Urgente</option></select></div>
+            <div class="lev-field"><label>Estado de flujo</label><select id="levStatus"><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+            <div class="lev-field"><label>Estado general</label><input id="levOverallStatus" placeholder="Bueno con observaciones menores"></div>
+            <div class="lev-field span-3"><label>Resumen ejecutivo</label><textarea id="levFindings" placeholder="Resumen claro y empresarial del levantamiento."></textarea></div>
+          </div>
+        </div>
+
+        <div id="levEditAlignedShell" class="lev-section" style="display:none; margin-bottom:18px;">
+          <div class="lev-section-head">
+            <div>
+              <h4>Resumen editable del expediente</h4>
+              <p>Las opciones visibles aquí coinciden con la ficha de Ver levantamiento.</p>
+            </div>
+          </div>
+          <div style="padding:18px 20px 0;">
+            <div class="lev-tags" style="margin-bottom:18px;">
+              <span class="lev-tag"><i class="fas fa-building"></i> <strong id="levEditChipAgency">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-people-group"></i> <strong id="levEditChipGroup">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-user"></i> <strong id="levEditChipResponsible">-</strong></span>
+              <span class="lev-tag"><i class="fas fa-calendar"></i> <strong id="levEditChipVisitDate">-</strong></span>
+            </div>
+            <div class="lev-form-grid">
+              <div class="lev-field span-2"><label>Tipo de levantamiento</label><input id="levEditTitle" placeholder="Chequeo técnico integral"></div>
+              <div class="lev-field"><label>Categoría</label><select id="levEditCategory"></select></div>
+              <div class="lev-field"><label>Estado de flujo</label><select id="levEditStatus"><option>Pendiente de revisión</option><option>Revisado</option><option>Aprobado para acción</option><option>En proceso</option><option>Completado</option><option>Archivado</option></select></div>
+              <div class="lev-field"><label>Estado general</label><input id="levEditOverallStatus" placeholder="Bueno con observaciones menores"></div>
+              <div class="lev-field"><label>Prioridad sugerida</label><select id="levEditPriority"><option>Baja</option><option selected>Media</option><option>Alta</option><option>Urgente</option></select></div>
+              <div class="lev-field span-3"><label>Resumen ejecutivo</label><textarea id="levEditSummary" placeholder="Resumen claro y empresarial del levantamiento."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <textarea id="levRecommendations" style="display:none;"></textarea>
+        <textarea id="levNextAction" style="display:none;"></textarea>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Estado general de la agencia</h4><p>Estas opciones coinciden con la vista de Ver levantamiento.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Toldo</label><select id="levStructureState_toldo"></select></div><div class="lev-field"><label>Pecho</label><select id="levStructureState_pecho"></select></div><div class="lev-field"><label>Publicidades</label><select id="levStructureState_publicidades"></select></div><div class="lev-field"><label>Pintura / Filtraciones</label><select id="levStructureState_pintura_filtraciones"></select></div><div class="lev-field"><label>Piso</label><select id="levStructureState_piso"></select></div><div class="lev-field"><label>Hierros / Cristales</label><select id="levStructureState_hierros_cristales"></select></div><div class="lev-field"><label>Puerta enrollable / Eléctrica</label><select id="levStructureState_puerta_enrollable_el_ctrica"></select></div><div class="lev-field"><label>Caja registradora / Gaveta</label><select id="levStructureState_caja_registradora_gaveta"></select></div><div class="lev-field"><label>Abanico</label><select id="levStructureState_abanico"></select></div><div class="lev-field"><label>Taburete</label><select id="levStructureState_taburete"></select></div></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Instalación eléctrica y cableado</h4><p>Edita exactamente los componentes que salen en la ficha empresarial.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Cables de la calle</label><select id="levElectricalState_cables_de_la_calle"></select></div><div class="lev-field"><label>Estructura eléctrica</label><select id="levElectricalState_estructura_el_ctrica"></select></div><div class="lev-field"><label>Conectores</label><select id="levElectricalState_conectores"></select></div><div class="lev-field"><label>Fuentes y cables de equipos</label><select id="levElectricalState_fuentes_y_cables_de_equipos"></select></div><div class="lev-field"><label>Luces</label><select id="levElectricalState_luces"></select></div></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Equipos detectados en agencia</h4><p>Disponibilidad, estado, descripción y referencia de foto para cada equipo.</p></div></div>
+          <div class="lev-form-grid"><div class="lev-field"><label>Inversor · Disponibilidad</label><select id="levEquipmentAvail_inversor"></select></div><div class="lev-field"><label>Inversor · Estado</label><select id="levEquipmentState_inversor"></select></div><div class="lev-field"><label>Inversor · Descripción / modelo</label><input id="levEquipmentDesc_inversor" placeholder="Detalle o modelo de inversor"></div><div class="lev-field span-3"><label>Inversor · Referencia de foto</label><input id="levEquipmentPhoto_inversor" placeholder="Foto de inversor"></div><div class="lev-field"><label>Baterías · Disponibilidad</label><select id="levEquipmentAvail_bater_as"></select></div><div class="lev-field"><label>Baterías · Estado</label><select id="levEquipmentState_bater_as"></select></div><div class="lev-field"><label>Baterías · Descripción / modelo</label><input id="levEquipmentDesc_bater_as" placeholder="Detalle o modelo de baterías"></div><div class="lev-field span-3"><label>Baterías · Referencia de foto</label><input id="levEquipmentPhoto_bater_as" placeholder="Foto de baterías"></div><div class="lev-field"><label>Máquina de venta · Disponibilidad</label><select id="levEquipmentAvail_m_quina_de_venta"></select></div><div class="lev-field"><label>Máquina de venta · Estado</label><select id="levEquipmentState_m_quina_de_venta"></select></div><div class="lev-field"><label>Máquina de venta · Descripción / modelo</label><input id="levEquipmentDesc_m_quina_de_venta" placeholder="Detalle o modelo de máquina de venta"></div><input type="hidden" id="levEquipmentPhoto_m_quina_de_venta" value=""><div class="lev-field"><label>Printer · Disponibilidad</label><select id="levEquipmentAvail_printer"></select></div><div class="lev-field"><label>Printer · Estado</label><select id="levEquipmentState_printer"></select></div><div class="lev-field"><label>Printer · Descripción / modelo</label><input id="levEquipmentDesc_printer" placeholder="Detalle o modelo de printer"></div><input type="hidden" id="levEquipmentPhoto_printer" value=""><div class="lev-field"><label>Scanner · Disponibilidad</label><select id="levEquipmentAvail_scanner"></select></div><div class="lev-field"><label>Scanner · Estado</label><select id="levEquipmentState_scanner"></select></div><div class="lev-field"><label>Scanner · Descripción / modelo</label><input id="levEquipmentDesc_scanner" placeholder="Detalle o modelo de scanner"></div><input type="hidden" id="levEquipmentPhoto_scanner" value=""><div class="lev-field"><label>2da Pantalla · Disponibilidad</label><select id="levEquipmentAvail_2da_pantalla"></select></div><div class="lev-field"><label>2da Pantalla · Estado</label><select id="levEquipmentState_2da_pantalla"></select></div><div class="lev-field"><label>2da Pantalla · Descripción / modelo</label><input id="levEquipmentDesc_2da_pantalla" placeholder="Detalle o modelo de 2da pantalla"></div><input type="hidden" id="levEquipmentPhoto_2da_pantalla" value=""><div class="lev-field"><label>Pantalla ATM · Disponibilidad</label><select id="levEquipmentAvail_pantalla_atm"></select></div><div class="lev-field"><label>Pantalla ATM · Estado</label><select id="levEquipmentState_pantalla_atm"></select></div><div class="lev-field"><label>Pantalla ATM · Descripción / modelo</label><input id="levEquipmentDesc_pantalla_atm" placeholder="Detalle o modelo de pantalla atm"></div><input type="hidden" id="levEquipmentPhoto_pantalla_atm" value=""></div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Galería fotográfica</h4><p>Organiza las evidencias por zonas y equipos para que luego se lean fácil en Ver levantamiento.</p></div></div>
+          <div class="lev-form-grid">
+            <div class="lev-field span-3"><label>Exterior de la agencia</label><input type="file" accept="image/*" id="levGalleryFile_exterior_de_la_agencia" onchange="levHandleImageUpload(this,'levGalleryPreview_exterior_de_la_agencia','levGallery_exterior_de_la_agencia')"><input type="hidden" id="levGallery_exterior_de_la_agencia"><div class="lev-upload-preview"><img id="levGalleryPreview_exterior_de_la_agencia" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Exterior de la agencia"><div id="levGalleryEmpty_exterior_de_la_agencia" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Zona de cliente</label><input type="file" accept="image/*" id="levGalleryFile_zona_de_cliente" onchange="levHandleImageUpload(this,'levGalleryPreview_zona_de_cliente','levGallery_zona_de_cliente')"><input type="hidden" id="levGallery_zona_de_cliente"><div class="lev-upload-preview"><img id="levGalleryPreview_zona_de_cliente" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Zona de cliente"><div id="levGalleryEmpty_zona_de_cliente" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Zona de empleada</label><input type="file" accept="image/*" id="levGalleryFile_zona_de_empleada" onchange="levHandleImageUpload(this,'levGalleryPreview_zona_de_empleada','levGallery_zona_de_empleada')"><input type="hidden" id="levGallery_zona_de_empleada"><div class="lev-upload-preview"><img id="levGalleryPreview_zona_de_empleada" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Zona de empleada"><div id="levGalleryEmpty_zona_de_empleada" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Equipo: Inversor</label><input type="file" accept="image/*" id="levGalleryFile_equipo_inversor" onchange="levHandleImageUpload(this,'levGalleryPreview_equipo_inversor','levGallery_equipo_inversor')"><input type="hidden" id="levGallery_equipo_inversor"><div class="lev-upload-preview"><img id="levGalleryPreview_equipo_inversor" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Equipo Inversor"><div id="levGalleryEmpty_equipo_inversor" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+            <div class="lev-field span-3"><label>Equipo: Baterías</label><input type="file" accept="image/*" id="levGalleryFile_equipo_bater_as" onchange="levHandleImageUpload(this,'levGalleryPreview_equipo_bater_as','levGallery_equipo_bater_as')"><input type="hidden" id="levGallery_equipo_bater_as"><div class="lev-upload-preview"><img id="levGalleryPreview_equipo_bater_as" style="display:none;max-width:100%;max-height:180px;border-radius:12px;border:1px solid #d8e3ec;margin-top:10px;" alt="Equipo Baterías"><div id="levGalleryEmpty_equipo_bater_as" style="margin-top:10px;padding:18px;border:1px dashed #c7d9e7;border-radius:12px;color:#6d8599;font-weight:700;text-align:center;">Sin foto cargada</div></div></div>
+          </div></div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Diagnóstico automático</h4><p>Estos valores también coinciden con lo que se ve en la ficha empresarial.</p></div></div>
+          <div class="lev-form-grid">
+            <div class="lev-field"><label>Estado estructural</label><select id="levDiagStructure"></select></div>
+            <div class="lev-field"><label>Estado eléctrico</label><select id="levDiagElectrical"></select></div>
+            <div class="lev-field"><label>Equipos y mobiliario</label><select id="levDiagEquipment"></select></div>
+            <div class="lev-field span-2"><label>Incidencias</label><input id="levDiagIncidents" placeholder="Ejemplo: 2 observaciones menores"></div>
+            <div class="lev-field"><label>Acción recomendada</label><input id="levDiagRecommendation" placeholder="Seguimiento preventivo"></div>
+          </div>
+        </div>
+
+        <div class="lev-section" style="margin-top:18px;">
+          <div class="lev-section-head"><div><h4>Observación de la agencia</h4><p>Única observación global del expediente para mantener el historial limpio y claro.</p></div></div>
+          <div style="padding:18px 20px 20px;"><textarea id="levAgencyObservation" placeholder="Escribe aquí la observación general de la agencia."></textarea></div>
+        </div>
+      </div>
+      <div class="lev-modal-actions">
+        <span style="color:#72879a;font-size:13px;">Registro interno del departamento de OPERACIONES. La edición coincide con la ficha de Ver levantamiento.</span>
+        <div class="lev-actions">
+          <button type="button" class="lev-btn ghost" onclick="levCloseModal()">Cancelar</button>
+          <button type="submit" class="lev-btn primary"><i class="fas fa-floppy-disk"></i> Guardar levantamiento</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div class="lev-modal" id="levDetailModal">
+  <div class="lev-modal-dialog">
+    <div class="lev-modal-head"><h3 id="levDetailTitle">Detalle</h3><button type="button" class="lev-btn ghost" onclick="levCloseDetail()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <div class="lev-modal-body" id="levDetailBody"></div>
+  </div>
+</div>
+<datalist id="levAgencyList"></datalist>
+<datalist id="levGroupList"></datalist>
 
 <div class="ops-toast-wrap" id="opsToastWrap"></div>
 
