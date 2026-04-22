@@ -2402,10 +2402,6 @@
     .equipment-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
     .equipment-title { font-size:16px; font-weight:900; color:#173346; }
     .equipment-sub { font-size:13px; color:#5f7585; line-height:1.45; }
-    .equipment-status { display:inline-flex; align-items:center; justify-content:center; padding:7px 11px; border-radius:999px; font-size:11px; font-weight:900; }
-    .equipment-status.activo { background:#e8f6ef; color:#2f7d57; }
-    .equipment-status.revision { background:#fff6df; color:#8b6200; }
-    .equipment-status.danado { background:#fff1f1; color:#a12626; }
     .history-card { padding:14px; }
     .history-title { font-size:15px; font-weight:900; color:#173346; margin-bottom:6px; }
     .history-card p { margin:0; color:#4d6474; font-size:13px; line-height:1.5; }
@@ -4695,9 +4691,6 @@ function startReportAutoRefresh() {
       const q = (agencySearchInput?.value || '').trim().toLowerCase();
       const filtered = items.filter(item => !q || `${item.producto} ${item.serial} ${item.marca} ${item.modelo} ${item.categoria}`.toLowerCase().includes(q));
       const total = items.length;
-      const activos = items.filter(item => item.estado === 'activo').length;
-      const revision = items.filter(item => item.estado === 'revision').length;
-      const danados = items.filter(item => item.estado === 'danado').length;
       return `
         <div class="agency-back-row">
           <button type="button" class="agency-back-btn" data-agency-back="agency-home">← Volver a la agencia</button>
@@ -4706,10 +4699,7 @@ function startReportAutoRefresh() {
           <h4 class="agency-hero-title">Equipos de ${agency.agencyLabel}</h4>
           <p class="agency-hero-text">Consulta rápida para técnicos y encargados. Esta vista está organizada por bloques para no recargar la pestaña.</p>
           <div class="agency-kpis">
-            <div class="agency-kpi"><span>Total</span><strong>${total}</strong></div>
-            <div class="agency-kpi"><span>Activos</span><strong>${activos}</strong></div>
-            <div class="agency-kpi"><span>En revisión</span><strong>${revision}</strong></div>
-            <div class="agency-kpi"><span>Dañados</span><strong>${danados}</strong></div>
+            <div class="agency-kpi"><span>Total de equipos</span><strong>${total}</strong></div>
           </div>
         </div>
         <div class="equipment-grid">
@@ -4720,7 +4710,6 @@ function startReportAutoRefresh() {
                   <div class="equipment-title">${item.icon} ${item.producto}</div>
                   <div class="equipment-sub">${item.marca} · ${item.modelo}</div>
                 </div>
-                <span class="equipment-status ${item.estado}">${item.estado === 'activo' ? 'Activo' : item.estado === 'revision' ? 'En revisión' : 'Dañado'}</span>
               </div>
               <div class="equipment-meta">
                 <span class="mini-pill">🔖 ${item.serial}</span>
