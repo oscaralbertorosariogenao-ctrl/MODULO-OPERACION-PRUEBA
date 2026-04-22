@@ -2713,7 +2713,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
     <div class="opx-hero">
       <div>
         <h2>Gestión de candidatos</h2>
-        <p>Submódulo de solicitudes para registrar, evaluar, aprobar, asignar, contratar o rechazar candidatas sin afectar el resto del sistema. Cuando una solicitud se convierte en contratada, pasa automáticamente al módulo de Operadoras.</p>
+        <p>Bandeja empresarial de solicitudes conectada al formulario externo. Las candidatas entran en Solicitud o En evaluación; las aprobadas o contratadas pasan a Gestión de empleados/as, y las rechazadas salen directo al Historial con su comentario obligatorio.</p>
         <div class="opx-hero-tags">
           <span class="opx-hero-tag"><i class="fas fa-user-plus"></i> Reclutamiento</span>
           <span class="opx-hero-tag"><i class="fas fa-building"></i> Asignación por agencia / grupo</span>
@@ -2771,7 +2771,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 
     <div class="hrx-grid-2">
       <div class="hrx-panel">
-        <div class="hrx-panel-head"><div><h3>Solicitudes registradas</h3><p>Flujo empresarial: Solicitud → En evaluación → Aprobada / Asignada → Contratada, o Rechazada.</p></div></div>
+        <div class="hrx-panel-head"><div><h3>Solicitudes registradas</h3><p>Lógica empresarial: Solicitud / En evaluación permanecen en bandeja. Aprobada o Contratada pasan a Gestión de empleados/as. Rechazada sale directo al Historial.</p></div></div>
         <div class="hrx-panel-body hrx-table-wrap">
           <table class="hrx-table">
             <thead>
@@ -9953,398 +9953,166 @@ function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
   </div>
 </div>
 <script>
-const HRX_STORAGE_KEY = 'loteka_rrhh_solicitudes_v1';
-const HRH_STORAGE_KEY = 'loteka_rrhh_historial_v1';
+const HRX_STORAGE_KEY = 'loteka_rrhh_solicitudes_v2';
+const HRH_STORAGE_KEY = 'loteka_rrhh_historial_v2';
 let hrxSolicitudes = [];
 let hrxFiltered = [];
 let hrxCurrentId = null;
-let hrxDetailTab = 'general';
 let hrhHistorial = [];
 let hrhFiltered = [];
+let hrxDetailTab = 'resumen';
 
 function hrxTodayISO(){ return new Date().toISOString().slice(0,10); }
 function hrxNowIso(){ return new Date().toISOString(); }
-function hrxParseDate(v){ return v ? new Date(v+'T00:00:00') : null; }
-function hrxAge(date){ const d=hrxParseDate(date); if(!d||Number.isNaN(d.getTime())) return 0; const t=new Date(); let age=t.getFullYear()-d.getFullYear(); const m=t.getMonth()-d.getMonth(); if(m<0 || (m===0 && t.getDate()<d.getDate())) age--; return Math.max(age,0); }
-function hrxDaysSince(date){ const d=hrxParseDate(date); if(!d||Number.isNaN(d.getTime())) return 0; return Math.max(0, Math.floor((Date.now()-d.getTime())/86400000)); }
+function hrxParseDate(v){
+  if(!v) return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)) return new Date(v+'T00:00:00');
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+function hrxFmtDate(v){ const d=hrxParseDate(v); return d ? d.toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'}) : (v || '-'); }
+function hrxFmtDateTime(v){ const d=hrxParseDate(v); return d ? d.toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : (v || '-'); }
+function hrxAge(date){ const d=hrxParseDate(date); if(!d) return 0; const t=new Date(); let age=t.getFullYear()-d.getFullYear(); const m=t.getMonth()-d.getMonth(); if(m<0 || (m===0 && t.getDate()<d.getDate())) age--; return Math.max(age,0); }
+function hrxDaysSince(date){ const d=hrxParseDate(date); if(!d) return 0; return Math.max(0, Math.floor((Date.now()-d.getTime())/86400000)); }
+function hrxSafe(v){ return String(v ?? '').trim(); }
 function hrxEstadoBadgeClass(v){ const s=(v||'').toLowerCase(); if(s.includes('evalu')) return 'gold'; if(s.includes('aprob')) return 'blue'; if(s.includes('contrat')) return 'green'; if(s.includes('rechaz')) return 'red'; if(s.includes('solic')) return 'gray'; return 'gray'; }
 function hrxSafeAgencias(){ try { return Array.isArray(agencias) ? agencias : []; } catch(e){ return []; } }
 function hrxSafeGrupos(){ try { return Array.isArray(grupos) ? grupos : []; } catch(e){ return []; } }
-function hrxPuestos(){ return ['Operadora','Representante de ventas','Cajera','Servicio al cliente']; }
+function hrxPuestos(){ return ['Representante de Ventas','Operadora','Cajera','Servicio al cliente']; }
 function hrxTurnos(){ return ['Matutino','Vespertino']; }
+function hrxTiposOperadora(){ return ['Normal','Premium']; }
+function hrxEstadosQueue(){ return ['Solicitud','En evaluación','Aprobada / Asignada','Contratada','Rechazada']; }
 function hrxEdadRanges(){ return [{v:'18-24',t:'18 a 24 años'},{v:'25-34',t:'25 a 34 años'},{v:'35-44',t:'35 a 44 años'},{v:'45-60',t:'45 a 60 años'}]; }
+function hrxActiveQueueStates(){ return ['Solicitud','En evaluación']; }
+function hrxEmploymentStates(){ return ['Activa','Vacaciones','Licencia','Cancelada/o','Abandono','Renuncia']; }
+function hrxAssetPlaceholder(label){ return `<div style="display:grid;place-items:center;height:100%;text-align:center;padding:18px;color:#55758f;font-weight:800">${label}</div>`; }
+function hrxImageOrPlaceholder(src, label){ return src ? `<img src="${src}" alt="${label}">` : hrxAssetPlaceholder(label); }
+function hrxFileToDataUrl(file, cb){ const reader=new FileReader(); reader.onload=e=>cb(e.target?.result || ''); reader.readAsDataURL(file); }
+
+function hrxEmptyRecord(){
+  return {
+    id:`sol-${Date.now()}`,
+    nombre:'', apellido:'', apodos:'', fechaNacimiento:'', lugarNacimiento:'', nacionalidad:'Dominicana', sexo:'Femenino', estadoCivil:'Soltera',
+    cedula:'', telefono:'', correo:'', correoConfirmacion:'', provincia:'', sector:'', direccion:'',
+    contactoEmergenciaNombre:'', contactoEmergenciaRelacion:'', contactoEmergenciaTelefono:'',
+    foto:'', cedulaFrontal:'', cedulaTrasera:'',
+    fechaSolicitud:hrxTodayISO(), puesto:'Representante de Ventas', turnoDeseado:'Matutino', agenciaInteres:'', grupoInteres:'',
+    estado:'Solicitud', tipoOperadora:'Normal', fechaEntrada:'', estadoLaboral:'Activa', salario:'', salud:'No',
+    comentarioEvaluacion:'', comentarioRechazo:'', observaciones:'', experiencia:'', responsable:'RRHH'
+  };
+}
+function hrxNormalize(item){
+  const base = hrxEmptyRecord();
+  return {
+    ...base,
+    ...item,
+    id:item.id || base.id,
+    nombre:hrxSafe(item.nombre), apellido:hrxSafe(item.apellido), apodos:hrxSafe(item.apodos), fechaNacimiento:item.fechaNacimiento || '',
+    lugarNacimiento:hrxSafe(item.lugarNacimiento), nacionalidad:hrxSafe(item.nacionalidad || 'Dominicana'), sexo:hrxSafe(item.sexo || 'Femenino'), estadoCivil:hrxSafe(item.estadoCivil || 'Soltera'),
+    cedula:hrxSafe(item.cedula), telefono:hrxSafe(item.telefono), correo:hrxSafe(item.correo), correoConfirmacion:hrxSafe(item.correoConfirmacion || item.correo),
+    provincia:hrxSafe(item.provincia), sector:hrxSafe(item.sector), direccion:hrxSafe(item.direccion),
+    contactoEmergenciaNombre:hrxSafe(item.contactoEmergenciaNombre), contactoEmergenciaRelacion:hrxSafe(item.contactoEmergenciaRelacion), contactoEmergenciaTelefono:hrxSafe(item.contactoEmergenciaTelefono),
+    foto:item.foto || '', cedulaFrontal:item.cedulaFrontal || '', cedulaTrasera:item.cedulaTrasera || '',
+    fechaSolicitud:item.fechaSolicitud || hrxTodayISO(), puesto:hrxSafe(item.puesto || 'Representante de Ventas'), turnoDeseado:hrxSafe(item.turnoDeseado || 'Matutino'),
+    agenciaInteres:hrxSafe(item.agenciaInteres || item.asignadaAgencia), grupoInteres:hrxSafe(item.grupoInteres || item.asignadaGrupo),
+    estado:hrxSafe(item.estado || 'Solicitud'), tipoOperadora:hrxSafe(item.tipoOperadora || 'Normal'), fechaEntrada:item.fechaEntrada || '', estadoLaboral:hrxSafe(item.estadoLaboral || 'Activa'),
+    salario:hrxSafe(item.salario), salud:hrxSafe(item.salud || 'No'), comentarioEvaluacion:hrxSafe(item.comentarioEvaluacion), comentarioRechazo:hrxSafe(item.comentarioRechazo), observaciones:hrxSafe(item.observaciones), experiencia:hrxSafe(item.experiencia), responsable:hrxSafe(item.responsable || 'RRHH')
+  };
+}
 function hrxDefaultSolicitudes(){
   return [
-    {id:'sol-1',nombre:'Mariela',apellido:'Reyes',cedula:'402-1234567-1',telefono:'809-555-1441',correo:'mariela.reyes@email.com',direccion:'Santo Domingo Oeste',fechaNacimiento:'1998-04-14',fechaSolicitud:'2026-04-18',puesto:'Operadora',turnoDeseado:'Matutino',agenciaInteres:'0141',grupoInteres:'08',experiencia:'2 años en atención al cliente y caja.',estado:'Solicitud',comentarioEvaluacion:'',comentarioRechazo:'',fechaEntrada:'',salario:'',foto:'',observaciones:'Disponibilidad inmediata.',asignadaAgencia:'',asignadaGrupo:'',responsable:'Oscar Rosario'},
-    {id:'sol-2',nombre:'Yarissa',apellido:'Matos',cedula:'001-9876543-2',telefono:'829-555-2877',correo:'yarissa.matos@email.com',direccion:'Los Alcarrizos',fechaNacimiento:'1995-09-02',fechaSolicitud:'2026-04-14',puesto:'Representante de ventas',turnoDeseado:'Vespertino',agenciaInteres:'0335',grupoInteres:'15',experiencia:'Experiencia previa en bancas y cuadre.',estado:'En evaluación',comentarioEvaluacion:'Buen perfil. Validar referencias y disponibilidad de fin de semana.',comentarioRechazo:'',fechaEntrada:'',salario:'',foto:'',observaciones:'Maneja Excel básico.',asignadaAgencia:'',asignadaGrupo:'',responsable:'RRHH'},
-    {id:'sol-3',nombre:'Altagracia',apellido:'Peña',cedula:'223-4567890-3',telefono:'849-555-6612',correo:'altagracia.pena@email.com',direccion:'Pedro Brand',fechaNacimiento:'1993-01-24',fechaSolicitud:'2026-04-10',puesto:'Operadora',turnoDeseado:'Matutino',agenciaInteres:'1012',grupoInteres:'44',experiencia:'5 años en ventas y servicio.',estado:'Aprobada / Asignada',comentarioEvaluacion:'Perfil aprobado. Pendiente firma final.',comentarioRechazo:'',fechaEntrada:'2026-04-23',salario:'18500',foto:'',observaciones:'Lista para ingreso.',asignadaAgencia:'1012',asignadaGrupo:'44',responsable:'RRHH'}
+    hrxNormalize({
+      id:'sol-yessica', nombre:'Yessica', apellido:'Martínez', apodos:'Yesi', fechaNacimiento:'2000-04-05', lugarNacimiento:'Santo Domingo', nacionalidad:'Dominicana', sexo:'Femenino', estadoCivil:'Soltera',
+      cedula:'001-1234567-8', telefono:'809-555-1200', correo:'yessica.martinez@email.com', correoConfirmacion:'yessica.martinez@email.com', provincia:'Santo Domingo', sector:'Santo Domingo', direccion:'Los Mina, Santo Domingo Este, Calle Principal #14',
+      contactoEmergenciaNombre:'Rosa Martínez', contactoEmergenciaRelacion:'Madre', contactoEmergenciaTelefono:'809-333-8899',
+      puesto:'Representante de Ventas', turnoDeseado:'Matutino', estado:'Solicitud', tipoOperadora:'Normal', salud:'No',
+      agenciaInteres:'0141', grupoInteres:'08', observaciones:'Formulario externo recibido y pendiente de evaluación inicial.', experiencia:'Experiencia básica en caja y servicio al cliente.'
+    }),
+    hrxNormalize({
+      id:'sol-mariela', nombre:'Mariela', apellido:'Reyes', apodos:'Mely', fechaNacimiento:'1998-04-14', lugarNacimiento:'San Cristóbal', nacionalidad:'Dominicana', sexo:'Femenino', estadoCivil:'Unión libre',
+      cedula:'402-1234567-1', telefono:'809-555-1441', correo:'mariela.reyes@email.com', correoConfirmacion:'mariela.reyes@email.com', provincia:'Santo Domingo', sector:'Herrera', direccion:'Santo Domingo Oeste',
+      contactoEmergenciaNombre:'Juan Reyes', contactoEmergenciaRelacion:'Padre', contactoEmergenciaTelefono:'829-551-1002',
+      fechaSolicitud:'2026-04-18', puesto:'Operadora', turnoDeseado:'Matutino', agenciaInteres:'0141', grupoInteres:'08', estado:'En evaluación', tipoOperadora:'Normal', comentarioEvaluacion:'Buen perfil. Pendiente validación final de referencias.', experiencia:'2 años en atención al cliente y cuadre de caja.', observaciones:'Disponibilidad inmediata.'
+    })
   ];
 }
 function hrxLoad(){
   try{ const raw=localStorage.getItem(HRX_STORAGE_KEY); hrxSolicitudes = raw ? JSON.parse(raw) : []; } catch(e){ hrxSolicitudes=[]; }
   if(!Array.isArray(hrxSolicitudes) || !hrxSolicitudes.length) hrxSolicitudes = hrxDefaultSolicitudes();
-  hrxSolicitudes = hrxSolicitudes.map((item,idx)=>({
-    id:item.id || `sol-${Date.now()}-${idx}`,
-    nombre:item.nombre||'', apellido:item.apellido||'', cedula:item.cedula||'', telefono:item.telefono||'', correo:item.correo||'', direccion:item.direccion||'',
-    fechaNacimiento:item.fechaNacimiento||'2000-01-01', fechaSolicitud:item.fechaSolicitud||hrxTodayISO(), puesto:item.puesto||'Operadora', turnoDeseado:item.turnoDeseado||'Matutino',
-    agenciaInteres:String(item.agenciaInteres||''), grupoInteres:String(item.grupoInteres||''), experiencia:item.experiencia||'', estado:item.estado||'Solicitud',
-    comentarioEvaluacion:item.comentarioEvaluacion||'', comentarioRechazo:item.comentarioRechazo||'', fechaEntrada:item.fechaEntrada||'', salario:item.salario||'', foto:item.foto||'',
-    observaciones:item.observaciones||'', asignadaAgencia:String(item.asignadaAgencia||''), asignadaGrupo:String(item.asignadaGrupo||''), responsable:item.responsable||'RRHH'
-  }));
+  hrxSolicitudes = hrxSolicitudes.map(hrxNormalize).filter(r=>hrxActiveQueueStates().includes(r.estado));
   hrxSave();
 }
 function hrxSave(){ localStorage.setItem(HRX_STORAGE_KEY, JSON.stringify(hrxSolicitudes)); }
-function hrhDefault(){
-  return [
-    {fecha:'2026-04-14T09:15:00', tipo:'Cambio de estado', nombre:'Yarissa Matos', cedula:'001-9876543-2', estado:'En evaluación', agencia:'', grupo:'15', origen:'Solicitudes', comentario:'Solicitud pasada a evaluación por RRHH.'},
-    {fecha:'2026-04-16T11:45:00', tipo:'Rechazo', nombre:'Luz Maria Feliz', cedula:'402-5551147-2', estado:'Rechazada', agencia:'0105', grupo:'06', origen:'Solicitudes', comentario:'No completó documentación requerida.'},
-    {fecha:'2026-04-19T15:10:00', tipo:'Cambio laboral', nombre:'Rosa De La Cruz', cedula:'001-2345678-9', estado:'Vacaciones', agencia:'0141', grupo:'08', origen:'Operadoras', comentario:'Vacaciones registradas en RRHH.'}
-  ];
-}
-function hrhLoad(){
-  try{ const raw=localStorage.getItem(HRH_STORAGE_KEY); hrhHistorial = raw ? JSON.parse(raw) : []; } catch(e){ hrhHistorial=[]; }
-  if(!Array.isArray(hrhHistorial) || !hrhHistorial.length) hrhHistorial = hrhDefault();
-  hrhSave();
-}
+function hrhDefault(){ return [{fecha:'2026-04-16T11:45:00', tipo:'Rechazo', nombre:'Luz Maria Feliz', cedula:'402-5551147-2', estado:'Rechazada', agencia:'0105', grupo:'06', origen:'Solicitudes', comentario:'No completó documentación requerida.'},{fecha:'2026-04-19T15:10:00', tipo:'Cambio laboral', nombre:'Rosa De La Cruz', cedula:'001-2345678-9', estado:'Vacaciones', agencia:'0141', grupo:'08', origen:'Operadoras', comentario:'Vacaciones registradas en RRHH.'}]; }
+function hrhLoad(){ try{ const raw=localStorage.getItem(HRH_STORAGE_KEY); hrhHistorial = raw ? JSON.parse(raw) : []; } catch(e){ hrhHistorial=[]; } if(!Array.isArray(hrhHistorial) || !hrhHistorial.length) hrhHistorial = hrhDefault(); hrhSave(); }
 function hrhSave(){ localStorage.setItem(HRH_STORAGE_KEY, JSON.stringify(hrhHistorial)); }
 function hrhAdd(entry){ hrhHistorial.unshift(entry); hrhSave(); hrhApplyFilters(); }
-function hrxRegisterHistory(tipo, solicitud, extra={}){
-  hrhAdd({
-    fecha: extra.fecha || hrxNowIso(),
-    tipo,
-    nombre: `${solicitud.nombre||''} ${solicitud.apellido||''}`.trim(),
-    cedula: solicitud.cedula || '',
-    estado: extra.estado || solicitud.estado || '',
-    agencia: String(extra.agencia ?? solicitud.asignadaAgencia ?? solicitud.agenciaInteres ?? ''),
-    grupo: String(extra.grupo ?? solicitud.asignadaGrupo ?? solicitud.grupoInteres ?? ''),
-    origen: extra.origen || 'Solicitudes',
-    comentario: extra.comentario || solicitud.comentarioEvaluacion || solicitud.comentarioRechazo || solicitud.observaciones || ''
-  });
-}
+function hrxRegisterHistory(tipo, solicitud, extra={}){ hrhAdd({ fecha: extra.fecha || hrxNowIso(), tipo, nombre: `${solicitud.nombre||''} ${solicitud.apellido||''}`.trim(), cedula: solicitud.cedula || '', estado: extra.estado || solicitud.estado || '', agencia: hrxSafe(extra.agencia ?? solicitud.agenciaInteres), grupo: hrxSafe(extra.grupo ?? solicitud.grupoInteres), origen: extra.origen || 'Solicitudes', comentario: extra.comentario || solicitud.comentarioEvaluacion || solicitud.comentarioRechazo || solicitud.observaciones || '' }); }
+function hrxGetById(id){ return hrxSolicitudes.find(s=>s.id===id); }
+function hrxRemoveById(id){ hrxSolicitudes = hrxSolicitudes.filter(s=>s.id!==id); hrxSave(); }
 function hrxPopulateFilters(){
-  const estadoSel=document.getElementById('hrxFilterEstado');
-  const grupoSel=document.getElementById('hrxFilterGrupo');
-  const agenciaSel=document.getElementById('hrxFilterAgencia');
-  const turnoSel=document.getElementById('hrxFilterTurno');
-  const puestoSel=document.getElementById('hrxFilterPuesto');
-  const edadSel=document.getElementById('hrxFilterEdad');
+  const estadoSel=document.getElementById('hrxFilterEstado'); const grupoSel=document.getElementById('hrxFilterGrupo'); const agenciaSel=document.getElementById('hrxFilterAgencia'); const turnoSel=document.getElementById('hrxFilterTurno'); const puestoSel=document.getElementById('hrxFilterPuesto'); const edadSel=document.getElementById('hrxFilterEdad');
   if(!estadoSel) return;
-  estadoSel.innerHTML = `<option value="">Todos</option>${['Solicitud','En evaluación','Aprobada / Asignada','Contratada','Rechazada'].map(v=>`<option value="${v}">${v}</option>`).join('')}`;
-  grupoSel.innerHTML = `<option value="">Todos</option>${hrxSafeGrupos().map(g=>`<option value="${g.codigo || g.nombre || g.id || ''}">${g.codigo || g.nombre || g.id || ''}</option>`).join('')}`;
-  agenciaSel.innerHTML = `<option value="">Todas</option>${hrxSafeAgencias().map(a=>`<option value="${a.codigo || a.numero || a.id || a.nombre || ''}">${a.codigo || a.numero || a.id || a.nombre || ''}</option>`).join('')}`;
+  estadoSel.innerHTML = `<option value="">Todos</option>${['Solicitud','En evaluación'].map(v=>`<option value="${v}">${v}</option>`).join('')}`;
+  grupoSel.innerHTML = `<option value="">Todos</option>${hrxSafeGrupos().map(g=>{ const val=g.codigo || g.nombre || g.id || ''; return `<option value="${val}">${val}</option>`; }).join('')}`;
+  agenciaSel.innerHTML = `<option value="">Todas</option>${hrxSafeAgencias().map(a=>{ const val=a.codigo || a.numero || a.id || a.nombre || ''; return `<option value="${val}">${val}</option>`; }).join('')}`;
   turnoSel.innerHTML = `<option value="">Todos</option>${hrxTurnos().map(v=>`<option value="${v}">${v}</option>`).join('')}`;
   puestoSel.innerHTML = `<option value="">Todos</option>${hrxPuestos().map(v=>`<option value="${v}">${v}</option>`).join('')}`;
   edadSel.innerHTML = `<option value="">Todas</option>${hrxEdadRanges().map(r=>`<option value="${r.v}">${r.t}</option>`).join('')}`;
 }
 function hrxApplyFilters(){
-  const nombre=(document.getElementById('hrxFilterNombre')?.value||'').trim().toLowerCase();
-  const cedula=(document.getElementById('hrxFilterCedula')?.value||'').trim().toLowerCase();
-  const estado=document.getElementById('hrxFilterEstado')?.value||'';
-  const grupo=document.getElementById('hrxFilterGrupo')?.value||'';
-  const agencia=document.getElementById('hrxFilterAgencia')?.value||'';
-  const turno=document.getElementById('hrxFilterTurno')?.value||'';
-  const puesto=document.getElementById('hrxFilterPuesto')?.value||'';
-  const edad=document.getElementById('hrxFilterEdad')?.value||'';
-  hrxFiltered = hrxSolicitudes.filter(s=>{
-    const full=`${s.nombre} ${s.apellido}`.toLowerCase();
-    const age=hrxAge(s.fechaNacimiento);
-    if(nombre && !full.includes(nombre)) return false;
-    if(cedula && !String(s.cedula).toLowerCase().includes(cedula)) return false;
-    if(estado && s.estado!==estado) return false;
-    if(grupo && String(s.asignadaGrupo || s.grupoInteres)!==grupo) return false;
-    if(agencia && String(s.asignadaAgencia || s.agenciaInteres)!==agencia) return false;
-    if(turno && s.turnoDeseado!==turno) return false;
-    if(puesto && s.puesto!==puesto) return false;
-    if(edad){ const [a,b]=edad.split('-').map(Number); if(age<a || age>b) return false; }
-    return true;
-  });
+  const nombre=(document.getElementById('hrxFilterNombre')?.value||'').trim().toLowerCase(); const cedula=(document.getElementById('hrxFilterCedula')?.value||'').trim().toLowerCase(); const estado=document.getElementById('hrxFilterEstado')?.value||''; const grupo=document.getElementById('hrxFilterGrupo')?.value||''; const agencia=document.getElementById('hrxFilterAgencia')?.value||''; const turno=document.getElementById('hrxFilterTurno')?.value||''; const puesto=document.getElementById('hrxFilterPuesto')?.value||''; const edad=document.getElementById('hrxFilterEdad')?.value||'';
+  hrxFiltered = hrxSolicitudes.filter(s=>{ const full=`${s.nombre} ${s.apellido} ${s.apodos}`.toLowerCase(); const age=hrxAge(s.fechaNacimiento); if(nombre && !full.includes(nombre)) return false; if(cedula && !String(s.cedula).toLowerCase().includes(cedula)) return false; if(estado && s.estado!==estado) return false; if(grupo && hrxSafe(s.grupoInteres)!==grupo) return false; if(agencia && hrxSafe(s.agenciaInteres)!==agencia) return false; if(turno && s.turnoDeseado!==turno) return false; if(puesto && s.puesto!==puesto) return false; if(edad){ const [a,b]=edad.split('-').map(Number); if(age<a || age>b) return false; } return true; });
   hrxRender();
 }
 function hrxResetFilters(){ ['hrxFilterNombre','hrxFilterCedula'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); ['hrxFilterEstado','hrxFilterGrupo','hrxFilterAgencia','hrxFilterTurno','hrxFilterPuesto','hrxFilterEdad'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); hrxApplyFilters(); }
+function hrxSaveRecord(data){ const normalized = hrxNormalize(data); const idx = hrxSolicitudes.findIndex(s=>s.id===normalized.id); if(idx>=0) hrxSolicitudes[idx]=normalized; else hrxSolicitudes.unshift(normalized); hrxSave(); hrxApplyFilters(); return normalized; }
 function hrxRender(){
-  const data = Array.isArray(hrxFiltered) ? hrxFiltered : hrxSolicitudes;
-  const counts={Solicitud:0,'En evaluación':0,'Aprobada / Asignada':0,Contratada:0,Rechazada:0};
-  let totalDias=0;
-  hrxSolicitudes.forEach(s=>{ counts[s.estado]=(counts[s.estado]||0)+1; totalDias += hrxDaysSince(s.fechaSolicitud); });
-  document.getElementById('hrxHeroTotal').textContent = hrxSolicitudes.length;
-  document.getElementById('hrxHeroEvaluacion').textContent = counts['En evaluación']||0;
-  document.getElementById('hrxHeroAprobadas').textContent = counts['Aprobada / Asignada']||0;
-  document.getElementById('hrxHeroContratadas').textContent = counts['Contratada']||0;
-  document.getElementById('hrxKpiPendiente').textContent = counts['Solicitud']||0;
-  document.getElementById('hrxKpiEvaluacion').textContent = counts['En evaluación']||0;
-  document.getElementById('hrxKpiRechazadas').textContent = counts['Rechazada']||0;
-  document.getElementById('hrxKpiTiempo').textContent = hrxSolicitudes.length ? Math.round(totalDias/hrxSolicitudes.length) : 0;
-  document.getElementById('hrxTableCount').textContent = `${data.length} resultado${data.length!==1?'s':''}`;
-  const body=document.getElementById('hrxTableBody');
-  if(!body) return;
-  if(!data.length){ body.innerHTML = `<tr><td colspan="10"><div class="hrx-empty">No hay solicitudes que coincidan con los filtros.</div></td></tr>`; }
-  else {
-    body.innerHTML = data.map((s,i)=>`<tr>
-      <td>${i+1}</td>
-      <td><strong>${`${s.nombre} ${s.apellido}`.trim()}</strong><br><span class="hrx-muted">${hrxAge(s.fechaNacimiento)} años</span></td>
-      <td>${s.cedula||'-'}</td>
-      <td>${s.puesto||'-'}</td>
-      <td>${s.turnoDeseado||'-'}</td>
-      <td>${s.asignadaAgencia || s.agenciaInteres || '-'}</td>
-      <td>${s.asignadaGrupo || s.grupoInteres || '-'}</td>
-      <td>${s.fechaSolicitud||'-'}</td>
-      <td><span class="hrx-badge ${hrxEstadoBadgeClass(s.estado)}">${s.estado}</span></td>
-      <td><div class="hrx-mini-actions"><button class="hrx-icon-btn" title="Ver" onclick="hrxOpenDetail('${s.id}')"><i class="fas fa-eye"></i></button><button class="hrx-icon-btn" title="Editar" onclick="hrxOpenForm('${s.id}')"><i class="fas fa-pen"></i></button><button class="hrx-icon-btn" title="Evaluar" onclick="hrxOpenStatusModal('${s.id}')"><i class="fas fa-clipboard-check"></i></button></div></td>
-    </tr>`).join('');
-  }
-  document.getElementById('hrxStateRank').innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v],idx)=>`<div class="hrx-rank-item"><div><strong>${k}</strong><span>${v} registro${v!==1?'s':''}</span></div><em>#${idx+1}</em></div>`).join('') || `<div class="hrx-empty">Sin datos.</div>`;
+  const data=Array.isArray(hrxFiltered)?hrxFiltered:hrxSolicitudes; const active = hrxSolicitudes; const body=document.getElementById('hrxTableBody'); const total=active.length; const evaluacion=active.filter(s=>s.estado==='En evaluación').length; const pendientes=active.filter(s=>s.estado==='Solicitud').length; const tiempo= total ? Math.round(active.reduce((acc,s)=>acc+hrxDaysSince(s.fechaSolicitud),0)/total) : 0; const aprobadas=hrhHistorial.filter(h=>h.tipo==='Aprobación').length; const contratadas=hrhHistorial.filter(h=>h.tipo==='Contratación').length; const rechazadas=hrhHistorial.filter(h=>h.tipo==='Rechazo').length; const stateCounts={ Solicitud:pendientes, 'En evaluación':evaluacion }; const tableCount=document.getElementById('hrxTableCount'); if(tableCount) tableCount.textContent=`${data.length} resultado${data.length!==1?'s':''}`;
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=String(v); }; set('hrxHeroTotal', total); set('hrxHeroEvaluacion', evaluacion); set('hrxHeroAprobadas', aprobadas); set('hrxHeroContratadas', contratadas); set('hrxKpiPendiente', pendientes); set('hrxKpiEvaluacion', evaluacion); set('hrxKpiRechazadas', rechazadas); set('hrxKpiTiempo', tiempo);
+  const rank=document.getElementById('hrxStateRank'); if(rank) rank.innerHTML = Object.entries(stateCounts).map(([k,v],idx)=>`<div class="hrx-rank-item"><div><strong>${k}</strong><span>${v} candidata${v!==1?'s':''} en bandeja</span></div><em>#${idx+1}</em></div>`).join('') || `<div class="hrx-empty">No hay solicitudes activas.</div>`;
+  if(!body) return; if(!data.length){ body.innerHTML=`<tr><td colspan="10"><div class="hrx-empty">No hay solicitudes activas que coincidan con los filtros.</div></td></tr>`; return; }
+  body.innerHTML = data.map((s,i)=>`<tr><td>${i+1}</td><td><strong>${s.nombre} ${s.apellido}</strong><div class="hrx-muted">${s.apodos || 'Sin apodo'} · ${hrxAge(s.fechaNacimiento)} años</div></td><td>${s.cedula || '-'}</td><td>${s.puesto || '-'}</td><td>${s.turnoDeseado || '-'}</td><td>${s.agenciaInteres || '-'}</td><td>${s.grupoInteres || '-'}</td><td>${hrxFmtDate(s.fechaSolicitud)}</td><td><span class="hrx-badge ${hrxEstadoBadgeClass(s.estado)}">${s.estado}</span></td><td><div class="hrx-mini-actions"><button class="hrx-icon-btn" title="Ver" onclick="hrxOpenDetail('${s.id}')"><i class="fas fa-eye"></i></button><button class="hrx-icon-btn" title="Evaluar" onclick="hrxOpenForm('${s.id}')"><i class="fas fa-pen"></i></button><button class="hrx-icon-btn" title="Eliminar" onclick="hrxDelete('${s.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
 }
-function hrxGetById(id){ return hrxSolicitudes.find(s=>s.id===id); }
-function hrxSaveRecord(data){
-  const idx=hrxSolicitudes.findIndex(s=>s.id===data.id);
-  const previous = idx>=0 ? hrxSolicitudes[idx] : null;
-  if(idx>=0) hrxSolicitudes[idx]=data; else hrxSolicitudes.unshift(data);
-  hrxSave(); hrxApplyFilters();
-  if(!previous) hrxRegisterHistory('Nueva solicitud', data, {comentario:'Solicitud registrada en RRHH.'});
-}
-function hrxDelete(id){
-  const rec=hrxGetById(id); if(!rec) return;
-  if(!confirm('¿Eliminar esta solicitud?')) return;
-  hrxSolicitudes = hrxSolicitudes.filter(s=>s.id!==id); hrxSave(); hrxApplyFilters(); hrxRegisterHistory('Eliminación', rec, {comentario:'Solicitud eliminada del módulo.'});
-}
+function hrxDelete(id){ const rec=hrxGetById(id); if(!rec) return; if(!confirm('¿Eliminar esta solicitud activa?')) return; hrxRemoveById(id); hrxApplyFilters(); hrxRegisterHistory('Eliminación', rec, {comentario:'Solicitud eliminada manualmente de la bandeja.'}); }
+function hrxBindAssetInputs(){ [['hrxFotoFile','photo'],['hrxCedulaFrontFile','front'],['hrxCedulaBackFile','back']].forEach(([id,key])=>{ const input=document.getElementById(id); if(!input || input.dataset.bound==='1') return; input.dataset.bound='1'; input.addEventListener('change', ev=>{ const file=ev.target.files && ev.target.files[0]; if(!file) return; hrxFileToDataUrl(file, data=>{ const modal=document.getElementById('hrxFormModal'); if(!modal) return; modal.dataset[key]=data; hrxRefreshFormAssetPreview(); }); }); }); }
+function hrxRefreshFormAssetPreview(){ const modal=document.getElementById('hrxFormModal'); if(!modal) return; const set=(id,html)=>{ const el=document.getElementById(id); if(el) el.innerHTML=html; }; set('hrxPhotoPreview', hrxImageOrPlaceholder(modal.dataset.photo || '', 'Foto personal')); set('hrxFrontPreview', hrxImageOrPlaceholder(modal.dataset.front || '', 'Cédula frontal')); set('hrxBackPreview', hrxImageOrPlaceholder(modal.dataset.back || '', 'Cédula trasera')); }
 function hrxOpenForm(id=''){
-  hrxCurrentId=id||null;
-  const rec=id ? hrxGetById(id) : null;
-  let modal=document.getElementById('hrxFormModal');
+  hrxCurrentId=id||null; const rec=id ? hrxGetById(id) : hrxEmptyRecord(); let modal=document.getElementById('hrxFormModal');
   if(!modal){
-    document.body.insertAdjacentHTML('beforeend', `<div class="hrx-modal" id="hrxFormModal"><div class="hrx-dialog"><div class="hrx-modal-head"><div><h3 id="hrxFormTitle">Nueva solicitud</h3><p>Registro base para candidatas del submódulo de RRHH.</p></div><button class="hrx-close" onclick="hrxCloseModal('hrxFormModal')"><i class="fas fa-xmark"></i></button></div><div class="hrx-modal-body"><div class="hrx-detail-grid"><div class="hrx-field"><label>Nombre</label><input id="hrxNombre"></div><div class="hrx-field"><label>Apellido</label><input id="hrxApellido"></div><div class="hrx-field"><label>Cédula</label><input id="hrxCedula"></div><div class="hrx-field"><label>Teléfono</label><input id="hrxTelefono"></div><div class="hrx-field"><label>Correo</label><input id="hrxCorreo"></div><div class="hrx-field"><label>Fecha de nacimiento</label><input id="hrxFechaNacimiento" type="date"></div><div class="hrx-field"><label>Puesto solicitado</label><select id="hrxPuesto"></select></div><div class="hrx-field"><label>Turno deseado</label><select id="hrxTurno"></select></div><div class="hrx-field"><label>Fecha de solicitud</label><input id="hrxFechaSolicitud" type="date"></div><div class="hrx-field"><label>Estado</label><select id="hrxEstado"></select></div><div class="hrx-field"><label>Agencia asignada / interés</label><select id="hrxAgencia"></select></div><div class="hrx-field"><label>Grupo asignado / interés</label><select id="hrxGrupo"></select></div></div><div class="hrx-field"><label>Dirección</label><textarea id="hrxDireccion"></textarea></div><div class="hrx-field"><label>Experiencia</label><textarea id="hrxExperiencia"></textarea></div><div class="hrx-field"><label>Comentario de evaluación</label><textarea id="hrxComentarioEvaluacion"></textarea></div><div class="hrx-field"><label>Observaciones</label><textarea id="hrxObservaciones"></textarea></div><div class="hrx-detail-grid"><div class="hrx-field"><label>Fecha de entrada (si aplica)</label><input id="hrxFechaEntrada" type="date"></div><div class="hrx-field"><label>Salario</label><input id="hrxSalario" type="number" min="0"></div><div class="hrx-field"><label>Comentario de rechazo</label><textarea id="hrxComentarioRechazo"></textarea></div></div></div><div class="hrx-modal-actions"><div class="hrx-muted">La aprobación requiere agencia o grupo. El rechazo exige comentario.</div><div class="hrx-actions"><button class="hrx-btn light" type="button" onclick="hrxCloseModal('hrxFormModal')">Cancelar</button><button class="hrx-btn primary" type="button" onclick="hrxSubmitForm()">Guardar solicitud</button></div></div></div></div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="hrx-modal" id="hrxFormModal"><div class="hrx-dialog"><div class="hrx-modal-head"><div><h3 id="hrxFormTitle">Nueva solicitud</h3><p>Expediente empresarial para datos del formulario externo + evaluación interna de RRHH.</p></div><button class="hrx-close" onclick="hrxCloseModal('hrxFormModal')"><i class="fas fa-xmark"></i></button></div><div class="hrx-modal-body"><div class="hrx-section"><h4 style="margin:0 0 14px;color:#214c6a">Documentos e identidad visual</h4><div class="hrx-detail-grid"><div class="hrx-photo-card"><div class="hrx-photo-box" id="hrxPhotoPreview"></div><input type="file" id="hrxFotoFile" class="opx-hidden-file" accept="image/*"><div class="hrx-actions" style="margin-top:12px"><button class="hrx-btn primary" type="button" onclick="document.getElementById('hrxFotoFile').click()">Subir foto</button></div></div><div class="hrx-photo-card"><div class="hrx-photo-box" id="hrxFrontPreview"></div><input type="file" id="hrxCedulaFrontFile" class="opx-hidden-file" accept="image/*"><div class="hrx-actions" style="margin-top:12px"><button class="hrx-btn light" type="button" onclick="document.getElementById('hrxCedulaFrontFile').click()">Cédula frontal</button></div></div><div class="hrx-photo-card"><div class="hrx-photo-box" id="hrxBackPreview"></div><input type="file" id="hrxCedulaBackFile" class="opx-hidden-file" accept="image/*"><div class="hrx-actions" style="margin-top:12px"><button class="hrx-btn light" type="button" onclick="document.getElementById('hrxCedulaBackFile').click()">Cédula trasera</button></div></div></div></div><div class="hrx-section"><h4 style="margin:0 0 14px;color:#214c6a">Datos personales del formulario</h4><div class="hrx-detail-grid"><div class="hrx-field"><label>Nombre completo</label><input id="hrxNombre"></div><div class="hrx-field"><label>Apellido</label><input id="hrxApellido"></div><div class="hrx-field"><label>Apodos</label><input id="hrxApodos"></div><div class="hrx-field"><label>Fecha de nacimiento</label><input id="hrxFechaNacimiento" type="date"></div><div class="hrx-field"><label>Lugar de nacimiento</label><input id="hrxLugarNacimiento"></div><div class="hrx-field"><label>Nacionalidad</label><input id="hrxNacionalidad"></div><div class="hrx-field"><label>Sexo</label><select id="hrxSexo"><option>Femenino</option><option>Masculino</option></select></div><div class="hrx-field"><label>Estado civil</label><input id="hrxEstadoCivil"></div><div class="hrx-field"><label>Número de cédula</label><input id="hrxCedula"></div><div class="hrx-field"><label>Número de celular</label><input id="hrxTelefono"></div><div class="hrx-field"><label>Correo electrónico</label><input id="hrxCorreo"></div><div class="hrx-field"><label>Reescriba su correo</label><input id="hrxCorreoConfirmacion"></div><div class="hrx-field"><label>Provincia</label><input id="hrxProvincia"></div><div class="hrx-field"><label>Sector</label><input id="hrxSector"></div><div class="hrx-field" style="grid-column:1/-1"><label>Dirección de residencia</label><textarea id="hrxDireccion"></textarea></div></div></div><div class="hrx-section"><h4 style="margin:0 0 14px;color:#214c6a">Contacto de emergencia</h4><div class="hrx-detail-grid"><div class="hrx-field"><label>Nombre</label><input id="hrxEmerNombre"></div><div class="hrx-field"><label>Relación</label><input id="hrxEmerRelacion"></div><div class="hrx-field"><label>Teléfono</label><input id="hrxEmerTelefono"></div></div></div><div class="hrx-section"><h4 style="margin:0 0 14px;color:#214c6a">Evaluación interna de RRHH</h4><div class="hrx-detail-grid"><div class="hrx-field"><label>Puesto solicitado</label><select id="hrxPuesto"></select></div><div class="hrx-field"><label>Estado actual</label><select id="hrxEstado"></select></div><div class="hrx-field"><label>Agencia asignada</label><select id="hrxAgencia"></select></div><div class="hrx-field"><label>Grupo asignado</label><select id="hrxGrupo"></select></div><div class="hrx-field"><label>Turno</label><select id="hrxTurno"></select></div><div class="hrx-field"><label>Tipo de operadora</label><select id="hrxTipoOperadora"></select></div><div class="hrx-field"><label>Fecha de solicitud</label><input id="hrxFechaSolicitud" type="date"></div><div class="hrx-field"><label>Fecha de entrada</label><input id="hrxFechaEntrada" type="date"></div><div class="hrx-field"><label>Estado laboral al ingresar</label><select id="hrxEstadoLaboral"></select></div><div class="hrx-field"><label>Salario</label><input id="hrxSalario" type="number" min="0" step="0.01"></div><div class="hrx-field"><label>Alguna condición de salud</label><select id="hrxSalud"><option>No</option><option>Sí</option></select></div><div class="hrx-field"><label>Responsable</label><input id="hrxResponsable"></div><div class="hrx-field" style="grid-column:1/-1"><label>Experiencia / perfil</label><textarea id="hrxExperiencia"></textarea></div><div class="hrx-field" style="grid-column:1/-1"><label>Comentario de evaluación</label><textarea id="hrxComentarioEvaluacion"></textarea></div><div class="hrx-field" style="grid-column:1/-1"><label>Comentario de rechazo</label><textarea id="hrxComentarioRechazo"></textarea></div><div class="hrx-field" style="grid-column:1/-1"><label>Observaciones internas</label><textarea id="hrxObservaciones"></textarea></div></div></div></div><div class="hrx-modal-actions"><div class="hrx-muted">Lógica empresarial: solicitud y evaluación se quedan en bandeja; aprobada o contratada pasan a Gestión de empleados; rechazada va directo al Historial.</div><div class="hrx-actions"><button class="hrx-btn light" type="button" onclick="hrxCloseModal('hrxFormModal')">Cancelar</button><button class="hrx-btn primary" type="button" onclick="hrxSubmitForm()">Guardar movimiento</button></div></div></div></div>`);
     modal=document.getElementById('hrxFormModal');
   }
-  document.getElementById('hrxFormTitle').textContent = rec ? 'Editar solicitud' : 'Nueva solicitud';
-  document.getElementById('hrxPuesto').innerHTML = hrxPuestos().map(v=>`<option value="${v}">${v}</option>`).join('');
-  document.getElementById('hrxTurno').innerHTML = hrxTurnos().map(v=>`<option value="${v}">${v}</option>`).join('');
-  document.getElementById('hrxEstado').innerHTML = ['Solicitud','En evaluación','Aprobada / Asignada','Contratada','Rechazada'].map(v=>`<option value="${v}">${v}</option>`).join('');
-  document.getElementById('hrxAgencia').innerHTML = `<option value="">Sin definir</option>${hrxSafeAgencias().map(a=>`<option value="${a.codigo || a.numero || a.id || a.nombre || ''}">${a.codigo || a.numero || a.id || a.nombre || ''}</option>`).join('')}`;
-  document.getElementById('hrxGrupo').innerHTML = `<option value="">Sin definir</option>${hrxSafeGrupos().map(g=>`<option value="${g.codigo || g.nombre || g.id || ''}">${g.codigo || g.nombre || g.id || ''}</option>`).join('')}`;
-  const map={Nombre:'nombre',Apellido:'apellido',Cedula:'cedula',Telefono:'telefono',Correo:'correo',FechaNacimiento:'fechaNacimiento',Puesto:'puesto',Turno:'turnoDeseado',FechaSolicitud:'fechaSolicitud',Estado:'estado',Agencia:'asignadaAgencia',Grupo:'asignadaGrupo',Direccion:'direccion',Experiencia:'experiencia',ComentarioEvaluacion:'comentarioEvaluacion',Observaciones:'observaciones',FechaEntrada:'fechaEntrada',Salario:'salario',ComentarioRechazo:'comentarioRechazo'};
-  Object.entries(map).forEach(([id,key])=>{ const el=document.getElementById(`hrx${id}`); if(el) el.value = rec?.[key] ?? (id==='FechaSolicitud' ? hrxTodayISO() : ''); });
-  modal.classList.add('open');
+  document.getElementById('hrxFormTitle').textContent = id ? 'Evaluar solicitud / RRHH' : 'Nueva solicitud';
+  document.getElementById('hrxPuesto').innerHTML = hrxPuestos().map(v=>`<option value="${v}">${v}</option>`).join(''); document.getElementById('hrxTurno').innerHTML = hrxTurnos().map(v=>`<option value="${v}">${v}</option>`).join(''); document.getElementById('hrxEstado').innerHTML = hrxEstadosQueue().map(v=>`<option value="${v}">${v}</option>`).join(''); document.getElementById('hrxTipoOperadora').innerHTML = hrxTiposOperadora().map(v=>`<option value="${v}">${v}</option>`).join(''); document.getElementById('hrxEstadoLaboral').innerHTML = hrxEmploymentStates().map(v=>`<option value="${v}">${v}</option>`).join('');
+  document.getElementById('hrxAgencia').innerHTML = `<option value="">Seleccionar agencia</option>${hrxSafeAgencias().map(a=>{ const val=a.codigo || a.numero || a.id || a.nombre || ''; return `<option value="${val}">${val}</option>`; }).join('')}`; document.getElementById('hrxGrupo').innerHTML = `<option value="">Seleccionar grupo</option>${hrxSafeGrupos().map(g=>{ const val=g.codigo || g.nombre || g.id || ''; return `<option value="${val}">${val}</option>`; }).join('')}`;
+  const map={ Nombre:'nombre',Apellido:'apellido',Apodos:'apodos',FechaNacimiento:'fechaNacimiento',LugarNacimiento:'lugarNacimiento',Nacionalidad:'nacionalidad',Sexo:'sexo',EstadoCivil:'estadoCivil',Cedula:'cedula',Telefono:'telefono',Correo:'correo',CorreoConfirmacion:'correoConfirmacion',Provincia:'provincia',Sector:'sector',Direccion:'direccion',EmerNombre:'contactoEmergenciaNombre',EmerRelacion:'contactoEmergenciaRelacion',EmerTelefono:'contactoEmergenciaTelefono',Puesto:'puesto',Estado:'estado',Agencia:'agenciaInteres',Grupo:'grupoInteres',Turno:'turnoDeseado',TipoOperadora:'tipoOperadora',FechaSolicitud:'fechaSolicitud',FechaEntrada:'fechaEntrada',EstadoLaboral:'estadoLaboral',Salario:'salario',Salud:'salud',Responsable:'responsable',Experiencia:'experiencia',ComentarioEvaluacion:'comentarioEvaluacion',ComentarioRechazo:'comentarioRechazo',Observaciones:'observaciones' };
+  Object.entries(map).forEach(([idField,key])=>{ const el=document.getElementById(`hrx${idField}`); if(el) el.value = rec?.[key] ?? ''; }); if(!document.getElementById('hrxFechaSolicitud').value) document.getElementById('hrxFechaSolicitud').value = hrxTodayISO();
+  modal.dataset.photo = rec?.foto || ''; modal.dataset.front = rec?.cedulaFrontal || ''; modal.dataset.back = rec?.cedulaTrasera || ''; ['hrxFotoFile','hrxCedulaFrontFile','hrxCedulaBackFile'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); hrxBindAssetInputs(); hrxRefreshFormAssetPreview(); modal.classList.add('open');
 }
-function hrxSubmitForm(){
-  const data={
-    id: hrxCurrentId || `sol-${Date.now()}`,
-    nombre: document.getElementById('hrxNombre').value.trim(),
-    apellido: document.getElementById('hrxApellido').value.trim(),
-    cedula: document.getElementById('hrxCedula').value.trim(),
-    telefono: document.getElementById('hrxTelefono').value.trim(),
-    correo: document.getElementById('hrxCorreo').value.trim(),
-    direccion: document.getElementById('hrxDireccion').value.trim(),
-    fechaNacimiento: document.getElementById('hrxFechaNacimiento').value,
-    puesto: document.getElementById('hrxPuesto').value,
-    turnoDeseado: document.getElementById('hrxTurno').value,
-    fechaSolicitud: document.getElementById('hrxFechaSolicitud').value || hrxTodayISO(),
-    estado: document.getElementById('hrxEstado').value,
-    experiencia: document.getElementById('hrxExperiencia').value.trim(),
-    comentarioEvaluacion: document.getElementById('hrxComentarioEvaluacion').value.trim(),
-    comentarioRechazo: document.getElementById('hrxComentarioRechazo').value.trim(),
-    fechaEntrada: document.getElementById('hrxFechaEntrada').value,
-    salario: document.getElementById('hrxSalario').value.trim(),
-    observaciones: document.getElementById('hrxObservaciones').value.trim(),
-    asignadaAgencia: document.getElementById('hrxAgencia').value,
-    asignadaGrupo: document.getElementById('hrxGrupo').value,
-    agenciaInteres: document.getElementById('hrxAgencia').value,
-    grupoInteres: document.getElementById('hrxGrupo').value,
-    responsable: 'RRHH',
-    foto: hrxGetById(hrxCurrentId)?.foto || ''
-  };
-  if(!data.nombre || !data.apellido || !data.cedula){ alert('Completa nombre, apellido y cédula.'); return; }
-  if(data.estado==='Aprobada / Asignada' && !data.asignadaAgencia && !data.asignadaGrupo){ alert('Para aprobar / asignar debes seleccionar una agencia o un grupo.'); return; }
-  if(data.estado==='Rechazada' && !data.comentarioRechazo){ alert('Para rechazar debes escribir el comentario obligatorio.'); return; }
-  hrxSaveRecord(data);
-  if(data.estado==='Contratada') hrxHire(data.id, true);
-  hrxCloseModal('hrxFormModal');
-}
-function hrxOpenDetail(id){
-  hrxCurrentId=id; hrxDetailTab='general';
-  const s=hrxGetById(id); if(!s) return;
-  let modal=document.getElementById('hrxDetailModal');
-  if(!modal){
-    document.body.insertAdjacentHTML('beforeend', `<div class="hrx-modal" id="hrxDetailModal"><div class="hrx-dialog"><div class="hrx-modal-head"><div><h3 id="hrxDetailTitle"></h3><p id="hrxDetailSubtitle"></p></div><button class="hrx-close" onclick="hrxCloseModal('hrxDetailModal')"><i class="fas fa-xmark"></i></button></div><div class="hrx-modal-body" id="hrxDetailBody"></div><div class="hrx-modal-actions"><div class="hrx-muted">Expediente de candidata y trazabilidad de RRHH</div><div class="hrx-actions"><button class="hrx-btn light" type="button" onclick="hrxCloseModal('hrxDetailModal')">Cerrar</button><button class="hrx-btn dark" type="button" onclick="hrxOpenStatusModal(hrxCurrentId)">Evaluar</button><button class="hrx-btn primary" type="button" onclick="hrxOpenForm(hrxCurrentId)">Editar</button></div></div></div></div>`);
-    modal=document.getElementById('hrxDetailModal');
-  }
-  document.getElementById('hrxDetailTitle').textContent = `${s.nombre} ${s.apellido}`.trim();
-  document.getElementById('hrxDetailSubtitle').textContent = `${s.puesto || '-'} · ${s.turnoDeseado || '-'} · ${s.estado || '-'}`;
-  document.getElementById('hrxDetailBody').innerHTML = `
-    <div class="hrx-profile">
-      <div class="hrx-photo-card">
-        <div class="hrx-photo-box">${s.foto?`<img src="${s.foto}" alt="${s.nombre}">`:'Foto candidata'}</div>
-        <div class="hrx-inline-info" style="margin-top:12px"><span class="hrx-info-chip"><i class="fas fa-id-card"></i> ${s.cedula||'Sin cédula'}</span><span class="hrx-info-chip"><i class="fas fa-phone"></i> ${s.telefono||'Sin teléfono'}</span><span class="hrx-info-chip"><i class="fas fa-envelope"></i> ${s.correo||'Sin correo'}</span></div>
-      </div>
-      <div class="hrx-section">
-        <div class="hrx-tabs">
-          <button type="button" class="hrx-tab active" onclick="hrxSetDetailTab('general', this)">General</button>
-          <button type="button" class="hrx-tab" onclick="hrxSetDetailTab('evaluacion', this)">Evaluación</button>
-          <button type="button" class="hrx-tab" onclick="hrxSetDetailTab('contratacion', this)">Contratación</button>
-        </div>
-        <div class="hrx-tabpane active" id="hrxPane-general">
-          <div class="hrx-detail-grid">
-            <div class="hrx-detail-item"><span class="k">Dirección</span><span class="v">${s.direccion||'-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Edad</span><span class="v">${hrxAge(s.fechaNacimiento)} años</span></div>
-            <div class="hrx-detail-item"><span class="k">Fecha solicitud</span><span class="v">${s.fechaSolicitud||'-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Puesto</span><span class="v">${s.puesto||'-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Turno deseado</span><span class="v">${s.turnoDeseado||'-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Estado</span><span class="v">${s.estado||'-'}</span></div>
-          </div>
-          <div class="hrx-section"><h4 style="margin:0 0 10px;color:#214c6a">Experiencia</h4><div class="hrx-muted" style="font-size:14px;color:#2f4c62">${s.experiencia||'Sin experiencia registrada.'}</div></div>
-        </div>
-        <div class="hrx-tabpane" id="hrxPane-evaluacion">
-          <div class="hrx-two-col">
-            <div class="hrx-section"><h4 style="margin:0 0 10px;color:#214c6a">Comentario de evaluación</h4><div class="hrx-muted" style="font-size:14px;color:#2f4c62">${s.comentarioEvaluacion||'Sin comentario de evaluación.'}</div></div>
-            <div class="hrx-section"><h4 style="margin:0 0 10px;color:#214c6a">Comentario de rechazo</h4><div class="hrx-muted" style="font-size:14px;color:#2f4c62">${s.comentarioRechazo||'Sin rechazo registrado.'}</div></div>
-          </div>
-          <div class="hrx-section"><h4 style="margin:0 0 10px;color:#214c6a">Observaciones</h4><div class="hrx-muted" style="font-size:14px;color:#2f4c62">${s.observaciones||'Sin observaciones.'}</div></div>
-        </div>
-        <div class="hrx-tabpane" id="hrxPane-contratacion">
-          <div class="hrx-detail-grid">
-            <div class="hrx-detail-item"><span class="k">Agencia asignada</span><span class="v">${s.asignadaAgencia || s.agenciaInteres || '-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Grupo asignado</span><span class="v">${s.asignadaGrupo || s.grupoInteres || '-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Fecha de entrada</span><span class="v">${s.fechaEntrada || '-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Salario</span><span class="v">${s.salario || '-'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Responsable</span><span class="v">${s.responsable || 'RRHH'}</span></div>
-            <div class="hrx-detail-item"><span class="k">Días desde solicitud</span><span class="v">${hrxDaysSince(s.fechaSolicitud)}</span></div>
-          </div>
-          <div class="hrx-actions"><button class="hrx-btn green" type="button" onclick="hrxHire(hrxCurrentId)">Contratar y enviar a Operadoras</button><button class="hrx-btn red" type="button" onclick="hrxOpenRejectModal(hrxCurrentId)">Rechazar</button></div>
-        </div>
-      </div>
-    </div>`;
-  modal.classList.add('open');
-}
-function hrxSetDetailTab(tab, btn){ document.querySelectorAll('#hrxDetailBody .hrx-tab').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); document.querySelectorAll('#hrxDetailBody .hrx-tabpane').forEach(p=>p.classList.remove('active')); const pane=document.getElementById(`hrxPane-${tab}`); if(pane) pane.classList.add('active'); }
-function hrxOpenStatusModal(id){
-  hrxCurrentId=id; const s=hrxGetById(id); if(!s) return;
-  let modal=document.getElementById('hrxStatusModal');
-  if(!modal){
-    document.body.insertAdjacentHTML('beforeend', `<div class="hrx-modal" id="hrxStatusModal"><div class="hrx-dialog small"><div class="hrx-modal-head"><div><h3>Evaluar solicitud</h3><p>Actualiza el estado respetando las reglas del flujo.</p></div><button class="hrx-close" onclick="hrxCloseModal('hrxStatusModal')"><i class="fas fa-xmark"></i></button></div><div class="hrx-modal-body"><div class="hrx-field"><label>Estado</label><select id="hrxStatusEstado"></select></div><div class="hrx-detail-grid"><div class="hrx-field"><label>Agencia</label><select id="hrxStatusAgencia"></select></div><div class="hrx-field"><label>Grupo</label><select id="hrxStatusGrupo"></select></div><div class="hrx-field"><label>Fecha de entrada</label><input id="hrxStatusFechaEntrada" type="date"></div></div><div class="hrx-field"><label>Salario</label><input id="hrxStatusSalario" type="number" min="0"></div><div class="hrx-field"><label>Comentario de evaluación</label><textarea id="hrxStatusEvaluacion"></textarea></div><div class="hrx-field"><label>Comentario de rechazo</label><textarea id="hrxStatusRechazo"></textarea></div></div><div class="hrx-modal-actions"><div class="hrx-muted">No se puede aprobar sin asignación, ni rechazar sin comentario.</div><div class="hrx-actions"><button class="hrx-btn light" type="button" onclick="hrxCloseModal('hrxStatusModal')">Cancelar</button><button class="hrx-btn primary" type="button" onclick="hrxSubmitStatus()">Guardar</button></div></div></div></div>`);
-    modal=document.getElementById('hrxStatusModal');
-  }
-  document.getElementById('hrxStatusEstado').innerHTML = ['Solicitud','En evaluación','Aprobada / Asignada','Contratada','Rechazada'].map(v=>`<option value="${v}">${v}</option>`).join('');
-  document.getElementById('hrxStatusAgencia').innerHTML = `<option value="">Sin definir</option>${hrxSafeAgencias().map(a=>`<option value="${a.codigo || a.numero || a.id || a.nombre || ''}">${a.codigo || a.numero || a.id || a.nombre || ''}</option>`).join('')}`;
-  document.getElementById('hrxStatusGrupo').innerHTML = `<option value="">Sin definir</option>${hrxSafeGrupos().map(g=>`<option value="${g.codigo || g.nombre || g.id || ''}">${g.codigo || g.nombre || g.id || ''}</option>`).join('')}`;
-  document.getElementById('hrxStatusEstado').value=s.estado||'Solicitud';
-  document.getElementById('hrxStatusAgencia').value=s.asignadaAgencia || s.agenciaInteres || '';
-  document.getElementById('hrxStatusGrupo').value=s.asignadaGrupo || s.grupoInteres || '';
-  document.getElementById('hrxStatusFechaEntrada').value=s.fechaEntrada||'';
-  document.getElementById('hrxStatusSalario').value=s.salario||'';
-  document.getElementById('hrxStatusEvaluacion').value=s.comentarioEvaluacion||'';
-  document.getElementById('hrxStatusRechazo').value=s.comentarioRechazo||'';
-  modal.classList.add('open');
-}
-function hrxSubmitStatus(){
-  const s=hrxGetById(hrxCurrentId); if(!s) return;
-  const nuevoEstado=document.getElementById('hrxStatusEstado').value;
-  const agencia=document.getElementById('hrxStatusAgencia').value;
-  const grupo=document.getElementById('hrxStatusGrupo').value;
-  const fechaEntrada=document.getElementById('hrxStatusFechaEntrada').value;
-  const salario=document.getElementById('hrxStatusSalario').value.trim();
-  const evaluacion=document.getElementById('hrxStatusEvaluacion').value.trim();
-  const rechazo=document.getElementById('hrxStatusRechazo').value.trim();
-  if(nuevoEstado==='Aprobada / Asignada' && !agencia && !grupo){ alert('Para aprobar / asignar debes seleccionar una agencia o un grupo.'); return; }
-  if(nuevoEstado==='Rechazada' && !rechazo){ alert('Para rechazar debes escribir el comentario obligatorio.'); return; }
-  s.estado=nuevoEstado; s.asignadaAgencia=agencia; s.asignadaGrupo=grupo; s.agenciaInteres=agencia || s.agenciaInteres; s.grupoInteres=grupo || s.grupoInteres; s.fechaEntrada=fechaEntrada; s.salario=salario; s.comentarioEvaluacion=evaluacion; s.comentarioRechazo=rechazo;
-  hrxSave(); hrxApplyFilters();
-  hrxRegisterHistory(nuevoEstado==='Rechazada' ? 'Rechazo' : 'Cambio de estado', s, {estado:nuevoEstado, comentario:nuevoEstado==='Rechazada'?rechazo:evaluacion, agencia, grupo});
-  hrxCloseModal('hrxStatusModal');
-  if(nuevoEstado==='Contratada') hrxHire(s.id, true);
-}
-function hrxOpenRejectModal(id){ hrxOpenStatusModal(id); setTimeout(()=>{ const sel=document.getElementById('hrxStatusEstado'); if(sel) sel.value='Rechazada'; },0); }
-function hrxHire(id, silent=false){
-  const s=hrxGetById(id); if(!s) return;
-  if(!s.asignadaAgencia && !s.asignadaGrupo){ alert('Antes de contratar debes asignar agencia o grupo.'); return; }
-  s.estado='Contratada';
-  if(!s.fechaEntrada) s.fechaEntrada = hrxTodayISO();
-  hrxSave();
-  if(typeof opxOperadoras==='undefined') return;
-  const existing=(opxOperadoras||[]).find(o=>String(o.cedula||'')===String(s.cedula||''));
-  const operadora={
-    id: existing?.id || `opx-${Date.now()}`,
-    nombre:s.nombre, apellido:s.apellido, cedula:s.cedula,
-    grupo:String(s.asignadaGrupo || s.grupoInteres || ''), agencia:String(s.asignadaAgencia || s.agenciaInteres || ''),
-    tipo: existing?.tipo || 'Normal', turno:s.turnoDeseado || existing?.turno || 'Matutino',
-    fechaEntrada:s.fechaEntrada || existing?.fechaEntrada || hrxTodayISO(), fechaNacimiento:s.fechaNacimiento || existing?.fechaNacimiento || '2000-01-01',
-    salario:s.salario || existing?.salario || '', celular:s.telefono || existing?.celular || '', observacionGeneral:s.observaciones || existing?.observacionGeneral || '',
-    estadoLaboral: existing?.estadoLaboral || 'Activa', saludAplica: existing?.saludAplica || 'No', saludDescripcion: existing?.saludDescripcion || '', foto: existing?.foto || s.foto || '',
-    vacaciones: existing?.vacaciones || [], incentivos: existing?.incentivos || [], faltantes: existing?.faltantes || [], certificaciones: existing?.certificaciones || [], visitas: existing?.visitas || []
-  };
-  if(existing){ const idx=opxOperadoras.findIndex(o=>o.id===existing.id); opxOperadoras[idx]={...existing,...operadora}; }
-  else opxOperadoras.unshift(operadora);
-  if(typeof opxSave==='function') opxSave();
-  if(typeof opxPopulateFilters==='function') opxPopulateFilters();
-  if(typeof opxApplyFilters==='function') opxApplyFilters();
-  hrxRegisterHistory('Contratación', s, {estado:'Contratada', comentario:`Candidata enviada al módulo de Operadoras${silent?'':''}.`, agencia:operadora.agencia, grupo:operadora.grupo});
-  hrxApplyFilters(); hrhApplyFilters();
-}
+function hrxCollectFormData(){ const modal=document.getElementById('hrxFormModal'); return hrxNormalize({ id: hrxCurrentId || `sol-${Date.now()}`, nombre: document.getElementById('hrxNombre').value.trim(), apellido: document.getElementById('hrxApellido').value.trim(), apodos: document.getElementById('hrxApodos').value.trim(), fechaNacimiento: document.getElementById('hrxFechaNacimiento').value, lugarNacimiento: document.getElementById('hrxLugarNacimiento').value.trim(), nacionalidad: document.getElementById('hrxNacionalidad').value.trim(), sexo: document.getElementById('hrxSexo').value, estadoCivil: document.getElementById('hrxEstadoCivil').value.trim(), cedula: document.getElementById('hrxCedula').value.trim(), telefono: document.getElementById('hrxTelefono').value.trim(), correo: document.getElementById('hrxCorreo').value.trim(), correoConfirmacion: document.getElementById('hrxCorreoConfirmacion').value.trim(), provincia: document.getElementById('hrxProvincia').value.trim(), sector: document.getElementById('hrxSector').value.trim(), direccion: document.getElementById('hrxDireccion').value.trim(), contactoEmergenciaNombre: document.getElementById('hrxEmerNombre').value.trim(), contactoEmergenciaRelacion: document.getElementById('hrxEmerRelacion').value.trim(), contactoEmergenciaTelefono: document.getElementById('hrxEmerTelefono').value.trim(), puesto: document.getElementById('hrxPuesto').value, estado: document.getElementById('hrxEstado').value, agenciaInteres: document.getElementById('hrxAgencia').value, grupoInteres: document.getElementById('hrxGrupo').value, turnoDeseado: document.getElementById('hrxTurno').value, tipoOperadora: document.getElementById('hrxTipoOperadora').value, fechaSolicitud: document.getElementById('hrxFechaSolicitud').value || hrxTodayISO(), fechaEntrada: document.getElementById('hrxFechaEntrada').value, estadoLaboral: document.getElementById('hrxEstadoLaboral').value, salario: document.getElementById('hrxSalario').value.trim(), salud: document.getElementById('hrxSalud').value, responsable: document.getElementById('hrxResponsable').value.trim() || 'RRHH', experiencia: document.getElementById('hrxExperiencia').value.trim(), comentarioEvaluacion: document.getElementById('hrxComentarioEvaluacion').value.trim(), comentarioRechazo: document.getElementById('hrxComentarioRechazo').value.trim(), observaciones: document.getElementById('hrxObservaciones').value.trim(), foto: modal?.dataset.photo || '', cedulaFrontal: modal?.dataset.front || '', cedulaTrasera: modal?.dataset.back || '' }); }
+function hrxValidateRecord(data){ if(!data.nombre || !data.apellido || !data.cedula){ alert('Completa nombre, apellido y cédula.'); return false; } if(data.correo && data.correoConfirmacion && data.correo !== data.correoConfirmacion){ alert('Los correos no coinciden.'); return false; } if(data.estado==='Rechazada' && !data.comentarioRechazo){ alert('Para rechazar debes escribir el comentario obligatorio.'); return false; } if((data.estado==='Aprobada / Asignada' || data.estado==='Contratada') && !data.agenciaInteres && !data.grupoInteres){ alert('Para aprobar o contratar debes asignar una agencia o un grupo.'); return false; } return true; }
+function hrxSyncToOperadoras(data, contracted=false){ if(typeof opxOperadoras==='undefined') return; const existing=(opxOperadoras||[]).find(o=>String(o.cedula||'')===String(data.cedula||'')); const operadora={ id: existing?.id || `opx-${Date.now()}`, nombre:data.nombre, apellido:data.apellido, cedula:data.cedula, grupo:hrxSafe(data.grupoInteres), agencia:hrxSafe(data.agenciaInteres), tipo:data.tipoOperadora || existing?.tipo || 'Normal', turno:data.turnoDeseado || existing?.turno || 'Matutino', fechaEntrada:data.fechaEntrada || existing?.fechaEntrada || hrxTodayISO(), fechaNacimiento:data.fechaNacimiento || existing?.fechaNacimiento || '2000-01-01', salario:data.salario || existing?.salario || '', celular:data.telefono || existing?.celular || '', estadoLaboral: contracted ? (data.estadoLaboral || 'Activa') : (existing?.estadoLaboral || 'Activa'), salud:data.salud || existing?.salud || 'No', saludDescripcion: existing?.saludDescripcion || '', foto: data.foto || existing?.foto || '', observacionGeneral:data.observaciones || existing?.observacionGeneral || '', certificaciones: existing?.certificaciones || [], vacaciones: existing?.vacaciones || [], incentivos: existing?.incentivos || [], faltantes: existing?.faltantes || [], observaciones: existing?.observaciones || [], visitas: existing?.visitas || [] }; if(existing){ const idx=opxOperadoras.findIndex(o=>o.id===existing.id); opxOperadoras[idx]={...existing,...operadora}; } else opxOperadoras.unshift(operadora); if(typeof opxSave==='function') opxSave(); if(typeof opxPopulateFilters==='function') opxPopulateFilters(); if(typeof opxApplyFilters==='function') opxApplyFilters(); }
+function hrxProcessDecision(data){ const prev = hrxCurrentId ? hrxGetById(hrxCurrentId) : null; if(data.estado==='Rechazada'){ hrxRegisterHistory('Rechazo', data, {estado:'Rechazada', comentario:data.comentarioRechazo, agencia:data.agenciaInteres, grupo:data.grupoInteres}); if(prev) hrxRemoveById(prev.id); hrxApplyFilters(); hrxCloseModal('hrxFormModal'); return; } if(data.estado==='Aprobada / Asignada'){ hrxSyncToOperadoras(data, false); hrxRegisterHistory('Aprobación', data, {estado:'Aprobada / Asignada', comentario:data.comentarioEvaluacion || 'Candidata aprobada y enviada a Gestión de empleados.', agencia:data.agenciaInteres, grupo:data.grupoInteres}); if(prev) hrxRemoveById(prev.id); hrxApplyFilters(); hrxCloseModal('hrxFormModal'); return; } if(data.estado==='Contratada'){ hrxSyncToOperadoras(data, true); hrxRegisterHistory('Contratación', data, {estado:'Contratada', comentario:data.comentarioEvaluacion || 'Candidata contratada y movida a Gestión de empleados.', agencia:data.agenciaInteres, grupo:data.grupoInteres}); if(prev) hrxRemoveById(prev.id); hrxApplyFilters(); hrxCloseModal('hrxFormModal'); return; } const saved=hrxSaveRecord(data); hrxRegisterHistory(prev ? 'Cambio de estado' : 'Nueva solicitud', saved, {estado:saved.estado, comentario:saved.comentarioEvaluacion || saved.observaciones || (prev ? 'Solicitud actualizada por RRHH.' : 'Solicitud registrada en bandeja.')}); hrxCloseModal('hrxFormModal'); }
+function hrxSubmitForm(){ const data = hrxCollectFormData(); if(!hrxValidateRecord(data)) return; hrxProcessDecision(data); }
+function hrxOpenDetail(id){ hrxCurrentId=id; const s=hrxGetById(id); if(!s) return; let modal=document.getElementById('hrxDetailModal'); if(!modal){ document.body.insertAdjacentHTML('beforeend', `<div class="hrx-modal" id="hrxDetailModal"><div class="hrx-dialog"><div class="hrx-modal-head"><div><h3 id="hrxDetailTitle"></h3><p id="hrxDetailSubtitle"></p></div><button class="hrx-close" onclick="hrxCloseModal('hrxDetailModal')"><i class="fas fa-xmark"></i></button></div><div class="hrx-modal-body" id="hrxDetailBody"></div><div class="hrx-modal-actions"><div class="hrx-muted">Vista limpia para consulta rápida del expediente recibido desde el formulario.</div><div class="hrx-actions"><button class="hrx-btn light" type="button" onclick="hrxCloseModal('hrxDetailModal')">Cerrar</button><button class="hrx-btn dark" type="button" onclick="hrxOpenForm(hrxCurrentId)">Evaluar</button></div></div></div></div>`); modal=document.getElementById('hrxDetailModal'); } document.getElementById('hrxDetailTitle').textContent = `${s.nombre} ${s.apellido}`.trim(); document.getElementById('hrxDetailSubtitle').textContent = `${s.puesto || '-'} · ${s.turnoDeseado || '-'} · ${s.estado || '-'}`; document.getElementById('hrxDetailBody').innerHTML = `<div class="hrx-profile"><div class="hrx-photo-card"><div class="hrx-photo-box">${hrxImageOrPlaceholder(s.foto, 'Foto personal')}</div><div class="hrx-inline-info" style="margin-top:12px"><span class="hrx-info-chip"><i class="fas fa-id-card"></i> ${s.cedula||'Sin cédula'}</span><span class="hrx-info-chip"><i class="fas fa-phone"></i> ${s.telefono||'Sin teléfono'}</span><span class="hrx-info-chip"><i class="fas fa-envelope"></i> ${s.correo||'Sin correo'}</span></div></div><div class="hrx-section"><div class="hrx-tabs"><button type="button" class="hrx-tab active" onclick="hrxSetDetailTab('resumen', this)">Resumen</button><button type="button" class="hrx-tab" onclick="hrxSetDetailTab('contacto', this)">Contacto</button><button type="button" class="hrx-tab" onclick="hrxSetDetailTab('documentos', this)">Documentos</button></div><div class="hrx-tabpane active" id="hrxPane-resumen"><div class="hrx-detail-grid"><div class="hrx-detail-item"><span class="k">Nombre completo</span><span class="v">${s.nombre} ${s.apellido}</span></div><div class="hrx-detail-item"><span class="k">Apodos</span><span class="v">${s.apodos || '-'}</span></div><div class="hrx-detail-item"><span class="k">Edad</span><span class="v">${hrxAge(s.fechaNacimiento)} años</span></div><div class="hrx-detail-item"><span class="k">Fecha de nacimiento</span><span class="v">${hrxFmtDate(s.fechaNacimiento)}</span></div><div class="hrx-detail-item"><span class="k">Lugar de nacimiento</span><span class="v">${s.lugarNacimiento || '-'}</span></div><div class="hrx-detail-item"><span class="k">Nacionalidad</span><span class="v">${s.nacionalidad || '-'}</span></div><div class="hrx-detail-item"><span class="k">Sexo</span><span class="v">${s.sexo || '-'}</span></div><div class="hrx-detail-item"><span class="k">Estado civil</span><span class="v">${s.estadoCivil || '-'}</span></div><div class="hrx-detail-item"><span class="k">Puesto solicitado</span><span class="v">${s.puesto || '-'}</span></div><div class="hrx-detail-item"><span class="k">Turno deseado</span><span class="v">${s.turnoDeseado || '-'}</span></div><div class="hrx-detail-item"><span class="k">Fecha de solicitud</span><span class="v">${hrxFmtDate(s.fechaSolicitud)}</span></div><div class="hrx-detail-item"><span class="k">Estado actual</span><span class="v">${s.estado || '-'}</span></div></div></div><div class="hrx-tabpane" id="hrxPane-contacto"><div class="hrx-detail-grid"><div class="hrx-detail-item"><span class="k">Provincia</span><span class="v">${s.provincia || '-'}</span></div><div class="hrx-detail-item"><span class="k">Sector</span><span class="v">${s.sector || '-'}</span></div><div class="hrx-detail-item"><span class="k">Dirección</span><span class="v">${s.direccion || '-'}</span></div><div class="hrx-detail-item"><span class="k">Contacto de emergencia</span><span class="v">${s.contactoEmergenciaNombre || '-'}</span></div><div class="hrx-detail-item"><span class="k">Relación</span><span class="v">${s.contactoEmergenciaRelacion || '-'}</span></div><div class="hrx-detail-item"><span class="k">Teléfono emergencia</span><span class="v">${s.contactoEmergenciaTelefono || '-'}</span></div></div></div><div class="hrx-tabpane" id="hrxPane-documentos"><div class="hrx-two-col"><div class="hrx-photo-card"><h4 style="margin:0 0 10px;color:#214c6a">Cédula frontal</h4><div class="hrx-photo-box">${hrxImageOrPlaceholder(s.cedulaFrontal, 'Cédula frontal')}</div></div><div class="hrx-photo-card"><h4 style="margin:0 0 10px;color:#214c6a">Cédula trasera</h4><div class="hrx-photo-box">${hrxImageOrPlaceholder(s.cedulaTrasera, 'Cédula trasera')}</div></div></div><div class="hrx-section"><h4 style="margin:0 0 10px;color:#214c6a">Resumen RRHH</h4><div class="hrx-detail-grid"><div class="hrx-detail-item"><span class="k">Agencia / interés</span><span class="v">${s.agenciaInteres || '-'}</span></div><div class="hrx-detail-item"><span class="k">Grupo / interés</span><span class="v">${s.grupoInteres || '-'}</span></div><div class="hrx-detail-item"><span class="k">Comentario relevante</span><span class="v">${s.comentarioEvaluacion || s.observaciones || '-'}</span></div></div></div></div></div></div>`; modal.classList.add('open'); }
+function hrxSetDetailTab(tab, btn){ document.querySelectorAll('#hrxDetailBody .hrx-tab').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); document.querySelectorAll('#hrxDetailBody .hrx-tabpane').forEach(p=>p.classList.remove('active')); document.getElementById(`hrxPane-${tab}`)?.classList.add('active'); }
+function hrxOpenStatusModal(id){ hrxOpenForm(id); }
+function hrxSubmitStatus(){ hrxSubmitForm(); }
+function hrxOpenRejectModal(id){ hrxOpenForm(id); setTimeout(()=>{ const el=document.getElementById('hrxEstado'); if(el) el.value='Rechazada'; },50); }
+function hrxHire(id, silent=false){ const s=hrxGetById(id); if(!s) return; const data={...s, estado:'Contratada'}; if(!hrxValidateRecord(data)) return; hrxSyncToOperadoras(data, true); hrxRegisterHistory('Contratación', data, {estado:'Contratada', comentario:data.comentarioEvaluacion || 'Candidata contratada y movida a Gestión de empleados.', agencia:data.agenciaInteres, grupo:data.grupoInteres}); hrxRemoveById(id); hrxApplyFilters(); if(!silent) hrxCloseModal('hrxDetailModal'); }
 function hrxCloseModal(id){ const el=document.getElementById(id); if(el) el.classList.remove('open'); }
-function hrxExportCSV(){ const rows=(hrxFiltered?.length?hrxFiltered:hrxSolicitudes).map((s,i)=>({No:i+1,Nombre:`${s.nombre} ${s.apellido}`.trim(),Cedula:s.cedula,Puesto:s.puesto,Turno:s.turnoDeseado,Agencia:s.asignadaAgencia||s.agenciaInteres,Grupo:s.asignadaGrupo||s.grupoInteres,Fecha_solicitud:s.fechaSolicitud,Estado:s.estado,Edad:hrxAge(s.fechaNacimiento)})); if(!rows.length){ alert('No hay datos para exportar.'); return; } const headers=Object.keys(rows[0]); const csv=[headers.join(','), ...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='rrhh_solicitudes.csv'; a.click(); URL.revokeObjectURL(url); }
-function hrhPopulateFilters(){
-  const tipoSel=document.getElementById('hrhFilterTipo'), estadoSel=document.getElementById('hrhFilterEstado'), grupoSel=document.getElementById('hrhFilterGrupo'), agenciaSel=document.getElementById('hrhFilterAgencia'), origenSel=document.getElementById('hrhFilterOrigen');
-  if(!tipoSel) return;
-  const tipos=[...new Set(hrhHistorial.map(h=>h.tipo))];
-  const estados=[...new Set(hrhHistorial.map(h=>h.estado))];
-  const grupos=[...new Set(hrhHistorial.map(h=>String(h.grupo||'')).filter(Boolean))];
-  const agencias=[...new Set(hrhHistorial.map(h=>String(h.agencia||'')).filter(Boolean))];
-  const origenes=[...new Set(hrhHistorial.map(h=>h.origen))];
-  tipoSel.innerHTML = `<option value="">Todos</option>${tipos.map(v=>`<option value="${v}">${v}</option>`).join('')}`;
-  estadoSel.innerHTML = `<option value="">Todos</option>${estados.map(v=>`<option value="${v}">${v}</option>`).join('')}`;
-  grupoSel.innerHTML = `<option value="">Todos</option>${grupos.map(v=>`<option value="${v}">${v}</option>`).join('')}`;
-  agenciaSel.innerHTML = `<option value="">Todas</option>${agencias.map(v=>`<option value="${v}">${v}</option>`).join('')}`;
-  origenSel.innerHTML = `<option value="">Todos</option>${origenes.map(v=>`<option value="${v}">${v}</option>`).join('')}`;
-}
-function hrhApplyFilters(){
-  const nombre=(document.getElementById('hrhFilterNombre')?.value||'').trim().toLowerCase();
-  const cedula=(document.getElementById('hrhFilterCedula')?.value||'').trim().toLowerCase();
-  const tipo=document.getElementById('hrhFilterTipo')?.value||'';
-  const estado=document.getElementById('hrhFilterEstado')?.value||'';
-  const grupo=document.getElementById('hrhFilterGrupo')?.value||'';
-  const agencia=document.getElementById('hrhFilterAgencia')?.value||'';
-  const origen=document.getElementById('hrhFilterOrigen')?.value||'';
-  hrhFiltered = hrhHistorial.filter(h=>{
-    if(nombre && !String(h.nombre||'').toLowerCase().includes(nombre)) return false;
-    if(cedula && !String(h.cedula||'').toLowerCase().includes(cedula)) return false;
-    if(tipo && h.tipo!==tipo) return false;
-    if(estado && h.estado!==estado) return false;
-    if(grupo && String(h.grupo||'')!==grupo) return false;
-    if(agencia && String(h.agencia||'')!==agencia) return false;
-    if(origen && h.origen!==origen) return false;
-    return true;
-  });
-  hrhRender();
-}
+function hrxExportCSV(){ const rows=(hrxFiltered?.length?hrxFiltered:hrxSolicitudes).map((s,i)=>({No:i+1,Nombre:`${s.nombre} ${s.apellido}`.trim(),Cedula:s.cedula,Puesto:s.puesto,Turno:s.turnoDeseado,Agencia:s.agenciaInteres,Grupo:s.grupoInteres,Fecha_solicitud:s.fechaSolicitud,Estado:s.estado,Edad:hrxAge(s.fechaNacimiento)})); if(!rows.length){ alert('No hay datos para exportar.'); return; } const headers=Object.keys(rows[0]); const csv=[headers.join(','), ...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='rrhh_solicitudes_activas.csv'; a.click(); URL.revokeObjectURL(url); }
+function hrhPopulateFilters(){ const tipoSel=document.getElementById('hrhFilterTipo'), estadoSel=document.getElementById('hrhFilterEstado'), grupoSel=document.getElementById('hrhFilterGrupo'), agenciaSel=document.getElementById('hrhFilterAgencia'), origenSel=document.getElementById('hrhFilterOrigen'); if(!tipoSel) return; const tipos=[...new Set(hrhHistorial.map(h=>h.tipo))]; const estados=[...new Set(hrhHistorial.map(h=>h.estado))]; const grupos=[...new Set(hrhHistorial.map(h=>String(h.grupo||'')).filter(Boolean))]; const agencias=[...new Set(hrhHistorial.map(h=>String(h.agencia||'')).filter(Boolean))]; const origenes=[...new Set(hrhHistorial.map(h=>h.origen))]; tipoSel.innerHTML = `<option value="">Todos</option>${tipos.map(v=>`<option value="${v}">${v}</option>`).join('')}`; estadoSel.innerHTML = `<option value="">Todos</option>${estados.map(v=>`<option value="${v}">${v}</option>`).join('')}`; grupoSel.innerHTML = `<option value="">Todos</option>${grupos.map(v=>`<option value="${v}">${v}</option>`).join('')}`; agenciaSel.innerHTML = `<option value="">Todas</option>${agencias.map(v=>`<option value="${v}">${v}</option>`).join('')}`; origenSel.innerHTML = `<option value="">Todos</option>${origenes.map(v=>`<option value="${v}">${v}</option>`).join('')}`; }
+function hrhApplyFilters(){ const nombre=(document.getElementById('hrhFilterNombre')?.value||'').trim().toLowerCase(); const cedula=(document.getElementById('hrhFilterCedula')?.value||'').trim().toLowerCase(); const tipo=document.getElementById('hrhFilterTipo')?.value||''; const estado=document.getElementById('hrhFilterEstado')?.value||''; const grupo=document.getElementById('hrhFilterGrupo')?.value||''; const agencia=document.getElementById('hrhFilterAgencia')?.value||''; const origen=document.getElementById('hrhFilterOrigen')?.value||''; hrhFiltered = hrhHistorial.filter(h=>{ if(nombre && !String(h.nombre||'').toLowerCase().includes(nombre)) return false; if(cedula && !String(h.cedula||'').toLowerCase().includes(cedula)) return false; if(tipo && h.tipo!==tipo) return false; if(estado && h.estado!==estado) return false; if(grupo && String(h.grupo||'')!==grupo) return false; if(agencia && String(h.agencia||'')!==agencia) return false; if(origen && h.origen!==origen) return false; return true; }); hrhRender(); }
 function hrhResetFilters(){ ['hrhFilterNombre','hrhFilterCedula'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); ['hrhFilterTipo','hrhFilterEstado','hrhFilterGrupo','hrhFilterAgencia','hrhFilterOrigen'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); hrhApplyFilters(); }
-function hrhRender(){
-  const data=Array.isArray(hrhFiltered)?hrhFiltered:hrhHistorial;
-  document.getElementById('hrhTableCount').textContent = `${data.length} resultado${data.length!==1?'s':''}`;
-  document.getElementById('hrhHeroTotal').textContent = hrhHistorial.length;
-  document.getElementById('hrhHeroContratadas').textContent = hrhHistorial.filter(h=>h.tipo==='Contratación').length;
-  document.getElementById('hrhHeroRechazos').textContent = hrhHistorial.filter(h=>h.tipo==='Rechazo').length;
-  document.getElementById('hrhHeroCambios').textContent = hrhHistorial.filter(h=>h.tipo==='Cambio de estado' || h.tipo==='Cambio laboral').length;
-  const body=document.getElementById('hrhTableBody');
-  if(!body) return;
-  if(!data.length){ body.innerHTML=`<tr><td colspan="9"><div class="hrx-empty">No hay movimientos que coincidan con los filtros.</div></td></tr>`; }
-  else {
-    body.innerHTML = data.map(h=>`<tr>
-      <td>${String(h.fecha||'').replace('T',' ').slice(0,16)}</td>
-      <td><span class="hrx-badge ${h.tipo==='Contratación'?'green':h.tipo==='Rechazo'?'red':'blue'}">${h.tipo}</span></td>
-      <td><strong>${h.nombre||'-'}</strong></td>
-      <td>${h.cedula||'-'}</td>
-      <td>${h.estado||'-'}</td>
-      <td>${h.agencia||'-'}</td>
-      <td>${h.grupo||'-'}</td>
-      <td>${h.origen||'-'}</td>
-      <td>${h.comentario||'-'}</td>
-    </tr>`).join('');
-  }
-  const counts={}; hrhHistorial.forEach(h=>{ counts[h.tipo]=(counts[h.tipo]||0)+1; });
-  document.getElementById('hrhTypeRank').innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v],idx)=>`<div class="hrx-rank-item"><div><strong>${k}</strong><span>${v} movimiento${v!==1?'s':''}</span></div><em>#${idx+1}</em></div>`).join('') || `<div class="hrx-empty">Sin historial todavía.</div>`;
-}
+function hrhRender(){ const data=Array.isArray(hrhFiltered)?hrhFiltered:hrhHistorial; const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=String(v); }; set('hrhTableCount', `${data.length} resultado${data.length!==1?'s':''}`); set('hrhHeroTotal', hrhHistorial.length); set('hrhHeroContratadas', hrhHistorial.filter(h=>h.tipo==='Contratación').length); set('hrhHeroRechazos', hrhHistorial.filter(h=>h.tipo==='Rechazo').length); set('hrhHeroCambios', hrhHistorial.filter(h=>h.tipo==='Cambio de estado' || h.tipo==='Cambio laboral' || h.tipo==='Aprobación').length); const body=document.getElementById('hrhTableBody'); if(!body) return; if(!data.length){ body.innerHTML=`<tr><td colspan="9"><div class="hrx-empty">No hay movimientos que coincidan con los filtros.</div></td></tr>`; } else { body.innerHTML = data.map(h=>`<tr><td>${hrxFmtDateTime(h.fecha)}</td><td><span class="hrx-badge ${h.tipo==='Contratación'?'green':h.tipo==='Rechazo'?'red':'blue'}">${h.tipo}</span></td><td><strong>${h.nombre||'-'}</strong></td><td>${h.cedula||'-'}</td><td>${h.estado||'-'}</td><td>${h.agencia||'-'}</td><td>${h.grupo||'-'}</td><td>${h.origen||'-'}</td><td>${h.comentario||'-'}</td></tr>`).join(''); } const counts={}; hrhHistorial.forEach(h=>{ counts[h.tipo]=(counts[h.tipo]||0)+1; }); const rank=document.getElementById('hrhTypeRank'); if(rank) rank.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v],idx)=>`<div class="hrx-rank-item"><div><strong>${k}</strong><span>${v} movimiento${v!==1?'s':''}</span></div><em>#${idx+1}</em></div>`).join('') || `<div class="hrx-empty">Sin historial todavía.</div>`; }
 function hrhExportCSV(){ const rows=(hrhFiltered?.length?hrhFiltered:hrhHistorial).map(h=>({Fecha:h.fecha,Movimiento:h.tipo,Nombre:h.nombre,Cedula:h.cedula,Estado:h.estado,Agencia:h.agencia,Grupo:h.grupo,Origen:h.origen,Comentario:h.comentario})); if(!rows.length){ alert('No hay datos para exportar.'); return; } const headers=Object.keys(rows[0]); const csv=[headers.join(','), ...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='rrhh_historial.csv'; a.click(); URL.revokeObjectURL(url); }
 function hrxBindFilterEvents(){ ['hrxFilterNombre','hrxFilterCedula'].forEach(id=>document.getElementById(id)?.addEventListener('input', hrxApplyFilters)); ['hrxFilterEstado','hrxFilterGrupo','hrxFilterAgencia','hrxFilterTurno','hrxFilterPuesto','hrxFilterEdad'].forEach(id=>document.getElementById(id)?.addEventListener('change', hrxApplyFilters)); ['hrhFilterNombre','hrhFilterCedula'].forEach(id=>document.getElementById(id)?.addEventListener('input', hrhApplyFilters)); ['hrhFilterTipo','hrhFilterEstado','hrhFilterGrupo','hrhFilterAgencia','hrhFilterOrigen'].forEach(id=>document.getElementById(id)?.addEventListener('change', hrhApplyFilters)); }
+const hrxOriginalOpxSaveEdit = typeof opxSaveEdit === 'function' ? opxSaveEdit : null; if(hrxOriginalOpxSaveEdit){ opxSaveEdit = function(){ const modal=document.getElementById('opxEditModal'); const id=modal?.dataset.id||''; const prev=id?JSON.parse(JSON.stringify(opxGetById(id)||{})):null; hrxOriginalOpxSaveEdit(); if(!id) return; const next=opxGetById(id); if(!next) return; const estadoSalida = ['Cancelada/o','Abandono','Renuncia']; if(prev && prev.estadoLaboral !== next.estadoLaboral){ const cambioComentario = `Estado laboral cambiado de ${prev.estadoLaboral || 'Sin definir'} a ${next.estadoLaboral || 'Sin definir'}.`; if(estadoSalida.includes(next.estadoLaboral)){ hrhAdd({ fecha: hrxNowIso(), tipo:'Salida de personal', nombre:`${next.nombre||''} ${next.apellido||''}`.trim(), cedula: next.cedula || '', estado: next.estadoLaboral || '', agencia: next.agencia || '', grupo: next.grupo || '', origen:'Operadoras', comentario:cambioComentario + ' Sale automáticamente de Gestión de empleados y pasa al Historial.' }); opxOperadoras = opxOperadoras.filter(o=>o.id!==id); if(typeof opxSave==='function') opxSave(); if(typeof opxPopulateFilters==='function') opxPopulateFilters(); if(typeof opxApplyFilters==='function') opxApplyFilters(); if(typeof opxCloseEdit==='function') opxCloseEdit(); if(typeof opxCurrentId!=='undefined' && opxCurrentId===id) opxCurrentId=''; return; } hrhAdd({ fecha: hrxNowIso(), tipo:'Cambio laboral', nombre:`${next.nombre||''} ${next.apellido||''}`.trim(), cedula: next.cedula || '', estado: next.estadoLaboral || '', agencia: next.agencia || '', grupo: next.grupo || '', origen:'Operadoras', comentario:cambioComentario }); } } }
 function hrxInit(){ hrxLoad(); hrhLoad(); hrxPopulateFilters(); hrhPopulateFilters(); hrxFiltered=[...hrxSolicitudes]; hrhFiltered=[...hrhHistorial]; hrxRender(); hrhRender(); hrxBindFilterEvents(); }
 window.addEventListener('DOMContentLoaded', hrxInit);
+
 </script>
 
 <script>
