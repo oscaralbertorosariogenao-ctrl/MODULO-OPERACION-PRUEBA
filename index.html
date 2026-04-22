@@ -288,6 +288,29 @@ body{background:linear-gradient(180deg,#f4f9fd 0%, #eef5fb 100%);}
 .brand-logo{width:118px;height:62px;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(17,158,207,.16));}.brand-logo-shell{width:148px;height:84px;border-radius:24px;background:linear-gradient(180deg,#ffffff 0%,#f2fbff 100%);display:grid;place-items:center;border:1px solid #d8edf5;box-shadow:0 14px 28px rgba(17,158,207,.10);padding:10px 12px;}
 .brand-title{font-size:22px;font-weight:900;color:#119ecf;letter-spacing:.08em;line-height:1;}
 .brand-subtitle{font-size:11px;font-weight:800;color:#6f8ca3;letter-spacing:.14em;text-transform:uppercase;}
+.sidebar{width:320px;padding:18px 16px 20px;overflow-y:auto;overflow-x:hidden;position:sticky;top:0;height:100vh}
+.brand-wrap{gap:10px;padding:12px 10px 18px;margin-bottom:16px}
+.brand-title{font-size:24px;letter-spacing:.06em}
+.brand-subtitle{font-size:11px;letter-spacing:.18em;line-height:1.45;text-align:center;max-width:210px}
+.sidebar-nav{display:flex;flex-direction:column;gap:12px}
+.sidebar-group{background:rgba(255,255,255,.72);border:1px solid #d8e7f1;border-radius:20px;padding:8px;box-shadow:0 8px 22px rgba(20,70,105,.05)}
+.sidebar-group-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 14px;border:none;background:transparent;border-radius:16px;cursor:pointer;color:#32556f;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.sidebar-group-btn:hover{background:#eef7fc}
+.sidebar-group-main{display:flex;align-items:center;gap:12px;text-align:left}
+.sidebar-group-main i{width:18px;text-align:center;color:#179ec9;font-size:15px}
+.sidebar-group-arrow{color:#6f8ca3;font-size:13px;transition:transform .2s ease}
+.sidebar-group.is-open .sidebar-group-arrow{transform:rotate(180deg)}
+.sidebar-group-menu{display:grid;gap:6px;max-height:0;overflow:hidden;opacity:0;padding:0 6px;transition:max-height .25s ease, opacity .2s ease, padding .2s ease}
+.sidebar-group.is-open .sidebar-group-menu{max-height:900px;opacity:1;padding:4px 6px 8px}
+.sidebar-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;text-decoration:none;color:#506a80;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s ease}
+.sidebar-link i{width:18px;text-align:center;color:#708aa0;font-size:14px}
+.sidebar-link:hover{background:#eef7fc;color:#179ec9;transform:translateX(2px)}
+.sidebar-link:hover i{color:#179ec9}
+.sidebar-link.active{background:linear-gradient(90deg,#e8f8fd 0%,#dff4fb 100%);color:#148fbc;box-shadow:inset 0 0 0 1px #cfeaf4}
+.sidebar-link.active i{color:#148fbc}
+.menu-section-title,.menu,.sidebar h2{display:none !important}
+@media (max-width:1100px){.sidebar{width:290px}}
+
 .menu-section-title{color:#7a95ab;letter-spacing:.08em;}
 .menu a{border-radius:16px;font-weight:700;}
 .menu a:hover{background:#eaf7fc;}
@@ -1118,46 +1141,65 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
     <div class="brand-title">Grupo Ortiz</div>
     <div class="brand-subtitle">Sistema De Gestion Interna y externa</div>
   </div>
-  <h2>INVENTARIO</h2>
-  <div class="menu">
-    <a onclick="cambiarVista('productos', this)"><i class="fas fa-list"></i> Productos</a>
-    <a onclick="cambiarVista('almacenes', this)"><i class="fas fa-warehouse"></i> Almacenes</a>
-    <a onclick="cambiarVista('entrada', this)"><i class="fas fa-plus"></i> Entrada</a>
-    <a onclick="cambiarVista('transferencia', this)"><i class="fas fa-right-left"></i> Transferencias</a>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-group is-open" data-section="inventario">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('inventario')">
+        <span class="sidebar-group-main"><i class="fas fa-boxes-stacked"></i><span>Inventario</span></span>
+        <i class="fas fa-chevron-down sidebar-group-arrow"></i>
+      </button>
+      <div class="sidebar-group-menu">
+        <a class="sidebar-link" onclick="cambiarVista('productos', this)"><i class="fas fa-list"></i><span>Productos</span></a>
+        <a class="sidebar-link" onclick="cambiarVista('almacenes', this)"><i class="fas fa-warehouse"></i><span>Almacenes</span></a>
+        <a class="sidebar-link" onclick="cambiarVista('entrada', this)"><i class="fas fa-plus"></i><span>Entrada</span></a>
+        <a class="sidebar-link" onclick="cambiarVista('transferencia', this)"><i class="fas fa-right-left"></i><span>Transferencias</span></a>
+      </div>
+    </div>
+
+    <div class="sidebar-group" data-section="consultas">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('consultas')">
+        <span class="sidebar-group-main"><i class="fas fa-magnifying-glass-chart"></i><span>Centro de consultas</span></span>
+        <i class="fas fa-chevron-down sidebar-group-arrow"></i>
+      </button>
+      <div class="sidebar-group-menu">
+        <a class="sidebar-link" onclick="cambiarVista('agencias', this)"><i class="fas fa-store"></i><span>Agencias</span></a>
+        <a class="sidebar-link" onclick="cambiarVista('grupos', this)"><i class="fas fa-users"></i><span>Grupos</span></a>
+      </div>
+    </div>
+
+    <div class="sidebar-group" data-section="operaciones">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('operaciones')">
+        <span class="sidebar-group-main"><i class="fas fa-screwdriver-wrench"></i><span>Módulo de operaciones</span></span>
+        <i class="fas fa-chevron-down sidebar-group-arrow"></i>
+      </button>
+      <div class="sidebar-group-menu">
+        <a id="navDashboard" class="sidebar-link" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i><span>Resumen Operativo</span></a>
+        <a id="navOperations" class="sidebar-link" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i><span>Gestión de Operaciones</span></a>
+        <a id="navHistory" class="sidebar-link" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
+        <a id="navReports" class="sidebar-link" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i><span>Reportes de Operaciones</span></a>
+        <a id="navReportsAgency" class="sidebar-link" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i><span>Reportes por Agencia</span></a>
+        <a id="navReportsOwner" class="sidebar-link" onclick="abrirVistaOperaciones('reportsOwner','ops-reportes-responsable', this)"><i class="fas fa-user-gear"></i><span>Reportes por Responsable</span></a>
+        <a id="navReportsSpecific" class="sidebar-link" onclick="abrirVistaOperaciones('reportsSpecific','ops-reportes-tipos', this)"><i class="fas fa-layer-group"></i><span>Reportes por Tipos</span></a>
+        <a id="navUsers" class="sidebar-link" onclick="abrirVistaOperaciones('users','ops-usuarios', this)"><i class="fas fa-user"></i><span>Usuarios</span></a>
+        <a id="navSuppliers" class="sidebar-link" onclick="abrirVistaOperaciones('suppliers','ops-suplidores', this)"><i class="fas fa-truck"></i><span>Suplidores</span></a>
+        <a id="navWorks" class="sidebar-link" onclick="abrirVistaOperaciones('works','ops-trabajos', this)"><i class="fas fa-hammer"></i><span>Trabajos</span></a>
+        <a id="navIssues" class="sidebar-link" onclick="abrirVistaOperaciones('issues','ops-averias', this)"><i class="fas fa-triangle-exclamation"></i><span>Averías</span></a>
+      </div>
+    </div>
+
+    <div class="sidebar-group" data-section="rrhh">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('rrhh')">
+        <span class="sidebar-group-main"><i class="fas fa-id-card-clip"></i><span>Módulo de RRHH</span></span>
+        <i class="fas fa-chevron-down sidebar-group-arrow"></i>
+      </button>
+      <div class="sidebar-group-menu">
+        <a id="navDashboardRrhh" class="sidebar-link" onclick="cambiarVista('dashboard-rrhh', this)"><i class="fas fa-chart-pie"></i><span>Dashboard RRHH</span></a>
+        <a id="navSolicitudes" class="sidebar-link" onclick="cambiarVista('solicitudes', this)"><i class="fas fa-file-signature"></i><span>Solicitudes</span></a>
+        <a id="navOperadoras" class="sidebar-link" onclick="cambiarVista('operadoras', this)"><i class="fas fa-id-badge"></i><span>Gestión de empleados/as</span></a>
+        <a id="navHistorialRrhh" class="sidebar-link" onclick="cambiarVista('historial-rrhh', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
+      </div>
+    </div>
   </div>
-
-  <div class="menu-section-title">Centro de consultas</div>
-  <div class="menu">
-    <a onclick="cambiarVista('agencias', this)"><i class="fas fa-store"></i> Agencias</a>
-    <a onclick="cambiarVista('grupos', this)"><i class="fas fa-users"></i> Grupos</a>
-  </div>
-
-
-  <div class="menu-section-title">Módulo de operaciones</div>
-  <div class="menu">
-    <a id="navDashboard" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i> Resumen Operativo</a>
-    <a id="navOperations" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i> Gestión de Operaciones</a>
-    <a id="navHistory" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i> Historial</a>
-    <a id="navReports" onclick="abrirVistaOperaciones('reports','ops-reportes', this)"><i class="fas fa-chart-column"></i> Reportes de Operaciones</a>
-    <a id="navReportsAgency" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i> Reportes por Agencia</a>
-    <a id="navReportsOwner" onclick="abrirVistaOperaciones('reportsOwner','ops-reportes-responsable', this)"><i class="fas fa-user-gear"></i> Reportes por Responsable</a>
-    <a id="navReportsSpecific" onclick="abrirVistaOperaciones('reportsSpecific','ops-reportes-tipos', this)"><i class="fas fa-layer-group"></i> Reportes por Tipos</a>
-    <a id="navUsers" onclick="abrirVistaOperaciones('users','ops-usuarios', this)"><i class="fas fa-user"></i> Usuarios</a>
-    <a id="navSuppliers" onclick="abrirVistaOperaciones('suppliers','ops-suplidores', this)"><i class="fas fa-truck"></i> Suplidores</a>
-    <a id="navWorks" onclick="abrirVistaOperaciones('works','ops-trabajos', this)"><i class="fas fa-hammer"></i> Trabajos</a>
-    <a id="navIssues" onclick="abrirVistaOperaciones('issues','ops-averias', this)"><i class="fas fa-triangle-exclamation"></i> Averías</a>
-  </div>
-
-
-
-  <div class="menu-section-title">Módulo de RRHH</div>
-  <div class="menu">
-    <a id="navDashboardRrhh" onclick="cambiarVista('dashboard-rrhh', this)"><i class="fas fa-chart-pie"></i> Dashboard RRHH</a>
-    <a id="navSolicitudes" onclick="cambiarVista('solicitudes', this)"><i class="fas fa-file-signature"></i> Solicitudes</a>
-    <a id="navOperadoras" onclick="cambiarVista('operadoras', this)"><i class="fas fa-id-badge"></i> Gestión de empleados/as</a>
-    <a id="navHistorialRrhh" onclick="cambiarVista('historial-rrhh', this)"><i class="fas fa-clock-rotate-left"></i> Historial</a>
-  </div>
-
 </div>
 
 <div class="content">
@@ -3532,8 +3574,7 @@ function cambiarVista(vista, el){
   ].forEach(id=>{ const node=document.getElementById(id); if(node) node.classList.add('hidden'); });
   const target = document.getElementById('vista-' + vista);
   if(target) target.classList.remove('hidden');
-  document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
-  if(el) el.classList.add('active');
+  activateSidebarLink(el, vista);
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
   if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
@@ -9789,6 +9830,49 @@ function openEditModal(id) {
   </script>
 
 <script>
+function setSidebarSectionOpen(sectionName, forceOpen){
+  const groups = document.querySelectorAll('.sidebar-group');
+  groups.forEach(group => {
+    const isTarget = group.dataset.section === sectionName;
+    if (forceOpen && !isTarget) group.classList.remove('is-open');
+    if (isTarget) group.classList.add('is-open');
+  });
+}
+
+function toggleSidebarSection(sectionName){
+  const target = document.querySelector(`.sidebar-group[data-section="${sectionName}"]`);
+  if(!target) return;
+  const willOpen = !target.classList.contains('is-open');
+  document.querySelectorAll('.sidebar-group').forEach(group => group.classList.remove('is-open'));
+  if(willOpen) target.classList.add('is-open');
+}
+
+function sidebarSectionForView(vista){
+  if(['productos','almacenes','entrada','transferencia'].includes(vista)) return 'inventario';
+  if(['agencias','grupos'].includes(vista)) return 'consultas';
+  if(['dashboard-rrhh','operadoras','solicitudes','historial-rrhh'].includes(vista)) return 'rrhh';
+  if(['ops-dashboard','ops-operaciones','ops-historial','ops-reportes','ops-reportes-agencia','ops-reportes-responsable','ops-reportes-tipos','ops-usuarios','ops-suplidores','ops-trabajos','ops-averias'].includes(vista)) return 'operaciones';
+  return 'inventario';
+}
+
+function activateSidebarLink(el, vista){
+  activateSidebarLink(el, vista);
+  const section = sidebarSectionForView(vista);
+  setSidebarSectionOpen(section, true);
+}
+
+function initSidebarNavigation(){
+  const firstActive = document.querySelector('.sidebar-link.active');
+  if(firstActive){
+    const parent = firstActive.closest('.sidebar-group')?.dataset.section;
+    if(parent) setSidebarSectionOpen(parent, true);
+  } else {
+    setSidebarSectionOpen('inventario', true);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initSidebarNavigation);
+
 function cambiarVista(vista, el){
   const ids = [
     'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
@@ -9802,8 +9886,7 @@ function cambiarVista(vista, el){
   const target = document.getElementById('vista-' + vista);
   if(target) target.classList.remove('hidden');
 
-  document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
-  if(el) el.classList.add('active');
+  activateSidebarLink(el, vista);
 
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
   if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
@@ -10180,6 +10263,7 @@ window.addEventListener('DOMContentLoaded', opxInit);
 
 function abrirVistaOperaciones(nombreVista, vistaWrapper, el){
   cambiarVista(vistaWrapper, el);
+  activateSidebarLink(el, vistaWrapper);
   if(typeof showView === 'function') showView(nombreVista);
 }
 </script>
