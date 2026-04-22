@@ -2132,7 +2132,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 <option value="Asignada">Asignada</option>
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
-</select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input class="input" id="editOperationAgency"/></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value" id="editOperationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Evidencias de resultado (imagen o video)</label><input accept="image/*,video/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
+</select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input class="input" id="editOperationAgency" list="editOperationAgencyOptions" placeholder="Selecciona o escribe una agencia" autocomplete="off"/><datalist id="editOperationAgencyOptions"></datalist></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Tipo de trabajo / avería</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value" id="editOperationTypeOptionsValue">Seleccionar opciones</span><span>▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div><div style="margin-top:8px; color: var(--muted); font-size:12px;">Puedes elegir varias opciones.</div></div><div class="field"><label for="editResultImage">Evidencias de resultado (imagen o video)</label><input accept="image/*,video/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
 
 <div id="vista-operadoras" class="hidden">
   <div class="opx-shell">
@@ -2420,14 +2420,29 @@ function getOperationalAgencyOptions() {
     }));
 }
 
+function formatAgencyDisplayValue(value = '') {
+  const agencyRecord = findAgencyRecord(value);
+  if (agencyRecord) return formatAgencyOptionLabel(agencyRecord);
+  const normalizedNumber = normalizeAgencyNumber(value);
+  return normalizedNumber ? `Agencia ${normalizedNumber.padStart(4, '0')}` : String(value || '').trim();
+}
+
 function populateOperationAgencyOptions(selectedValue = '') {
   const input = document.getElementById('operationAgency');
   const datalist = document.getElementById('operationAgencyOptions');
   if (!input || !datalist) return;
-  const normalizedSelected = String(selectedValue || '').trim();
   const options = getOperationalAgencyOptions();
   datalist.innerHTML = options.map((option) => `<option value="${option.value}"></option>`).join('');
-  input.value = normalizedSelected || '';
+  input.value = formatAgencyDisplayValue(selectedValue);
+}
+
+function populateEditOperationAgencyOptions(selectedValue = '') {
+  const input = document.getElementById('editOperationAgency');
+  const datalist = document.getElementById('editOperationAgencyOptions');
+  if (!input || !datalist) return;
+  const options = getOperationalAgencyOptions();
+  datalist.innerHTML = options.map((option) => `<option value="${option.value}"></option>`).join('');
+  input.value = formatAgencyDisplayValue(selectedValue);
 }
 
 function buildAgencyMapsSearchUrl(agencia) {
@@ -2453,26 +2468,44 @@ function formatAgencyGeoText(agencia) {
 
 const BUCKET_NAME = 'reportes-operaciones';
 
-function normalizeAgencyLabel(value = '') {
+function normalizeAgencyNumber(value = '') {
   const raw = String(value || '').trim();
   if (!raw) return '';
   const match = raw.match(/(\d{3,4})/);
-  if (match) return match[1];
-  return raw.replace(/^agencia\s*/i, '').trim();
+  if (!match) return '';
+  const numeric = Number(match[1]);
+  return Number.isFinite(numeric) ? String(numeric) : String(match[1]).replace(/^0+/, '') || '0';
+}
+
+function normalizeAgencyLabel(value = '') {
+  const agencyNumber = normalizeAgencyNumber(value);
+  return agencyNumber ? `Agencia ${agencyNumber.padStart(4, '0')}` : String(value || '').trim();
 }
 
 function findAgencyRecord(value = '') {
-  const agencyNumber = normalizeAgencyLabel(value);
+  const agencyNumber = normalizeAgencyNumber(value);
   if (!agencyNumber) return null;
-  return agencias.find(item => String(item.numero) === String(agencyNumber)) || null;
+  return agencias.find(item => String(Number(item.numero)) === agencyNumber) || null;
 }
 
 function enrichOperationWithAgencyContext(op = {}) {
-  const agencyRecord = findAgencyRecord(op.agency || op.agencia || '');
-  if (!agencyRecord) return { ...op };
+  const sourceValue = op.agency_number || op.agency || op.agencia || op.agencia_display || '';
+  const agencyRecord = findAgencyRecord(sourceValue);
+  const normalizedNumber = normalizeAgencyNumber(sourceValue);
+  const fallbackLabel = normalizeAgencyLabel(sourceValue);
+  if (!agencyRecord) {
+    return {
+      ...op,
+      agency_number: normalizedNumber || op.agency_number || '',
+      agency_label: fallbackLabel || op.agency_label || op.agency || op.agencia_display || op.agencia || ''
+    };
+  }
+  const agencyLabel = agencyRecord.nombre || fallbackLabel || op.agency || op.agencia || '';
   return {
     ...op,
-    agency: agencyRecord.nombre || op.agency || op.agencia || '',
+    agency_number: normalizedNumber || String(Number(agencyRecord.numero)),
+    agency_label: agencyLabel,
+    agency: agencyLabel,
     grupo: agencyRecord.grupo || op.grupo || '',
     nombre_encargado: op.nombre_encargado || agencyRecord.encargado || '',
     created_by: op.created_by || op.nombre_encargado || agencyRecord.encargado || '',
@@ -6291,14 +6324,16 @@ renderTransferencias();
 
     function buildSupabasePayloadFromOperation(op) {
       const normalized = enrichOperationWithAgencyContext(op);
-      const locationAgency = String(normalized.agency || '').trim();
+      const locationAgencyNumber = normalizeAgencyNumber(normalized.agency_number || normalized.agency || normalized.agencia || '');
+      const locationAgencyDisplay = String(normalized.agency_label || normalized.agency || normalized.agencia || '').trim();
       return {
         id: normalized.id,
         code: normalized.code,
         tipo_reporte: normalized.type,
         categoria: normalized.title,
         descripcion: normalized.description,
-        agencia: locationAgency,
+        agencia: locationAgencyNumber,
+        agencia_display: locationAgencyDisplay,
         grupo: normalized.grupo || '',
         nombre_encargado: normalized.nombre_encargado || normalized.created_by || 'Sistema web',
         creado_por: normalized.created_by || normalized.nombre_encargado || getCurrentUserEmail(),
@@ -6333,7 +6368,9 @@ renderTransferencias();
         code: item.code || existing?.code || `REP-${String(fallbackIndex + 1).padStart(4, '0')}`,
         type,
         title,
-        agency: item.agencia || existing?.agency || '',
+        agency: item.agencia_display || item.agencia || existing?.agency_label || existing?.agency || '',
+        agency_number: normalizeAgencyNumber(item.agencia || item.agencia_display || existing?.agency_number || existing?.agency || ''),
+        agency_label: item.agencia_display || normalizeAgencyLabel(item.agencia || existing?.agency_label || existing?.agency || ''),
         technician,
         priority: item.prioridad || existing?.priority || 'Media',
         status: normalizeRemoteStatus(item.estado || existing?.status || 'Pendiente'),
@@ -6602,6 +6639,7 @@ renderTransferencias();
                   realtimeChannel = null;
                 }
                 initializeRealtimeSync();
+    normalizeAgencyFieldsInSupabase();
                 runOperationalRefresh({ silent: true, skipSuccessToast: true });
               }, 3000);
             }
@@ -6649,15 +6687,17 @@ renderTransferencias();
       const type = document.getElementById('operationType').value;
       const status = document.getElementById('operationStatus').value;
       const title = document.getElementById('operationTitle').value.trim();
-      const agency = String(document.getElementById('operationAgency').value || '').trim();
+      const agencyInput = String(document.getElementById('operationAgency').value || '').trim();
+      const agencyNumber = normalizeAgencyNumber(agencyInput);
+      const agency = agencyNumber ? normalizeAgencyLabel(agencyNumber) : agencyInput;
       const technician = (type === 'Trabajo' ? document.getElementById('operationTechnician').value.trim() : normalizeStoredAssignee(document.getElementById('operationTechnician').value.trim(), type)) || 'Sin asignar';
       const priority = document.getElementById('operationPriority').value;
       const description = document.getElementById('operationDescription').value.trim();
       const imageFiles = Array.from(document.getElementById('operationImage').files || []);
       const selectedTypes = getSelectedValues('operationTypeOptions');
 
-      if (!title || !agency || !description) {
-        createError.textContent = 'Completa título, agencia y descripción.';
+      if (!title || !agencyNumber || !description) {
+        createError.textContent = 'Completa título, agencia válida y descripción.';
         createError.classList.remove('hidden');
         return;
       }
@@ -6693,6 +6733,8 @@ renderTransferencias();
         type,
         title,
         agency,
+        agency_number: agencyNumber,
+        agency_label: agency,
         technician,
         priority,
         status,
@@ -7368,7 +7410,7 @@ function openEditModal(id) {
       document.getElementById('editOperationType').value = op.type;
       document.getElementById('editOperationStatus').value = op.status;
       document.getElementById('editOperationTitle').value = op.title;
-      document.getElementById('editOperationAgency').value = op.agency || '';
+      populateEditOperationAgencyOptions(op.agency_label || op.agency || op.agencia || '');
       document.getElementById('editOperationPriority').value = op.priority;
       document.getElementById('editOperationDescription').value = op.description;
       document.getElementById('editResultImage').value = '';
@@ -7412,7 +7454,9 @@ function openEditModal(id) {
       const newType = document.getElementById('editOperationType').value;
       const newStatus = document.getElementById('editOperationStatus').value;
       const newTitle = document.getElementById('editOperationTitle').value.trim();
-      const newAgency = document.getElementById('editOperationAgency').value.trim();
+      const newAgencyInput = document.getElementById('editOperationAgency').value.trim();
+      const newAgencyNumber = normalizeAgencyNumber(newAgencyInput);
+      const newAgency = newAgencyNumber ? normalizeAgencyLabel(newAgencyNumber) : newAgencyInput;
       const newTechnician = (newType === 'Trabajo' ? document.getElementById('editOperationTechnician').value.trim() : normalizeStoredAssignee(document.getElementById('editOperationTechnician').value.trim(), newType)) || 'Sin asignar';
       const newPriority = document.getElementById('editOperationPriority').value;
       const newDescription = document.getElementById('editOperationDescription').value.trim();
@@ -7420,8 +7464,8 @@ function openEditModal(id) {
       const resultImageFiles = Array.from(document.getElementById('editResultImage').files || []);
       const currentEvidence = getSafeMediaList(operations[index].resultImages);
 
-      if (!newTitle || !newAgency || !newDescription) {
-        alert('Completa título, agencia y descripción antes de guardar.');
+      if (!newTitle || !newAgencyNumber || !newDescription) {
+        alert('Completa título, agencia válida y descripción antes de guardar.');
         return;
       }
 
@@ -7459,6 +7503,8 @@ function openEditModal(id) {
       operations[index].status = newStatus;
       operations[index].title = newTitle;
       operations[index].agency = newAgency;
+      operations[index].agency_number = newAgencyNumber;
+      operations[index].agency_label = newAgency;
       operations[index].technician = newTechnician;
       operations[index].priority = newPriority || operations[index].priority || 'Media';
       operations[index].description = newDescription;
