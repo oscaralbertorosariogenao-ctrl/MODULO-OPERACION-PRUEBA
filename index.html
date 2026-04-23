@@ -197,7 +197,7 @@ textarea{resize:vertical;min-height:90px}
 .agency-gallery-meta{padding:12px 14px}
 .agency-gallery-meta strong{display:block;color:var(--title-dark);margin-bottom:4px}
 .agency-gallery-meta span{display:block;color:var(--text-soft);font-size:13px}
-.agency-structure-tools{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}.agency-structure-kpis{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:12px;flex:1}.agency-structure-kpi{background:#f8fbff;border:1px solid #d9e7f5;border-radius:16px;padding:14px 16px}.agency-structure-kpi span{display:block;font-size:12px;font-weight:700;color:#6f8ca7;text-transform:uppercase;letter-spacing:.04em}.agency-structure-kpi strong{display:block;font-size:24px;color:var(--title-dark);margin-top:6px}.agency-structure-helper{min-width:320px;flex:1;background:linear-gradient(135deg,#f7fbff,#eef6fd);border:1px solid #d9e7f5;border-radius:16px;padding:14px 16px;color:#46637d}.agency-structure-helper strong{display:block;color:var(--title-dark);margin-bottom:4px}.agency-pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}.agency-pill.green{background:#e8f7ee;color:#1d7a46}.agency-pill.orange{background:#fff3e7;color:#b96a11}.agency-pill.red{background:#fdecec;color:#bf2f2f}.agency-pill.blue{background:#e9f2ff;color:#285ea8}.agency-pill.gray{background:#edf1f5;color:#607282}.agency-file-stack{display:flex;flex-direction:column;gap:4px}.agency-file-link{display:inline-flex;align-items:center;gap:6px;color:#0b66c3;font-weight:700;text-decoration:none}.agency-file-link:hover{text-decoration:underline}.agency-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}.agency-modal-grid .full{grid-column:1/-1}.agency-modal-hint{font-size:12px;color:#6f8ca7;margin-top:6px}.agency-preview-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px dashed #bdd3e8;border-radius:999px;background:#f8fbff;color:#4e6a84;font-size:12px;font-weight:700;margin-right:8px;margin-top:8px}.agency-preview-chip button{background:none;border:none;color:#bf2f2f;font-size:12px;font-weight:800;cursor:pointer;padding:0}.agency-flag-grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:14px}
+.agency-flag-grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:14px}
 .agency-flag-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px}
 .agency-flag-card h5{margin:0 0 10px;color:var(--title-dark);font-size:14px}
 .agency-flag-card select,.agency-flag-card input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
@@ -1940,6 +1940,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
           <button type="button" class="lev-btn secondary" id="levExportBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
           <button type="button" class="lev-btn secondary" id="levExportExcelBtn"><i class="fas fa-file-excel"></i> Exportar Excel</button>
           <button type="button" class="lev-btn ghost" id="levResetBtn"><i class="fas fa-rotate-left"></i> Restablecer demo</button>
+          <button type="button" class="lev-btn secondary" id="levSimulateJotformBtn"><i class="fas fa-wand-magic-sparkles"></i> Simular envío Jotform</button>
           <button type="button" class="lev-btn primary" id="levOpenCreateBtn"><i class="fas fa-plus"></i> Nuevo registro rápido</button>
         </div>
       </div>
@@ -2422,40 +2423,25 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <div class="agency-form-card">
           <div class="agency-form-card-head">
             <h4>Estructura</h4>
-            <p>Historial automático de trabajos físicos realizados a la agencia desde Operaciones &gt; Trabajos.</p>
+            <p>Lectura física y visual del punto para mantenimiento preventivo y seguimiento operativo.</p>
           </div>
           <div class="agency-form-card-body">
-            <div class="agency-structure-tools">
-              <div class="agency-structure-kpis">
-                <div class="agency-structure-kpi"><span>Trabajos registrados</span><strong id="agencyStructureCount">0</strong></div>
-                <div class="agency-structure-kpi"><span>Completados</span><strong id="agencyStructureCompleted">0</strong></div>
-                <div class="agency-structure-kpi"><span>En proceso</span><strong id="agencyStructureOpen">0</strong></div>
-              </div>
-              <div class="agency-structure-helper">
-                <strong>Conectado con Operaciones</strong>
-                <span>Aquí se reflejan automáticamente los trabajos creados para esta agencia. Desde esta misma pestaña puedes adjuntar factura, PDF soporte e imágenes complementarias del trabajo.</span>
-              </div>
+            <div class="agency-form-grid two">
+              <div class="agency-form-field"><label>Toldo</label><select id="agencyStructToldo"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
+              <div class="agency-form-field"><label>Techo</label><select id="agencyStructTecho"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
+              <div class="agency-form-field"><label>Pintura / filtraciones</label><select id="agencyStructPintura"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
+              <div class="agency-form-field"><label>Piso</label><select id="agencyStructPiso"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
+              <div class="agency-form-field"><label>Puerta enrollable / eléctrica</label><select id="agencyStructPuerta"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
+              <div class="agency-form-field"><label>Counter</label><select id="agencyStructCounter"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
+              <div class="agency-form-field"><label>Área de cliente</label><select id="agencyStructCliente"><option>Ordenada</option><option>Requiere atención</option><option>Crítica</option></select></div>
+              <div class="agency-form-field"><label>Área de empleada</label><select id="agencyStructEmpleada"><option>Ordenada</option><option>Requiere atención</option><option>Crítica</option></select></div>
+              <div class="agency-form-field full"><label>Comentario estructural</label><textarea id="agencyStructComentario"></textarea></div>
             </div>
-            <table class="detail-table">
-              <thead>
-                <tr>
-                  <th>Trabajo realizado</th>
-                  <th>Suplidor</th>
-                  <th>Monto</th>
-                  <th>Imágenes</th>
-                  <th>Factura</th>
-                  <th>Ver PDFs</th>
-                  <th>Estado</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody id="agencyStructureBody"></tbody>
-            </table>
           </div>
         </div>
       </div>
 
-<div class="agency-section" data-section="legal">
+      <div class="agency-section" data-section="legal">
         <div class="agency-form-card">
           <div class="agency-form-card-head">
             <h4>Legal</h4>
@@ -2534,33 +2520,6 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <button class="btn-secondary" type="button" onclick="cerrarDetalleAgencia()">Cerrar</button>
         <button class="btn" type="button" onclick="guardarDetalleAgenciaCompleta()">Guardar cambios pendientes</button>
       </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal" id="agencyStructureModal">
-  <div class="modal-content" style="max-width:760px">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px">
-      <div>
-        <h3 id="agencyStructureModalTitle" style="margin-bottom:6px">Adjuntar soporte de trabajo</h3>
-        <p id="agencyStructureModalSub" style="margin:0;color:#6f8ca7">Completa factura, PDF e imágenes complementarias del trabajo estructural.</p>
-      </div>
-      <button class="btn-secondary" type="button" onclick="cerrarAgencyStructureModal()"><i class="fas fa-times"></i> Cerrar</button>
-    </div>
-    <div class="agency-modal-grid">
-      <div class="agency-form-field"><label>Trabajo</label><input id="agencyStructureWorkTitle" type="text" readonly></div>
-      <div class="agency-form-field"><label>Estado</label><input id="agencyStructureWorkStatus" type="text" readonly></div>
-      <div class="agency-form-field"><label>Suplidor</label><input id="agencyStructureSupplier" type="text" placeholder="Nombre del suplidor o técnico"></div>
-      <div class="agency-form-field"><label>Monto</label><input id="agencyStructureAmount" type="number" step="0.01" placeholder="Ej. 5000"></div>
-      <div class="agency-form-field full"><label>Imágenes complementarias</label><input id="agencyStructureImages" type="file" accept="image/*" multiple><div class="agency-modal-hint">Puedes cargar fotos del trabajo terminado o evidencia adicional.</div><div id="agencyStructureImagesPreview"></div></div>
-      <div class="agency-form-field"><label>Factura</label><input id="agencyStructureInvoice" type="file" accept="application/pdf,image/*"><div id="agencyStructureInvoicePreview"></div></div>
-      <div class="agency-form-field"><label>PDF soporte</label><input id="agencyStructurePdf" type="file" accept="application/pdf"><div id="agencyStructurePdfPreview"></div></div>
-      <div class="agency-form-field full"><label>Observación del trabajo</label><textarea id="agencyStructureNote" placeholder="Detalle complementario del trabajo realizado en la agencia"></textarea></div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
-      <button class="btn btn-secondary" type="button" onclick="cerrarAgencyStructureModal()">Cancelar</button>
-      <button class="btn" type="button" onclick="guardarAgencyStructureModal()">Guardar soporte</button>
     </div>
   </div>
 </div>
@@ -5535,7 +5494,15 @@ function ensureAgencyDetailDefaults(agencia){
     tipoAgencia: agencia.detalle.tipoAgencia || 'Regular',
     observacion: agencia.detalle.observacion || '',
     estructura: {
-      extras: agencia.detalle.estructura?.extras || {}
+      toldo: agencia.detalle.estructura?.toldo || 'Buen Estado',
+      techo: agencia.detalle.estructura?.techo || 'Buen Estado',
+      pintura: agencia.detalle.estructura?.pintura || 'Buen Estado',
+      piso: agencia.detalle.estructura?.piso || 'Buen Estado',
+      puerta: agencia.detalle.estructura?.puerta || 'Buen Estado',
+      counter: agencia.detalle.estructura?.counter || 'Buen Estado',
+      cliente: agencia.detalle.estructura?.cliente || 'Ordenada',
+      empleada: agencia.detalle.estructura?.empleada || 'Ordenada',
+      comentario: agencia.detalle.estructura?.comentario || ''
     },
     legal: {
       propietario: agencia.detalle.legal?.propietario || '',
@@ -5598,6 +5565,15 @@ function cargarFormularioDetalleAgencia(agencia){
   document.getElementById('agencyFieldLongitud').value = agencia.longitud ?? '';
   document.getElementById('detalleAgenciaGeoTexto').value = formatAgencyGeoText(agencia);
   document.getElementById('agencyFieldObservacion').value = d.observacion || '';
+  document.getElementById('agencyStructToldo').value = d.estructura.toldo;
+  document.getElementById('agencyStructTecho').value = d.estructura.techo;
+  document.getElementById('agencyStructPintura').value = d.estructura.pintura;
+  document.getElementById('agencyStructPiso').value = d.estructura.piso;
+  document.getElementById('agencyStructPuerta').value = d.estructura.puerta;
+  document.getElementById('agencyStructCounter').value = d.estructura.counter;
+  document.getElementById('agencyStructCliente').value = d.estructura.cliente;
+  document.getElementById('agencyStructEmpleada').value = d.estructura.empleada;
+  document.getElementById('agencyStructComentario').value = d.estructura.comentario || '';
   document.getElementById('agencyLegalPropietario').value = d.legal.propietario || '';
   document.getElementById('agencyLegalDocumento').value = d.legal.documento || '';
   document.getElementById('agencyLegalTelefono').value = d.legal.telefono || '';
@@ -5621,269 +5597,7 @@ function cargarFormularioDetalleAgencia(agencia){
   cargarVistaPreviaAgencia('galleryExteriorPreview', d.galeria.exterior, 'Exterior de la agencia');
   cargarVistaPreviaAgencia('galleryClientePreview', d.galeria.cliente, 'Zona de cliente');
   cargarVistaPreviaAgencia('galleryEmpleadaPreview', d.galeria.empleada, 'Zona de empleada');
-  renderAgencyStructureHistory();
 }
-
-
-
-function getAgencyStructureOperationRecords(agencia){
-  if(!agencia) return [];
-  let operations = [];
-  try { operations = JSON.parse(localStorage.getItem('operations_records') || '[]'); } catch(_err){ operations = []; }
-  const currentNumber = normalizeAgencyNumber(agencia.numero || agencia.nombre || '');
-  return (Array.isArray(operations) ? operations : [])
-    .map(op => typeof enrichOperationWithAgencyContext === 'function' ? enrichOperationWithAgencyContext(op) : op)
-    .filter(op => String(op.type || '').trim().toLowerCase() === 'trabajo')
-    .filter(op => {
-      const opNumber = normalizeAgencyNumber(op.agency_number || op.agency || op.agencia || '');
-      return currentNumber && opNumber === currentNumber;
-    })
-    .sort((a,b) => new Date(b.completedAt || b.createdAt || 0) - new Date(a.completedAt || a.createdAt || 0));
-}
-
-function formatAgencyStructureMoney(value){
-  const amount = Number(value || 0);
-  if(!Number.isFinite(amount) || amount <= 0) return '—';
-  try {
-    return new Intl.NumberFormat('es-DO',{style:'currency',currency:'DOP',maximumFractionDigits:2}).format(amount);
-  } catch(_err){
-    return `RD$ ${amount.toFixed(2)}`;
-  }
-}
-
-function getAgencyStructureStatusClass(status=''){
-  const normalized = String(status || '').toLowerCase();
-  if(normalized.includes('complet')) return 'green';
-  if(normalized.includes('proceso')) return 'orange';
-  if(normalized.includes('asign')) return 'blue';
-  if(normalized.includes('pend')) return 'gray';
-  return 'red';
-}
-
-function getAgencyStructureReadableTitle(op={}){
-  const selected = Array.isArray(op.selectedTypes) ? op.selectedTypes.filter(Boolean) : [];
-  if(selected.length) return selected.join(', ');
-  return String(op.title || op.description || 'Trabajo estructural').trim() || 'Trabajo estructural';
-}
-
-function getAgencyStructureExtraStore(agencia){
-  ensureAgencyDetailDefaults(agencia);
-  if(!agencia.detalle.estructura || typeof agencia.detalle.estructura !== 'object') agencia.detalle.estructura = {};
-  if(!agencia.detalle.estructura.extras || typeof agencia.detalle.estructura.extras !== 'object') agencia.detalle.estructura.extras = {};
-  return agencia.detalle.estructura.extras;
-}
-
-function buildAgencyStructureRows(agencia){
-  const extras = getAgencyStructureExtraStore(agencia);
-  return getAgencyStructureOperationRecords(agencia).map(op => {
-    const extra = extras[op.id] || {};
-    const opImages = []
-      .concat(Array.isArray(op.images) ? op.images : [])
-      .concat(Array.isArray(op.resultImages) ? op.resultImages : [])
-      .filter(Boolean);
-    const extraImages = Array.isArray(extra.images) ? extra.images : [];
-    return {
-      id: op.id,
-      code: op.code || op.id,
-      title: getAgencyStructureReadableTitle(op),
-      supplier: String(extra.supplier || op.technician || op.owner || 'No registrado').trim() || 'No registrado',
-      amount: extra.amount || op.amount || op.monto || '',
-      images: opImages,
-      extraImages,
-      invoice: extra.invoice || null,
-      pdf: extra.pdf || null,
-      note: extra.note || '',
-      status: op.status || 'Pendiente',
-      date: op.completedAt || op.createdAt || '',
-      operation: op
-    };
-  });
-}
-
-function renderAgencyStructureHistory(){
-  if(agenciaDetalleActualIndex === null) return;
-  const agencia = agencias[agenciaDetalleActualIndex];
-  const rows = buildAgencyStructureRows(agencia);
-  const body = document.getElementById('agencyStructureBody');
-  if(!body) return;
-  const total = rows.length;
-  const completed = rows.filter(row => String(row.status || '').toLowerCase().includes('complet')).length;
-  const open = rows.filter(row => !String(row.status || '').toLowerCase().includes('complet')).length;
-  const setText = (id, value) => { const el = document.getElementById(id); if(el) el.textContent = String(value); };
-  setText('agencyStructureCount', total);
-  setText('agencyStructureCompleted', completed);
-  setText('agencyStructureOpen', open);
-  if(!rows.length){
-    body.innerHTML = `<tr><td colspan="8"><div class="hrx-empty">No fueron encontrados trabajos de estructura física para esta agencia en Operaciones &gt; Trabajos.</div></td></tr>`;
-    return;
-  }
-  body.innerHTML = rows.map(row => {
-    const imageCount = (row.images?.length || 0) + (row.extraImages?.length || 0);
-    const invoiceHtml = row.invoice ? `<a class="agency-file-link" href="${row.invoice.url}" target="_blank" rel="noopener"><i class="fas fa-file-invoice"></i> ${row.invoice.name || 'Factura'}</a>` : '<span style="color:#6f8ca7">No cargada</span>';
-    const pdfHtml = row.pdf ? `<a class="agency-file-link" href="${row.pdf.url}" target="_blank" rel="noopener"><i class="fas fa-file-pdf"></i> ${row.pdf.name || 'PDF soporte'}</a>` : '<span style="color:#6f8ca7">No cargado</span>';
-    return `<tr>
-      <td><strong>${row.title}</strong><div style="color:#6f8ca7;font-size:12px;margin-top:4px">${row.code}${row.date ? ' · ' + formatDate(row.date) : ''}</div>${row.note ? `<div style="margin-top:6px;color:#46637d;font-size:12px">${row.note}</div>` : ''}</td>
-      <td>${row.supplier}</td>
-      <td>${formatAgencyStructureMoney(row.amount)}</td>
-      <td>${imageCount ? `<span class="agency-pill blue">${imageCount} archivo${imageCount!==1?'s':''}</span>` : '<span style="color:#6f8ca7">Sin imágenes</span>'}</td>
-      <td><div class="agency-file-stack">${invoiceHtml}</div></td>
-      <td><div class="agency-file-stack">${pdfHtml}</div></td>
-      <td><span class="agency-pill ${getAgencyStructureStatusClass(row.status)}">${row.status}</span></td>
-      <td>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-secondary" type="button" onclick="abrirAgencyStructureModal('${row.id}')"><i class="fas fa-paperclip"></i> Adjuntar</button>
-          <button class="btn" type="button" onclick="verAgencyStructureDetalle('${row.id}')"><i class="fas fa-eye"></i> Ver</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function readAgencyStructureFiles(input){
-  const files = Array.from(input?.files || []);
-  if(!files.length) return Promise.resolve([]);
-  return Promise.all(files.map(file => new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => resolve({ name: file.name, type: file.type, url: String(reader.result || '') });
-    reader.onerror = () => resolve(null);
-    reader.readAsDataURL(file);
-  }))).then(items => items.filter(Boolean));
-}
-
-function renderAgencyStructureFilePreview(containerId, items, type='images'){
-  const box = document.getElementById(containerId);
-  if(!box) return;
-  const list = Array.isArray(items) ? items.filter(Boolean) : (items ? [items] : []);
-  if(!list.length){ box.innerHTML = ''; return; }
-  box.innerHTML = list.map((item, index) => `<span class="agency-preview-chip">${type==='images' ? 'Imagen' : type==='invoice' ? 'Factura' : 'PDF'}: ${item.name || 'archivo'}<button type="button" onclick="removeAgencyStructurePreview('${containerId}', ${index})"><i class="fas fa-times"></i></button></span>`).join('');
-}
-
-function removeAgencyStructurePreview(containerId, index){
-  const modal = document.getElementById('agencyStructureModal');
-  if(!modal) return;
-  if(containerId === 'agencyStructureImagesPreview'){
-    const list = JSON.parse(modal.dataset.imagesDraft || '[]');
-    list.splice(index,1);
-    modal.dataset.imagesDraft = JSON.stringify(list);
-    renderAgencyStructureFilePreview(containerId, list, 'images');
-  } else if(containerId === 'agencyStructureInvoicePreview'){
-    modal.dataset.invoiceDraft = JSON.stringify([]);
-    renderAgencyStructureFilePreview(containerId, [], 'invoice');
-  } else if(containerId === 'agencyStructurePdfPreview'){
-    modal.dataset.pdfDraft = JSON.stringify([]);
-    renderAgencyStructureFilePreview(containerId, [], 'pdf');
-  }
-}
-
-function abrirAgencyStructureModal(operationId){
-  if(agenciaDetalleActualIndex === null) return;
-  const agencia = agencias[agenciaDetalleActualIndex];
-  const row = buildAgencyStructureRows(agencia).find(item => item.id === operationId);
-  if(!row) return;
-  const modal = document.getElementById('agencyStructureModal');
-  if(!modal) return;
-  modal.dataset.operationId = operationId;
-  document.getElementById('agencyStructureModalTitle').textContent = 'Adjuntar soporte de trabajo';
-  document.getElementById('agencyStructureModalSub').textContent = `Trabajo vinculado automáticamente a ${agencia.nombre}.`;
-  document.getElementById('agencyStructureWorkTitle').value = row.title;
-  document.getElementById('agencyStructureWorkStatus').value = row.status;
-  document.getElementById('agencyStructureSupplier').value = row.supplier === 'No registrado' ? '' : row.supplier;
-  document.getElementById('agencyStructureAmount').value = row.amount || '';
-  document.getElementById('agencyStructureNote').value = row.note || '';
-  document.getElementById('agencyStructureImages').value = '';
-  document.getElementById('agencyStructureInvoice').value = '';
-  document.getElementById('agencyStructurePdf').value = '';
-  modal.dataset.imagesDraft = JSON.stringify(row.extraImages || []);
-  modal.dataset.invoiceDraft = JSON.stringify(row.invoice ? [row.invoice] : []);
-  modal.dataset.pdfDraft = JSON.stringify(row.pdf ? [row.pdf] : []);
-  renderAgencyStructureFilePreview('agencyStructureImagesPreview', row.extraImages || [], 'images');
-  renderAgencyStructureFilePreview('agencyStructureInvoicePreview', row.invoice ? [row.invoice] : [], 'invoice');
-  renderAgencyStructureFilePreview('agencyStructurePdfPreview', row.pdf ? [row.pdf] : [], 'pdf');
-  modal.style.display = 'flex';
-}
-
-function cerrarAgencyStructureModal(){
-  const modal = document.getElementById('agencyStructureModal');
-  if(modal) modal.style.display = 'none';
-}
-
-async function guardarAgencyStructureModal(){
-  if(agenciaDetalleActualIndex === null) return;
-  const agencia = agencias[agenciaDetalleActualIndex];
-  const modal = document.getElementById('agencyStructureModal');
-  const operationId = modal?.dataset.operationId || '';
-  if(!operationId) return;
-  const extras = getAgencyStructureExtraStore(agencia);
-  const current = extras[operationId] || {};
-  const images = JSON.parse(modal.dataset.imagesDraft || '[]');
-  const invoiceList = JSON.parse(modal.dataset.invoiceDraft || '[]');
-  const pdfList = JSON.parse(modal.dataset.pdfDraft || '[]');
-  const newImages = await readAgencyStructureFiles(document.getElementById('agencyStructureImages'));
-  const newInvoice = await readAgencyStructureFiles(document.getElementById('agencyStructureInvoice'));
-  const newPdf = await readAgencyStructureFiles(document.getElementById('agencyStructurePdf'));
-  extras[operationId] = {
-    ...current,
-    supplier: document.getElementById('agencyStructureSupplier').value.trim(),
-    amount: document.getElementById('agencyStructureAmount').value,
-    note: document.getElementById('agencyStructureNote').value.trim(),
-    images: newImages.length ? newImages : images,
-    invoice: newInvoice[0] || invoiceList[0] || null,
-    pdf: newPdf[0] || pdfList[0] || null
-  };
-  agencias.sort((a,b)=>Number(a.numero)-Number(b.numero));
-  renderAgencias();
-  renderAgencyStructureHistory();
-  cerrarAgencyStructureModal();
-  alert('Soporte del trabajo guardado correctamente.');
-}
-
-function verAgencyStructureDetalle(operationId){
-  if(agenciaDetalleActualIndex === null) return;
-  const agencia = agencias[agenciaDetalleActualIndex];
-  const row = buildAgencyStructureRows(agencia).find(item => item.id === operationId);
-  if(!row) return;
-  const parts = [
-    `Trabajo: ${row.title}`,
-    `Código: ${row.code}`,
-    `Estado: ${row.status}`,
-    `Suplidor: ${row.supplier}`,
-    `Monto: ${formatAgencyStructureMoney(row.amount)}`,
-    `Imágenes registradas: ${(row.images?.length || 0) + (row.extraImages?.length || 0)}`,
-    `Factura: ${row.invoice ? row.invoice.name || 'Cargada' : 'No cargada'}`,
-    `PDF: ${row.pdf ? row.pdf.name || 'Cargado' : 'No cargado'}`
-  ];
-  if(row.note) parts.push(`Observación: ${row.note}`);
-  alert(parts.join('\n'));
-}
-
-document.getElementById('agencyStructureImages')?.addEventListener('change', async (event) => {
-  const modal = document.getElementById('agencyStructureModal');
-  if(!modal) return;
-  const current = JSON.parse(modal.dataset.imagesDraft || '[]');
-  const incoming = await readAgencyStructureFiles(event.target);
-  const merged = current.concat(incoming);
-  modal.dataset.imagesDraft = JSON.stringify(merged);
-  renderAgencyStructureFilePreview('agencyStructureImagesPreview', merged, 'images');
-  event.target.value = '';
-});
-
-document.getElementById('agencyStructureInvoice')?.addEventListener('change', async (event) => {
-  const modal = document.getElementById('agencyStructureModal');
-  if(!modal) return;
-  const incoming = await readAgencyStructureFiles(event.target);
-  modal.dataset.invoiceDraft = JSON.stringify(incoming.slice(0,1));
-  renderAgencyStructureFilePreview('agencyStructureInvoicePreview', incoming.slice(0,1), 'invoice');
-  event.target.value = '';
-});
-
-document.getElementById('agencyStructurePdf')?.addEventListener('change', async (event) => {
-  const modal = document.getElementById('agencyStructureModal');
-  if(!modal) return;
-  const incoming = await readAgencyStructureFiles(event.target);
-  modal.dataset.pdfDraft = JSON.stringify(incoming.slice(0,1));
-  renderAgencyStructureFilePreview('agencyStructurePdfPreview', incoming.slice(0,1), 'pdf');
-  event.target.value = '';
-});
 
 function cambiarSeccionAgencia(seccion, el){
   document.querySelectorAll('.agency-master-tab').forEach(btn => btn.classList.remove('active'));
@@ -5911,7 +5625,17 @@ function guardarDetalleAgenciaCompleta(){
   agencia.detalle.estadoOperativo = document.getElementById('agencyFieldEstadoOperativo').value;
   agencia.detalle.tipoAgencia = document.getElementById('agencyFieldTipoAgencia').value;
   agencia.detalle.observacion = document.getElementById('agencyFieldObservacion').value.trim();
-  agencia.detalle.estructura = agencia.detalle.estructura || { extras: {} };
+  agencia.detalle.estructura = {
+    toldo: document.getElementById('agencyStructToldo').value,
+    techo: document.getElementById('agencyStructTecho').value,
+    pintura: document.getElementById('agencyStructPintura').value,
+    piso: document.getElementById('agencyStructPiso').value,
+    puerta: document.getElementById('agencyStructPuerta').value,
+    counter: document.getElementById('agencyStructCounter').value,
+    cliente: document.getElementById('agencyStructCliente').value,
+    empleada: document.getElementById('agencyStructEmpleada').value,
+    comentario: document.getElementById('agencyStructComentario').value.trim()
+  };
   agencia.detalle.legal = {
     propietario: document.getElementById('agencyLegalPropietario').value.trim(),
     documento: document.getElementById('agencyLegalDocumento').value.trim(),
@@ -6015,7 +5739,6 @@ function verDetalleAgencia(i){
   document.querySelectorAll('.agency-section').forEach((section, idx) => section.classList.toggle('active', idx === 0));
   cargarFormularioDetalleAgencia(agencia);
   renderDetalleAgenciaInventario();
-  renderAgencyStructureHistory();
   document.getElementById('modalDetalleAgencia').style.display = 'flex';
 }
 
@@ -11397,6 +11120,159 @@ function levBuildEquipmentFromForm(){
 function levBuildGalleryFromForm(){
   return LEV_GALLERY_FIELDS.map(label => ({ label, url: document.getElementById(`levGallery_${levKey(label)}`)?.value || '' })).filter(item => item.url || item.label);
 }
+function levCreateSimulatedJotformRecord(payload = {}){
+  const nextCode = levCode(levRecords.length + 1);
+  const agency = String(payload.agency || '').trim() || '1034';
+  const group = String(payload.group || '').trim() || '48';
+  const technician = String(payload.technician || '').trim() || 'Luis Regalado';
+  const visitDate = String(payload.visitDate || '').trim() || new Date().toISOString().slice(0,10);
+  const displayAgency = agency.padStart(4,'0');
+  const publicidades = payload.publicidades || 'Aceptable';
+  const puertaEstado = payload.puertaEstado || 'Mal Estado';
+  const puertaProblema = payload.puertaProblema || 'Está de engrasar, muy dura.';
+  const findingsCount = [/aceptable|regular|mal estado|cr[ií]tico/i.test(publicidades) ? 1 : 0, /aceptable|regular|mal estado|cr[ií]tico/i.test(puertaEstado) ? 1 : 0].reduce((a,b)=>a+b,0) || 1;
+  return levNormalizeItem({
+    id:`lev-jotform-sim-${agency}-${Date.now()}`,
+    code: nextCode,
+    category:'Arqueo de agencia',
+    type:'Levantamiento de Agencia · Jotform demo',
+    agency,
+    group,
+    technician,
+    responsible:technician,
+    visitDate,
+    submittedAt: levNow(),
+    workflowStatus:'Pendiente de revisión',
+    overallStatus: findingsCount >= 2 ? 'Bueno con observaciones menores' : 'Bueno',
+    priority: /mal estado|cr[ií]tico/i.test(puertaEstado) ? 'Alta' : 'Media',
+    findingsCount,
+    evidenceCount:0,
+    executiveSummary:`Recepción simulada desde Jotform para la agencia ${displayAgency}. La evaluación general muestra condiciones estables en fachada, eléctrico, mobiliario y equipos básicos, con observaciones puntuales registradas en el formulario.`,
+    findings:`Publicidades: ${publicidades}. Puerta enrollable/elétrica: ${puertaEstado}${puertaProblema ? ` (${puertaProblema})` : ''}. El resto del bloque principal se mantiene en buen estado en esta simulación.`,
+    recommendations:`Validar en la agencia ${displayAgency} los puntos marcados en el formulario. Si la puerta enrollable/elétrica mantiene la condición reportada, convertirlo en Trabajo dentro de Operaciones.`,
+    nextAction:`Seguimiento operativo para la agencia ${displayAgency} según evaluación recibida desde formulario.`,
+    structure:[
+      {item:'Toldo', state:'Buen Estado', observation:''},
+      {item:'Pecho', state:'Buen Estado', observation:''},
+      {item:'Publicidades', state:publicidades, observation:''},
+      {item:'Pintura / Filtraciones', state:'Buen Estado', observation:''},
+      {item:'Piso', state:'Buen Estado', observation:''},
+      {item:'Hierros / Cristales', state:'Buen Estado', observation:''},
+      {item:'Puerta enrollable / Eléctrica', state:puertaEstado, observation:puertaProblema},
+      {item:'Caja registradora / Gaveta', state:'Buen Estado', observation:''},
+      {item:'Abanico', state:'Buen Estado', observation:''},
+      {item:'Taburete', state:'Buen Estado', observation:''}
+    ],
+    electrical:[
+      {item:'Cables de la calle', state:'Buen Estado', observation:''},
+      {item:'Estructura eléctrica', state:'Buen Estado', observation:''},
+      {item:'Conectores', state:'Buen Estado', observation:''},
+      {item:'Fuentes y cables de equipos', state:'Buen Estado', observation:''},
+      {item:'Luces', state:'Buen Estado', observation:''}
+    ],
+    equipment:[
+      {name:'Inversor', available:'Sí tiene', description:'Registrado en formulario base', state:'Buen Estado', photoLabel:''},
+      {name:'Baterías', available:'Sí tiene', description:'Registrado en formulario base', state:'Buen Estado', photoLabel:''},
+      {name:'Máquina de venta', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
+      {name:'Printer', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
+      {name:'Scanner', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
+      {name:'2da Pantalla', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
+      {name:'Pantalla ATM', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''}
+    ],
+    gallery:[
+      {label:'Exterior de la agencia', url:''},
+      {label:'Zona de cliente', url:''},
+      {label:'Zona de empleada', url:''}
+    ],
+    agencyObservation:`Simulación de levantamiento Jotform cargada para la agencia ${displayAgency}. Técnico: ${technician}. Grupo: ${group}.`,
+    diagnostics:{structure:'Bueno', electrical:'Bueno', equipment:'Bueno', incidents:`${findingsCount} observación${findingsCount !== 1 ? 'es' : ''}`, recommendation:'Seguimiento preventivo'},
+    actions:[
+      {title:'Revisar puntos observados', description:`Validar en la agencia ${displayAgency} los ítems marcados en el formulario de prueba.`}
+    ],
+    createdAt: levNow(),
+    updatedAt: levNow()
+  });
+}
+function levSyncAgencyFromRecord(record){
+  const numero = String(record?.agency || '').trim();
+  if(!numero) return null;
+  let agencia = agencias.find(item => String(Number(item.numero)) === String(Number(numero)));
+  const grupoTexto = String(record?.group || '').trim();
+  const grupoLabel = grupoTexto ? (grupoTexto.toLowerCase().includes('grupo') ? grupoTexto : `Grupo ${grupoTexto.padStart(2,'0')}`) : 'Grupo 00';
+  if(!agencia){
+    agencia = createAgencyRecord(Number(numero), grupoLabel, record.technician || 'Sin encargado');
+    agencias.push(agencia);
+  }
+  ensureAgencyDetailDefaults(agencia);
+  agencia.nombre = `Agencia ${String(numero).padStart(4,'0')}`;
+  agencia.grupo = grupoLabel;
+  agencia.encargado = record.technician || agencia.encargado;
+  agencia.detalle.go = agencia.detalle.go || String(numero).padStart(4,'0');
+  agencia.detalle.ltk = agencia.detalle.ltk || `LTK-${String(numero).padStart(4,'0')}`;
+  agencia.detalle.observacion = record.agencyObservation || record.executiveSummary || agencia.detalle.observacion;
+  agencia.detalle.parametros.tecnico = record.technician || agencia.detalle.parametros.tecnico;
+  agencia.detalle.parametros.ultimaVisita = record.visitDate || agencia.detalle.parametros.ultimaVisita;
+  const structureMap = {};
+  (record.structure || []).forEach(row => { structureMap[row.item] = row.state; });
+  if(structureMap['Toldo']) agencia.detalle.estructura.toldo = structureMap['Toldo'];
+  if(structureMap['Pecho']) agencia.detalle.estructura.techo = structureMap['Pecho'];
+  if(structureMap['Pintura / Filtraciones']) agencia.detalle.estructura.pintura = structureMap['Pintura / Filtraciones'];
+  if(structureMap['Piso']) agencia.detalle.estructura.piso = structureMap['Piso'];
+  if(structureMap['Puerta enrollable / Eléctrica']) agencia.detalle.estructura.puerta = structureMap['Puerta enrollable / Eléctrica'];
+  if(structureMap['Caja registradora / Gaveta']) agencia.detalle.estructura.counter = structureMap['Caja registradora / Gaveta'];
+  agencia.detalle.estructura.comentario = record.findings || agencia.detalle.estructura.comentario;
+  const galleryMap = {};
+  (record.gallery || []).forEach(row => { galleryMap[row.label] = row.url; });
+  if(galleryMap['Exterior de la agencia']) agencia.detalle.galeria.exterior = galleryMap['Exterior de la agencia'];
+  if(galleryMap['Zona de cliente']) agencia.detalle.galeria.cliente = galleryMap['Zona de cliente'];
+  if(galleryMap['Zona de empleada']) agencia.detalle.galeria.empleada = galleryMap['Zona de empleada'];
+  if(!Array.isArray(agencia.detalle.levantamientos)) agencia.detalle.levantamientos = [];
+  agencia.detalle.levantamientos.unshift({
+    code: record.code,
+    date: record.visitDate,
+    type: record.type,
+    category: record.category,
+    priority: record.priority,
+    status: record.workflowStatus,
+    summary: record.executiveSummary
+  });
+  agencia.detalle.levantamientos = agencia.detalle.levantamientos.slice(0,10);
+  agencias.sort((a,b)=> Number(a.numero) - Number(b.numero));
+  renderAgencias();
+  if(agenciaDetalleActualIndex !== null && String(Number(agencias[agenciaDetalleActualIndex]?.numero || '')) === String(Number(numero))){
+    verDetalleAgencia(agenciaDetalleActualIndex);
+  }
+  return agencia;
+}
+function levSimulateJotformSubmission(){
+  const agency = (window.prompt('Número de agencia a sincronizar:', '1034') || '').trim();
+  if(!agency) return;
+  const group = (window.prompt('Grupo de la agencia:', '48') || '').trim();
+  if(!group) return;
+  const technician = (window.prompt('Técnico del formulario:', 'Luis Regalado') || '').trim() || 'Luis Regalado';
+  const visitDate = (window.prompt('Fecha del levantamiento (YYYY-MM-DD):', new Date().toISOString().slice(0,10)) || '').trim() || new Date().toISOString().slice(0,10);
+  const publicidades = (window.prompt('Estado de publicidades:', 'Aceptable') || '').trim() || 'Aceptable';
+  const puertaEstado = (window.prompt('Estado de puerta enrollable / eléctrica:', 'Mal Estado') || '').trim() || 'Mal Estado';
+  const puertaProblema = (window.prompt('Problema reportado en puerta (opcional):', 'Está de engrasar, muy dura.') || '').trim();
+  const duplicate = levRecords.find(item => String(item.agency) === String(agency) && String(item.visitDate) === String(visitDate) && levSlug(item.type).includes('jotform demo'));
+  if(duplicate){
+    alert(`Ya existe una simulación Jotform para la agencia ${String(agency).padStart(4,'0')} en la fecha ${visitDate}.`);
+    return;
+  }
+  const record = levCreateSimulatedJotformRecord({ agency, group, technician, visitDate, publicidades, puertaEstado, puertaProblema });
+  levRecords.unshift(record);
+  levSave();
+  levPopulateCategoryFilter();
+  levPopulateGroupFilter();
+  levFillDatalists();
+  levSyncAgencyFromRecord(record);
+  const agencyInput = document.getElementById('levFilterAgency');
+  if(agencyInput) agencyInput.value = String(agency);
+  const groupInput = document.getElementById('levFilterGroup');
+  if(groupInput) groupInput.value = String(group);
+  levRender();
+  alert(`Simulación Jotform cargada correctamente. Se creó el levantamiento y se sincronizó la agencia ${String(agency).padStart(4,'0')} del grupo ${group}.`);
+}
 function levSetSelectValue(id, value, fallback=''){ const el = document.getElementById(id); if(el) el.value = value || fallback || el.value || ''; }
 function levSetValue(id, value=''){ const el = document.getElementById(id); if(el) el.value = value || ''; }
 function levResetImageField(key){ const hidden = document.getElementById(`levGallery_${key}`); const file = document.getElementById(`levGalleryFile_${key}`); const img = document.getElementById(`levGalleryPreview_${key}`); const empty = document.getElementById(`levGalleryEmpty_${key}`); if(hidden) hidden.value=''; if(file) file.value=''; if(img){ img.src=''; img.style.display='none'; } if(empty) empty.style.display='block'; }
@@ -11977,6 +11853,7 @@ function levInit(){
     document.getElementById(id)?.addEventListener('change', levRender);
   });
   document.getElementById('levOpenCreateBtn')?.addEventListener('click', levOpenCreate);
+  document.getElementById('levSimulateJotformBtn')?.addEventListener('click', levSimulateJotformSubmission);
   document.getElementById('levExportBtn')?.addEventListener('click', levExportCSV);
   document.getElementById('levExportExcelBtn')?.addEventListener('click', levExportExcel);
   document.getElementById('levResetBtn')?.addEventListener('click', () => { localStorage.removeItem(LEV_STORAGE_KEY); levLoad(); levPopulateCategoryFilter(); levPopulateGroupFilter(); levFillDatalists(); levRender(); });
