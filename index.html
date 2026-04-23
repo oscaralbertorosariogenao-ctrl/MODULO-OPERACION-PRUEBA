@@ -5656,7 +5656,14 @@ function agencyLoadOperationsRecords(){
   try { return JSON.parse(localStorage.getItem('operations_records') || '[]'); } catch(e){ return []; }
 }
 function agencyLoadLevantamientosRecords(){
-  try { return JSON.parse(localStorage.getItem(typeof LEV_STORAGE_KEY !== 'undefined' ? LEV_STORAGE_KEY : 'loteka_operaciones_levantamientos_v2') || '[]'); } catch(e){ return []; }
+  try {
+    if (typeof levRecords !== 'undefined' && Array.isArray(levRecords) && levRecords.length) {
+      return levRecords.map(item => typeof levNormalizeItem === 'function' ? levNormalizeItem(item) : item);
+    }
+  } catch(e) {}
+  try {
+    return JSON.parse(localStorage.getItem(typeof LEV_STORAGE_KEY !== 'undefined' ? LEV_STORAGE_KEY : 'loteka_operaciones_levantamientos_v2') || '[]');
+  } catch(e){ return []; }
 }
 function agencyFmtShortDate(value){ if(!value) return '-'; const d = new Date(value.length===10 ? `${value}T00:00:00` : value); return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'}); }
 function agencyGetWorksForAgency(agencia){
@@ -12660,6 +12667,12 @@ async function ltkSyncAllFromSupabase(){
     if(typeof renderDetalleAgenciaInventario === 'function'){
       try { renderDetalleAgenciaInventario(); } catch(e){}
     }
+    try {
+      const modal = document.getElementById('modalDetalleAgencia');
+      if (modal && modal.style.display === 'flex' && Number.isInteger(agenciaDetalleActualIndex) && agencias[agenciaDetalleActualIndex]) {
+        cargarFormularioDetalleAgencia(agencias[agenciaDetalleActualIndex]);
+      }
+    } catch(e) { console.error('Error refrescando detalle de agencia tras sync', e); }
     ltkUpdateBridgeBadges();
     ltkSetSyncStatus(`Sincronización completada. Agencias leídas: ${(sbAgencias||[]).length}. Levantamientos leídos: ${(sbLevs||[]).length}.`);
   } catch(error){
