@@ -1265,6 +1265,8 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 @media (max-width:1100px){.lev-main-grid,.lev-hero-enterprise{grid-template-columns:1fr}.lev-detail-grid,.lev-diagnostics{grid-template-columns:repeat(2,minmax(0,1fr))}.lev-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){.lev-enterprise-filters,.lev-detail-grid,.lev-equip-grid,.lev-gallery-grid,.lev-diagnostics{grid-template-columns:1fr}.lev-detail-header{flex-direction:column}.lev-action-item{flex-direction:column}.lev-modal-dialog.lev-detail-dialog{width:min(96vw,96vw)}}
 
+
+.lev-hero-clean{display:block!important;padding-bottom:10px}.lev-badges,.lev-hero-side,.lev-kpi-grid{display:none!important}.lev-hero-clean p{max-width:980px}.lev-main-grid{margin-top:0!important}
 </style>
 </head>
 <body>
@@ -1881,32 +1883,14 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 </div></div></div>
 <div id="vista-ops-levantamientos" class="hidden"><div class="ops-scope"><div class="view hidden" id="levantamientosView">
 <div class="lev-shell">
-  <div class="lev-hero lev-hero-enterprise">
+  <div class="lev-hero lev-hero-enterprise lev-hero-clean">
     <div>
       <h2>Levantamientos de campo</h2>
-      <p>Submódulo empresarial para consolidar formularios de inspección en un solo expediente ejecutivo. Cada envío se interpreta como un levantamiento completo, con lectura rápida, diagnóstico resumido, hallazgos, equipos, fotografías y acciones operativas.</p>
-      <div class="lev-badges">
-        <div class="lev-badge"><i class="fas fa-file-circle-check"></i> 1 formulario = 1 expediente</div>
-        <div class="lev-badge"><i class="fas fa-camera-retro"></i> Evidencias por zonas y equipos</div>
-        <div class="lev-badge"><i class="fas fa-chart-line"></i> Lectura gerencial inmediata</div>
-      </div>
-    </div>
-    <div class="lev-hero-side">
-      <div class="lev-hero-kpi"><span>Total levantamientos</span><strong id="levStatTotal">0</strong></div>
-      <div class="lev-hero-kpi"><span>Pendientes de revisión</span><strong id="levStatPending">0</strong></div>
-      <div class="lev-hero-kpi"><span>Con acción operativa</span><strong id="levStatAction">0</strong></div>
-      <div class="lev-hero-kpi"><span>Último técnico cargado</span><strong id="levHeroTech">-</strong></div>
+      <p>Registro y seguimiento de inspecciones realizadas en agencias, con lectura clara para operaciones y supervisión.</p>
     </div>
   </div>
 
-  <div class="lev-grid-4 lev-kpi-grid">
-    <div class="lev-card"><div class="label">Agencia más auditada</div><div class="value" id="levHeroAgency">-</div><div class="sub">Mayor concentración de formularios recibidos</div></div>
-    <div class="lev-card"><div class="label">Grupo con mayor carga</div><div class="value" id="levHeroGroup">-</div><div class="sub">Zona operativa con más movimiento</div></div>
-    <div class="lev-card"><div class="label">Prioridad máxima abierta</div><div class="value" id="levHeroPriority">-</div><div class="sub">Caso más delicado pendiente</div></div>
-    <div class="lev-card"><div class="label">Último expediente cerrado</div><div class="value" id="levHeroClosed">-</div><div class="sub">Código del levantamiento más reciente completado</div></div>
-  </div>
-
-  <div class="lev-grid-2 lev-main-grid">
+  <div class="lev-grid-2 lev-main-grid" style="grid-template-columns:1fr;">
     <div class="lev-panel">
       <div class="lev-panel-head">
         <div><h3>Expedientes de levantamientos</h3><p>Cada fila resume un formulario completo de campo con lectura clara para operaciones, soporte y gerencia.</p></div>
@@ -1938,7 +1922,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       </div>
     </div>
 
-    <div style="display:grid;gap:16px;">
+    <div style="display:none;gap:16px;">
       <div class="lev-panel">
         <div class="lev-panel-head"><div><h3>Lectura ejecutiva</h3><p>Vista rápida del comportamiento operativo de los formularios recibidos.</p></div></div>
         <div class="lev-panel-body lev-summary-stack">
@@ -10990,14 +10974,18 @@ function levRenderStats(){
   const action = levRecords.filter(item => levSlug(item.workflowStatus).includes('aprob') || levSlug(item.workflowStatus).includes('proceso')).length;
   const latestTech = levRecords.slice().sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
   const closedLast = levRecords.filter(item => levSlug(item.workflowStatus).includes('complet')).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
-  document.getElementById('levStatTotal').textContent = total;
-  document.getElementById('levStatPending').textContent = pending;
-  document.getElementById('levStatAction').textContent = action;
-  document.getElementById('levHeroTech').textContent = latestTech ? latestTech.technician || '-' : '-';
-  document.getElementById('levHeroAgency').textContent = levTopBy('agency').key;
-  document.getElementById('levHeroGroup').textContent = levTopBy('group').key;
-  document.getElementById('levHeroPriority').textContent = levGetHighestOpenPriority();
-  document.getElementById('levHeroClosed').textContent = closedLast ? closedLast.code : '-';
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = value;
+  };
+  setText('levStatTotal', total);
+  setText('levStatPending', pending);
+  setText('levStatAction', action);
+  setText('levHeroTech', latestTech ? latestTech.technician || '-' : '-');
+  setText('levHeroAgency', levTopBy('agency').key);
+  setText('levHeroGroup', levTopBy('group').key);
+  setText('levHeroPriority', levGetHighestOpenPriority());
+  setText('levHeroClosed', closedLast ? closedLast.code : '-');
 }
 function levRenderCategoryBars(){
   const holder = document.getElementById('levCategoryBars');
