@@ -1309,6 +1309,21 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 
 
 .lev-hero-clean{display:block!important;padding-bottom:10px}.lev-badges,.lev-hero-side,.lev-kpi-grid{display:none!important}.lev-hero-clean p{max-width:980px}.lev-main-grid{margin-top:0!important}
+
+.ltk-sync-banner{margin:0 0 16px;border:1px solid #cfe0ef;background:#f8fbff;border-radius:16px;padding:16px 18px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.ltk-sync-banner h4{margin:0 0 6px;color:#204b6a;font-size:16px}
+.ltk-sync-banner p{margin:0;color:#5f768c;line-height:1.5;font-size:13px}
+.ltk-sync-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.ltk-sync-badge{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;border:1px solid #cfe0ef;background:#fff;color:#244c68}
+.ltk-sync-badge.good{border-color:#b8e1bf;background:#effbf1;color:#2d7a35}
+.ltk-sync-badge.warn{border-color:#f0d9a6;background:#fff8e8;color:#8a6320}
+.ltk-sync-actions{display:flex;gap:10px;flex-wrap:wrap}
+.ltk-sync-status{margin-top:10px;font-size:12px;color:#5f768c}
+.ltk-config-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:14px}
+.ltk-config-grid .full{grid-column:1/-1}
+.ltk-help-box{border:1px dashed #c9d8e8;background:#f9fbfd;border-radius:14px;padding:14px 16px;color:#5d7688;font-size:13px;line-height:1.6;margin-top:14px}
+@media (max-width:900px){.ltk-config-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1932,6 +1947,23 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
     </div>
   </div>
 
+  
+  <div class="ltk-sync-banner">
+    <div>
+      <h4>Conexión Jotform / Supabase</h4>
+      <p>Este archivo queda preparado para trabajar con el webhook real ya configurado en Supabase. Desde aquí podrás guardar la configuración de lectura y sincronizar <strong>agencias</strong> y <strong>levantamientos</strong> reales sin romper la base visual actual.</p>
+      <div class="ltk-sync-badges">
+        <span class="ltk-sync-badge" id="ltkBadgeBackend"><i class="fas fa-plug"></i> Backend Jotform: pendiente</span>
+        <span class="ltk-sync-badge" id="ltkBadgeFrontend"><i class="fas fa-database"></i> Lectura Supabase: pendiente</span>
+      </div>
+      <div class="ltk-sync-status" id="ltkSyncStatus">Modo seguro activado: si todavía no configuras la lectura desde Supabase, el sistema seguirá funcionando con su base local sin dañarse.</div>
+    </div>
+    <div class="ltk-sync-actions">
+      <button type="button" class="lev-btn secondary" onclick="ltkOpenBridgeModal()"><i class="fas fa-gear"></i> Configurar conexión</button>
+      <button type="button" class="lev-btn primary" onclick="ltkSyncAllFromSupabase()"><i class="fas fa-rotate"></i> Sincronizar ahora</button>
+    </div>
+  </div>
+
   <div class="lev-grid-2 lev-main-grid" style="grid-template-columns:1fr;">
     <div class="lev-panel">
       <div class="lev-panel-head">
@@ -1940,7 +1972,6 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
           <button type="button" class="lev-btn secondary" id="levExportBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
           <button type="button" class="lev-btn secondary" id="levExportExcelBtn"><i class="fas fa-file-excel"></i> Exportar Excel</button>
           <button type="button" class="lev-btn ghost" id="levResetBtn"><i class="fas fa-rotate-left"></i> Restablecer demo</button>
-          <button type="button" class="lev-btn secondary" id="levSimulateJotformBtn"><i class="fas fa-wand-magic-sparkles"></i> Simular envío Jotform</button>
           <button type="button" class="lev-btn primary" id="levOpenCreateBtn"><i class="fas fa-plus"></i> Nuevo registro rápido</button>
         </div>
       </div>
@@ -2329,6 +2360,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <button class="agency-master-tab active" type="button" onclick="cambiarSeccionAgencia('general', this)"><i class="fas fa-id-card"></i> General</button>
         <button class="agency-master-tab" type="button" onclick="cambiarSeccionAgencia('ficha', this)"><i class="fas fa-microchip"></i> Ficha técnica</button>
         <button class="agency-master-tab" type="button" onclick="cambiarSeccionAgencia('estructura', this)"><i class="fas fa-building"></i> Estructura</button>
+        <button class="agency-master-tab" type="button" onclick="cambiarSeccionAgencia('levantamientos', this)"><i class="fas fa-clipboard-check"></i> Levantamientos</button>
         <button class="agency-master-tab" type="button" onclick="cambiarSeccionAgencia('legal', this)"><i class="fas fa-scale-balanced"></i> Legal</button>
         <button class="agency-master-tab" type="button" onclick="cambiarSeccionAgencia('galeria', this)"><i class="fas fa-images"></i> Galería</button>
         <button class="agency-master-tab" type="button" onclick="cambiarSeccionAgencia('permisos', this)"><i class="fas fa-key"></i> Permisos</button>
@@ -2339,7 +2371,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <div class="agency-form-card">
           <div class="agency-form-card-head">
             <h4>General</h4>
-            <p>Datos operativos principales de la agencia para consulta rápida y actualización administrativa.</p>
+            <p>Datos operativos principales de la agencia para consulta rápida, tablero resumido e historial vinculado.</p>
           </div>
           <div class="agency-form-card-body">
             <div class="agency-form-grid four" style="margin-bottom:14px">
@@ -2347,6 +2379,26 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
               <div class="agency-mini-stat"><div class="label">Seriales</div><div class="value" id="detalleAgenciaSeriales">0</div></div>
               <div class="agency-mini-stat"><div class="label">Cámaras</div><div class="value" id="detalleAgenciaCamaras">0</div></div>
               <div class="agency-mini-stat"><div class="label">Routers</div><div class="value" id="detalleAgenciaRouters">0</div></div>
+            </div>
+            <div class="agency-form-grid four" style="margin-bottom:14px">
+              <div class="agency-mini-stat"><div class="label">Trabajos</div><div class="value" id="detalleAgenciaTrabajos">0</div></div>
+              <div class="agency-mini-stat"><div class="label">Levantamientos</div><div class="value" id="detalleAgenciaLevantamientos">0</div></div>
+              <div class="agency-mini-stat"><div class="label">Pendientes</div><div class="value" id="detalleAgenciaPendientes">0</div></div>
+              <div class="agency-mini-stat"><div class="label">Último técnico</div><div class="value" id="detalleAgenciaUltimoTecnico">-</div></div>
+            </div>
+            <div class="agency-form-grid two" style="margin-bottom:14px">
+              <div class="agency-form-card" style="margin:0">
+                <div class="agency-form-card-head"><h4 style="margin:0;font-size:15px">Resumen operativo de la agencia</h4></div>
+                <div class="agency-form-card-body" style="padding-top:0">
+                  <div id="agencyDashboardSummary" style="color:#5d7688;line-height:1.65">Sin resumen disponible.</div>
+                </div>
+              </div>
+              <div class="agency-form-card" style="margin:0">
+                <div class="agency-form-card-head"><h4 style="margin:0;font-size:15px">Últimos movimientos técnicos</h4></div>
+                <div class="agency-form-card-body" style="padding-top:0">
+                  <div id="agencyDashboardTimeline" class="lev-empty">Sin movimientos registrados.</div>
+                </div>
+              </div>
             </div>
             <div class="agency-form-grid">
               <div class="agency-form-field"><label>Número de agencia</label><input id="agencyFieldNumero" type="text"></div>
@@ -2423,10 +2475,24 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <div class="agency-form-card">
           <div class="agency-form-card-head">
             <h4>Estructura</h4>
-            <p>Lectura física y visual del punto para mantenimiento preventivo y seguimiento operativo.</p>
+            <p>Historial automático de trabajos físicos realizados a la agencia desde OPERACIONES &gt; TRABAJOS.</p>
           </div>
           <div class="agency-form-card-body">
-            <div class="agency-form-grid two">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Trabajo realizado</th>
+                  <th>Suplidor / Responsable</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Imágenes</th>
+                  <th>Factura</th>
+                  <th>Ver PDFs</th>
+                </tr>
+              </thead>
+              <tbody id="agencyStructureWorksBody"></tbody>
+            </table>
+            <div class="agency-form-grid two" style="display:none">
               <div class="agency-form-field"><label>Toldo</label><select id="agencyStructToldo"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
               <div class="agency-form-field"><label>Techo</label><select id="agencyStructTecho"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
               <div class="agency-form-field"><label>Pintura / filtraciones</label><select id="agencyStructPintura"><option>Buen Estado</option><option>Aceptable</option><option>Mal Estado</option></select></div>
@@ -2437,6 +2503,32 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
               <div class="agency-form-field"><label>Área de empleada</label><select id="agencyStructEmpleada"><option>Ordenada</option><option>Requiere atención</option><option>Crítica</option></select></div>
               <div class="agency-form-field full"><label>Comentario estructural</label><textarea id="agencyStructComentario"></textarea></div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="agency-section" data-section="levantamientos">
+        <div class="agency-form-card">
+          <div class="agency-form-card-head">
+            <h4>Levantamientos</h4>
+            <p>Expedientes técnicos y de campo vinculados automáticamente a esta agencia.</p>
+          </div>
+          <div class="agency-form-card-body">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Tipo</th>
+                  <th>Técnico</th>
+                  <th>Estado general</th>
+                  <th>Prioridad</th>
+                  <th>Fecha</th>
+                  <th>Hallazgos</th>
+                  <th>Ver</th>
+                </tr>
+              </thead>
+              <tbody id="agencyLevantamientosBody"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -2465,13 +2557,19 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <div class="agency-form-card">
           <div class="agency-form-card-head">
             <h4>Galería</h4>
-            <p>Evidencias visuales del exterior, áreas internas y equipos relevantes de la agencia.</p>
+            <p>Fotos base de la agencia y evidencias relacionadas desde levantamientos y trabajos ejecutados.</p>
           </div>
           <div class="agency-form-card-body">
-            <div class="agency-gallery-grid">
+            <div class="agency-gallery-grid" style="margin-bottom:14px">
               <div class="agency-gallery-card"><div class="agency-gallery-preview" id="galleryExteriorPreview">Exterior de la agencia</div><div class="agency-gallery-meta"><strong>Exterior</strong><span>Fachada y presentación general.</span></div></div>
               <div class="agency-gallery-card"><div class="agency-gallery-preview" id="galleryClientePreview">Zona de cliente</div><div class="agency-gallery-meta"><strong>Zona de cliente</strong><span>Área frontal y atención al público.</span></div></div>
               <div class="agency-gallery-card"><div class="agency-gallery-preview" id="galleryEmpleadaPreview">Zona de empleada</div><div class="agency-gallery-meta"><strong>Zona de empleada</strong><span>Puesto operativo y orden interno.</span></div></div>
+            </div>
+            <div class="agency-form-card" style="margin:0">
+              <div class="agency-form-card-head"><h4 style="margin:0;font-size:15px">Evidencias vinculadas a la agencia</h4></div>
+              <div class="agency-form-card-body" style="padding-top:0">
+                <div class="agency-gallery-grid" id="agencyGalleryAutoGrid"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -2500,14 +2598,18 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <div class="agency-form-card">
           <div class="agency-form-card-head">
             <h4>Parámetros</h4>
-            <p>Ajustes internos del expediente para operaciones, supervisión y continuidad del servicio.</p>
+            <p>Asignación operativa de rutas, horarios y responsables para la continuidad del expediente.</p>
           </div>
           <div class="agency-form-card-body">
+            <div class="agency-form-grid two" style="margin-bottom:14px">
+              <div class="agency-flag-card"><h5>Ruta asignada</h5><input id="agencyParamRuta" type="text" placeholder="Ej. Ruta Norte / Grupo 42"></div>
+              <div class="agency-flag-card"><h5>Horario de ruta</h5><input id="agencyParamHorario" type="text" placeholder="Ej. Lunes a viernes / 8:00 AM - 6:00 PM"></div>
+            </div>
             <div class="agency-form-grid">
               <div class="agency-form-field"><label>Técnico frecuente</label><input id="agencyParamTecnico" type="text"></div>
               <div class="agency-form-field"><label>Supervisor</label><input id="agencyParamSupervisor" type="text"></div>
               <div class="agency-form-field"><label>Prioridad operativa</label><select id="agencyParamPrioridad"><option>Baja</option><option>Media</option><option>Alta</option></select></div>
-              <div class="agency-form-field"><label>Canal de soporte</label><select id="agencyParamCanal"><option>Operaciones</option><option>Taller</option><option>Infraestructura</option></select></div>
+              <div class="agency-form-field" style="display:none"><label>Canal de soporte</label><select id="agencyParamCanal"><option>Operaciones</option><option>Taller</option><option>Infraestructura</option></select></div>
               <div class="agency-form-field"><label>Última visita</label><input id="agencyParamUltimaVisita" type="date"></div>
               <div class="agency-form-field"><label>Próxima revisión</label><input id="agencyParamProximaRevision" type="date"></div>
               <div class="agency-form-field full"><label>Nota interna</label><textarea id="agencyParamNota"></textarea></div>
@@ -5526,6 +5628,8 @@ function ensureAgencyDetailDefaults(agencia){
       supervisor: agencia.detalle.parametros?.supervisor || '',
       prioridad: agencia.detalle.parametros?.prioridad || 'Media',
       canal: agencia.detalle.parametros?.canal || 'Operaciones',
+      ruta: agencia.detalle.parametros?.ruta || '',
+      horarioRuta: agencia.detalle.parametros?.horarioRuta || '',
       ultimaVisita: agencia.detalle.parametros?.ultimaVisita || '',
       proximaRevision: agencia.detalle.parametros?.proximaRevision || '',
       nota: agencia.detalle.parametros?.nota || ''
@@ -5538,6 +5642,117 @@ function ensureAgencyDetailDefaults(agencia){
   };
 }
 
+
+function agencyDigits(value){ return String(value || '').replace(/\D+/g,''); }
+function agencyRecordMatches(record, agencia){
+  const agencyNum = agencyDigits(agencia?.numero || agencia?.detalle?.go || '');
+  const candidates = [record?.agency, record?.agencia, record?.location, record?.codigo_agencia, record?.agencyCode, record?.go].map(v => String(v || ''));
+  return candidates.some(v => agencyDigits(v) === agencyNum) || String(record?.agency || '').toLowerCase().includes(String(agenciaNum).toLowerCase());
+}
+function agencyLoadOperationsRecords(){
+  try { return JSON.parse(localStorage.getItem('operations_records') || '[]'); } catch(e){ return []; }
+}
+function agencyLoadLevantamientosRecords(){
+  try { return JSON.parse(localStorage.getItem(typeof LEV_STORAGE_KEY !== 'undefined' ? LEV_STORAGE_KEY : 'loteka_operaciones_levantamientos_v2') || '[]'); } catch(e){ return []; }
+}
+function agencyFmtShortDate(value){ if(!value) return '-'; const d = new Date(value.length===10 ? `${value}T00:00:00` : value); return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function agencyGetWorksForAgency(agencia){
+  return agencyLoadOperationsRecords().filter(item => String(item?.type || '').toLowerCase() === 'trabajo' && agencyRecordMatches(item, agencia)).sort((a,b) => new Date(b.completedAt || b.updatedAt || b.createdAt || 0) - new Date(a.completedAt || a.updatedAt || a.createdAt || 0));
+}
+function agencyGetLevsForAgency(agencia){
+  return agencyLoadLevantamientosRecords().filter(item => agencyRecordMatches(item, agencia)).sort((a,b) => new Date(b.submittedAt || b.updatedAt || b.visitDate || 0) - new Date(a.submittedAt || a.updatedAt || a.visitDate || 0));
+}
+function agencyRenderWorks(agencia){
+  const tbody = document.getElementById('agencyStructureWorksBody'); if(!tbody) return;
+  const works = agencyGetWorksForAgency(agencia);
+  if(!works.length){ tbody.innerHTML = `<tr><td colspan="7"><div class="lev-empty">No fueron encontrados trabajos de estructura física para esta agencia.</div></td></tr>`; return; }
+  tbody.innerHTML = works.map(item => {
+    const imgs = (Array.isArray(item.resultImages) ? item.resultImages.filter(Boolean).length : 0) + (Array.isArray(item.images) ? item.images.filter(Boolean).length : 0);
+    const pdf = item.pdf || item.supportPdf || item.facturaPdf || '';
+    const factura = item.factura || item.invoice || item.invoiceNumber || '';
+    return `<tr>
+      <td><strong>${item.title || item.description || 'Trabajo registrado'}</strong><br><span style="color:#6d8799">${(item.selectedTypes||[]).join(', ') || 'Sin clasificación específica'}</span></td>
+      <td>${item.technician || item.owner || item.supplier || 'No registrado'}</td>
+      <td><span class="status-pill ${String(item.status||'').toLowerCase().includes('complet') ? 'green' : 'blue'}">${item.status || 'Pendiente'}</span></td>
+      <td>${agencyFmtShortDate(item.completedAt || item.updatedAt || item.createdAt || '')}</td>
+      <td>${imgs || 0}</td>
+      <td>${factura ? 'Sí' : 'No'}</td>
+      <td>${pdf ? `<a href="${pdf}" target="_blank" rel="noopener">Ver PDF</a>` : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+function agencyRenderLevantamientos(agencia){
+  const tbody = document.getElementById('agencyLevantamientosBody'); if(!tbody) return;
+  const levs = agencyGetLevsForAgency(agencia);
+  if(!levs.length){ tbody.innerHTML = `<tr><td colspan="8"><div class="lev-empty">No hay levantamientos vinculados a esta agencia.</div></td></tr>`; return; }
+  tbody.innerHTML = levs.map(item => `<tr>
+    <td><strong>${item.code || '-'}</strong></td>
+    <td>${item.type || item.category || '-'}</td>
+    <td>${item.technician || item.responsible || '-'}</td>
+    <td><span class="status-pill blue">${item.overallStatus || '-'}</span></td>
+    <td><span class="status-pill ${String(item.priority||'').toLowerCase().includes('alta') || String(item.priority||'').toLowerCase().includes('urg') ? 'gold' : 'gray'}">${item.priority || '-'}</span></td>
+    <td>${agencyFmtShortDate(item.visitDate || item.submittedAt || '')}</td>
+    <td>${item.findingsCount ?? 0}</td>
+    <td><button class="btn-secondary" type="button" onclick="agencyViewLev('${item.id}')">Ver</button></td>
+  </tr>`).join('');
+}
+function agencyViewLev(id){
+  const item = agencyLoadLevantamientosRecords().find(row => String(row.id) === String(id));
+  if(!item){ alert('No se encontró el expediente de levantamiento.'); return; }
+  const lines = [
+    `${item.code || ''} · Agencia ${item.agency || '-'}`,
+    `Tipo: ${item.type || item.category || '-'}`,
+    `Técnico: ${item.technician || item.responsible || '-'}`,
+    `Estado general: ${item.overallStatus || '-'}`,
+    `Prioridad: ${item.priority || '-'}`,
+    `Fecha: ${agencyFmtShortDate(item.visitDate || item.submittedAt || '')}`,
+    '',
+    item.executiveSummary || item.findings || 'Sin resumen disponible.'
+  ];
+  alert(lines.join('\n'));
+}
+function agencyRenderGallery(agencia){
+  const holder = document.getElementById('agencyGalleryAutoGrid'); if(!holder) return;
+  const cards = [];
+  const d = agencia?.detalle || {};
+  const baseGallery = d.galeria || {};
+  [['Exterior base', baseGallery.exterior], ['Zona cliente base', baseGallery.cliente], ['Zona empleada base', baseGallery.empleada]].forEach(([label,url]) => {
+    cards.push({label, url, source:'Expediente'});
+  });
+  agencyGetLevsForAgency(agencia).forEach(item => (item.gallery || []).forEach(photo => cards.push({label: photo.label || 'Levantamiento', url: photo.url || '', source: item.code || 'Levantamiento'})));
+  agencyGetWorksForAgency(agencia).forEach(item => {
+    (Array.isArray(item.resultImages) ? item.resultImages : []).filter(Boolean).forEach((url, idx) => cards.push({label:`Resultado trabajo ${idx+1}`, url, source:item.code || item.title || 'Trabajo'}));
+    (Array.isArray(item.images) ? item.images : []).filter(Boolean).forEach((url, idx) => cards.push({label:`Imagen inicial ${idx+1}`, url, source:item.code || item.title || 'Trabajo'}));
+  });
+  if(!cards.length){ holder.innerHTML = '<div class="lev-empty">No hay evidencias visuales vinculadas a esta agencia.</div>'; return; }
+  holder.innerHTML = cards.map(card => `<div class="agency-gallery-card"><div class="agency-gallery-preview">${card.url ? `<img src="${card.url}" alt="${card.label}">` : card.label}</div><div class="agency-gallery-meta"><strong>${card.label}</strong><span>${card.source}</span></div></div>`).join('');
+}
+function agencyRenderDashboard(agencia){
+  const works = agencyGetWorksForAgency(agencia);
+  const levs = agencyGetLevsForAgency(agencia);
+  const pending = works.filter(item => !String(item.status || '').toLowerCase().includes('complet')).length + levs.filter(item => !String(item.workflowStatus || '').toLowerCase().includes('complet') && !String(item.workflowStatus || '').toLowerCase().includes('archiv')).length;
+  const latestLev = levs[0];
+  const latestWork = works[0];
+  const latestTech = latestLev?.technician || latestLev?.responsible || latestWork?.technician || '-';
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('detalleAgenciaTrabajos', works.length);
+  set('detalleAgenciaLevantamientos', levs.length);
+  set('detalleAgenciaPendientes', pending);
+  set('detalleAgenciaUltimoTecnico', latestTech);
+  const summary = document.getElementById('agencyDashboardSummary');
+  if(summary){
+    summary.innerHTML = `La agencia <strong>${String(agencia.numero || '').padStart(4,'0')}</strong> tiene <strong>${works.length}</strong> trabajo(s) registrado(s) y <strong>${levs.length}</strong> levantamiento(s) técnico(s) vinculados. ` +
+      `El último levantamiento fue <strong>${latestLev ? agencyFmtShortDate(latestLev.visitDate || latestLev.submittedAt || '') : '-'}</strong> y el último trabajo quedó en estado <strong>${latestWork?.status || 'Sin trabajos'}</strong>.`;
+  }
+  const timeline = document.getElementById('agencyDashboardTimeline');
+  if(timeline){
+    const items = [];
+    if(latestLev) items.push(`<div class="lev-mini-item"><div><strong>${latestLev.code || 'Levantamiento'}</strong><span>${latestLev.executiveSummary || latestLev.type || latestLev.category || ''}</span></div><b>${agencyFmtShortDate(latestLev.visitDate || latestLev.submittedAt || '')}</b></div>`);
+    if(latestWork) items.push(`<div class="lev-mini-item"><div><strong>${latestWork.code || 'Trabajo'}</strong><span>${latestWork.title || latestWork.description || 'Trabajo registrado'}</span></div><b>${agencyFmtShortDate(latestWork.completedAt || latestWork.updatedAt || latestWork.createdAt || '')}</b></div>`);
+    timeline.innerHTML = items.length ? items.join('') : '<div class="lev-empty">Sin movimientos registrados.</div>';
+  }
+}
+
 function cargarVistaPreviaAgencia(id, src, fallback){
   const box = document.getElementById(id);
   if(!box) return;
@@ -5548,55 +5763,86 @@ function cargarVistaPreviaAgencia(id, src, fallback){
   }
 }
 
+
+function agencySetValue(id, value){
+  const el = document.getElementById(id);
+  if(el) el.value = value ?? '';
+}
+function agencySetText(id, value){
+  const el = document.getElementById(id);
+  if(el) el.innerText = value ?? '';
+}
+function agencySetHref(id, value){
+  const el = document.getElementById(id);
+  if(el) el.href = value || '#';
+}
+
 function cargarFormularioDetalleAgencia(agencia){
   ensureAgencyDetailDefaults(agencia);
-  const d = agencia.detalle;
-  document.getElementById('agencyFieldNumero').value = String(agencia.numero || '');
-  document.getElementById('agencyFieldGrupo').value = agencia.grupo || '';
-  document.getElementById('agencyFieldEncargado').value = agencia.encargado || '';
-  document.getElementById('agencyFieldGo').value = d.go || '';
-  document.getElementById('agencyFieldLtk').value = d.ltk || '';
-  document.getElementById('agencyFieldEstadoOperativo').value = d.estadoOperativo || 'Activa';
-  document.getElementById('agencyFieldTipoAgencia').value = d.tipoAgencia || 'Regular';
-  document.getElementById('agencyFieldTelefono').value = d.telefono || '';
-  document.getElementById('agencyFieldHorario').value = d.horario || '';
-  document.getElementById('agencyFieldDireccion').value = agencia.direccion || '';
-  document.getElementById('agencyFieldLatitud').value = agencia.latitud ?? '';
-  document.getElementById('agencyFieldLongitud').value = agencia.longitud ?? '';
-  document.getElementById('detalleAgenciaGeoTexto').value = formatAgencyGeoText(agencia);
-  document.getElementById('agencyFieldObservacion').value = d.observacion || '';
-  document.getElementById('agencyStructToldo').value = d.estructura.toldo;
-  document.getElementById('agencyStructTecho').value = d.estructura.techo;
-  document.getElementById('agencyStructPintura').value = d.estructura.pintura;
-  document.getElementById('agencyStructPiso').value = d.estructura.piso;
-  document.getElementById('agencyStructPuerta').value = d.estructura.puerta;
-  document.getElementById('agencyStructCounter').value = d.estructura.counter;
-  document.getElementById('agencyStructCliente').value = d.estructura.cliente;
-  document.getElementById('agencyStructEmpleada').value = d.estructura.empleada;
-  document.getElementById('agencyStructComentario').value = d.estructura.comentario || '';
-  document.getElementById('agencyLegalPropietario').value = d.legal.propietario || '';
-  document.getElementById('agencyLegalDocumento').value = d.legal.documento || '';
-  document.getElementById('agencyLegalTelefono').value = d.legal.telefono || '';
-  document.getElementById('agencyLegalEstado').value = d.legal.estado || 'Al día';
-  document.getElementById('agencyLegalInicio').value = d.legal.inicio || '';
-  document.getElementById('agencyLegalVencimiento').value = d.legal.vencimiento || '';
-  document.getElementById('agencyLegalObservacion').value = d.legal.observacion || '';
-  document.getElementById('agencyPermInventario').value = d.permisos.inventario || 'Sí';
-  document.getElementById('agencyPermSerializados').value = d.permisos.serializados || 'Sí';
-  document.getElementById('agencyPermSoporte').value = d.permisos.soporte || 'Sí';
-  document.getElementById('agencyPermAcceso').value = d.permisos.acceso || 'Activo';
-  document.getElementById('agencyPermMovimientos').value = d.permisos.movimientos || 'Habilitado';
-  document.getElementById('agencyPermEspecial').value = d.permisos.especial || 'Ninguno';
-  document.getElementById('agencyParamTecnico').value = d.parametros.tecnico || '';
-  document.getElementById('agencyParamSupervisor').value = d.parametros.supervisor || '';
-  document.getElementById('agencyParamPrioridad').value = d.parametros.prioridad || 'Media';
-  document.getElementById('agencyParamCanal').value = d.parametros.canal || 'Operaciones';
-  document.getElementById('agencyParamUltimaVisita').value = d.parametros.ultimaVisita || '';
-  document.getElementById('agencyParamProximaRevision').value = d.parametros.proximaRevision || '';
-  document.getElementById('agencyParamNota').value = d.parametros.nota || '';
-  cargarVistaPreviaAgencia('galleryExteriorPreview', d.galeria.exterior, 'Exterior de la agencia');
-  cargarVistaPreviaAgencia('galleryClientePreview', d.galeria.cliente, 'Zona de cliente');
-  cargarVistaPreviaAgencia('galleryEmpleadaPreview', d.galeria.empleada, 'Zona de empleada');
+  const d = agencia.detalle || {};
+  agencySetValue('agencyFieldNumero', String(agencia.numero || ''));
+  agencySetValue('agencyFieldGrupo', agencia.grupo || '');
+  agencySetValue('agencyFieldEncargado', agencia.encargado || '');
+  agencySetValue('agencyFieldGo', d.go || '');
+  agencySetValue('agencyFieldLtk', d.ltk || '');
+  agencySetValue('agencyFieldEstadoOperativo', d.estadoOperativo || 'Activa');
+  agencySetValue('agencyFieldTipoAgencia', d.tipoAgencia || 'Regular');
+  agencySetValue('agencyFieldTelefono', d.telefono || '');
+  agencySetValue('agencyFieldHorario', d.horario || '');
+  agencySetValue('agencyFieldDireccion', agencia.direccion || '');
+  agencySetValue('agencyFieldLatitud', agencia.latitud ?? '');
+  agencySetValue('agencyFieldLongitud', agencia.longitud ?? '');
+  agencySetValue('detalleAgenciaGeoTexto', typeof formatAgencyGeoText === 'function' ? formatAgencyGeoText(agencia) : '');
+  agencySetValue('agencyFieldObservacion', d.observacion || '');
+
+  const es = d.estructura || {};
+  agencySetValue('agencyStructToldo', es.toldo || 'Buen Estado');
+  agencySetValue('agencyStructTecho', es.techo || 'Buen Estado');
+  agencySetValue('agencyStructPintura', es.pintura || 'Buen Estado');
+  agencySetValue('agencyStructPiso', es.piso || 'Buen Estado');
+  agencySetValue('agencyStructPuerta', es.puerta || 'Buen Estado');
+  agencySetValue('agencyStructCounter', es.counter || 'Buen Estado');
+  agencySetValue('agencyStructCliente', es.cliente || 'Buen Estado');
+  agencySetValue('agencyStructEmpleada', es.empleada || 'Buen Estado');
+  agencySetValue('agencyStructComentario', es.comentario || '');
+
+  const legal = d.legal || {};
+  agencySetValue('agencyLegalPropietario', legal.propietario || '');
+  agencySetValue('agencyLegalDocumento', legal.documento || '');
+  agencySetValue('agencyLegalTelefono', legal.telefono || '');
+  agencySetValue('agencyLegalEstado', legal.estado || 'Al día');
+  agencySetValue('agencyLegalInicio', legal.inicio || '');
+  agencySetValue('agencyLegalVencimiento', legal.vencimiento || '');
+  agencySetValue('agencyLegalObservacion', legal.observacion || '');
+
+  const permisos = d.permisos || {};
+  agencySetValue('agencyPermInventario', permisos.inventario || 'Sí');
+  agencySetValue('agencyPermSerializados', permisos.serializados || 'Sí');
+  agencySetValue('agencyPermSoporte', permisos.soporte || 'Sí');
+  agencySetValue('agencyPermAcceso', permisos.acceso || 'Activo');
+  agencySetValue('agencyPermMovimientos', permisos.movimientos || 'Habilitado');
+  agencySetValue('agencyPermEspecial', permisos.especial || 'Ninguno');
+
+  const parametros = d.parametros || {};
+  agencySetValue('agencyParamTecnico', parametros.tecnico || '');
+  agencySetValue('agencyParamSupervisor', parametros.supervisor || '');
+  agencySetValue('agencyParamPrioridad', parametros.prioridad || 'Media');
+  agencySetValue('agencyParamCanal', parametros.canal || 'Operaciones');
+  agencySetValue('agencyParamRuta', parametros.ruta || '');
+  agencySetValue('agencyParamHorario', parametros.horarioRuta || d.horario || '');
+  agencySetValue('agencyParamUltimaVisita', parametros.ultimaVisita || '');
+  agencySetValue('agencyParamProximaRevision', parametros.proximaRevision || '');
+  agencySetValue('agencyParamNota', parametros.nota || '');
+
+  const gal = d.galeria || {};
+  cargarVistaPreviaAgencia('galleryExteriorPreview', gal.exterior, 'Exterior de la agencia');
+  cargarVistaPreviaAgencia('galleryClientePreview', gal.cliente, 'Zona de cliente');
+  cargarVistaPreviaAgencia('galleryEmpleadaPreview', gal.empleada, 'Zona de empleada');
+
+  if(typeof agencyRenderDashboard === 'function') agencyRenderDashboard(agencia);
+  if(typeof agencyRenderWorks === 'function') agencyRenderWorks(agencia);
+  if(typeof agencyRenderLevantamientos === 'function') agencyRenderLevantamientos(agencia);
+  if(typeof agencyRenderGallery === 'function') agencyRenderGallery(agencia);
 }
 
 function cambiarSeccionAgencia(seccion, el){
@@ -5657,7 +5903,9 @@ function guardarDetalleAgenciaCompleta(){
     tecnico: document.getElementById('agencyParamTecnico').value.trim(),
     supervisor: document.getElementById('agencyParamSupervisor').value.trim(),
     prioridad: document.getElementById('agencyParamPrioridad').value,
-    canal: document.getElementById('agencyParamCanal').value,
+    canal: (document.getElementById('agencyParamCanal')?.value || 'Operaciones'),
+    ruta: (document.getElementById('agencyParamRuta')?.value || '').trim(),
+    horarioRuta: (document.getElementById('agencyParamHorario')?.value || '').trim(),
     ultimaVisita: document.getElementById('agencyParamUltimaVisita').value,
     proximaRevision: document.getElementById('agencyParamProximaRevision').value,
     nota: document.getElementById('agencyParamNota').value.trim()
@@ -5714,32 +5962,47 @@ function guardarDetalleAgenciaCompleta(){
   verDetalleAgencia(agencias.findIndex(a => Number(a.numero) === Number(agencia.numero)));
 }
 
+
 function verDetalleAgencia(i){
-  agenciaDetalleActualIndex = i;
+  const index = Number(i);
+  const agencia = agencias[index];
+  if(!Number.isInteger(index) || !agencia){
+    alert('No se pudo abrir el detalle de la agencia.');
+    return;
+  }
+  agenciaDetalleActualIndex = index;
   agenciaTabActual = 'equipos';
   agenciaPendienteSeriales = [];
-  const agencia = agencias[i];
   ensureAgencyDetailDefaults(agencia);
-  document.getElementById('detalleAgenciaTitulo').innerText = 'Actualización de Agencia';
-  document.getElementById('detalleAgenciaNombre').innerText = agencia.nombre;
-  document.getElementById('detalleAgenciaEncargadoChip').innerText = agencia.encargado || 'Sin encargado';
-  document.getElementById('detalleAgenciaGrupoCodigo').innerText = agencia.grupo || '-';
-  document.getElementById('detalleAgenciaGoCodigo').innerText = agencia.detalle.go || '-';
-  document.getElementById('detalleAgenciaLtkCodigo').innerText = agencia.detalle.ltk || '-';
-  document.getElementById('detalleAgenciaSub').innerText = `${agencia.grupo} · Encargado: ${agencia.encargado}`;
-  document.getElementById('detalleAgenciaEquipos').innerText = agencia.equipos.length;
-  document.getElementById('detalleAgenciaSeriales').innerText = agencia.equipos.filter(item => item.serial).length;
-  document.getElementById('detalleAgenciaCamaras').innerText = agencia.equipos.filter(item => item.categoria === 'camara').length;
-  document.getElementById('detalleAgenciaRouters').innerText = agencia.equipos.filter(item => item.categoria === 'routers').length;
-  document.getElementById('detalleAgenciaMapLink').href = buildAgencyMapsSearchUrl(agencia);
-  document.getElementById('detalleAgenciaRouteLink').href = buildAgencyMapsDirectionsUrl(agencia);
-  document.getElementById('buscarSerialAgencia').value = '';
+
+  const modal = document.getElementById('modalDetalleAgencia');
+  if(modal) modal.style.display = 'flex';
+
+  agencySetText('detalleAgenciaTitulo', 'Actualización de Agencia');
+  agencySetText('detalleAgenciaNombre', agencia.nombre || `Agencia ${String(agencia.numero || '').padStart(4,'0')}`);
+  agencySetText('detalleAgenciaEncargadoChip', agencia.encargado || 'Sin encargado');
+  agencySetText('detalleAgenciaGrupoCodigo', agencia.grupo || '-');
+  agencySetText('detalleAgenciaGoCodigo', agencia.detalle?.go || '-');
+  agencySetText('detalleAgenciaLtkCodigo', agencia.detalle?.ltk || '-');
+  agencySetText('detalleAgenciaSub', `${agencia.grupo || '-'} · Encargado: ${agencia.encargado || 'Sin encargado'}`);
+  agencySetText('detalleAgenciaEquipos', Array.isArray(agencia.equipos) ? agencia.equipos.length : 0);
+  agencySetText('detalleAgenciaSeriales', Array.isArray(agencia.equipos) ? agencia.equipos.filter(item => item.serial).length : 0);
+  agencySetText('detalleAgenciaCamaras', Array.isArray(agencia.equipos) ? agencia.equipos.filter(item => item.categoria === 'camara').length : 0);
+  agencySetText('detalleAgenciaRouters', Array.isArray(agencia.equipos) ? agencia.equipos.filter(item => item.categoria === 'routers').length : 0);
+  agencySetHref('detalleAgenciaMapLink', typeof buildAgencyMapsSearchUrl === 'function' ? buildAgencyMapsSearchUrl(agencia) : '#');
+  agencySetHref('detalleAgenciaRouteLink', typeof buildAgencyMapsDirectionsUrl === 'function' ? buildAgencyMapsDirectionsUrl(agencia) : '#');
+  agencySetValue('buscarSerialAgencia', '');
+
   document.querySelectorAll('.agency-tab').forEach((btn, idx) => btn.classList.toggle('active', idx === 0));
-  document.querySelectorAll('.agency-master-tab').forEach((btn, idx) => btn.classList.toggle('active', idx === 0));
-  document.querySelectorAll('.agency-section').forEach((section, idx) => section.classList.toggle('active', idx === 0));
-  cargarFormularioDetalleAgencia(agencia);
-  renderDetalleAgenciaInventario();
-  document.getElementById('modalDetalleAgencia').style.display = 'flex';
+  document.querySelectorAll('.agency-master-tab').forEach(btn => btn.classList.remove('active'));
+  const firstMaster = document.querySelector('.agency-master-tab');
+  if(firstMaster) firstMaster.classList.add('active');
+  document.querySelectorAll('.agency-section').forEach(section => {
+    section.classList.toggle('active', section.dataset.section === 'general');
+  });
+
+  try { cargarFormularioDetalleAgencia(agencia); } catch(err) { console.error('Error cargando formulario de agencia', err); }
+  try { if(typeof renderDetalleAgenciaInventario === 'function') renderDetalleAgenciaInventario(); } catch(err) { console.error('Error renderizando inventario de agencia', err); }
 }
 
 function cerrarDetalleAgencia(){
@@ -11120,159 +11383,6 @@ function levBuildEquipmentFromForm(){
 function levBuildGalleryFromForm(){
   return LEV_GALLERY_FIELDS.map(label => ({ label, url: document.getElementById(`levGallery_${levKey(label)}`)?.value || '' })).filter(item => item.url || item.label);
 }
-function levCreateSimulatedJotformRecord(payload = {}){
-  const nextCode = levCode(levRecords.length + 1);
-  const agency = String(payload.agency || '').trim() || '1034';
-  const group = String(payload.group || '').trim() || '48';
-  const technician = String(payload.technician || '').trim() || 'Luis Regalado';
-  const visitDate = String(payload.visitDate || '').trim() || new Date().toISOString().slice(0,10);
-  const displayAgency = agency.padStart(4,'0');
-  const publicidades = payload.publicidades || 'Aceptable';
-  const puertaEstado = payload.puertaEstado || 'Mal Estado';
-  const puertaProblema = payload.puertaProblema || 'Está de engrasar, muy dura.';
-  const findingsCount = [/aceptable|regular|mal estado|cr[ií]tico/i.test(publicidades) ? 1 : 0, /aceptable|regular|mal estado|cr[ií]tico/i.test(puertaEstado) ? 1 : 0].reduce((a,b)=>a+b,0) || 1;
-  return levNormalizeItem({
-    id:`lev-jotform-sim-${agency}-${Date.now()}`,
-    code: nextCode,
-    category:'Arqueo de agencia',
-    type:'Levantamiento de Agencia · Jotform demo',
-    agency,
-    group,
-    technician,
-    responsible:technician,
-    visitDate,
-    submittedAt: levNow(),
-    workflowStatus:'Pendiente de revisión',
-    overallStatus: findingsCount >= 2 ? 'Bueno con observaciones menores' : 'Bueno',
-    priority: /mal estado|cr[ií]tico/i.test(puertaEstado) ? 'Alta' : 'Media',
-    findingsCount,
-    evidenceCount:0,
-    executiveSummary:`Recepción simulada desde Jotform para la agencia ${displayAgency}. La evaluación general muestra condiciones estables en fachada, eléctrico, mobiliario y equipos básicos, con observaciones puntuales registradas en el formulario.`,
-    findings:`Publicidades: ${publicidades}. Puerta enrollable/elétrica: ${puertaEstado}${puertaProblema ? ` (${puertaProblema})` : ''}. El resto del bloque principal se mantiene en buen estado en esta simulación.`,
-    recommendations:`Validar en la agencia ${displayAgency} los puntos marcados en el formulario. Si la puerta enrollable/elétrica mantiene la condición reportada, convertirlo en Trabajo dentro de Operaciones.`,
-    nextAction:`Seguimiento operativo para la agencia ${displayAgency} según evaluación recibida desde formulario.`,
-    structure:[
-      {item:'Toldo', state:'Buen Estado', observation:''},
-      {item:'Pecho', state:'Buen Estado', observation:''},
-      {item:'Publicidades', state:publicidades, observation:''},
-      {item:'Pintura / Filtraciones', state:'Buen Estado', observation:''},
-      {item:'Piso', state:'Buen Estado', observation:''},
-      {item:'Hierros / Cristales', state:'Buen Estado', observation:''},
-      {item:'Puerta enrollable / Eléctrica', state:puertaEstado, observation:puertaProblema},
-      {item:'Caja registradora / Gaveta', state:'Buen Estado', observation:''},
-      {item:'Abanico', state:'Buen Estado', observation:''},
-      {item:'Taburete', state:'Buen Estado', observation:''}
-    ],
-    electrical:[
-      {item:'Cables de la calle', state:'Buen Estado', observation:''},
-      {item:'Estructura eléctrica', state:'Buen Estado', observation:''},
-      {item:'Conectores', state:'Buen Estado', observation:''},
-      {item:'Fuentes y cables de equipos', state:'Buen Estado', observation:''},
-      {item:'Luces', state:'Buen Estado', observation:''}
-    ],
-    equipment:[
-      {name:'Inversor', available:'Sí tiene', description:'Registrado en formulario base', state:'Buen Estado', photoLabel:''},
-      {name:'Baterías', available:'Sí tiene', description:'Registrado en formulario base', state:'Buen Estado', photoLabel:''},
-      {name:'Máquina de venta', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
-      {name:'Printer', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
-      {name:'Scanner', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
-      {name:'2da Pantalla', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''},
-      {name:'Pantalla ATM', available:'No aplica', description:'No incluida en esta simulación básica', state:'No tiene', photoLabel:''}
-    ],
-    gallery:[
-      {label:'Exterior de la agencia', url:''},
-      {label:'Zona de cliente', url:''},
-      {label:'Zona de empleada', url:''}
-    ],
-    agencyObservation:`Simulación de levantamiento Jotform cargada para la agencia ${displayAgency}. Técnico: ${technician}. Grupo: ${group}.`,
-    diagnostics:{structure:'Bueno', electrical:'Bueno', equipment:'Bueno', incidents:`${findingsCount} observación${findingsCount !== 1 ? 'es' : ''}`, recommendation:'Seguimiento preventivo'},
-    actions:[
-      {title:'Revisar puntos observados', description:`Validar en la agencia ${displayAgency} los ítems marcados en el formulario de prueba.`}
-    ],
-    createdAt: levNow(),
-    updatedAt: levNow()
-  });
-}
-function levSyncAgencyFromRecord(record){
-  const numero = String(record?.agency || '').trim();
-  if(!numero) return null;
-  let agencia = agencias.find(item => String(Number(item.numero)) === String(Number(numero)));
-  const grupoTexto = String(record?.group || '').trim();
-  const grupoLabel = grupoTexto ? (grupoTexto.toLowerCase().includes('grupo') ? grupoTexto : `Grupo ${grupoTexto.padStart(2,'0')}`) : 'Grupo 00';
-  if(!agencia){
-    agencia = createAgencyRecord(Number(numero), grupoLabel, record.technician || 'Sin encargado');
-    agencias.push(agencia);
-  }
-  ensureAgencyDetailDefaults(agencia);
-  agencia.nombre = `Agencia ${String(numero).padStart(4,'0')}`;
-  agencia.grupo = grupoLabel;
-  agencia.encargado = record.technician || agencia.encargado;
-  agencia.detalle.go = agencia.detalle.go || String(numero).padStart(4,'0');
-  agencia.detalle.ltk = agencia.detalle.ltk || `LTK-${String(numero).padStart(4,'0')}`;
-  agencia.detalle.observacion = record.agencyObservation || record.executiveSummary || agencia.detalle.observacion;
-  agencia.detalle.parametros.tecnico = record.technician || agencia.detalle.parametros.tecnico;
-  agencia.detalle.parametros.ultimaVisita = record.visitDate || agencia.detalle.parametros.ultimaVisita;
-  const structureMap = {};
-  (record.structure || []).forEach(row => { structureMap[row.item] = row.state; });
-  if(structureMap['Toldo']) agencia.detalle.estructura.toldo = structureMap['Toldo'];
-  if(structureMap['Pecho']) agencia.detalle.estructura.techo = structureMap['Pecho'];
-  if(structureMap['Pintura / Filtraciones']) agencia.detalle.estructura.pintura = structureMap['Pintura / Filtraciones'];
-  if(structureMap['Piso']) agencia.detalle.estructura.piso = structureMap['Piso'];
-  if(structureMap['Puerta enrollable / Eléctrica']) agencia.detalle.estructura.puerta = structureMap['Puerta enrollable / Eléctrica'];
-  if(structureMap['Caja registradora / Gaveta']) agencia.detalle.estructura.counter = structureMap['Caja registradora / Gaveta'];
-  agencia.detalle.estructura.comentario = record.findings || agencia.detalle.estructura.comentario;
-  const galleryMap = {};
-  (record.gallery || []).forEach(row => { galleryMap[row.label] = row.url; });
-  if(galleryMap['Exterior de la agencia']) agencia.detalle.galeria.exterior = galleryMap['Exterior de la agencia'];
-  if(galleryMap['Zona de cliente']) agencia.detalle.galeria.cliente = galleryMap['Zona de cliente'];
-  if(galleryMap['Zona de empleada']) agencia.detalle.galeria.empleada = galleryMap['Zona de empleada'];
-  if(!Array.isArray(agencia.detalle.levantamientos)) agencia.detalle.levantamientos = [];
-  agencia.detalle.levantamientos.unshift({
-    code: record.code,
-    date: record.visitDate,
-    type: record.type,
-    category: record.category,
-    priority: record.priority,
-    status: record.workflowStatus,
-    summary: record.executiveSummary
-  });
-  agencia.detalle.levantamientos = agencia.detalle.levantamientos.slice(0,10);
-  agencias.sort((a,b)=> Number(a.numero) - Number(b.numero));
-  renderAgencias();
-  if(agenciaDetalleActualIndex !== null && String(Number(agencias[agenciaDetalleActualIndex]?.numero || '')) === String(Number(numero))){
-    verDetalleAgencia(agenciaDetalleActualIndex);
-  }
-  return agencia;
-}
-function levSimulateJotformSubmission(){
-  const agency = (window.prompt('Número de agencia a sincronizar:', '1034') || '').trim();
-  if(!agency) return;
-  const group = (window.prompt('Grupo de la agencia:', '48') || '').trim();
-  if(!group) return;
-  const technician = (window.prompt('Técnico del formulario:', 'Luis Regalado') || '').trim() || 'Luis Regalado';
-  const visitDate = (window.prompt('Fecha del levantamiento (YYYY-MM-DD):', new Date().toISOString().slice(0,10)) || '').trim() || new Date().toISOString().slice(0,10);
-  const publicidades = (window.prompt('Estado de publicidades:', 'Aceptable') || '').trim() || 'Aceptable';
-  const puertaEstado = (window.prompt('Estado de puerta enrollable / eléctrica:', 'Mal Estado') || '').trim() || 'Mal Estado';
-  const puertaProblema = (window.prompt('Problema reportado en puerta (opcional):', 'Está de engrasar, muy dura.') || '').trim();
-  const duplicate = levRecords.find(item => String(item.agency) === String(agency) && String(item.visitDate) === String(visitDate) && levSlug(item.type).includes('jotform demo'));
-  if(duplicate){
-    alert(`Ya existe una simulación Jotform para la agencia ${String(agency).padStart(4,'0')} en la fecha ${visitDate}.`);
-    return;
-  }
-  const record = levCreateSimulatedJotformRecord({ agency, group, technician, visitDate, publicidades, puertaEstado, puertaProblema });
-  levRecords.unshift(record);
-  levSave();
-  levPopulateCategoryFilter();
-  levPopulateGroupFilter();
-  levFillDatalists();
-  levSyncAgencyFromRecord(record);
-  const agencyInput = document.getElementById('levFilterAgency');
-  if(agencyInput) agencyInput.value = String(agency);
-  const groupInput = document.getElementById('levFilterGroup');
-  if(groupInput) groupInput.value = String(group);
-  levRender();
-  alert(`Simulación Jotform cargada correctamente. Se creó el levantamiento y se sincronizó la agencia ${String(agency).padStart(4,'0')} del grupo ${group}.`);
-}
 function levSetSelectValue(id, value, fallback=''){ const el = document.getElementById(id); if(el) el.value = value || fallback || el.value || ''; }
 function levSetValue(id, value=''){ const el = document.getElementById(id); if(el) el.value = value || ''; }
 function levResetImageField(key){ const hidden = document.getElementById(`levGallery_${key}`); const file = document.getElementById(`levGalleryFile_${key}`); const img = document.getElementById(`levGalleryPreview_${key}`); const empty = document.getElementById(`levGalleryEmpty_${key}`); if(hidden) hidden.value=''; if(file) file.value=''; if(img){ img.src=''; img.style.display='none'; } if(empty) empty.style.display='block'; }
@@ -11853,7 +11963,6 @@ function levInit(){
     document.getElementById(id)?.addEventListener('change', levRender);
   });
   document.getElementById('levOpenCreateBtn')?.addEventListener('click', levOpenCreate);
-  document.getElementById('levSimulateJotformBtn')?.addEventListener('click', levSimulateJotformSubmission);
   document.getElementById('levExportBtn')?.addEventListener('click', levExportCSV);
   document.getElementById('levExportExcelBtn')?.addEventListener('click', levExportExcel);
   document.getElementById('levResetBtn')?.addEventListener('click', () => { localStorage.removeItem(LEV_STORAGE_KEY); levLoad(); levPopulateCategoryFilter(); levPopulateGroupFilter(); levFillDatalists(); levRender(); });
@@ -12310,6 +12419,228 @@ function rrhdGoToModule(module, extra={}){
 function hrxInit(){ hrxLoad(); hrhLoad(); hrxPopulateFilters(); hrhPopulateFilters(); rrhdPopulateFilters(); hrxFiltered=[...hrxSolicitudes]; hrhFiltered=[...hrhHistorial]; hrxRender(); hrhRender(); rrhdRender(); hrxBindFilterEvents(); ['rrhdFilterAgencia','rrhdFilterGrupo','rrhdFilterEstado','rrhdFilterTurno'].forEach(id=>document.getElementById(id)?.addEventListener('change', rrhdRender)); }
 window.addEventListener('DOMContentLoaded', hrxInit);
 
+</script>
+
+
+<div class="lev-modal" id="ltkBridgeModal">
+  <div class="lev-modal-dialog" style="max-width:900px;width:min(94vw,900px)">
+    <div class="lev-modal-head"><h3>Configuración Jotform / Supabase</h3><button type="button" class="lev-btn ghost" onclick="ltkCloseBridgeModal()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <div class="lev-modal-body">
+      <div class="ltk-config-grid">
+        <div class="lev-field full"><label>URL base de Supabase</label><input id="ltkSupabaseUrl" placeholder="https://tu-proyecto.supabase.co"></div>
+        <div class="lev-field full"><label>Anon Key de Supabase</label><textarea id="ltkSupabaseAnonKey" placeholder="Pega aquí tu anon public key" style="min-height:110px"></textarea></div>
+        <div class="lev-field full"><label>Function URL del webhook Jotform</label><input id="ltkFunctionUrl" placeholder="https://tu-proyecto.supabase.co/functions/v1/jotform-levantamientos"></div>
+      </div>
+      <div class="ltk-help-box">
+        <strong>Qué hace esta configuración:</strong><br>
+        1. El <strong>webhook de Jotform</strong> ya lo manejas en Supabase.<br>
+        2. Este HTML solo necesita la <strong>URL base</strong> y la <strong>anon key</strong> para leer las tablas <code>agencias</code>, <code>levantamientos</code> y <code>levantamientos_detalle</code>.<br>
+        3. Si todavía no pones la anon key, el sistema seguirá funcionando con su modo local sin romper detalle de agencias ni levantamientos.
+      </div>
+    </div>
+    <div class="lev-modal-actions">
+      <button type="button" class="lev-btn ghost" onclick="ltkCloseBridgeModal()">Cancelar</button>
+      <button type="button" class="lev-btn secondary" onclick="ltkLoadBridgeDefaults()">Cargar defaults</button>
+      <button type="button" class="lev-btn primary" onclick="ltkSaveBridgeConfig()">Guardar configuración</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const LTK_BRIDGE_STORAGE_KEY = 'loteka_jotform_supabase_bridge_v1';
+const LTK_DEFAULT_SUPABASE_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co';
+const LTK_DEFAULT_FUNCTION_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co/functions/v1/jotform-levantamientos';
+let ltkBridgeConfig = { supabaseUrl: LTK_DEFAULT_SUPABASE_URL, anonKey: '', functionUrl: LTK_DEFAULT_FUNCTION_URL };
+
+function ltkLoadBridgeConfig(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(LTK_BRIDGE_STORAGE_KEY) || '{}');
+    ltkBridgeConfig = {
+      supabaseUrl: saved.supabaseUrl || LTK_DEFAULT_SUPABASE_URL,
+      anonKey: saved.anonKey || '',
+      functionUrl: saved.functionUrl || LTK_DEFAULT_FUNCTION_URL
+    };
+  } catch(e){
+    ltkBridgeConfig = { supabaseUrl: LTK_DEFAULT_SUPABASE_URL, anonKey: '', functionUrl: LTK_DEFAULT_FUNCTION_URL };
+  }
+}
+function ltkPersistBridgeConfig(){ localStorage.setItem(LTK_BRIDGE_STORAGE_KEY, JSON.stringify(ltkBridgeConfig)); }
+function ltkSetSyncStatus(message){ const el=document.getElementById('ltkSyncStatus'); if(el) el.textContent = message; }
+function ltkUpdateBridgeBadges(){
+  const back=document.getElementById('ltkBadgeBackend');
+  const front=document.getElementById('ltkBadgeFrontend');
+  if(back){
+    back.className='ltk-sync-badge good';
+    back.innerHTML = '<i class="fas fa-plug"></i> Webhook Jotform listo';
+  }
+  if(front){
+    const ok = !!(ltkBridgeConfig.supabaseUrl && ltkBridgeConfig.anonKey);
+    front.className = `ltk-sync-badge ${ok ? 'good' : 'warn'}`;
+    front.innerHTML = `<i class="fas fa-database"></i> Lectura Supabase: ${ok ? 'configurada' : 'pendiente'}`;
+  }
+}
+function ltkOpenBridgeModal(){
+  document.getElementById('ltkSupabaseUrl').value = ltkBridgeConfig.supabaseUrl || '';
+  document.getElementById('ltkSupabaseAnonKey').value = ltkBridgeConfig.anonKey || '';
+  document.getElementById('ltkFunctionUrl').value = ltkBridgeConfig.functionUrl || '';
+  document.getElementById('ltkBridgeModal').style.display = 'flex';
+}
+function ltkCloseBridgeModal(){ const el=document.getElementById('ltkBridgeModal'); if(el) el.style.display='none'; }
+function ltkLoadBridgeDefaults(){
+  document.getElementById('ltkSupabaseUrl').value = LTK_DEFAULT_SUPABASE_URL;
+  document.getElementById('ltkFunctionUrl').value = LTK_DEFAULT_FUNCTION_URL;
+}
+function ltkSaveBridgeConfig(){
+  ltkBridgeConfig.supabaseUrl = (document.getElementById('ltkSupabaseUrl').value || '').trim().replace(/\/$/, '');
+  ltkBridgeConfig.anonKey = (document.getElementById('ltkSupabaseAnonKey').value || '').trim();
+  ltkBridgeConfig.functionUrl = (document.getElementById('ltkFunctionUrl').value || '').trim();
+  ltkPersistBridgeConfig();
+  ltkUpdateBridgeBadges();
+  ltkSetSyncStatus(ltkBridgeConfig.anonKey ? 'Configuración guardada. Ya puedes sincronizar agencias y levantamientos reales desde Supabase.' : 'Configuración guardada sin anon key. El sistema seguirá en modo local hasta que completes la lectura desde Supabase.');
+  ltkCloseBridgeModal();
+}
+function ltkNormalizeGroupName(value){
+  const raw = String(value || '').trim();
+  if(!raw) return '';
+  return /^grupo\s+/i.test(raw) ? raw : `Grupo ${raw}`;
+}
+function ltkFindAgencyIndexByCode(code){
+  return agencias.findIndex(a => String(a?.numero || '').replace(/\D+/g,'') === String(code || '').replace(/\D+/g,''));
+}
+function ltkEnsureAgencyFromSupabase(row){
+  const code = String(row?.codigo_agencia || '').replace(/\D+/g,'');
+  if(!code) return null;
+  const num = Number(code);
+  let index = ltkFindAgencyIndexByCode(code);
+  if(index === -1){
+    const nuevo = createAgencyRecord(num, ltkNormalizeGroupName(row?.grupo || ''), row?.tecnico_ultimo || 'pendiente');
+    agencias.unshift(nuevo);
+    index = 0;
+  }
+  const agencia = agencias[index];
+  agencia.numero = num;
+  agencia.nombre = `Agencia ${String(code).padStart(4,'0')}`;
+  agencia.grupo = ltkNormalizeGroupName(row?.grupo || agencia.grupo || '');
+  agencia.encargado = row?.tecnico_ultimo || agencia.encargado || 'pendiente';
+  agencia.detalle = agencia.detalle || {};
+  agencia.detalle.general = agencia.detalle.general || {};
+  agencia.detalle.parametros = agencia.detalle.parametros || {};
+  agencia.detalle.general.observacion = row?.observacion_agencia || agencia.detalle.general.observacion || '';
+  agencia.detalle.parametros.ultimaVisita = row?.fecha_ultima_visita || agencia.detalle.parametros.ultimaVisita || '';
+  return agencia;
+}
+function ltkGetDetailValue(detailsByLev, levId, item){
+  const rows = detailsByLev[String(levId)] || [];
+  const hit = rows.find(r => String(r.item || '').trim().toLowerCase() === String(item).trim().toLowerCase());
+  return hit ? String(hit.valor || '') : '';
+}
+function ltkBuildLevRecord(row, detailsByLev, position){
+  const structure = LEV_STRUCTURE_FIELDS.map(label => ({ item: label, state: ltkGetDetailValue(detailsByLev, row.id, label) || 'Buen Estado' }));
+  const electrical = LEV_ELECTRICAL_FIELDS.map(label => ({ item: label, state: ltkGetDetailValue(detailsByLev, row.id, label) || 'Buen Estado' }));
+  const equipment = [
+    { name:'Inversor', available: ltkGetDetailValue(detailsByLev, row.id, 'Inversor') || 'No aplica', description:'', state: 'Buen Estado', photoLabel:'Foto de inversor', photoUrl:'' },
+    { name:'Baterías', available: ltkGetDetailValue(detailsByLev, row.id, 'Baterias') || ltkGetDetailValue(detailsByLev, row.id, 'Baterías') || 'No aplica', description:'', state: 'Buen Estado', photoLabel:'Foto de baterías', photoUrl:'' },
+    { name:'Caja registradora / Gaveta', available:'Sí tiene', description:'', state: ltkGetDetailValue(detailsByLev, row.id, 'Caja registradora / Gaveta') || 'Buen Estado', photoLabel:'', photoUrl:'' },
+    { name:'Abanico', available:'Sí tiene', description:'', state: ltkGetDetailValue(detailsByLev, row.id, 'Abanico') || 'Buen Estado', photoLabel:'', photoUrl:'' },
+    { name:'Taburete', available:'Sí tiene', description:'', state: ltkGetDetailValue(detailsByLev, row.id, 'Taburete') || 'Buen Estado', photoLabel:'', photoUrl:'' }
+  ];
+  const findingsCount = Number(row?.findings_count ?? 0) || levEstimateFindings(structure, electrical, equipment);
+  const overallStatus = row?.overall_status || levEstimateOverall(structure, electrical, equipment);
+  const executiveSummary = row?.resumen || `Levantamiento recibido desde Jotform para agencia ${row?.codigo_agencia || '-'}.`;
+  return levNormalizeItem({
+    id: `sb-${row.id}`,
+    code: row?.codigo || levCode(position + 1),
+    category: row?.categoria || 'Levantamiento técnico',
+    type: row?.categoria || 'Levantamiento técnico',
+    agency: String(row?.codigo_agencia || ''),
+    group: ltkNormalizeGroupName(row?.grupo || ''),
+    technician: row?.tecnico || row?.responsable || '',
+    responsible: row?.tecnico || row?.responsable || '',
+    visitDate: row?.fecha_levantamiento || row?.created_at || levToday(),
+    submittedAt: row?.created_at || levNow(),
+    workflowStatus: row?.workflow_status || row?.estado || 'Pendiente de revisión',
+    overallStatus,
+    priority: row?.prioridad || (findingsCount >= 3 ? 'Alta' : 'Media'),
+    findingsCount,
+    evidenceCount: Number(row?.evidence_count ?? 0) || 0,
+    executiveSummary,
+    agencyObservation: row?.observacion_agencia || '',
+    findings: executiveSummary,
+    recommendations: row?.recomendaciones || '',
+    nextAction: row?.proxima_accion || '',
+    structure,
+    electrical,
+    equipment,
+    gallery: [],
+    diagnostics: {
+      structure: /mal|cr[ií]tic/i.test(overallStatus) ? 'Regular' : 'Bueno',
+      electrical: electrical.some(r => /mal|cr[ií]tic/i.test(String(r.state||''))) ? 'Regular' : 'Bueno',
+      equipment: equipment.some(r => /mal|cr[ií]tic/i.test(String(r.state||''))) ? 'Regular' : 'Bueno',
+      incidents: findingsCount,
+      recommendation: findingsCount ? 'Seguimiento preventivo' : 'Sin novedad'
+    },
+    actions: [],
+    createdAt: row?.created_at || levNow(),
+    updatedAt: row?.updated_at || row?.created_at || levNow()
+  }, position);
+}
+async function ltkFetchTable(table, query='select=*'){
+  const base = (ltkBridgeConfig.supabaseUrl || '').replace(/\/$/, '');
+  const key = ltkBridgeConfig.anonKey || '';
+  if(!base || !key) throw new Error('Falta configurar URL base o anon key de Supabase.');
+  const url = `${base}/rest/v1/${table}?${query}`;
+  const response = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+  if(!response.ok) throw new Error(`No se pudo leer ${table}: ${response.status}`);
+  return await response.json();
+}
+async function ltkSyncAllFromSupabase(){
+  try {
+    ltkSetSyncStatus('Sincronizando agencias y levantamientos desde Supabase...');
+    ltkUpdateBridgeBadges();
+    const [sbAgencias, sbLevs, sbDetails] = await Promise.all([
+      ltkFetchTable('agencias', 'select=*&order=id.asc'),
+      ltkFetchTable('levantamientos', 'select=*&order=id.asc'),
+      ltkFetchTable('levantamientos_detalle', 'select=*&order=id.asc')
+    ]);
+    (sbAgencias || []).forEach(row => ltkEnsureAgencyFromSupabase(row));
+    const detailsByLev = {};
+    (sbDetails || []).forEach(row => {
+      const key = String(row.levantamiento_id);
+      if(!detailsByLev[key]) detailsByLev[key] = [];
+      detailsByLev[key].push(row);
+    });
+    const localMap = new Map((levRecords || []).map(item => [String(item.id), item]));
+    (sbLevs || []).forEach((row, idx) => {
+      const record = ltkBuildLevRecord(row, detailsByLev, idx);
+      localMap.set(String(record.id), record);
+    });
+    levRecords = Array.from(localMap.values()).map(levNormalizeItem).sort((a,b) => new Date(b.submittedAt||0) - new Date(a.submittedAt||0));
+    levSave();
+    levPopulateCategoryFilter();
+    levPopulateGroupFilter();
+    levFillDatalists();
+    levRender();
+    if(typeof renderAgencias === 'function') renderAgencias();
+    if(typeof renderDetalleAgenciaInventario === 'function'){
+      try { renderDetalleAgenciaInventario(); } catch(e){}
+    }
+    ltkUpdateBridgeBadges();
+    ltkSetSyncStatus(`Sincronización completada. Agencias leídas: ${(sbAgencias||[]).length}. Levantamientos leídos: ${(sbLevs||[]).length}.`);
+  } catch(error){
+    console.error('LTK Sync error:', error);
+    ltkSetSyncStatus(`No se pudo sincronizar: ${error.message || error}`);
+    alert(`No se pudo sincronizar desde Supabase.
+
+${error.message || error}`);
+  }
+}
+function ltkInitBridge(){
+  ltkLoadBridgeConfig();
+  ltkUpdateBridgeBadges();
+  ltkSetSyncStatus(ltkBridgeConfig.anonKey ? 'Configuración cargada. Puedes sincronizar los datos reales desde Supabase cuando quieras.' : 'Falta la anon key para leer desde Supabase. El webhook de Jotform sigue funcionando en backend y este HTML permanece estable en modo local.');
+}
+window.addEventListener('DOMContentLoaded', ltkInitBridge);
 </script>
 
 <script>
