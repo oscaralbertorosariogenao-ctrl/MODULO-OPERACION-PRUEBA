@@ -31,7 +31,7 @@
     body {
       margin:0;
       min-height:100vh;
-      font-family:Arial, Helvetica, sans-serif;
+      font-family:"Segoe UI", Roboto, Arial, Helvetica, sans-serif;
       background:
         radial-gradient(circle at top left, rgba(0,184,223,.20), transparent 35%),
         radial-gradient(circle at bottom right, rgba(8,119,184,.18), transparent 35%),
@@ -77,10 +77,12 @@
     .brand {
       display:flex;
       align-items:center;
-      gap:18px;
+      justify-content:center;
+      gap:22px;
       flex-wrap:wrap;
       position:relative;
       z-index:1;
+      text-align:center;
     }
 
     .logos {
@@ -91,8 +93,8 @@
     }
 
     .logo {
-      width:82px;
-      height:82px;
+      width:92px;
+      height:92px;
       object-fit:contain;
       background:white;
       border-radius:20px;
@@ -107,16 +109,18 @@
 
     .brandText {
       flex:1;
-      min-width:240px;
+      min-width:260px;
+      text-align:center;
     }
 
     .brandText h1 {
       margin:0;
-      font-size:clamp(26px,4vw,42px);
+      font-size:clamp(30px,4.8vw,48px);
       line-height:1.05;
       font-weight:900;
       color:var(--azul-oscuro);
-      letter-spacing:-.8px;
+      letter-spacing:-1px;
+      text-transform:uppercase;
     }
 
     .brandText .highlight {
@@ -131,7 +135,7 @@
     }
 
     .privacy {
-      margin-top:16px;
+      margin-top:18px;
       padding:13px 14px;
       border-radius:16px;
       background:#f2fcff;
@@ -418,7 +422,10 @@
     @media (max-width:700px) {
       .page { padding:14px 10px 26px; }
       .hero { padding:18px; border-radius:22px; }
-      .logo { width:64px; height:64px; }
+      .logo { width:72px; height:72px; }
+      .brand { gap:14px; }
+      .brandText { min-width:100%; }
+      .brandText h1 { font-size:28px; }
       form { padding:18px; }
       .grid { grid-template-columns:1fr; }
       .radioGroup { grid-template-columns:1fr; }
@@ -441,7 +448,6 @@
 
           <div class="brandText">
             <h1><span class="highlight">Solicitud</span> de Empleo</h1>
-            <p>LOTEKA + Grupo Ortiz · Recursos Humanos</p>
           </div>
         </div>
 
@@ -779,7 +785,7 @@
       </main>
 
       <div class="footerBrand">
-        LOTEKA + Grupo Ortiz · Formulario digital de solicitud de empleo
+Formulario digital de solicitud de empleo
       </div>
     </div>
   </div>
