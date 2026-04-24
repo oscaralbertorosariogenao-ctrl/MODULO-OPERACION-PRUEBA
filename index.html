@@ -12181,7 +12181,12 @@ function hrxEdadRanges(){ return [{v:'18-24',t:'18 a 24 años'},{v:'25-34',t:'25
 function hrxActiveQueueStates(){ return ['Solicitud','En evaluación']; }
 function hrxEmploymentStates(){ return ['Activa','Vacaciones','Licencia','Cancelada/o','Abandono','Renuncia']; }
 function hrxAssetPlaceholder(label){ return `<div style="display:grid;place-items:center;height:100%;text-align:center;padding:18px;color:#55758f;font-weight:800">${label}</div>`; }
-function hrxImageOrPlaceholder(src, label){ return src ? `<img src="${src}" alt="${label}">` : hrxAssetPlaceholder(label); }
+function hrxImageOrPlaceholder(src, label){
+  const safeSrc = hrxSafe(src);
+  return safeSrc
+    ? `<img src="${safeSrc}" alt="${label}" style="cursor:zoom-in" onclick="window.open('${safeSrc}','_blank')" onerror="this.parentElement.innerHTML=hrxAssetPlaceholder('${label}')">`
+    : hrxAssetPlaceholder(label);
+}
 function hrxFileToDataUrl(file, cb){ const reader=new FileReader(); reader.onload=e=>cb(e.target?.result || ''); reader.readAsDataURL(file); }
 
 function hrxEmptyRecord(){
@@ -12298,6 +12303,12 @@ function hrxMapSupabaseSolicitud(row){
     provincia: row.provincia || '',
     sector: row.zona_deseada || '',
     direccion: row.direccion || '',
+    contactoEmergenciaNombre: row.contacto_emergencia || row.contactoEmergenciaNombre || '',
+    contactoEmergenciaRelacion: row.relacion_emergencia || row.contactoEmergenciaRelacion || '',
+    contactoEmergenciaTelefono: row.telefono_emergencia || row.contactoEmergenciaTelefono || '',
+    foto: row.foto_biografia_url || row.foto || '',
+    cedulaFrontal: row.foto_cedula_frontal_url || row.cedulaFrontal || '',
+    cedulaTrasera: row.foto_cedula_trasera_url || row.cedulaTrasera || '',
     puesto: 'Representante de Ventas',
     turnoDeseado: row.turno || row.turno_deseado || '',
     estado: row.estado || 'Solicitud',
