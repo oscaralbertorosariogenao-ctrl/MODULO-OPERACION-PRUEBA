@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Solicitud de Empleo - Grupo Ortiz</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+body{
+  font-family: Arial;
+  background:#0f172a;
+  color:white;
+  margin:0;
+}
+
+.container{
+  max-width:500px;
+  margin:auto;
+  padding:20px;
+}
+
+h2{
+  text-align:center;
+}
+
+.step{ display:none; }
+.step.active{ display:block; }
+
+input, select, textarea{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
+  background:#1e293b;
+  color:white;
+}
+
+button{
+  margin-top:15px;
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:8px;
+  background:#0ea5c6;
+  color:white;
+  font-weight:bold;
+}
+
+.progress{
+  text-align:center;
+  margin-bottom:15px;
+  opacity:.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Solicitud de Empleo</h2>
+<div class="progress" id="progress">Paso 1 de 5</div>
+
+<form id="form">
+
+<!-- PASO 1 -->
+<div class="step active">
+<input id="nombre" placeholder="Nombre completo" required>
+<input id="cedula" placeholder="Cédula" required>
+<input type="date" id="fecha_nacimiento" required>
+<button type="button" onclick="next()">Siguiente</button>
+</div>
+
+<!-- PASO 2 -->
+<div class="step">
+<input id="telefono" placeholder="Teléfono">
+<input id="correo" placeholder="Correo">
+<input id="direccion" placeholder="Dirección">
+<button type="button" onclick="prev()">Atrás</button>
+<button type="button" onclick="next()">Siguiente</button>
+</div>
+
+<!-- PASO 3 -->
+<div class="step">
+<input id="hijos" placeholder="Cantidad de hijos">
+<input id="dependientes" placeholder="Dependientes">
+<button type="button" onclick="prev()">Atrás</button>
+<button type="button" onclick="next()">Siguiente</button>
+</div>
+
+<!-- PASO 4 -->
+<div class="step">
+<select id="educacion">
+<option>Primaria</option>
+<option>Secundaria</option>
+<option>Universitaria</option>
+</select>
+
+<select id="experiencia">
+<option>No</option>
+<option>Sí</option>
+</select>
+
+<button type="button" onclick="prev()">Atrás</button>
+<button type="button" onclick="next()">Siguiente</button>
+</div>
+
+<!-- PASO 5 -->
+<div class="step">
+<select id="turno">
+<option>Matutino</option>
+<option>Vespertino</option>
+</select>
+
+<textarea id="comentario" placeholder="Comentario"></textarea>
+
+<button type="button" onclick="prev()">Atrás</button>
+<button type="submit">Enviar solicitud</button>
+</div>
+
+</form>
+
+</div>
+
+<script>
+let current = 0;
+const steps = document.querySelectorAll(".step");
+const progress = document.getElementById("progress");
+
+function showStep(){
+  steps.forEach((s,i)=> s.classList.toggle("active", i===current));
+  progress.innerText = `Paso ${current+1} de 5`;
+}
+
+function next(){
+  if(current < steps.length-1){
+    current++;
+    showStep();
+  }
+}
+
+function prev(){
+  if(current > 0){
+    current--;
+    showStep();
+  }
+}
+
+showStep();
+
+// 🔥 SUPABASE REAL CONFIGURADO
+const supabase = window.supabase.createClient(
+  "https://cvmkfzagrtwygmwsqomb.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0"
+);
+
+// 🚀 ENVÍO
+document.getElementById("form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  const data = {
+    nombre: nombre.value,
+    cedula: cedula.value,
+    fecha_nacimiento: fecha_nacimiento.value,
+    telefono: telefono.value,
+    correo: correo.value,
+    direccion: direccion.value,
+    hijos: hijos.value,
+    dependientes: dependientes.value,
+    educacion: educacion.value,
+    experiencia: experiencia.value,
+    turno: turno.value,
+    comentario: comentario.value
+  };
+
+  const { error } = await supabase
+    .from("solicitudes_rrhh")
+    .insert([data]);
+
+  if(error){
+    alert("Error al enviar ❌");
+    console.log(error);
+  }else{
+    alert("Solicitud enviada 🚀");
+    location.reload();
+  }
+});
+</script>
+
+</body>
+</html>
