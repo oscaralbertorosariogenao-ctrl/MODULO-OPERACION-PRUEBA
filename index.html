@@ -4087,7 +4087,7 @@ function cambiarVista(vista, el){
   if(target) target.classList.remove('hidden');
   activateSidebarLink(el, vista);
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
-  if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
+  if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromSupabase === 'function') hrxSyncSolicitudesFromSupabase(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
   if(vista==='historial-rrhh' && typeof hrhApplyFilters === 'function') hrhApplyFilters();
 }
@@ -10973,7 +10973,7 @@ function cambiarVista(vista, el){
   activateSidebarLink(el, vista);
 
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
-  if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
+  if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromSupabase === 'function') hrxSyncSolicitudesFromSupabase(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
   if(vista==='historial-rrhh' && typeof hrhApplyFilters === 'function') hrhApplyFilters();
 }
@@ -12237,6 +12237,129 @@ function hrxLoad(){
   hrxSolicitudes = hrxSolicitudes.map(hrxNormalize).filter(r=>hrxActiveQueueStates().includes(r.estado));
   hrxSave();
 }
+
+/* ===== Conexión RRHH Solicitudes + Supabase ===== */
+const HRX_SUPABASE_TABLE = 'solicitudes_rrhh';
+let hrxSupabaseRealtimeChannel = null;
+
+function hrxFormatJsonList(value){
+  if(!value) return '';
+  try{
+    const arr = Array.isArray(value) ? value : JSON.parse(value);
+    if(!Array.isArray(arr)) return '';
+    return arr.map((item, idx)=>{
+      if(!item || typeof item !== 'object') return String(item || '');
+      const parts = Object.entries(item)
+        .filter(([k,v])=>v!==null && v!==undefined && String(v).trim()!=='')
+        .map(([k,v])=>`${k}: ${v}`);
+      return parts.length ? `${idx+1}. ${parts.join(' · ')}` : '';
+    }).filter(Boolean).join('\n');
+  }catch(e){ return String(value || ''); }
+}
+
+function hrxMapSupabaseSolicitud(row){
+  const fullName = hrxSafe(row.nombre_completo || row.nombre || '');
+  const refs = hrxFormatJsonList(row.referencias_laborales);
+  const hijos = hrxFormatJsonList(row.hijos);
+  const observaciones = [
+    row.comentario ? `Comentario: ${row.comentario}` : '',
+    row.poblacion_deseada || row.zona_deseada ? `Población/Zona deseada: ${hrxSafe(row.poblacion_deseada)} / ${hrxSafe(row.zona_deseada)}` : '',
+    row.dependientes !== null && row.dependientes !== undefined ? `Dependientes: ${row.dependientes}` : '',
+    row.cuidador_dependientes ? `Cuidador dependientes: ${row.cuidador_dependientes}` : '',
+    hijos ? `Hijos:\n${hijos}` : '',
+    refs ? `Referencias laborales:\n${refs}` : ''
+  ].filter(Boolean).join('\n\n');
+
+  const experiencia = [
+    row.trabajo_loteka ? `Ha trabajado en Agencia Loteka: ${row.trabajo_loteka}` : '',
+    row.trabajo_banca ? `Ha laborado en banca de lotería: ${row.trabajo_banca}` : '',
+    row.nivel_educacion ? `Nivel de educación: ${row.nivel_educacion}` : '',
+    row.estudia_actualmente ? `Estudia actualmente: ${row.estudia_actualmente}` : '',
+    row.nivel_tecnologico ? `Manejo tecnológico: ${row.nivel_tecnologico}` : '',
+    row.solicito_antes ? `Solicitó antes: ${row.solicito_antes}` : '',
+    row.familiares_empresa ? `Familiares en empresa: ${row.familiares_empresa}` : ''
+  ].filter(Boolean).join('\n');
+
+  return hrxNormalize({
+    id: `sb-${row.id}`,
+    supabaseId: row.id,
+    nombre: fullName,
+    apellido: '',
+    apodos: row.apodo || '',
+    fechaNacimiento: row.fecha_nacimiento || '',
+    lugarNacimiento: row.lugar_nacimiento || '',
+    nacionalidad: row.nacionalidad || 'Dominicano(a)',
+    sexo: row.sexo || 'Femenino',
+    estadoCivil: row.estado_civil || '',
+    cedula: row.cedula || '',
+    telefono: row.celular || row.telefono || '',
+    correo: row.correo || '',
+    correoConfirmacion: row.correo || '',
+    provincia: row.provincia || '',
+    sector: row.zona_deseada || '',
+    direccion: row.direccion || '',
+    puesto: 'Representante de Ventas',
+    turnoDeseado: row.turno || row.turno_deseado || '',
+    estado: row.estado || 'Solicitud',
+    agenciaInteres: row.agencia || '',
+    grupoInteres: row.grupo || '',
+    fechaSolicitud: row.created_at ? String(row.created_at).slice(0,10) : hrxTodayISO(),
+    experiencia,
+    observaciones,
+    comentarioEvaluacion: '',
+    comentarioRechazo: '',
+    responsable: 'Formulario web',
+    tipoOperadora: 'Normal',
+    estadoLaboral: 'Activa',
+    salud: 'No'
+  });
+}
+
+async function hrxSyncSolicitudesFromSupabase(showLog=false){
+  try{
+    if(typeof supabaseClient === 'undefined' || !supabaseClient?.from) return;
+    const { data, error } = await supabaseClient
+      .from(HRX_SUPABASE_TABLE)
+      .select('*')
+      .order('created_at', { ascending:false });
+
+    if(error){
+      console.error('Error sincronizando solicitudes RRHH desde Supabase:', error);
+      return;
+    }
+
+    const remote = (data || [])
+      .map(hrxMapSupabaseSolicitud)
+      .filter(r=>hrxActiveQueueStates().includes(r.estado));
+
+    const localOnly = hrxSolicitudes.filter(s=>!s.supabaseId);
+    hrxSolicitudes = [...remote, ...localOnly].map(hrxNormalize).filter(r=>hrxActiveQueueStates().includes(r.estado));
+    hrxSave();
+
+    hrxFiltered = [...hrxSolicitudes];
+    if(typeof hrxPopulateFilters === 'function') hrxPopulateFilters();
+    if(typeof hrxApplyFilters === 'function') hrxApplyFilters();
+    if(typeof rrhdRender === 'function') rrhdRender();
+
+    if(showLog) console.log(`Solicitudes RRHH sincronizadas: ${remote.length}`);
+  }catch(err){
+    console.error('Fallo inesperado sincronizando RRHH:', err);
+  }
+}
+
+function hrxStartSupabaseRealtime(){
+  try{
+    if(typeof supabaseClient === 'undefined' || !supabaseClient?.channel || hrxSupabaseRealtimeChannel) return;
+    hrxSupabaseRealtimeChannel = supabaseClient
+      .channel('rrhh-solicitudes-realtime')
+      .on('postgres_changes', { event:'*', schema:'public', table:HRX_SUPABASE_TABLE }, () => {
+        hrxSyncSolicitudesFromSupabase(false);
+      })
+      .subscribe();
+  }catch(err){
+    console.warn('Realtime RRHH no iniciado:', err);
+  }
+}
 function hrxSave(){ localStorage.setItem(HRX_STORAGE_KEY, JSON.stringify(hrxSolicitudes)); }
 function hrhDefault(){ return [{fecha:'2026-04-16T11:45:00', tipo:'Rechazo', nombre:'Luz Maria Feliz', cedula:'402-5551147-2', estado:'Rechazada', agencia:'0105', grupo:'06', origen:'Solicitudes', comentario:'No completó documentación requerida.'},{fecha:'2026-04-19T15:10:00', tipo:'Cambio laboral', nombre:'Rosa De La Cruz', cedula:'001-2345678-9', estado:'Vacaciones', agencia:'0141', grupo:'08', origen:'Operadoras', comentario:'Vacaciones registradas en RRHH.'}]; }
 function hrhLoad(){ try{ const raw=localStorage.getItem(HRH_STORAGE_KEY); hrhHistorial = raw ? JSON.parse(raw) : []; } catch(e){ hrhHistorial=[]; } if(!Array.isArray(hrhHistorial) || !hrhHistorial.length) hrhHistorial = hrhDefault(); hrhSave(); }
@@ -12456,7 +12579,22 @@ function rrhdGoToModule(module, extra={}){
   cambiarVista('dashboard-rrhh', document.getElementById(navMap[module] || 'navDashboardRrhh'));
 }
 
-function hrxInit(){ hrxLoad(); hrhLoad(); hrxPopulateFilters(); hrhPopulateFilters(); rrhdPopulateFilters(); hrxFiltered=[...hrxSolicitudes]; hrhFiltered=[...hrhHistorial]; hrxRender(); hrhRender(); rrhdRender(); hrxBindFilterEvents(); ['rrhdFilterAgencia','rrhdFilterGrupo','rrhdFilterEstado','rrhdFilterTurno'].forEach(id=>document.getElementById(id)?.addEventListener('change', rrhdRender)); }
+function hrxInit(){
+  hrxLoad();
+  hrhLoad();
+  hrxPopulateFilters();
+  hrhPopulateFilters();
+  rrhdPopulateFilters();
+  hrxFiltered=[...hrxSolicitudes];
+  hrhFiltered=[...hrhHistorial];
+  hrxRender();
+  hrhRender();
+  rrhdRender();
+  hrxBindFilterEvents();
+  ['rrhdFilterAgencia','rrhdFilterGrupo','rrhdFilterEstado','rrhdFilterTurno'].forEach(id=>document.getElementById(id)?.addEventListener('change', rrhdRender));
+  hrxSyncSolicitudesFromSupabase(false);
+  hrxStartSupabaseRealtime();
+}
 window.addEventListener('DOMContentLoaded', hrxInit);
 
 </script>
