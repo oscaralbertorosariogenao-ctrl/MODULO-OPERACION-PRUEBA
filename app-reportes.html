@@ -2580,7 +2580,7 @@
             <div id="statusBox" class="status"></div>
 
             <div class="small-note">
-              El reporte se guarda en Supabase y debe reflejarse automáticamente en tu sistema web.
+              El reporte se guarda en Appwrite y debe reflejarse automáticamente en tu sistema web operacional.
             </div>
           </form>
         </div>
@@ -2666,15 +2666,21 @@
   </div>
 
   <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    import { Client, Databases, ID, Query } from "https://cdn.jsdelivr.net/npm/appwrite@13.0.0/+esm";
 
-    const SUPABASE_URL = "https://cvmkfzagrtwygmwsqomb.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0";
+    const APPWRITE_ENDPOINT = "https://nyc.cloud.appwrite.io/v1";
+    const APPWRITE_PROJECT_ID = "69ef80760012b6fecbb9";
+    const APPWRITE_DATABASE_ID = "69ef83b500026b218a31";
+    const APPWRITE_OPERACIONES_COLLECTION_ID = "operaciones";
 
-    const BUCKET_NAME = "reportes-operaciones";
-    const TABLE_NAME = "reportes_operaciones";
+    const appwriteClient = new Client()
+      .setEndpoint(APPWRITE_ENDPOINT)
+      .setProject(APPWRITE_PROJECT_ID);
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const databases = new Databases(appwriteClient);
+
+    const BUCKET_NAME = "r2-pendiente";
+    const TABLE_NAME = APPWRITE_OPERACIONES_COLLECTION_ID;
     const PUSH_SUBSCRIPTIONS_TABLE = "push_subscriptions";
     const VAPID_PUBLIC_KEY = "BGVivbsGCQ-EWLaSYpdEvsuFtvGBjmoFAWdN9aO9kuFbigwy969HxyHWAdxtGeduVrV7kEwFy11Tr3YRL-4nkcw";
 
@@ -2686,6 +2692,134 @@
       return ASSIGNEE_LABELS[key] || raw;
     }
 
+
+
+    function firstNonEmpty(...values) {
+      for (const value of values) {
+        const text = String(value ?? "").trim();
+        if (text) return text;
+      }
+      return "";
+    }
+
+    function getAppwriteDocumentId(report) {
+      return report?.$id || report?.appwrite_id || report?.id || "";
+    }
+
+    function mediaArrayFromFotoUrl(value) {
+      const url = String(value || "").trim();
+      if (!url || url === "EVIDENCIA_PENDIENTE_R2") return [];
+      return [url];
+    }
+
+    function normalizeAppwriteOperation(doc) {
+      const titulo = firstNonEmpty(doc.titulo, "Operación");
+      const fecha = firstNonEmpty(doc.fecha_creacion, doc.$createdAt, new Date().toISOString());
+      const tecnico = firstNonEmpty(doc.tecnico, "Sin asignar");
+      const agenciaTexto = firstNonEmpty(doc.agencia, "Sin agencia");
+      const media = mediaArrayFromFotoUrl(doc.foto_url);
+
+      return {
+        ...doc,
+        id: doc.$id,
+        appwrite_id: doc.$id,
+        code: doc.$id,
+        tipo_reporte: titulo,
+        categoria: titulo,
+        descripcion: doc.descripcion || "",
+        agencia: agenciaTexto,
+        grupo: doc.grupo || "",
+        nombre_encargado: doc.encargado || "",
+        creado_por: doc.encargado || "",
+        fecha_reporte: fecha,
+        created_at: doc.$createdAt || fecha,
+        updated_at: doc.$updatedAt || fecha,
+        estado: doc.estado || "Pendiente",
+        prioridad: doc.prioridad || "",
+        asignado_a: tecnico,
+        tecnico: tecnico,
+        encargado: doc.encargado || "",
+        selected_types: titulo ? [titulo] : [],
+        images: media,
+        result_images: media,
+        observaciones: "",
+        resultado_tecnico: "",
+        history: Array.isArray(doc.history) ? doc.history : []
+      };
+    }
+
+    function buildAppwriteCreatePayload(payload) {
+      const titulo = firstNonEmpty(payload.categoria, payload.tipo_reporte, payload.titulo, "Reporte móvil").slice(0, 500);
+      const fecha = payload.fecha_reporte || payload.fecha_creacion || new Date().toISOString();
+      const imagen = Array.isArray(payload.images) && payload.images[0] ? payload.images[0] : (payload.foto_url || "");
+
+      return {
+        titulo,
+        descripcion: String(payload.descripcion || "").slice(0, 16000),
+        estado: payload.estado || "Pendiente",
+        prioridad: payload.prioridad || "",
+        agencia: payload.agencia || "",
+        grupo: payload.grupo || "",
+        tecnico: payload.asignado_a || payload.tecnico || "Sin asignar",
+        encargado: payload.nombre_encargado || payload.creado_por || payload.encargado || "",
+        foto_url: imagen || "",
+        fecha_creacion: fecha
+      };
+    }
+
+    function buildAppwriteUpdatePayload(report, payload = {}) {
+      const update = {};
+      if (Object.prototype.hasOwnProperty.call(payload, "estado")) update.estado = payload.estado || report.estado || "Pendiente";
+      if (Object.prototype.hasOwnProperty.call(payload, "prioridad")) update.prioridad = payload.prioridad || report.prioridad || "";
+      if (Object.prototype.hasOwnProperty.call(payload, "asignado_a") || Object.prototype.hasOwnProperty.call(payload, "tecnico")) {
+        update.tecnico = payload.asignado_a || payload.tecnico || report.asignado_a || report.tecnico || "Sin asignar";
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "descripcion") || Object.prototype.hasOwnProperty.call(payload, "observaciones") || Object.prototype.hasOwnProperty.call(payload, "resultado_tecnico")) {
+        const base = String(report.descripcion || "").trim();
+        const tech = String(payload.observaciones || payload.resultado_tecnico || payload.descripcion || "").trim();
+        update.descripcion = tech ? (base ? `${base}\n\nGestión técnica: ${tech}` : `Gestión técnica: ${tech}`) : base;
+      }
+      if (Array.isArray(payload.result_images) && payload.result_images[0]) update.foto_url = payload.result_images[0];
+      if (Object.prototype.hasOwnProperty.call(payload, "foto_url")) update.foto_url = payload.foto_url || report.foto_url || "";
+      return update;
+    }
+
+    async function appwriteListOperaciones() {
+      const all = [];
+      let offset = 0;
+      const limit = 100;
+      while (true) {
+        const res = await databases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_OPERACIONES_COLLECTION_ID,
+          [Query.limit(limit), Query.offset(offset), Query.orderDesc("$createdAt")]
+        );
+        all.push(...(res.documents || []));
+        if (!res.documents || res.documents.length < limit) break;
+        offset += limit;
+      }
+      return all.map(normalizeAppwriteOperation);
+    }
+
+    async function appwriteCreateOperacion(payload) {
+      return databases.createDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_OPERACIONES_COLLECTION_ID,
+        ID.unique(),
+        buildAppwriteCreatePayload(payload)
+      );
+    }
+
+    async function appwriteUpdateOperacion(report, payload) {
+      const documentId = getAppwriteDocumentId(report);
+      if (!documentId) throw new Error("No se encontró el ID de Appwrite de esta operación.");
+      return databases.updateDocument(
+        APPWRITE_DATABASE_ID,
+        APPWRITE_OPERACIONES_COLLECTION_ID,
+        documentId,
+        buildAppwriteUpdatePayload(report, payload)
+      );
+    }
 
     const REPORT_CATEGORY_OPTIONS = {
       "Avería": [
@@ -2931,7 +3065,7 @@
       const filePath = sanitized.startsWith(bucketPrefix)
         ? sanitized.slice(bucketPrefix.length)
         : sanitized.replace(/^reportes-operaciones\//i, '');
-      return supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath).data?.publicUrl || raw;
+      return raw;
     }
 
     function isLikelyImageUrl(url) {
@@ -3313,7 +3447,7 @@ let mobileRealtimeConnected = false;
       return registration;
     }
 
-    async function savePushSubscriptionToSupabase(subscription) {
+    async function savePushSubscriptionToAppwrite(subscription) {
       const userData = getCurrentPushUserPayload();
       if (!userData.username || !userData.role) {
         throw new Error("No se pudo identificar el usuario actual para guardar la suscripción push.");
@@ -3340,13 +3474,7 @@ let mobileRealtimeConnected = false;
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
-        .from(PUSH_SUBSCRIPTIONS_TABLE)
-        .upsert(payload, { onConflict: "endpoint" });
-
-      if (error) {
-        throw error;
-      }
+      console.log("Push subscription lista localmente (Appwrite):", payload);
 
       return payload;
     }
@@ -3358,7 +3486,7 @@ let mobileRealtimeConnected = false;
         const registration = await getActiveServiceWorkerRegistration();
         const subscription = await registration.pushManager.getSubscription();
         if (!subscription) return false;
-        await savePushSubscriptionToSupabase(subscription);
+        await savePushSubscriptionToAppwrite(subscription);
         return true;
       } catch (error) {
         console.warn("No se pudo sincronizar la suscripción push existente:", error);
@@ -3392,7 +3520,7 @@ let mobileRealtimeConnected = false;
         });
       }
 
-      await savePushSubscriptionToSupabase(subscription);
+      await savePushSubscriptionToAppwrite(subscription);
       return subscription;
     }
 async function requestBrowserAlerts() {
@@ -3639,74 +3767,29 @@ function handleRealtimeInstantNotification(payload) {
 }
 
 function initializeMobileRealtime() {
-  if (!supabase || mobileRealtimeChannel) return;
+  if (mobileRealtimeChannel) return;
 
-  mobileRealtimeChannel = supabase
-    .channel("loteka-mobile-reportes-live")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: TABLE_NAME
-      },
-      async (payload) => {
-        console.log("[INSERT EVENT]", payload);
-        handleRealtimeInstantNotification(payload);
-        await loadReports(true);
-      }
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: TABLE_NAME
-      },
-      async (payload) => {
-        console.log("[UPDATE EVENT]", payload);
-        handleRealtimeInstantNotification(payload);
-        await loadReports(true);
-      }
-    )
-    .subscribe((status) => {
-      console.log("[MOBILE REALTIME STATUS]", status);
-
-      if (status === "SUBSCRIBED") {
+  try {
+    mobileRealtimeChannel = appwriteClient.subscribe(
+      `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_OPERACIONES_COLLECTION_ID}.documents`,
+      async (event) => {
+        console.log("[APPWRITE REALTIME]", event);
+        try {
+          const row = normalizeAppwriteOperation(event?.payload || {});
+          handleRealtimeInstantNotification({ new: row, old: {} });
+        } catch (error) {
+          console.warn("No se pudo normalizar el evento realtime de Appwrite:", error);
+        }
         mobileRealtimeConnected = true;
-        console.log("Realtime móvil activo");
-        if (mobileRealtimeReconnectTimer) {
-          clearTimeout(mobileRealtimeReconnectTimer);
-          mobileRealtimeReconnectTimer = null;
-        }
+        await loadReports(true);
       }
-
-      if (
-        status === "CHANNEL_ERROR" ||
-        status === "TIMED_OUT" ||
-        status === "CLOSED"
-      ) {
-        mobileRealtimeConnected = false;
-        console.warn("Realtime móvil desconectado:", status);
-
-        if (!mobileRealtimeReconnectTimer) {
-          mobileRealtimeReconnectTimer = setTimeout(() => {
-            mobileRealtimeReconnectTimer = null;
-
-            if (mobileRealtimeChannel) {
-              try {
-                supabase.removeChannel(mobileRealtimeChannel);
-              } catch (error) {
-                console.warn("No se pudo remover el canal realtime:", error);
-              }
-              mobileRealtimeChannel = null;
-            }
-
-            initializeMobileRealtime();
-          }, 3000);
-        }
-      }
-    });
+    );
+    mobileRealtimeConnected = true;
+    console.log("Realtime móvil Appwrite activo");
+  } catch (error) {
+    mobileRealtimeConnected = false;
+    console.warn("Realtime móvil Appwrite no inició:", error);
+  }
 }
 
 function startReportAutoRefresh() {
@@ -4099,29 +4182,9 @@ function startReportAutoRefresh() {
 
     async function subirArchivoEvidencia(file) {
       validateEvidenceFile(file);
-      const ext = file.name.split(".").pop()?.toLowerCase() || (isVideoFile(file) ? "mp4" : "jpg");
-      const safeExt = ext.replace(/[^a-z0-9]/gi, "") || "jpg";
-      const filePrefix = isVideoFile(file) ? "video" : "reporte";
-      const fileName = `${filePrefix}_${Date.now()}_${Math.random().toString(36).slice(2)}.${safeExt}`;
-      const filePath = `reportes/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type || "image/jpeg"
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
-
-      if (!data?.publicUrl) {
-        throw new Error("No se pudo obtener la URL pública del archivo.");
-      }
-
-      return data.publicUrl;
+      // Cloudflare R2 se conectará en el siguiente paso.
+      // Esto evita volver a usar Cloudflare R2 y deja la app 100% en Appwrite para datos.
+      return "EVIDENCIA_PENDIENTE_R2";
     }
 
     imagen.addEventListener("change", () => {
@@ -4234,11 +4297,7 @@ function startReportAutoRefresh() {
   })
 };
 
-        const { error } = await supabase
-          .from(TABLE_NAME)
-          .insert([payload]);
-
-        if (error) throw error;
+        await appwriteCreateOperacion(payload);
 
         hideAppLoader();
         showStatus("Reporte guardado correctamente.", "ok");
@@ -4490,12 +4549,7 @@ function startReportAutoRefresh() {
 
       for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
         try {
-          const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .select("*");
-
-          if (error) throw error;
-          return data || [];
+          return await appwriteListOperaciones();
         } catch (err) {
           lastError = err;
           if (attempt < maxRetries) {
@@ -4605,23 +4659,17 @@ function startReportAutoRefresh() {
       }).join('') : '<div class="agency-empty">Todavía no hay historial registrado para esta agencia.</div>';
     }
 
-    async function loadAgencyHistoryFromSupabase(agency, { force = false } = {}) {
+    async function loadAgencyHistoryFromAppwrite(agency, { force = false } = {}) {
       if (!agency) return [];
       const cacheKey = agencyHistoryCacheKey(agency);
       const existing = agencyHistoryCache.get(cacheKey);
       if (existing?.promise && !force) return existing.promise;
 
       const digits = normalizeAgencyKey(cacheKey);
-      const queryDigits = Number(digits);
       const promise = (async () => {
         agencyHistoryCache.set(cacheKey, { status: 'loading', data: existing?.data || [], error: null, promise: null });
         try {
-          const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .select('*')
-            .or(`agencia.ilike.%${digits}%,agencia.eq.${queryDigits}`)
-            .order('created_at', { ascending: false });
-          if (error) throw error;
+          const data = await appwriteListOperaciones();
           const filtered = (data || [])
             .filter(report => getReportAgencyDigits(report) === digits)
             .sort((a, b) => new Date(b?.fecha_reporte || b?.created_at || 0) - new Date(a?.fecha_reporte || a?.created_at || 0));
@@ -4631,7 +4679,7 @@ function startReportAutoRefresh() {
           }
           return filtered;
         } catch (error) {
-          console.error('Error cargando historial de agencia desde Supabase:', error);
+          console.error('Error cargando historial de agencia desde Appwrite:', error);
           const fallback = getAgencyHistoryItems(agency);
           agencyHistoryCache.set(cacheKey, { status: 'error', data: fallback, error, promise: null, updatedAt: Date.now() });
           if (agencyViewState.mode === 'agency-history' && agencyHistoryCacheKey(agencyViewState.selectedAgency) === cacheKey) {
@@ -4653,7 +4701,7 @@ function startReportAutoRefresh() {
       agencyViewState = { mode, selectedGroup, selectedAgency };
       renderAgencySection();
       if (mode === 'agency-history' && selectedAgency) {
-        loadAgencyHistoryFromSupabase(selectedAgency).catch(error => {
+        loadAgencyHistoryFromAppwrite(selectedAgency).catch(error => {
           console.error('No se pudo cargar el historial de agencia:', error);
         });
       }
@@ -4744,7 +4792,7 @@ function startReportAutoRefresh() {
       let content = '';
 
       if (state === 'loading') {
-        content = '<div class="agency-empty">Cargando historial real desde Supabase...</div>';
+        content = '<div class="agency-empty">Cargando historial real desde Appwrite...</div>';
       } else {
         content = buildAgencyHistoryMarkupFromItems(items);
       }
@@ -4752,7 +4800,7 @@ function startReportAutoRefresh() {
       if (state === 'error') {
         content = `
           <div class="validation-banner">
-            No se pudo consultar Supabase en este momento. Se muestra el historial disponible cargado en la app para esta agencia.
+            No se pudo consultar Appwrite en este momento. Se muestra el historial disponible cargado en la app para esta agencia.
           </div>
           ${content}`;
       }
@@ -4764,7 +4812,7 @@ function startReportAutoRefresh() {
         </div>
         <div class="agency-block-card">
           <h4 class="agency-hero-title">Historial de ${agency.agencyLabel}</h4>
-          <p class="agency-hero-text">Revisa las averías y trabajos reales relacionados con esta agencia, consultados directamente desde Supabase.</p>
+          <p class="agency-hero-text">Revisa las averías y trabajos reales relacionados con esta agencia, consultados directamente desde Appwrite.</p>
         </div>
         <div class="history-grid">${content}</div>`;
     }
@@ -4822,7 +4870,7 @@ function startReportAutoRefresh() {
           const cacheKey = agencyHistoryCacheKey(agencyViewState.selectedAgency);
           const cached = agencyHistoryCache.get(cacheKey);
           if (!cached || cached.status !== 'ready') {
-            loadAgencyHistoryFromSupabase(agencyViewState.selectedAgency).catch(error => {
+            loadAgencyHistoryFromAppwrite(agencyViewState.selectedAgency).catch(error => {
               console.error('No se pudo cargar el historial de agencia:', error);
             });
           }
@@ -4861,7 +4909,7 @@ function startReportAutoRefresh() {
           const previousText = btn.textContent;
           btn.textContent = 'Actualizando...';
           try {
-            await loadAgencyHistoryFromSupabase(agency, { force: true });
+            await loadAgencyHistoryFromAppwrite(agency, { force: true });
             showInAppNotification('Historial actualizado', `Se recargó el historial de ${agency.agencyLabel}.`, 'Consulta los movimientos más recientes.');
           } catch (error) {
             console.error('No se pudo actualizar el historial de agencia:', error);
@@ -5043,7 +5091,7 @@ if (techBtn) {
           reportList.innerHTML = `
           <div class="empty-state" style="color:#991b1b;">
             ${isNetworkError
-              ? "No se pudo conectar con Supabase desde este móvil ahora mismo. Pulsa ‘Actualizar reportes’ para reintentar."
+              ? "No se pudo conectar con Appwrite desde este móvil ahora mismo. Pulsa ‘Actualizar reportes’ para reintentar."
               : `Error cargando reportes: ${err?.message || "desconocido"}`}
           </div>
         `;
@@ -5216,7 +5264,7 @@ function logout() {
     stopReportAutoRefresh();
   } catch (_) {}
   try {
-    if (mobileRealtimeChannel) supabase.removeChannel(mobileRealtimeChannel);
+    if (typeof mobileRealtimeChannel === "function") mobileRealtimeChannel();
   } catch (_) {}
   mobileRealtimeChannel = null;
   mobileRealtimeConnected = false;
@@ -5295,12 +5343,9 @@ async function cambiarEstadoTecnico(report, nuevoEstado) {
       : report.started_at
   };
 
-  const { error } = await supabase
-    .from(TABLE_NAME)
-    .update(payload)
-    .eq("id", report.id);
-
-  if (error) {
+  try {
+    await appwriteUpdateOperacion(report, payload);
+  } catch (error) {
     hideAppLoader();
     showFriendlyError("No se pudo actualizar el estado del reporte. Verifica tu conexión e inténtalo otra vez.");
     console.error(error);
@@ -5602,12 +5647,7 @@ async function guardarGestionTecnica(report) {
         : (report.resolution_time || "")
     };
 
-    const { error } = await supabase
-      .from(TABLE_NAME)
-      .update(payload)
-      .eq("id", report.id);
-
-    if (error) throw error;
+    await appwriteUpdateOperacion(report, payload);
 
     closeDetail();
     showStatus(`Gestión técnica guardada para ${report.code || 'el reporte'}.`, "ok");
