@@ -1953,11 +1953,11 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
   
   <div class="ltk-sync-banner">
     <div>
-      <h4>Conexión Jotform / Supabase</h4>
+      <h4>Conexión Jotform / Appwrite</h4>
       <p>Este archivo queda preparado para trabajar con el webhook real ya configurado en Supabase. Desde aquí podrás guardar la configuración de lectura y sincronizar <strong>agencias</strong> y <strong>levantamientos</strong> reales sin romper la base visual actual.</p>
       <div class="ltk-sync-badges">
         <span class="ltk-sync-badge" id="ltkBadgeBackend"><i class="fas fa-plug"></i> Backend Jotform: pendiente</span>
-        <span class="ltk-sync-badge" id="ltkBadgeFrontend"><i class="fas fa-database"></i> Lectura Supabase: pendiente</span>
+        <span class="ltk-sync-badge" id="ltkBadgeFrontend"><i class="fas fa-database"></i> Lectura Appwrite: pendiente</span>
       </div>
       <div class="ltk-sync-status" id="ltkSyncStatus">Modo seguro activado: si todavía no configuras la lectura desde Supabase, el sistema seguirá funcionando con su base local sin dañarse.</div>
     </div>
@@ -6626,11 +6626,25 @@ renderEntradas();
 renderTransferencias();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
 <script>
     const SUPABASE_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0';
     const REPORTES_TABLE = 'reportes_operaciones';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // APPWRITE · NUEVO MOTOR PRINCIPAL DE OPERACIONES LOTEKA
+    const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
+    const APPWRITE_PROJECT_ID = '69ef80760012b6fecbb9';
+    const APPWRITE_DATABASE_ID = '69ef83b500026b218a31';
+    const APPWRITE_OPERACIONES_COLLECTION_ID = 'operaciones';
+
+    const appwriteClient = new Appwrite.Client()
+      .setEndpoint(APPWRITE_ENDPOINT)
+      .setProject(APPWRITE_PROJECT_ID);
+
+    const appwriteDatabases = new Appwrite.Databases(appwriteClient);
+    const appwriteQuery = Appwrite.Query;
 </script>
 <script>
     const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
@@ -8126,63 +8140,118 @@ renderTransferencias();
       };
     }
 
-    function mapSupabaseReportToOperation(item, fallbackIndex = 0, existing = null) {
-      const type = item.tipo_reporte || existing?.type || 'Avería';
-      const technician = type === 'Trabajo'
-        ? (item.asignado_a || existing?.technician || 'Sin asignar')
-        : normalizeStoredAssignee(item.asignado_a || existing?.technician || 'Sin asignar', type);
-      const title = item.categoria || existing?.title || 'Reporte';
-      const selectedTypes = Array.isArray(item.selected_types) && item.selected_types.length
-        ? item.selected_types
-        : (Array.isArray(existing?.selectedTypes) && existing.selectedTypes.length ? existing.selectedTypes : (title ? [title] : []));
+    function buildAppwritePayloadFromOperation(op = {}) {
+      const normalized = enrichOperationWithAgencyContext(op);
+      const imageList = getSafeMediaList(normalized.resultImages).length
+        ? getSafeMediaList(normalized.resultImages)
+        : getSafeMediaList(normalized.images);
+      return {
+        titulo: String(normalized.title || normalized.categoria || 'Reporte').slice(0, 500),
+        descripcion: String(normalized.description || normalized.descripcion || '').slice(0, 5000),
+        estado: normalizeRemoteStatus(normalized.status || normalized.estado || 'Pendiente'),
+        prioridad: String(normalized.priority || normalized.prioridad || 'Media'),
+        agencia: String(normalized.agency_number || normalized.agencia || normalizeAgencyNumber(normalized.agency || '') || normalized.agency || '').slice(0, 255),
+        grupo: String(normalized.grupo || '').slice(0, 255),
+        tecnico: String(normalized.technician || normalized.asignado_a || 'Sin asignar').slice(0, 255),
+        encargado: String(normalized.nombre_encargado || normalized.created_by || normalized.encargado || getCurrentUserEmail() || 'Sistema web').slice(0, 255),
+        foto_url: String(imageList[0] || normalized.foto_url || '').slice(0, 2000),
+        fecha_creacion: normalized.createdAt || normalized.fecha_creacion || normalized.fecha_reporte || nowIso()
+      };
+    }
+
+    function mapAppwriteDocumentToOperation(item, fallbackIndex = 0, existing = null) {
+      const title = item.titulo || existing?.title || 'Reporte';
+      const agencyNumber = normalizeAgencyNumber(item.agencia || existing?.agency_number || existing?.agency || '');
+      const createdAt = item.fecha_creacion || item.$createdAt || existing?.createdAt || nowIso();
+      const status = normalizeRemoteStatus(item.estado || existing?.status || 'Pendiente');
+      const technician = normalizeStoredAssignee(item.tecnico || existing?.technician || 'Sin asignar', existing?.type || 'Avería');
+      const baseImages = getSafeMediaList(existing?.images);
+      const appwriteImage = String(item.foto_url || '').trim();
+      const images = baseImages.length ? baseImages : (appwriteImage ? [appwriteImage] : []);
+
       return enrichOperationWithAgencyContext({
-        id: item.id || existing?.id || crypto.randomUUID(),
-        code: item.code || existing?.code || `REP-${String(fallbackIndex + 1).padStart(4, '0')}`,
-        type,
+        id: item.$id || existing?.id || crypto.randomUUID(),
+        code: existing?.code || `OP-${String(fallbackIndex + 1).padStart(4, '0')}`,
+        type: existing?.type || 'Avería',
         title,
-        agency: item.agencia_display || item.agencia || existing?.agency_label || existing?.agency || '',
-        agency_number: normalizeAgencyNumber(item.agencia || item.agencia_display || existing?.agency_number || existing?.agency || ''),
-        agency_label: item.agencia_display || normalizeAgencyLabel(item.agencia || existing?.agency_label || existing?.agency || ''),
+        agency: existing?.agency_label || existing?.agency || (agencyNumber ? normalizeAgencyLabel(agencyNumber) : (item.agencia || '')),
+        agency_number: agencyNumber,
+        agency_label: existing?.agency_label || (agencyNumber ? normalizeAgencyLabel(agencyNumber) : (item.agencia || '')),
         technician,
         priority: item.prioridad || existing?.priority || 'Media',
-        status: normalizeRemoteStatus(item.estado || existing?.status || 'Pendiente'),
+        status,
         description: item.descripcion || existing?.description || '',
-        selectedTypes,
-        createdAt: item.fecha_reporte || item.created_at || existing?.createdAt || nowIso(),
-        images: getSafeMediaList(item.images).length ? getSafeMediaList(item.images) : getSafeMediaList(existing?.images),
-        resultImages: getSafeMediaList(item.result_images).length ? getSafeMediaList(item.result_images) : getSafeMediaList(existing?.resultImages),
-        assignedAt: item.assigned_at || existing?.assignedAt || null,
-        startedAt: item.started_at || existing?.startedAt || null,
-        completedAt: item.completed_at || existing?.completedAt || null,
-        resolutionTime: item.resolution_time || existing?.resolutionTime || '',
-        closedAt: item.closed_at || existing?.closedAt || null,
-        history: Array.isArray(item.history) ? item.history : (Array.isArray(existing?.history) ? existing.history : []),
-        source: item.source || 'supabase',
+        selectedTypes: Array.isArray(existing?.selectedTypes) && existing.selectedTypes.length ? existing.selectedTypes : (title ? [title] : []),
+        createdAt,
+        images,
+        resultImages: getSafeMediaList(existing?.resultImages),
+        assignedAt: existing?.assignedAt || null,
+        startedAt: existing?.startedAt || null,
+        completedAt: existing?.completedAt || null,
+        resolutionTime: existing?.resolutionTime || '',
+        closedAt: existing?.closedAt || null,
+        history: Array.isArray(existing?.history) && existing.history.length
+          ? existing.history
+          : [createHistoryEntry({ action: 'Creación', detail: 'Operación creada en Appwrite', user: item.encargado || 'Sistema web', newStatus: status })],
+        source: 'appwrite',
         grupo: item.grupo || existing?.grupo || '',
-        nombre_encargado: item.nombre_encargado || existing?.nombre_encargado || item.creado_por || '',
-        created_by: item.creado_por || existing?.created_by || item.nombre_encargado || ''
+        nombre_encargado: item.encargado || existing?.nombre_encargado || '',
+        created_by: item.encargado || existing?.created_by || ''
       });
     }
 
+    // Compatibilidad interna: cualquier parte vieja que llame el nombre anterior queda redirigida.
+    function mapSupabaseReportToOperation(item, fallbackIndex = 0, existing = null) {
+      return mapAppwriteDocumentToOperation(item, fallbackIndex, existing);
+    }
+
     async function syncOperationToSupabase(op) {
+      // Ahora sincroniza con Appwrite. Se mantiene el nombre para no romper llamadas internas del HTML.
       try {
-        const payload = buildSupabasePayloadFromOperation(op);
-        const { error } = await supabaseClient.from(REPORTES_TABLE).upsert([payload], { onConflict: 'id' });
-        if (error) throw error;
+        if (!op || !op.id) return;
+        const payload = buildAppwritePayloadFromOperation(op);
+        try {
+          await appwriteDatabases.updateDocument(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_OPERACIONES_COLLECTION_ID,
+            op.id,
+            payload
+          );
+        } catch (updateError) {
+          const code = updateError?.code || updateError?.response?.code;
+          if (code === 404 || String(updateError?.message || '').toLowerCase().includes('not found')) {
+            await appwriteDatabases.createDocument(
+              APPWRITE_DATABASE_ID,
+              APPWRITE_OPERACIONES_COLLECTION_ID,
+              op.id,
+              payload
+            );
+          } else {
+            throw updateError;
+          }
+        }
       } catch (error) {
-        console.error('Error sincronizando operación con Supabase:', error);
+        console.error('Error sincronizando operación con Appwrite:', error);
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Appwrite no sincronizó', 'La operación quedó local, pero no pudo guardarse en Appwrite.', 'warning');
+        }
       }
     }
 
     async function deleteOperationFromSupabase(id) {
+      // Ahora elimina en Appwrite. Se mantiene el nombre para no romper llamadas internas del HTML.
       try {
-        const { error } = await supabaseClient.from(REPORTES_TABLE).delete().eq('id', id);
-        if (error) throw error;
+        if (!id) return;
+        await appwriteDatabases.deleteDocument(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_OPERACIONES_COLLECTION_ID,
+          id
+        );
       } catch (error) {
-        console.error('Error eliminando operación en Supabase:', error);
+        const code = error?.code || error?.response?.code;
+        if (code !== 404) console.error('Error eliminando operación en Appwrite:', error);
       }
     }
-
 
     const NOTIFY_STORAGE_KEY = 'loteka_ops_notifications_enabled';
     let notificationsEnabled = localStorage.getItem(NOTIFY_STORAGE_KEY) === 'true';
@@ -8334,24 +8403,26 @@ renderTransferencias();
       if (syncInFlight) return;
       syncInFlight = true;
       try {
-        await syncOperationsFromSupabase({ silent, skipSuccessToast });
+        await syncOperationsFromAppwrite({ silent, skipSuccessToast });
       } finally {
         syncInFlight = false;
       }
     }
 
-    async function syncOperationsFromSupabase({ silent = false, skipSuccessToast = false } = {}) {
+    async function syncOperationsFromAppwrite({ silent = false, skipSuccessToast = false } = {}) {
       try {
-        const { data, error } = await supabaseClient.from(REPORTES_TABLE).select('*').order('created_at', { ascending: true });
-        if (error) throw error;
-        const localOps = loadOperations().filter(op => op.source !== 'supabase');
-        const existingById = new Map(localOps.map(op => [op.id, op]));
-        const localOnly = localOps.filter(op => op.source !== 'app_movil');
-        const mergedRemote = (data || []).map((item, index) => mapSupabaseReportToOperation(item, index, existingById.get(item.id)));
+        const response = await appwriteDatabases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_OPERACIONES_COLLECTION_ID,
+          [appwriteQuery.orderAsc('fecha_creacion'), appwriteQuery.limit(500)]
+        );
+        const data = response?.documents || [];
+        const allLocalOps = loadOperations();
+        const existingById = new Map(allLocalOps.map(op => [op.id, op]));
+        const localOnly = allLocalOps.filter(op => op.source !== 'appwrite');
+        const mergedRemote = data.map((item, index) => mapAppwriteDocumentToOperation(item, index, existingById.get(item.$id)));
         const map = new Map();
-        [...localOnly, ...mergedRemote].forEach(op => {
-          map.set(op.id, op);
-        });
+        [...localOnly, ...mergedRemote].forEach(op => map.set(op.id, op));
         const next = Array.from(map.values()).map(op => enrichOperationWithAgencyContext(op));
         saveOperations(next);
         renderOperations();
@@ -8361,63 +8432,62 @@ renderTransferencias();
         renderOwnerReports();
         renderSpecificReports();
         evaluateOperationNotifications(next);
-        if (!silent && !skipSuccessToast) showToastNotification('Sistema actualizado', 'Operaciones sincronizadas correctamente.', 'success');
+        if (!silent && !skipSuccessToast) showToastNotification('Sistema actualizado', 'Operaciones sincronizadas correctamente desde Appwrite.', 'success');
       } catch (error) {
-        console.error('Error cargando operaciones desde Supabase:', error);
-        if (!silent) showToastNotification('No se pudo actualizar', 'Hubo un problema sincronizando con Supabase.', 'warning');
+        console.error('Error cargando operaciones desde Appwrite:', error);
+        if (!silent) showToastNotification('No se pudo actualizar', 'Hubo un problema sincronizando con Appwrite. Revisa permisos de la colección.', 'warning');
       }
     }
 
+    // Compatibilidad: si alguna parte vieja llama Supabase, realmente ejecuta Appwrite.
+    async function syncOperationsFromSupabase(options = {}) {
+      return syncOperationsFromAppwrite(options);
+    }
+
     function handleRealtimeOperationEvent(payload) {
-      const eventType = payload?.eventType || 'UPDATE';
-      const record = payload?.new || payload?.old || null;
-      const code = record?.code || 'Operación';
+      const events = Array.isArray(payload?.events) ? payload.events : [];
+      const record = payload?.payload || {};
+      const isCreate = events.some(event => event.includes('.create'));
+      const isUpdate = events.some(event => event.includes('.update'));
+      const isDelete = events.some(event => event.includes('.delete'));
+      const code = record?.$id || 'Operación';
       const agency = record?.agencia || record?.grupo || 'Sin ubicación';
-      const category = record?.categoria || 'Sin categoría';
+      const category = record?.titulo || 'Sin categoría';
       const state = record?.estado || '';
-      if (eventType === 'INSERT') {
+
+      if (isCreate) {
         dispatchBrowserNotification('Nueva operación recibida', `${code} · ${agency} · ${category}`, 'success');
-      } else if (eventType === 'UPDATE') {
+      } else if (isUpdate) {
         dispatchBrowserNotification('Operación actualizada', `${code}${state ? ` · ${state}` : ''}`, state === 'Completado' ? 'success' : 'info');
-      } else if (eventType === 'DELETE') {
+      } else if (isDelete) {
         dispatchBrowserNotification('Operación eliminada', `${code} fue removida del tablero.`, 'warning');
       }
       runOperationalRefresh({ silent: true, skipSuccessToast: true });
     }
 
     function initializeRealtimeSync() {
-      if (!supabaseClient || realtimeChannel) return;
-      realtimeChannel = supabaseClient
-        .channel('loteka-reportes-operaciones-live')
-        .on('postgres_changes', { event: '*', schema: 'public', table: REPORTES_TABLE }, handleRealtimeOperationEvent)
-        .subscribe((status) => {
-          console.info('Estado realtime:', status);
-          if (status === 'SUBSCRIBED') {
-            realtimeConnected = true;
-            console.info('Realtime activo para reportes_operaciones');
-            if (realtimeReconnectTimer) {
-              clearTimeout(realtimeReconnectTimer);
-              realtimeReconnectTimer = null;
-            }
-          }
-          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-            realtimeConnected = false;
-            console.warn('Realtime desconectado:', status);
-            if (!realtimeReconnectTimer) {
-              realtimeReconnectTimer = window.setTimeout(() => {
-                realtimeReconnectTimer = null;
-                if (realtimeChannel) {
-                  try { supabaseClient.removeChannel(realtimeChannel); } catch (error) {}
-                  realtimeChannel = null;
-                }
-                initializeRealtimeSync();
-    normalizeAgencyFieldsInSupabase();
-                runOperationalRefresh({ silent: true, skipSuccessToast: true });
-              }, 3000);
-            }
-          }
+      if (!appwriteClient || realtimeChannel) return;
+      try {
+        const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_OPERACIONES_COLLECTION_ID}.documents`;
+        realtimeChannel = appwriteClient.subscribe(channel, (payload) => {
+          realtimeConnected = true;
+          handleRealtimeOperationEvent(payload);
         });
+        realtimeConnected = true;
+        console.info('Realtime Appwrite activo para operaciones');
+      } catch (error) {
+        realtimeConnected = false;
+        console.error('No se pudo activar Realtime Appwrite:', error);
+        if (!realtimeReconnectTimer) {
+          realtimeReconnectTimer = window.setTimeout(() => {
+            realtimeReconnectTimer = null;
+            realtimeChannel = null;
+            initializeRealtimeSync();
+          }, 3000);
+        }
+      }
     }
+
     function openCreateModal() {
       createModalBackdrop.classList.remove('hidden');
       createError.classList.add('hidden');
