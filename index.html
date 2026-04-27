@@ -8206,35 +8206,47 @@ renderTransferencias();
     }
 
     async function syncOperationToSupabase(op) {
-      // Ahora sincroniza con Appwrite. Se mantiene el nombre para no romper llamadas internas del HTML.
+      // MOTOR APPWRITE: crea o actualiza SIEMPRE la operación en la colección operaciones.
       try {
-        if (!op || !op.id) return;
+        if (!op || !op.id) return null;
+        const documentId = String(op.$id || op.appwrite_id || op.id).trim();
         const payload = buildAppwritePayloadFromOperation(op);
+        let savedDoc = null;
+
         try {
-          await appwriteDatabases.updateDocument(
+          savedDoc = await appwriteDatabases.updateDocument(
             APPWRITE_DATABASE_ID,
             APPWRITE_OPERACIONES_COLLECTION_ID,
-            op.id,
+            documentId,
             payload
           );
+          console.info('✅ Appwrite actualizado:', savedDoc.$id, payload);
         } catch (updateError) {
           const code = updateError?.code || updateError?.response?.code;
-          if (code === 404 || String(updateError?.message || '').toLowerCase().includes('not found')) {
-            await appwriteDatabases.createDocument(
+          const msg = String(updateError?.message || '').toLowerCase();
+          if (code === 404 || msg.includes('not found') || msg.includes('document with the requested id could not be found')) {
+            savedDoc = await appwriteDatabases.createDocument(
               APPWRITE_DATABASE_ID,
               APPWRITE_OPERACIONES_COLLECTION_ID,
-              op.id,
+              documentId,
               payload
             );
+            console.info('✅ Appwrite creado:', savedDoc.$id, payload);
           } else {
             throw updateError;
           }
         }
+
+        op.id = savedDoc.$id;
+        op.appwrite_id = savedDoc.$id;
+        op.$id = savedDoc.$id;
+        return savedDoc;
       } catch (error) {
-        console.error('Error sincronizando operación con Appwrite:', error);
+        console.error('❌ Error sincronizando operación con Appwrite:', error);
         if (typeof showToastNotification === 'function') {
-          showToastNotification('Appwrite no sincronizó', 'La operación quedó local, pero no pudo guardarse en Appwrite.', 'warning');
+          showToastNotification('Appwrite no sincronizó', (error && error.message) ? error.message : 'La operación quedó local, pero no pudo guardarse en Appwrite.', 'warning');
         }
+        return null;
       }
     }
 
@@ -8525,7 +8537,7 @@ renderTransferencias();
       return `OP-${String(operations.length + 1).padStart(4, '0')}`;
     }
 
-    document.getElementById('saveOperationBtn').addEventListener('click', () => {
+    document.getElementById('saveOperationBtn').addEventListener('click', async () => {
       const type = document.getElementById('operationType').value;
       const status = document.getElementById('operationStatus').value;
       const title = document.getElementById('operationTitle').value.trim();
@@ -8606,14 +8618,15 @@ renderTransferencias();
         const results = [];
         imageFiles.forEach((file, idx) => {
           const reader = new FileReader();
-          reader.onload = function(e) {
+          reader.onload = async function(e) {
             results[idx] = e.target.result;
             loaded++;
             if (loaded === imageFiles.length) {
               newOperation.images = results.filter(Boolean);
               operations.push(newOperation);
               saveOperations(operations);
-              syncOperationToSupabase(newOperation);
+              await syncOperationToSupabase(newOperation);
+              saveOperations(operations);
               renderOperations();
               renderHistory();
               renderReports();
@@ -8625,7 +8638,8 @@ renderTransferencias();
       } else {
         operations.push(newOperation);
         saveOperations(operations);
-        syncOperationToSupabase(newOperation);
+        await syncOperationToSupabase(newOperation);
+        saveOperations(operations);
         renderOperations();
         renderHistory();
         renderReports();
@@ -10304,7 +10318,7 @@ function openEditModal(id) {
       editModalBackdrop.classList.remove('hidden');
     }
 
-    function saveEditedOperation() {
+    async function saveEditedOperation() {
       const id = document.getElementById('editOperationId').value;
       const operations = loadOperations();
       const index = operations.findIndex(item => item.id === id);
@@ -10464,7 +10478,7 @@ function openEditModal(id) {
         const results = [];
         resultImageFiles.forEach((file, idx) => {
           const reader = new FileReader();
-          reader.onload = function(e) {
+          reader.onload = async function(e) {
             results[idx] = e.target.result;
             loaded++;
             if (loaded === resultImageFiles.length) {
@@ -10479,8 +10493,8 @@ function openEditModal(id) {
                 newStatus: operations[index].status
               }));
               saveOperations(operations);
-              syncOperationToSupabase(operations[index]);
-        triggerOperationPushNotifications(previousOperationSnapshot, operations[index]);
+              await syncOperationToSupabase(operations[index]);
+              saveOperations(operations);
               triggerOperationPushNotifications(previousOperationSnapshot, operations[index]);
               closeEditModal();
               renderOperations();
@@ -10495,7 +10509,8 @@ function openEditModal(id) {
         });
       } else {
         saveOperations(operations);
-        syncOperationToSupabase(operations[index]);
+        await syncOperationToSupabase(operations[index]);
+        saveOperations(operations);
         closeEditModal();
         renderOperations();
         renderHistory();
@@ -10526,6 +10541,7 @@ function openEditModal(id) {
       if (index === -1) return;
       operations[index].images = Array.isArray(operations[index].images) ? operations[index].images.filter((_, i) => i !== imageIndex) : [];
       saveOperations(operations);
+      syncOperationToSupabase(operations[index]);
       openEditModal(id);
       renderOperations();
       renderHistory();
@@ -10542,6 +10558,7 @@ function openEditModal(id) {
       if (index === -1) return;
       operations[index].resultImages = Array.isArray(operations[index].resultImages) ? operations[index].resultImages.filter((_, i) => i !== imageIndex) : [];
       saveOperations(operations);
+      syncOperationToSupabase(operations[index]);
       openEditModal(id);
       renderOperations();
       renderHistory();
