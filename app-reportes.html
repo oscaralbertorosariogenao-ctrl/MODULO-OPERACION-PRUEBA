@@ -2672,7 +2672,7 @@
     const APPWRITE_PROJECT_ID = "69ef80760012b6fecbb9";
     const APPWRITE_DATABASE_ID = "69ef83b500026b218a31";
     const APPWRITE_OPERACIONES_COLLECTION_ID = "operaciones";
- const APPWRITE_R2_FUNCTION_ID = "69efa4e3001bc3b21a56";
+    const APPWRITE_R2_FUNCTION_ID = "69efa4e3001bc3b21a56";
     const R2_PUBLIC_URL = "https://pub-2dd5ba65c00849fd8fde626a31742b8c.r2.dev";
 
     const appwriteClient = new Client()
@@ -2714,12 +2714,46 @@
       return [url];
     }
 
+    function extractEvidenceUrls(text, tag) {
+      const value = String(text || "");
+      const urls = [];
+      const safeTag = String(tag || "").replace(/[.*+?^${}()|[\]\]/g, "\\$&");
+      const re = new RegExp(`\\[${safeTag}\\]\\s*(https?:\\/\\/\\S+)`, "gi");
+      let match;
+      while ((match = re.exec(value)) !== null) {
+        const cleanUrl = String(match[1] || "").replace(/[\])}.,;]+$/g, "");
+        if (cleanUrl && !urls.includes(cleanUrl)) urls.push(cleanUrl);
+      }
+      return urls;
+    }
+
+    function getInitialEvidenceUrls(report) {
+      const direct = normalizeMediaItems(report?.evidencia_inicial || report?.evidencia_inicial_url || report?.evidencia_inicio || report?.initial_evidence).map(resolveStorageMediaUrl).filter(Boolean);
+      const markers = extractEvidenceUrls(report?.descripcion || report?.description || "", "EVIDENCIA_INICIAL_R2");
+      return [...new Set(direct.concat(markers))];
+    }
+
+    function getFinalEvidenceUrls(report) {
+      const direct = normalizeMediaItems(report?.evidencia_final || report?.evidencia_final_url || report?.result_images || report?.foto_url).map(resolveStorageMediaUrl).filter(Boolean);
+      const markers = extractEvidenceUrls(report?.descripcion || report?.description || "", "EVIDENCIA_FINAL_R2");
+      return [...new Set(direct.concat(markers))];
+    }
+
+    function stripEvidenceMarkers(text) {
+      return String(text || "")
+        .replace(/\n?\[EVIDENCIA_INICIAL_R2\]\s*https?:\/\/\S+/gi, "")
+        .replace(/\n?\[EVIDENCIA_FINAL_R2\]\s*https?:\/\/\S+/gi, "")
+        .trim();
+    }
+
     function normalizeAppwriteOperation(doc) {
       const titulo = firstNonEmpty(doc.titulo, "Operación");
       const fecha = firstNonEmpty(doc.fecha_creacion, doc.$createdAt, new Date().toISOString());
       const tecnico = firstNonEmpty(doc.tecnico, "Sin asignar");
       const agenciaTexto = firstNonEmpty(doc.agencia, "Sin agencia");
       const media = mediaArrayFromFotoUrl(doc.foto_url);
+      const initialEvidence = extractEvidenceUrls(doc.descripcion || "", "EVIDENCIA_INICIAL_R2");
+      const finalEvidence = [...new Set(media.concat(extractEvidenceUrls(doc.descripcion || "", "EVIDENCIA_FINAL_R2")))];
 
       return {
         ...doc,
@@ -2728,7 +2762,7 @@
         code: doc.$id,
         tipo_reporte: titulo,
         categoria: titulo,
-        descripcion: doc.descripcion || "",
+        descripcion: stripEvidenceMarkers(doc.descripcion || ""),
         agencia: agenciaTexto,
         grupo: doc.grupo || "",
         nombre_encargado: doc.encargado || "",
@@ -2742,8 +2776,12 @@
         tecnico: tecnico,
         encargado: doc.encargado || "",
         selected_types: titulo ? [titulo] : [],
-        images: media,
-        result_images: media,
+        images: initialEvidence,
+        initial_images: initialEvidence,
+        evidencia_inicial: initialEvidence,
+        result_images: finalEvidence,
+        final_images: finalEvidence,
+        evidencia_final: finalEvidence,
         observaciones: "",
         resultado_tecnico: "",
         history: Array.isArray(doc.history) ? doc.history : []
@@ -2776,11 +2814,22 @@
       if (Object.prototype.hasOwnProperty.call(payload, "asignado_a") || Object.prototype.hasOwnProperty.call(payload, "tecnico")) {
         update.tecnico = payload.asignado_a || payload.tecnico || report.asignado_a || report.tecnico || "Sin asignar";
       }
-      if (Object.prototype.hasOwnProperty.call(payload, "descripcion") || Object.prototype.hasOwnProperty.call(payload, "observaciones") || Object.prototype.hasOwnProperty.call(payload, "resultado_tecnico")) {
-        const base = String(report.descripcion || "").trim();
-        const tech = String(payload.observaciones || payload.resultado_tecnico || payload.descripcion || "").trim();
-        update.descripcion = tech ? (base ? `${base}\n\nGestión técnica: ${tech}` : `Gestión técnica: ${tech}`) : base;
+
+      const baseDescription = stripEvidenceMarkers(report.descripcion || "");
+      const notes = [];
+      const tech = String(payload.observaciones || payload.resultado_tecnico || payload.descripcion || "").trim();
+      if (tech) notes.push(`Gestión técnica: ${tech}`);
+
+      const initialUrls = Array.isArray(payload.evidencia_inicial_urls) ? payload.evidencia_inicial_urls : [];
+      const finalUrls = Array.isArray(payload.evidencia_final_urls) ? payload.evidencia_final_urls : [];
+      initialUrls.forEach(url => notes.push(`[EVIDENCIA_INICIAL_R2] ${url}`));
+      finalUrls.forEach(url => notes.push(`[EVIDENCIA_FINAL_R2] ${url}`));
+
+      if (notes.length || Object.prototype.hasOwnProperty.call(payload, "descripcion") || Object.prototype.hasOwnProperty.call(payload, "observaciones") || Object.prototype.hasOwnProperty.call(payload, "resultado_tecnico")) {
+        update.descripcion = [baseDescription, ...notes].filter(Boolean).join("\n\n").slice(0, 16000);
       }
+
+      if (Array.isArray(payload.final_images) && payload.final_images[0]) update.foto_url = payload.final_images[0];
       if (Array.isArray(payload.result_images) && payload.result_images[0]) update.foto_url = payload.result_images[0];
       if (Object.prototype.hasOwnProperty.call(payload, "foto_url")) update.foto_url = payload.foto_url || report.foto_url || "";
       return update;
@@ -5469,7 +5518,7 @@ function renderTechnicalSelectedFiles() {
   if (!files.length) {
     wrap.innerHTML = '<div class="upload-helper-line">No has seleccionado nuevos archivos todavía.</div>';
     previewGrid.innerHTML = "";
-    helper.textContent = "Puedes subir varias fotos o videos. En completado, la evidencia es obligatoria.";
+    helper.textContent = "Para iniciar necesitas evidencia inicial. Para completar necesitas evidencia final.";
     return;
   }
   wrap.innerHTML = files.map(file => `
@@ -5486,28 +5535,33 @@ function renderTechnicalSelectedFiles() {
   }).join("");
 }
 
-function renderTechnicalChecklist(existingCount, selectedCount, targetStatus, description) {
+function renderTechnicalChecklist(existingInitialCount, existingFinalCount, selectedCount, targetStatus, description) {
   const checklist = document.getElementById("techChecklist");
   if (!checklist) return;
-  const total = Number(existingCount || 0) + Number(selectedCount || 0);
+  const status = String(targetStatus || '').toLowerCase();
   const descriptionOk = String(description || '').trim().length >= 8;
-  const requireComplete = String(targetStatus || '').toLowerCase() === 'completado';
+  const requiresInitial = status === 'en proceso';
+  const requiresFinal = status === 'completado';
+  const initialOk = Number(existingInitialCount || 0) > 0 || (requiresInitial && Number(selectedCount || 0) > 0);
+  const finalOk = Number(existingFinalCount || 0) > 0 || (requiresFinal && Number(selectedCount || 0) > 0);
   const items = [
-    { done: !requireComplete || descriptionOk, text: requireComplete ? 'Descripción técnica lista para cerrar la operación.' : 'La descripción técnica es opcional mientras el caso siga en proceso.' },
-    { done: !requireComplete || total > 0, text: requireComplete ? 'Hay evidencia suficiente para completar.' : 'Puedes agregar evidencia ahora o más adelante.' },
-    { done: true, text: `Evidencias actuales: ${existingCount}. Nuevas seleccionadas: ${selectedCount}.` }
+    { done: !requiresInitial || initialOk, text: requiresInitial ? 'Evidencia inicial requerida para iniciar el trabajo.' : `Evidencia inicial registrada: ${existingInitialCount}.` },
+    { done: !requiresFinal || finalOk, text: requiresFinal ? 'Evidencia final requerida para completar la operación.' : `Evidencia final registrada: ${existingFinalCount}.` },
+    { done: !requiresFinal || descriptionOk, text: requiresFinal ? 'Descripción técnica lista para cerrar la operación.' : 'Descripción técnica opcional mientras siga en proceso.' },
+    { done: true, text: `Nuevos archivos seleccionados: ${selectedCount}.` }
   ];
   checklist.innerHTML = items.map(item => `
     <div class="tech-check-item ${item.done ? 'done' : ''}">${item.done ? '✅' : '⚠️'} <span>${item.text}</span></div>
   `).join('');
 }
 
-function wireTechnicalDetailInteractions(existingCount = 0) {
+function wireTechnicalDetailInteractions(existingInitialCount = 0, existingFinalCount = 0) {
   const fileInput = document.getElementById("techEvidence");
   const statusSelect = document.getElementById("techStatus");
   const descriptionInput = document.getElementById("techDescription");
   const refreshChecklist = () => renderTechnicalChecklist(
-    existingCount,
+    existingInitialCount,
+    existingFinalCount,
     getTechnicalSelectedFiles().length,
     statusSelect?.value || 'En proceso',
     descriptionInput?.value || ''
@@ -5532,10 +5586,11 @@ function wireTechnicalDetailInteractions(existingCount = 0) {
 
 function openTechnicalDetail(report) {
   const status = normalizeStatus(report.estado);
-  const resultImages = normalizeMediaItems(report.result_images).map(resolveStorageMediaUrl).filter(Boolean);
+  const initialImages = getInitialEvidenceUrls(report);
+  const finalImages = getFinalEvidenceUrls(report);
   const guidance = String(report.estado || '').toLowerCase() === 'completado'
-    ? 'Esta operación ya aparece como completada. Puedes revisar evidencias o reforzar el detalle técnico si necesitas actualizarlo.'
-    : 'Marca en proceso cuando inicies y usa completado solo cuando el trabajo quede terminado con evidencia.';
+    ? 'Esta operación ya aparece como completada. Puedes revisar la evidencia inicial y final registrada.'
+    : 'Para iniciar necesitas evidencia inicial. Para completar necesitas evidencia final y descripción técnica.';
 
   detailBody.innerHTML = `
     <div class="detail-hero">
@@ -5549,43 +5604,23 @@ function openTechnicalDetail(report) {
       </div>
 
       <div class="tech-summary-grid">
-        <div class="tech-highlight">
-          <span>Asignado a</span>
-          <strong>${formatAssigneeLabel(report.asignado_a)}</strong>
-        </div>
-        <div class="tech-highlight">
-          <span>Prioridad</span>
-          <strong>${report.prioridad || 'No registrada'}</strong>
-        </div>
-        <div class="tech-highlight">
-          <span>Fecha reporte</span>
-          <strong>${formatDate(report.fecha_reporte || report.created_at)}</strong>
-        </div>
-        <div class="tech-highlight">
-          <span>Grupo / Agencia</span>
-          <strong>${report.grupo || 'Sin grupo'} · ${report.agencia || 'Sin agencia'}</strong>
-        </div>
+        <div class="tech-highlight"><span>Asignado a</span><strong>${formatAssigneeLabel(report.asignado_a)}</strong></div>
+        <div class="tech-highlight"><span>Prioridad</span><strong>${report.prioridad || 'No registrada'}</strong></div>
+        <div class="tech-highlight"><span>Fecha reporte</span><strong>${formatDate(report.fecha_reporte || report.created_at)}</strong></div>
+        <div class="tech-highlight"><span>Grupo / Agencia</span><strong>${report.grupo || 'Sin grupo'} · ${report.agencia || 'Sin agencia'}</strong></div>
       </div>
 
       ${buildLocationButtons(report, true)}
-      <div class="tech-guidance"><strong>Recomendación:</strong> ${guidance}</div>
+      <div class="tech-guidance"><strong>Regla:</strong> ${guidance}</div>
     </div>
 
-    <div class="detail-section">
-      <h4>Categoría seleccionada</h4>
-      <p class="detail-note">${report.categoria || 'No registrado'}</p>
-    </div>
-
-    <div class="detail-section">
-      <h4>Observación adicional</h4>
-      <p class="detail-note">${report.descripcion || 'Sin descripción'}</p>
-    </div>
+    <div class="detail-section"><h4>Categoría seleccionada</h4><p class="detail-note">${report.categoria || 'No registrado'}</p></div>
+    <div class="detail-section"><h4>Observación adicional</h4><p class="detail-note">${report.descripcion || 'Sin descripción'}</p></div>
 
     ${renderLocationSection(report)}
 
     <div class="detail-section">
       <h4>Actualizar gestión técnica</h4>
-
       <div class="field">
         <label for="techStatus">Estado técnico</label>
         <select id="techStatus">
@@ -5600,15 +5635,16 @@ function openTechnicalDetail(report) {
       </div>
 
       <div class="upload-panel">
-        <label for="techEvidence">Subir evidencia (foto o video)</label>
+        <label for="techEvidence">Subir evidencia requerida</label>
         <input type="file" id="techEvidence" accept="image/*,video/*" capture="environment" multiple />
-        <div id="techEvidenceHelper" class="upload-helper-line">Puedes subir varias fotos o videos. En completado, la evidencia es obligatoria.</div>
+        <div id="techEvidenceHelper" class="upload-helper-line">Para iniciar necesitas evidencia inicial. Para completar necesitas evidencia final.</div>
         <div id="techEvidenceFileList" class="evidence-pill-list"></div>
       </div>
 
       <div class="tech-checklist" id="techChecklist"></div>
 
-      ${resultImages.length ? renderMediaGrid(resultImages, "Evidencias actuales") : ''}
+      ${initialImages.length ? renderMediaGrid(initialImages, "Evidencia inicial registrada") : ''}
+      ${finalImages.length ? renderMediaGrid(finalImages, "Evidencia final registrada") : ''}
 
       <div class="detail-section" style="margin-top:12px;">
         <h4 class="tech-preview-title">Vista previa de nuevos archivos</h4>
@@ -5623,12 +5659,11 @@ function openTechnicalDetail(report) {
   `;
 
   detailBackdrop.classList.add("open");
-
   document.getElementById("btnCloseDetailInside")?.addEventListener("click", closeDetail);
   document.getElementById("btnSaveTechnicalUpdate")?.addEventListener("click", async () => {
     await guardarGestionTecnica(report);
   });
-  wireTechnicalDetailInteractions(resultImages.length);
+  wireTechnicalDetailInteractions(initialImages.length, finalImages.length);
 }
 
 async function guardarGestionTecnica(report) {
@@ -5636,9 +5671,10 @@ async function guardarGestionTecnica(report) {
   const techStatus = document.getElementById("techStatus")?.value || "En proceso";
   const techDescription = document.getElementById("techDescription")?.value?.trim() || "";
   const evidenceFiles = getTechnicalSelectedFiles();
-
-  const currentResultImages = normalizeMediaItems(report.result_images).map(resolveStorageMediaUrl).filter(Boolean);
-  let nuevasEvidencias = [];
+  const initialImagesCurrent = getInitialEvidenceUrls(report);
+  const finalImagesCurrent = getFinalEvidenceUrls(report);
+  let nuevasIniciales = [];
+  let nuevasFinales = [];
 
   if (!usuarioActual?.user) {
     showFriendlyError("La sesión del técnico no está activa. Cierra sesión y vuelve a entrar.");
@@ -5656,6 +5692,16 @@ async function guardarGestionTecnica(report) {
     return;
   }
 
+  if (techStatus === "En proceso" && !initialImagesCurrent.length && !evidenceFiles.length) {
+    showFriendlyError("Debes subir evidencia inicial antes de marcar esta operación En proceso.");
+    return;
+  }
+
+  if (techStatus === "Completado" && !finalImagesCurrent.length && !evidenceFiles.length) {
+    showFriendlyError("Debes subir evidencia final antes de completar esta operación.");
+    return;
+  }
+
   try {
     evidenceFiles.forEach(validateEvidenceFile);
   } catch (error) {
@@ -5670,65 +5716,59 @@ async function guardarGestionTecnica(report) {
     if (evidenceFiles.length) {
       for (const file of evidenceFiles) {
         const imageUrl = await subirArchivoEvidencia(file);
-        nuevasEvidencias.push(imageUrl);
+        if (techStatus === "En proceso") nuevasIniciales.push(imageUrl);
+        if (techStatus === "Completado") nuevasFinales.push(imageUrl);
       }
     }
 
-    const resultImagesFinal = currentResultImages.concat(nuevasEvidencias);
+    const initialImagesFinal = initialImagesCurrent.concat(nuevasIniciales);
+    const finalImagesFinal = finalImagesCurrent.concat(nuevasFinales);
 
-    if (techStatus === "Completado" && !resultImagesFinal.length) {
-      throw new Error("Debes subir al menos una evidencia antes de completar. Agrega foto o video del trabajo realizado.");
+    if (techStatus === "En proceso" && !initialImagesFinal.length) {
+      throw new Error("Debes subir evidencia inicial antes de iniciar el trabajo.");
+    }
+
+    if (techStatus === "Completado" && !finalImagesFinal.length) {
+      throw new Error("Debes subir evidencia final antes de completar el trabajo.");
     }
 
     const history = Array.isArray(report.history) ? [...report.history] : [];
     const now = new Date().toISOString();
 
-    if (nuevasEvidencias.length) {
-      history.push({
-        action: "Evidencia",
-        date: now,
-        user: usuarioActual?.user || "tecnico",
-        detail: `${nuevasEvidencias.length} evidencia(s) agregada(s) desde gestión técnica`,
-        source: "app_movil"
-      });
+    if (nuevasIniciales.length) {
+      history.push({ action: "Evidencia inicial", date: now, user: usuarioActual?.user || "tecnico", detail: `${nuevasIniciales.length} evidencia(s) inicial(es) agregada(s).`, source: "app_movil" });
+    }
+
+    if (nuevasFinales.length) {
+      history.push({ action: "Evidencia final", date: now, user: usuarioActual?.user || "tecnico", detail: `${nuevasFinales.length} evidencia(s) final(es) agregada(s).`, source: "app_movil" });
     }
 
     history.push({
-      action: techStatus === "Completado" ? "Finalización" : "Seguimiento técnico",
+      action: techStatus === "Completado" ? "Finalización" : "Inicio técnico",
       date: now,
       user: usuarioActual?.user || "tecnico",
-      detail: techDescription || (techStatus === 'Completado' ? 'Operación completada desde app móvil.' : 'Operación actualizada por el técnico.'),
+      detail: techDescription || (techStatus === 'Completado' ? 'Operación completada desde app móvil.' : 'Operación iniciada con evidencia inicial.'),
       source: "app_movil"
     });
 
     if ((report.estado || "") !== techStatus) {
-      history.push({
-        action: "Estado",
-        date: now,
-        user: usuarioActual?.user || "tecnico",
-        detail: `Estado cambiado a ${techStatus}`,
-        source: "app_movil"
-      });
+      history.push({ action: "Estado", date: now, user: usuarioActual?.user || "tecnico", detail: `Estado cambiado a ${techStatus}`, source: "app_movil" });
     }
 
     const payload = {
       estado: techStatus,
       observaciones: techDescription,
       resultado_tecnico: techDescription,
-      result_images: Array.isArray(resultImagesFinal) ? resultImagesFinal : [],
+      evidencia_inicial_urls: nuevasIniciales,
+      evidencia_final_urls: nuevasFinales,
+      initial_images: initialImagesFinal,
+      final_images: finalImagesFinal,
+      result_images: finalImagesFinal,
       history: history,
-      started_at: ["En proceso", "Completado"].includes(techStatus)
-        ? (report.started_at || now)
-        : report.started_at,
-      completed_at: techStatus === "Completado"
-        ? now
-        : null,
-      closed_at: techStatus === "Completado"
-        ? now
-        : null,
-      resolution_time: techStatus === "Completado"
-        ? calculateResolutionTime(report.fecha_reporte || report.created_at, now)
-        : (report.resolution_time || "")
+      started_at: ["En proceso", "Completado"].includes(techStatus) ? (report.started_at || now) : report.started_at,
+      completed_at: techStatus === "Completado" ? now : null,
+      closed_at: techStatus === "Completado" ? now : null,
+      resolution_time: techStatus === "Completado" ? calculateResolutionTime(report.fecha_reporte || report.created_at, now) : (report.resolution_time || "")
     };
 
     await appwriteUpdateOperacion(report, payload);
@@ -5745,6 +5785,7 @@ async function guardarGestionTecnica(report) {
     setButtonLoading(saveBtn, false);
   }
 }
+
   </script>
 
   <script>
