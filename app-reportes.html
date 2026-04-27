@@ -2672,6 +2672,8 @@
     const APPWRITE_PROJECT_ID = "69ef80760012b6fecbb9";
     const APPWRITE_DATABASE_ID = "69ef83b500026b218a31";
     const APPWRITE_OPERACIONES_COLLECTION_ID = "operaciones";
+    const APPWRITE_R2_FUNCTION_ID = "uploadToR2";
+    const R2_PUBLIC_URL = "https://pub-2dd5ba65c00849fd8fde626a31742b8c.r2.dev";
 
     const appwriteClient = new Client()
       .setEndpoint(APPWRITE_ENDPOINT)
@@ -4180,11 +4182,93 @@ function startReportAutoRefresh() {
       }
     }
 
+    function getSafeEvidenceFileName(file) {
+      const originalName = String(file?.name || "evidencia").trim();
+      const typeExt = String(file?.type || "image/jpeg").split("/")[1] || "jpg";
+      const rawExt = (originalName.includes(".") ? originalName.split(".").pop() : typeExt) || "jpg";
+      const ext = rawExt.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) || "jpg";
+      const randomPart = Math.random().toString(36).slice(2, 9);
+      const dateFolder = new Date().toISOString().slice(0, 10);
+      return `evidencias/${dateFolder}/evidencia_${Date.now()}_${randomPart}.${ext}`;
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const result = String(reader.result || "");
+            const base64 = result.includes(",") ? result.split(",")[1] : result;
+            resolve(base64);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error("No se pudo leer el archivo de evidencia."));
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function subirArchivoEvidencia(file) {
       validateEvidenceFile(file);
-      // Cloudflare R2 se conectará en el siguiente paso.
-      // Esto evita volver a usar Cloudflare R2 y deja la app 100% en Appwrite para datos.
-      return "EVIDENCIA_PENDIENTE_R2";
+
+      const fileName = getSafeEvidenceFileName(file);
+      const fileBase64 = await fileToBase64(file);
+
+      const response = await fetch(`${APPWRITE_ENDPOINT}/functions/${APPWRITE_R2_FUNCTION_ID}/executions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Appwrite-Project": APPWRITE_PROJECT_ID
+        },
+        body: JSON.stringify({
+          body: JSON.stringify({
+            file: fileBase64,
+            name: fileName,
+            type: file.type || "application/octet-stream"
+          }),
+          async: false,
+          path: "/",
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          }
+        })
+      });
+
+      const raw = await response.text();
+      if (!response.ok) {
+        throw new Error(`No se pudo ejecutar la función de R2 (${response.status}). ${raw || ""}`.trim());
+      }
+
+      let execution;
+      try {
+        execution = JSON.parse(raw || "{}");
+      } catch (err) {
+        throw new Error("La función de R2 devolvió una respuesta inválida.");
+      }
+
+      if (execution.status && !["completed", "success"].includes(String(execution.status).toLowerCase())) {
+        throw new Error(execution.stderr || execution.responseBody || "La función de R2 no terminó correctamente.");
+      }
+
+      let result = {};
+      try {
+        result = JSON.parse(execution.responseBody || "{}");
+      } catch (err) {
+        throw new Error("La función de R2 no devolvió una URL válida.");
+      }
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      const url = String(result.url || `${R2_PUBLIC_URL}/${fileName}`).trim();
+      if (!url || !/^https?:\/\//i.test(url)) {
+        throw new Error("No se recibió una URL pública válida desde R2.");
+      }
+
+      return url;
     }
 
     imagen.addEventListener("change", () => {
