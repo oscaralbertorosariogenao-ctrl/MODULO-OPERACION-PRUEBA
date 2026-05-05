@@ -1643,6 +1643,25 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 }
 .map-filter-panel{box-shadow:0 18px 38px rgba(11,35,62,.16)!important;}
 @media(max-width:900px){.loteka-map-pin span{width:31px!important;height:31px!important}.loteka-map-pin span b{font-size:9px!important}}
+
+/* HOME · MAPA PRINCIPAL */
+.sidebar-home-link{
+  margin:10px 0 14px;
+  border:1px solid rgba(14,165,198,.22);
+  background:linear-gradient(135deg,rgba(14,165,198,.12),rgba(255,255,255,.95));
+  box-shadow:0 12px 26px rgba(12,60,94,.08);
+}
+.home-map-shell{display:flex;flex-direction:column;gap:14px;min-height:calc(100vh - 42px);}
+.home-map-titlebar{display:flex;justify-content:space-between;align-items:center;gap:18px;background:linear-gradient(135deg,#073d67,#0b5c8e);color:#fff;border-radius:24px;padding:18px 22px;box-shadow:0 18px 45px rgba(3,40,68,.18);}
+.home-map-titlebar h2{margin:0;font-size:28px;font-weight:900;letter-spacing:.02em;display:flex;align-items:center;gap:10px;}
+.home-map-titlebar p{margin:6px 0 0;color:rgba(255,255,255,.86);font-weight:600;}
+.home-map-card{min-height:calc(100vh - 170px);height:calc(100vh - 170px);overflow:hidden;border-radius:24px;}
+.home-map-card #agenciasMap{height:100%;min-height:620px;}
+.agency-popup-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.agency-popup .agency-popup-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:10px;background:#0b6fae;color:#fff !important;text-decoration:none;font-weight:900;border:0;cursor:pointer;box-shadow:0 8px 18px rgba(11,111,174,.22);font-size:12px;}
+.agency-popup .agency-popup-btn.secondary{background:#0b2744;}
+@media(max-width:900px){.home-map-titlebar{flex-direction:column;align-items:flex-start}.home-map-card{height:72vh}.home-map-card #agenciasMap{min-height:72vh}}
+
 </style>
 
 <style id="loteka-agency-type-icons-css">
@@ -2099,7 +2118,8 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
   </div>
 
   <div class="sidebar-nav">
-    <div class="sidebar-group is-open" data-section="inventario">
+    <a id="navHome" class="sidebar-link active sidebar-home-link" onclick="cambiarVista('home', this)"><i class="fas fa-house"></i><span>Home</span></a>
+    <div class="sidebar-group" data-section="inventario">
       <button type="button" class="sidebar-group-btn" onclick="toggleSidebarSection('inventario')">
         <span class="sidebar-group-main"><i class="fas fa-boxes-stacked"></i><span>Inventario</span></span>
         <i class="fas fa-chevron-down sidebar-group-arrow"></i>
@@ -2153,7 +2173,6 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       </button>
       <div class="sidebar-group-menu">
         <a class="sidebar-link" onclick="cambiarVista('agencias', this)"><i class="fas fa-store"></i><span>Agencias</span></a>
-        <a class="sidebar-link" onclick="cambiarVista('grupos', this)"><i class="fas fa-users"></i><span>Grupos</span></a>
       </div>
     </div>
   </div>
@@ -2170,7 +2189,27 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 </div>
 
 <div class="content">
-  <div id="vista-productos">
+  <div id="vista-home">
+    <div class="home-map-shell">
+      <div class="home-map-titlebar">
+        <div>
+          <h2><i class="fas fa-map-location-dot"></i> Home</h2>
+          <p>Mapa principal de agencias. Las coordenadas se actualizan automáticamente al guardar o sincronizar.</p>
+        </div>
+        <div class="agency-map-actions">
+          <button type="button" class="agency-map-mini-btn" onclick="agencyMapFitAll()"><i class="fas fa-expand"></i> Ver todas</button>
+          <button type="button" class="agency-map-mini-btn" onclick="toggleAgencyMapFullscreen()"><i class="fas fa-up-right-and-down-left-from-center"></i> Pantalla completa</button>
+          <button type="button" class="agency-map-mini-btn" onclick="agencyMapRefresh()"><i class="fas fa-rotate"></i> Actualizar mapa</button>
+        </div>
+      </div>
+      <div class="agency-map-card home-map-card">
+        <div id="agenciasMap"></div>
+        <div class="agency-map-empty" id="agenciasMapStatus">Esperando agencias con latitud y longitud.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="vista-productos" class="hidden">
     <div class="header">
       <h2>Productos</h2>
       <button class="btn" onclick="abrirProducto()">+ Crear Artículo</button>
@@ -2522,22 +2561,6 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <label for="agencySearchInput">Buscar Agencias</label>
         <input id="agencySearchInput" type="text" placeholder="Ej. 1088, 1200, G-45 o Jose Pacheco" oninput="renderAgencias()" />
       </div>
-    </div>
-
-    <div class="agency-map-card">
-      <div class="agency-map-head">
-        <div>
-          <h3><i class="fas fa-map-location-dot"></i> Mapa de agencias</h3>
-          <p>Las agencias con coordenadas se agregan automáticamente al guardar o al sincronizar.</p>
-        </div>
-        <div class="agency-map-actions">
-          <button type="button" class="agency-map-mini-btn" onclick="agencyMapFitAll()"><i class="fas fa-expand"></i> Ver todas</button>
-          <button type="button" class="agency-map-mini-btn" onclick="toggleAgencyMapFullscreen()"><i class="fas fa-up-right-and-down-left-from-center"></i> Pantalla completa</button>
-          <button type="button" class="agency-map-mini-btn" onclick="agencyMapRefresh()"><i class="fas fa-rotate"></i> Actualizar mapa</button>
-        </div>
-      </div>
-      <div id="agenciasMap"></div>
-      <div class="agency-map-empty" id="agenciasMapStatus">Esperando agencias con latitud y longitud.</div>
     </div>
 
     <div class="card-table">
@@ -5090,7 +5113,7 @@ function registrarMovimientoAlmacen(almacenIndex, tipo, referencia, detalle, usu
 
 function cambiarVista(vista, el){
   [
-    'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
+    'vista-home','vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
     'vista-dashboard-rrhh','vista-operadoras','vista-solicitudes','vista-historial-rrhh'
   ].forEach(id=>{ const node=document.getElementById(id); if(node) node.classList.add('hidden'); });
   const target = document.getElementById('vista-' + vista);
@@ -6604,7 +6627,7 @@ function renderAgencias(){
     tbody.innerHTML = '<tr><td colspan="5" class="entry-empty">No se encontraron agencias para esa búsqueda.</td></tr>';
   }
   document.getElementById('dashTotalAgencias').innerText = agencias.length;
-  if(typeof agencyMapRefresh === 'function') agencyMapRefresh(filtered);
+  if(typeof agencyMapRefresh === 'function') agencyMapRefresh(agencias);
 }
 
 function ensureAgencyDetailDefaults(agencia){
@@ -7988,7 +8011,10 @@ renderTransferencias();
             <span>${escapeHtml(grupo)} · ${escapeHtml(encargado)}</span>
             <span><strong>Tipo:</strong> ${escapeHtml(tipoAgencia)}</span>
             <span>${escapeHtml(direccion)}</span>
-            <a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}">Cómo llegar</a>
+            <div class="agency-popup-actions">
+              <button type="button" class="agency-popup-btn" onclick="verDetalleAgencia(${agencias.findIndex(item => Number(item.numero) === Number(agencia.numero))})"><i class="fas fa-eye"></i> Consultar agencia</button>
+              <a class="agency-popup-btn secondary" target="_blank" href="https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}"><i class="fas fa-route"></i> Cómo llegar</a>
+            </div>
           </div>
         `);
         agenciasMapMarkers.push(marker);
@@ -11037,6 +11063,7 @@ renderTransferencias();
   </div>
 </div>
 
+
 </body></html>`);
       printWindow.document.close();
     }
@@ -12662,6 +12689,7 @@ function toggleSidebarSection(sectionName){
 }
 
 function sidebarSectionForView(vista){
+  if(vista === 'home') return '';
   if(['productos','almacenes','entrada','transferencia'].includes(vista)) return 'inventario';
   if(['agencias','grupos'].includes(vista)) return 'consultas';
   if(['dashboard-rrhh','operadoras','solicitudes','historial-rrhh'].includes(vista)) return 'rrhh';
@@ -12673,7 +12701,7 @@ function activateSidebarLink(el, vista){
   document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
   if(el && el.classList) el.classList.add('active');
   const section = sidebarSectionForView(vista);
-  setSidebarSectionOpen(section, true);
+  if(section) setSidebarSectionOpen(section, true);
 }
 
 function initSidebarNavigation(){
@@ -12682,7 +12710,7 @@ function initSidebarNavigation(){
     const parent = firstActive.closest('.sidebar-group')?.dataset.section;
     if(parent) setSidebarSectionOpen(parent, true);
   } else {
-    setSidebarSectionOpen('inventario', true);
+    const home=document.getElementById('navHome'); if(home) home.classList.add('active');
   }
 }
 
@@ -12690,7 +12718,7 @@ document.addEventListener('DOMContentLoaded', initSidebarNavigation);
 
 function cambiarVista(vista, el){
   const ids = [
-    'vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
+    'vista-home','vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-agencias','vista-grupos',
     'vista-dashboard-rrhh','vista-operadoras','vista-solicitudes','vista-historial-rrhh',
     'vista-ops-dashboard','vista-ops-operaciones','vista-ops-levantamientos','vista-ops-historial','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
   ];
@@ -12702,6 +12730,15 @@ function cambiarVista(vista, el){
   if(target) target.classList.remove('hidden');
 
   activateSidebarLink(el, vista);
+  if(vista==='home'){
+    setTimeout(() => {
+      try{
+        if(typeof agencyMapRefresh === 'function') agencyMapRefresh(agencias);
+        if(window.agencyMap && typeof window.agencyMap.invalidateSize === 'function') window.agencyMap.invalidateSize(true);
+        if(typeof agencyMapFitAll === 'function') agencyMapFitAll();
+      }catch(e){ console.warn('No se pudo refrescar el mapa HOME:', e); }
+    }, 180);
+  }
 
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
   if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromAppwrite === 'function') hrxSyncSolicitudesFromAppwrite(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
@@ -15754,3 +15791,36 @@ if ("serviceWorker" in navigator) {
   setTimeout(()=>{ try{ if(typeof ltkHideAutoSyncOverlay==='function') ltkHideAutoSyncOverlay(); }catch(e){} },10000);
 })();
 </script>
+
+<script>
+(function(){
+  function bootHomeMap(){
+    try{
+      if(typeof cambiarVista === 'function'){
+        cambiarVista('home', document.getElementById('navHome'));
+      }
+      const home=document.getElementById('navHome');
+      if(home){ document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.remove('active')); home.classList.add('active'); }
+      setTimeout(function(){
+        try{
+          if(typeof agencyMapRefresh === 'function') agencyMapRefresh(window.agencias || []);
+          if(window.agencyMap && typeof window.agencyMap.invalidateSize === 'function') window.agencyMap.invalidateSize(true);
+          if(typeof agencyMapFitAll === 'function') agencyMapFitAll();
+        }catch(e){ console.warn('Home map boot:', e); }
+      }, 450);
+    }catch(e){ console.warn('Home init:', e); }
+  }
+  window.consultarAgenciaDesdeMapa=function(numero){
+    try{
+      const idx=(window.agencias||[]).findIndex(a=>String(a.numero||a.codigo||a.agencia||'').padStart(4,'0')===String(numero).padStart(4,'0') || String(a.numero||a.codigo||a.agencia||'')===String(numero));
+      if(idx>=0 && typeof window.verDetalleAgencia==='function'){
+        cambiarVista('agencias', document.querySelector('[onclick*="cambiarVista(\'agencias\'"]'));
+        setTimeout(()=>window.verDetalleAgencia(idx),120);
+      }
+    }catch(e){ console.warn('Consultar agencia desde mapa:', e); }
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bootHomeMap); else bootHomeMap();
+})();
+</script>
+</body>
+</html>
