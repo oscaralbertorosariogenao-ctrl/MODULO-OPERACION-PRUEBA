@@ -1329,39 +1329,656 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .ltk-auto-overlay{position:fixed;inset:0;background:rgba(243,245,247,.86);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity .18s ease}.ltk-auto-overlay.show{opacity:1;pointer-events:auto}.ltk-auto-card{width:356px;max-width:92vw;background:#fff;border-radius:30px;box-shadow:0 22px 60px rgba(31,55,88,.18);padding:42px 28px 34px;display:flex;flex-direction:column;align-items:center;gap:16px}.ltk-auto-ring{width:176px;height:176px;border-radius:50%;border:7px solid #dfe8f2;border-top-color:#2f8fe8;border-right-color:#9fc6f4;animation:ltkSpin 1.1s linear infinite;position:relative}.ltk-auto-logo{margin-top:-126px;width:118px;height:118px;border-radius:50%;background:linear-gradient(180deg,#f5f8fc,#e8eef6);display:flex;align-items:center;justify-content:center;font-weight:900;color:#2b7fc3;letter-spacing:.4px;border:1px solid #dfe5eb;box-shadow:inset 0 4px 16px rgba(31,55,88,.06)}.ltk-auto-text{margin-top:6px;font-size:18px;font-weight:800;color:#51606f}.ltk-auto-dots{display:flex;gap:12px}.ltk-auto-dots span{width:12px;height:12px;border-radius:50%;background:#2f8fe8;animation:ltkPulse 1s ease-in-out infinite}.ltk-auto-dots span:nth-child(2){animation-delay:.15s}.ltk-auto-dots span:nth-child(3){animation-delay:.3s}.ltk-help-box code{background:#f4f7fb;border:1px solid #dfe5eb;border-radius:6px;padding:1px 6px}@keyframes ltkSpin{to{transform:rotate(360deg)}}@keyframes ltkPulse{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
 
 
-/* MAPA DE AGENCIAS */
-.agency-map-card{background:#fff;border:1px solid #e4edf5;border-radius:22px;box-shadow:0 14px 32px rgba(15,37,61,.08);overflow:hidden;margin:14px 0 16px}
-.agency-map-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid #e8f0f7;background:linear-gradient(135deg,#f8fbff,#eef8fc)}
-.agency-map-head h3{margin:0;color:#17324d;font-size:18px;font-weight:900}
-.agency-map-head p{margin:4px 0 0;color:#6b7c8d;font-size:13px}
+/* MAPA DE AGENCIAS · PANEL OPERATIVO REAL + ESTILO FUTURISTA */
+.agency-map-card{background:#061e38;border:1px solid rgba(14,165,198,.24);border-radius:28px;box-shadow:0 24px 60px rgba(8,38,70,.18);overflow:hidden;margin:14px 0 18px;position:relative;color:#fff}
+.agency-map-card:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 18% 8%,rgba(14,165,198,.24),transparent 26%),radial-gradient(circle at 86% 15%,rgba(255,168,0,.16),transparent 22%);z-index:0}
+.agency-map-head{position:relative;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,#062747,#083d68 60%,#0a5481);backdrop-filter:blur(10px)}
+.agency-map-head h3{margin:0;color:#fff;font-size:22px;font-weight:950;letter-spacing:-.3px;display:flex;align-items:center;gap:9px;text-transform:uppercase}
+.agency-map-head h3 i{color:#ffc247;text-shadow:0 0 16px rgba(255,194,71,.45)}
+.agency-map-head p{margin:4px 0 0;color:#d6eafe;font-size:13px}
 .agency-map-actions{display:flex;gap:8px;flex-wrap:wrap}
-.agency-map-mini-btn{border:1px solid #cfe1ee;background:#fff;color:#1478a6;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer}
-.agency-map-mini-btn:hover{background:#eef8fc}
-#agenciasMap{height:560px;width:100%;min-height:560px;background:#eaf2f7;z-index:1;position:relative;display:block;overflow:hidden;border-radius:0}
+.agency-map-mini-btn{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:#fff;border-radius:13px;padding:9px 12px;font-weight:900;cursor:pointer;box-shadow:0 12px 24px rgba(0,0,0,.12);backdrop-filter:blur(10px)}
+.agency-map-mini-btn:hover{background:rgba(255,194,71,.18);transform:translateY(-1px)}
+#agenciasMap{height:720px;width:100%;min-height:720px;background:#b9d4e7;z-index:1;position:relative;display:block;overflow:hidden;border-radius:0;isolation:isolate}
+#agenciasMap.leaflet-container{font-family:inherit;background:#b9d4e7;outline:0;touch-action:pan-x pan-y}
 #agenciasMap .leaflet-pane,#agenciasMap .leaflet-tile,#agenciasMap .leaflet-marker-icon,#agenciasMap .leaflet-marker-shadow,#agenciasMap .leaflet-tile-container,#agenciasMap .leaflet-pane>svg,#agenciasMap .leaflet-pane>canvas,#agenciasMap .leaflet-zoom-box,#agenciasMap .leaflet-image-layer,#agenciasMap .leaflet-layer{position:absolute;left:0;top:0}
 #agenciasMap .leaflet-container{overflow:hidden}
-#agenciasMap .leaflet-tile{width:256px!important;height:256px!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;border:0!important;object-fit:initial!important}
-#agenciasMap .leaflet-marker-icon,#agenciasMap .leaflet-marker-shadow{display:block;max-width:none!important}
-#agenciasMap .leaflet-control-container .leaflet-top,#agenciasMap .leaflet-control-container .leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+#agenciasMap .leaflet-map-pane,#agenciasMap .leaflet-tile-pane,#agenciasMap .leaflet-overlay-pane,#agenciasMap .leaflet-shadow-pane,#agenciasMap .leaflet-marker-pane,#agenciasMap .leaflet-tooltip-pane,#agenciasMap .leaflet-popup-pane{position:absolute;left:0;top:0}
+#agenciasMap .leaflet-tile-pane{z-index:200}#agenciasMap .leaflet-overlay-pane{z-index:400}#agenciasMap .leaflet-shadow-pane{z-index:500}#agenciasMap .leaflet-marker-pane{z-index:600}#agenciasMap .leaflet-tooltip-pane{z-index:650}#agenciasMap .leaflet-popup-pane{z-index:1200}
+#agenciasMap .leaflet-tile{width:256px!important;height:256px!important;max-width:none!important;max-height:none!important;min-width:256px!important;min-height:256px!important;padding:0!important;margin:0!important;border:0!important;object-fit:initial!important;box-sizing:content-box!important;image-rendering:auto;filter:saturate(.98) contrast(1.18) brightness(.92);transition:opacity .12s linear}
+#agenciasMap .leaflet-marker-icon,#agenciasMap .leaflet-marker-shadow{display:block;max-width:none!important;max-height:none!important;box-sizing:content-box!important}
+#agenciasMap:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:450;background:linear-gradient(90deg,rgba(4,27,53,.28),transparent 20%,transparent 74%,rgba(4,27,53,.10)),linear-gradient(180deg,rgba(0,40,80,.03),transparent 45%,rgba(4,27,53,.08));mix-blend-mode:multiply}
+#agenciasMap .leaflet-control-container .leaflet-top,#agenciasMap .leaflet-control-container .leaflet-bottom{position:absolute;z-index:1500;pointer-events:none}
 #agenciasMap .leaflet-top{top:0}#agenciasMap .leaflet-right{right:0}#agenciasMap .leaflet-bottom{bottom:0}#agenciasMap .leaflet-left{left:0}
-#agenciasMap .leaflet-control{position:relative;z-index:1000;pointer-events:auto;float:left;clear:both;margin:10px}
-#agenciasMap .leaflet-right .leaflet-control{float:right}
-#agenciasMap .leaflet-bottom .leaflet-control{margin-bottom:10px}
-#agenciasMap .leaflet-control-zoom a{display:block;width:30px;height:30px;line-height:30px;text-align:center;text-decoration:none;background:#fff;color:#17324d;border-bottom:1px solid #d7e3ec;font-weight:900;font-size:18px}
-#agenciasMap .leaflet-control-zoom{border:1px solid #c8d8e4;border-radius:10px;overflow:hidden;box-shadow:0 8px 20px rgba(15,37,61,.12)}
+#agenciasMap .leaflet-control{position:relative;z-index:1500;pointer-events:auto;float:left;clear:both;margin:18px}
+#agenciasMap .leaflet-left .leaflet-control{margin-left:360px;margin-top:22px}
+#agenciasMap .leaflet-right .leaflet-control{float:right;margin-right:320px}
+#agenciasMap .leaflet-bottom .leaflet-control{margin-bottom:110px}
+#agenciasMap .leaflet-control-zoom{border:1px solid rgba(255,255,255,.22);border-radius:16px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.24);backdrop-filter:blur(10px)}
+#agenciasMap .leaflet-control-zoom a{display:block;width:38px;height:38px;line-height:38px;text-align:center;text-decoration:none;background:rgba(5,39,73,.92);color:#fff;border-bottom:1px solid rgba(255,255,255,.12);font-weight:950;font-size:18px}
+#agenciasMap .leaflet-control-zoom a:hover{background:#0ea5c6;color:#fff}
+#agenciasMap .leaflet-control-attribution{background:rgba(255,255,255,.78);border-radius:10px;padding:3px 7px;color:#577085;box-shadow:0 8px 18px rgba(15,37,61,.1)}
 #agenciasMap .leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}
-#agenciasMap .leaflet-popup-content-wrapper{background:#fff;border-radius:14px;box-shadow:0 14px 30px rgba(15,37,61,.18);padding:2px;text-align:left}
-#agenciasMap .leaflet-popup-content{margin:12px 14px;line-height:1.35}
+#agenciasMap .leaflet-popup-content-wrapper{background:rgba(255,255,255,.97);border:1px solid rgba(14,165,198,.25);border-radius:18px;box-shadow:0 22px 42px rgba(3,25,47,.32);padding:2px;text-align:left;backdrop-filter:blur(10px)}
+#agenciasMap .leaflet-popup-content{margin:13px 15px;line-height:1.35}
 #agenciasMap .leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-left:-20px;overflow:hidden;pointer-events:none}
 #agenciasMap .leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;background:#fff;transform:rotate(45deg);box-shadow:0 8px 20px rgba(15,37,61,.12)}
-.agency-map-empty{padding:14px 18px;color:#6b7c8d;font-size:13px;border-top:1px solid #edf3f8;background:#fbfdff}
-.loteka-map-pin{background:transparent!important;border:0!important}.loteka-map-pin span{display:block;width:28px;height:28px;background:#0e93cf;border:4px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 8px 16px rgba(5,58,95,.28)}.loteka-map-pin span:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;left:50%;top:50%;transform:translate(-50%,-50%)}
-.agency-popup strong{display:block;color:#17324d;font-size:14px;margin-bottom:4px}
-.agency-popup span{display:block;color:#5f7283;font-size:12px;margin-bottom:3px}
-.agency-popup a{display:inline-flex;margin-top:8px;text-decoration:none;background:#0ea5c6;color:#fff;font-weight:800;border-radius:10px;padding:7px 10px}
-@media(max-width:900px){#agenciasMap{height:360px}.agency-map-head{align-items:flex-start;flex-direction:column}.agency-map-actions{width:100%}}
+.agency-map-empty{padding:14px 18px;color:#d6eafe;font-size:13px;border-top:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,#062747,#083d68)}
+.loteka-map-pin{background:transparent!important;border:0!important}.loteka-map-pin span{--pin-bg:linear-gradient(135deg,#042f59,#0a6fbd);--pin-glow:rgba(14,165,198,.16);--pin-dot:#ffc247;position:relative;display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:var(--pin-bg);border:3px solid #fff;box-shadow:0 10px 20px rgba(0,35,76,.34),0 0 0 4px var(--pin-glow)}.loteka-map-pin span b{display:block;color:#fff;font-size:11px;font-weight:950;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,.28);z-index:2}.loteka-map-pin span:before{content:"";position:absolute;inset:-5px;border-radius:50%;background:var(--pin-glow);animation:agencyPinPulse 2.4s ease-out infinite}.loteka-map-pin span:after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--pin-dot);left:50%;top:50%;transform:translate(-50%,-50%);opacity:.95}.loteka-map-pin.pin-shape-drop span{border-radius:50% 50% 50% 0;transform:rotate(-45deg)}.loteka-map-pin.pin-shape-drop span b{transform:rotate(45deg)}.loteka-map-pin.pin-shape-diamond span{border-radius:9px;transform:rotate(45deg)}.loteka-map-pin.pin-shape-diamond span b{transform:rotate(-45deg)}.loteka-map-pin.pin-shape-circle span{border-radius:50%;transform:none}.loteka-map-pin.pin-shape-square span{border-radius:10px;transform:none}.loteka-map-pin.pin-shape-hex span{clip-path:polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0 50%);border-radius:7px;transform:none}.loteka-map-pin.pin-shape-diamond span:after,.loteka-map-pin.pin-shape-square span:after,.loteka-map-pin.pin-shape-hex span:after{display:none}
+@keyframes agencyPinPulse{0%{transform:scale(.65);opacity:.9}100%{transform:scale(1.45);opacity:0}}
+.agency-popup strong{display:block;color:#092b4a;font-size:15px;margin-bottom:4px;font-weight:950}.agency-popup span{display:block;color:#5f7283;font-size:12px;margin-bottom:3px}.agency-popup a{display:inline-flex;margin-top:8px;text-decoration:none;background:linear-gradient(135deg,#0ea5c6,#0876d9);color:#fff;font-weight:900;border-radius:11px;padding:8px 11px;box-shadow:0 10px 20px rgba(14,117,180,.2)}
+.map-quick-panel{position:absolute;z-index:900;right:336px;top:22px;background:rgba(255,255,255,.92);border:1px solid rgba(14,165,198,.22);border-radius:18px;box-shadow:0 16px 34px rgba(15,37,61,.15);backdrop-filter:blur(12px);padding:12px 14px;min-width:185px;pointer-events:none}.map-quick-panel b{display:block;color:#092b4a;font-size:23px;line-height:1;font-weight:950}.map-quick-panel span{display:block;margin-top:4px;color:#60748a;font-size:12px;font-weight:800}
+.loteka-map-dashboard{position:absolute;inset:0;z-index:850;pointer-events:none}.loteka-map-side{position:absolute;top:0;bottom:0;width:310px;padding:28px 18px;background:linear-gradient(180deg,rgba(4,30,57,.96),rgba(3,60,96,.91));color:#fff;box-shadow:0 18px 42px rgba(0,0,0,.22);backdrop-filter:blur(10px);pointer-events:auto;overflow:auto}.loteka-map-left{left:0}.loteka-map-right{right:0;width:292px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(245,251,255,.94));color:#061e38;border-left:1px solid rgba(5,39,73,.14)}
+.loteka-map-title{font-size:32px;line-height:1.04;font-weight:950;letter-spacing:-.8px;text-transform:uppercase;margin:0 0 10px}.loteka-map-subtitle{font-size:18px;line-height:1.25;color:#d6eafe;margin:0 0 18px}.loteka-map-line{width:110px;height:4px;background:#ffc247;border-radius:999px;margin:0 0 22px}.loteka-map-box{background:rgba(255,255,255,.94);color:#071f39;border:1px solid rgba(255,255,255,.28);border-radius:14px;margin:14px 0;box-shadow:0 16px 34px rgba(0,0,0,.16);overflow:hidden}.loteka-map-box h4{margin:0;background:linear-gradient(135deg,#062747,#0a4a7a);color:#fff;padding:10px 13px;font-size:14px;text-transform:uppercase;letter-spacing:.3px}.loteka-map-box-body{padding:12px 13px}.loteka-map-stat{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #e7eef5;font-size:13px}.loteka-map-stat:last-child{border-bottom:0}.loteka-map-stat i{color:#0a4a7a;font-size:18px;width:24px;text-align:center}.loteka-map-stat b{font-weight:950;color:#061e38}.loteka-map-legend-row{display:flex;align-items:center;gap:9px;padding:7px 0;color:#112e48;font-size:12.5px}.legend-dot{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}.legend-pin{width:14px;height:14px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-block;background:#0d5fb1;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}.legend-line{width:22px;height:3px;border-radius:999px;background:#ffc247;display:inline-block}.legend-line.secondary{height:2px;background:#9dc7e8}.legend-line.river{background:#33a9dc}.legend-dash{width:22px;height:0;border-top:2px dashed #061e38;display:inline-block}.legend-zone{width:20px;height:14px;border-radius:4px;background:rgba(255,92,112,.28);display:inline-block;border:1px solid rgba(255,92,112,.45)}
+.loteka-agency-list-title{margin:0 0 12px;font-size:18px;font-weight:950;text-transform:uppercase;color:#061e38}.loteka-agency-list{display:flex;flex-direction:column;gap:8px}.loteka-agency-list-item{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:8px;border-radius:12px;background:rgba(6,39,71,.045);border:1px solid rgba(6,39,71,.08)}.loteka-agency-list-item:hover{background:rgba(14,165,198,.09)}.loteka-agency-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#062747;color:#fff;font-weight:950;font-size:12px}.loteka-agency-name{font-size:12.5px;font-weight:950;color:#061e38}.loteka-agency-meta{font-size:11.5px;color:#526a80;margin-top:2px}.loteka-map-bottom{position:absolute;left:330px;right:310px;bottom:16px;display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;pointer-events:auto}.loteka-map-bottom-card{background:rgba(255,255,255,.93);border:1px solid rgba(6,39,71,.12);border-radius:14px;box-shadow:0 16px 34px rgba(0,0,0,.16);padding:12px 14px;color:#061e38;backdrop-filter:blur(10px)}.loteka-map-bottom-card h4{margin:0 0 8px;font-size:13px;text-transform:uppercase}.loteka-map-bottom-card p{margin:0;color:#4d6579;font-size:12px;line-height:1.35}.loteka-compass{position:absolute;right:340px;top:84px;width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.72);border:1px solid rgba(6,39,71,.14);box-shadow:0 12px 28px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;color:#061e38;font-weight:950;pointer-events:none}.loteka-compass:before{content:"✦";font-size:52px;line-height:1;transform:rotate(45deg);color:#062747}.loteka-compass span{position:absolute;font-size:10px}.loteka-compass .n{top:4px}.loteka-compass .s{bottom:4px}.loteka-compass .e{right:5px}.loteka-compass .w{left:5px}
+@media(max-width:1180px){.loteka-map-side{width:260px}.loteka-map-right{width:246px}.loteka-map-bottom{left:276px;right:262px;grid-template-columns:1fr}.map-quick-panel{right:288px}#agenciasMap .leaflet-left .leaflet-control{margin-left:286px}#agenciasMap .leaflet-right .leaflet-control{margin-right:270px}}
+@media(max-width:900px){#agenciasMap{height:520px;min-height:520px}.agency-map-head{align-items:flex-start;flex-direction:column}.agency-map-actions{width:100%}.loteka-map-side,.loteka-map-right{display:none}.loteka-map-bottom{left:14px;right:14px;bottom:14px;grid-template-columns:1fr}.loteka-compass{right:16px;top:18px}.map-quick-panel{left:14px;right:auto;top:14px;min-width:150px}#agenciasMap .leaflet-left .leaflet-control{margin-left:18px;margin-top:74px}#agenciasMap .leaflet-right .leaflet-control{margin-right:18px}}
 
+
+/* MAPA DE AGENCIAS · FILTROS LIMPIOS POR GRUPO */
+#agenciasMap{height:760px;min-height:760px;background:#dce8f2;}
+#agenciasMap:after{display:none!important}
+#agenciasMap .leaflet-tile{filter:saturate(1.05) contrast(1.08) brightness(.98)!important;}
+#agenciasMap .leaflet-left .leaflet-control{margin-left:330px!important;margin-top:22px!important}
+#agenciasMap .leaflet-right .leaflet-control{margin-right:22px!important}
+#agenciasMap .leaflet-bottom .leaflet-control{margin-bottom:16px!important}
+.loteka-map-dashboard{position:absolute;inset:0;z-index:900;pointer-events:none;}
+.loteka-map-side,.loteka-map-right,.loteka-map-bottom,.loteka-compass{display:none!important;}
+.map-quick-panel{right:24px!important;top:22px!important;min-width:172px;z-index:920;}
+.map-filter-panel{position:absolute;z-index:930;left:18px;top:18px;bottom:18px;width:284px;display:flex;flex-direction:column;pointer-events:auto;background:rgba(255,255,255,.96);border:1px solid rgba(168,190,212,.72);border-radius:20px;box-shadow:0 20px 45px rgba(11,35,62,.20);backdrop-filter:blur(16px);overflow:hidden;color:#10253b;}
+.map-filter-head{padding:18px 16px 12px;border-bottom:1px solid #e4edf5;background:linear-gradient(180deg,#ffffff,#f6faff);}
+.map-filter-head h3{margin:0 0 4px;font-size:15px;font-weight:950;color:#10233a;letter-spacing:.2px;}
+.map-filter-head span{font-size:12px;font-weight:800;color:#587088;}
+.map-filter-search{margin:14px 16px 10px;height:42px;border:1px solid #ccdae8;border-radius:13px;background:#fff;display:flex;align-items:center;gap:9px;padding:0 12px;box-shadow:0 8px 18px rgba(20,53,85,.06);}
+.map-filter-search i{color:#6d8499;font-size:14px}.map-filter-search input{border:0;outline:0;background:transparent;width:100%;height:100%;font-size:13px;color:#10253b;font-weight:700;}.map-filter-search input::placeholder{color:#70879c;font-weight:600;}
+.map-filter-list{padding:10px 16px 8px;overflow:auto;display:flex;flex-direction:column;gap:7px;min-height:0;scrollbar-width:thin;scrollbar-color:#98acc0 transparent;}
+.map-filter-row{height:36px;display:grid;grid-template-columns:18px 22px 17px 1fr auto;align-items:center;gap:8px;padding:0 10px;border-radius:12px;background:#eaf6ff;border:1px solid rgba(179,205,226,.75);cursor:pointer;transition:.16s ease;}
+.map-filter-row:hover{transform:translateX(2px);background:#dff1ff;box-shadow:0 8px 18px rgba(13,75,125,.08);}.filter-chevron{color:#526b82;font-size:12px;}.map-filter-row input{width:18px;height:18px;accent-color:#2d9bf0;cursor:pointer;}.filter-color{width:15px;height:15px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(10,39,68,.12);}.filter-name{font-size:13px;font-weight:950;color:#263b50;}.map-filter-row b{min-width:28px;height:22px;border-radius:999px;background:#edf2f7;display:flex;align-items:center;justify-content:center;font-size:12px;color:#0f263d;font-weight:950;}.map-filter-empty{padding:16px;text-align:center;color:#667d91;font-weight:800;font-size:13px;}
+.map-filter-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 16px;border-top:1px solid #e4edf5;background:linear-gradient(180deg,#f8fbff,#fff);}.map-filter-actions button{height:40px;border:1px solid #c9d8e8;border-radius:13px;background:#fff;color:#10253b;font-weight:950;cursor:pointer;box-shadow:0 8px 18px rgba(11,35,62,.07);}.map-filter-actions button:hover{background:#eff8ff;border-color:#83bce8;}
+.loteka-map-pin span{width:38px!important;height:38px!important;border-width:3px!important;box-shadow:0 8px 18px rgba(0,35,76,.28),0 0 0 3px var(--pin-glow)!important}.loteka-map-pin span b{font-size:10px!important;letter-spacing:-.7px;white-space:nowrap;max-width:34px;overflow:hidden;text-align:center}.loteka-map-pin span:before{display:none!important}.loteka-map-pin.pin-shape-drop span{border-radius:50% 50% 50% 0}.loteka-map-pin.pin-shape-diamond span{border-radius:11px}.loteka-map-pin.pin-shape-circle span{border-radius:50%}.loteka-map-pin.pin-shape-square span{border-radius:12px}.loteka-map-pin.pin-shape-hex span{clip-path:polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0 50%)}
+
+/* FIX MAP FILTER UI + REAL TOGGLE BEHAVIOR */
+.map-filter-search{height:46px!important;display:grid!important;grid-template-columns:20px 1fr!important;align-items:center!important;gap:10px!important;padding:0 12px!important;box-sizing:border-box!important;}
+.map-filter-search input#agencyMapSearchInput{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;width:100%!important;min-width:0!important;height:44px!important;padding:0!important;margin:0!important;border-radius:0!important;font-size:13px!important;line-height:44px!important;}
+.map-filter-row input[type="checkbox"]{appearance:auto!important;-webkit-appearance:checkbox!important;margin:0!important;padding:0!important;position:static!important;opacity:1!important;}
+.map-filter-row.is-off{background:#ffffff!important;border-color:#d8e4ef!important;opacity:.72;}
+.map-filter-row.is-off .filter-color{filter:grayscale(1);opacity:.55;}
+.map-filter-row.is-off .filter-name,.map-filter-row.is-off b{color:#6c7f91!important;}
+
+@media(max-width:900px){.map-filter-panel{position:absolute;left:12px;top:12px;bottom:auto;width:calc(100% - 24px);max-height:320px}.map-quick-panel{display:none!important}#agenciasMap .leaflet-left .leaflet-control{margin-left:18px!important;margin-top:348px!important}}
+
+
+
+/* MEJORA VISUAL DE MARCADORES DEL MAPA · TEXTURA PREMIUM */
+.loteka-map-pin span{
+  isolation:isolate!important;
+  width:42px!important;
+  height:42px!important;
+  border:3px solid rgba(255,255,255,.98)!important;
+  background:var(--pin-bg)!important;
+  box-shadow:0 12px 24px rgba(0,25,55,.34),0 0 0 4px var(--pin-glow), inset 0 2px 7px rgba(255,255,255,.45), inset 0 -9px 14px rgba(0,0,0,.22)!important;
+  filter:drop-shadow(0 8px 10px rgba(0,28,58,.25));
+}
+.loteka-map-pin span b{
+  color:#fff!important;
+  font-weight:1000!important;
+  letter-spacing:-.8px!important;
+  text-shadow:0 1px 0 rgba(0,0,0,.42),0 0 5px rgba(0,0,0,.35)!important;
+  max-width:38px!important;
+  font-family:Arial, Helvetica, sans-serif!important;
+}
+.loteka-map-pin span::before{
+  content:""!important;
+  position:absolute!important;
+  display:block!important;
+  inset:4px 6px auto 6px!important;
+  height:14px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.70),rgba(255,255,255,0))!important;
+  opacity:.62!important;
+  animation:none!important;
+  z-index:1!important;
+}
+.loteka-map-pin span::after{
+  content:""!important;
+  width:7px!important;
+  height:7px!important;
+  border-radius:50%!important;
+  background:var(--pin-dot)!important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.35)!important;
+  opacity:.95!important;
+  z-index:1!important;
+}
+.loteka-map-pin.pin-shape-shield span{
+  clip-path:polygon(50% 0%,90% 14%,90% 58%,50% 100%,10% 58%,10% 14%)!important;
+  border-radius:12px!important;
+  transform:none!important;
+}
+.loteka-map-pin.pin-shape-shield span b{transform:none!important;}
+.loteka-map-pin.pin-shape-shield span::after,.loteka-map-pin.pin-shape-hex span::after,.loteka-map-pin.pin-shape-diamond span::after,.loteka-map-pin.pin-shape-square span::after{display:none!important;}
+.filter-color{box-shadow:0 0 0 2px rgba(255,255,255,.95),0 3px 8px rgba(0,25,55,.18)!important;}
+
+
+/* MAPA · FLUIDEZ + PANTALLA COMPLETA + ICONOS PRO */
+.agency-map-card:fullscreen{width:100vw!important;height:100vh!important;margin:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;background:#061e38!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+.agency-map-card:fullscreen .agency-map-head{flex:0 0 auto!important;}
+.agency-map-card:fullscreen #agenciasMap{height:calc(100vh - 116px)!important;min-height:calc(100vh - 116px)!important;flex:1 1 auto!important;}
+.agency-map-card:fullscreen .agency-map-empty{flex:0 0 auto!important;}
+.agency-map-card:fullscreen .map-filter-panel{top:18px!important;bottom:18px!important;max-height:none!important;}
+#agenciasMap{will-change:transform;contain:layout paint size;}
+#agenciasMap .leaflet-tile{filter:saturate(1.03) contrast(1.1) brightness(.96)!important;image-rendering:auto!important;}
+#agenciasMap .leaflet-marker-icon{will-change:transform;}
+.loteka-map-pin span{transform:translateZ(0);backface-visibility:hidden;}
+.loteka-map-pin span b{position:relative;z-index:3;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;line-height:1!important;text-align:center!important;padding-top:1px!important;}
+.loteka-map-pin.pin-shape-triangle span{clip-path:polygon(50% 0%,96% 88%,50% 100%,4% 88%)!important;border-radius:14px!important;}
+.loteka-map-pin.pin-shape-triangle span::after{display:none!important;}
+.map-filter-row{user-select:none;}
+
+
+/* MAPA · ICONO UNIFICADO PROFESIONAL + MEJOR FLUIDEZ */
+#agenciasMap{background:#dce8ef!important;transform:translateZ(0);}
+#agenciasMap .leaflet-tile{filter:none!important;image-rendering:auto!important;backface-visibility:hidden;will-change:opacity;}
+#agenciasMap:after{display:none!important;}
+#agenciasMap .leaflet-marker-pane{will-change:transform;}
+.loteka-map-pin{background:transparent!important;border:0!important;}
+.loteka-map-pin span{
+  position:relative!important;
+  width:34px!important;
+  height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:var(--pin-bg)!important;
+  border:3px solid #ffffff!important;
+  border-radius:50%!important;
+  box-shadow:0 6px 14px rgba(4,28,55,.26),0 0 0 2px rgba(255,255,255,.85)!important;
+  transform:none!important;
+  clip-path:none!important;
+  backface-visibility:hidden!important;
+  will-change:transform!important;
+}
+.loteka-map-pin span::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:-8px!important;
+  width:15px!important;
+  height:15px!important;
+  background:var(--pin-bg)!important;
+  border-right:3px solid #fff!important;
+  border-bottom:3px solid #fff!important;
+  transform:translateX(-50%) rotate(45deg)!important;
+  border-radius:3px!important;
+  animation:none!important;
+  opacity:1!important;
+  z-index:-1!important;
+  box-shadow:5px 5px 10px rgba(4,28,55,.18)!important;
+}
+.loteka-map-pin span::after{
+  content:""!important;
+  position:absolute!important;
+  inset:4px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,.38)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 48%)!important;
+  width:auto!important;height:auto!important;
+  left:4px!important;top:4px!important;transform:none!important;
+  opacity:1!important;
+  display:block!important;
+}
+.loteka-map-pin span b{
+  position:relative!important;
+  z-index:4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  color:#fff!important;
+  font-weight:950!important;
+  font-family:Inter,system-ui,Arial,sans-serif!important;
+  letter-spacing:-.45px!important;
+  line-height:1!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;
+  transform:none!important;
+}
+.loteka-map-pin:hover span{transform:translateY(-2px) scale(1.04)!important;box-shadow:0 10px 20px rgba(4,28,55,.32),0 0 0 3px rgba(255,255,255,.9)!important;}
+@media(max-width:900px){.loteka-map-pin span{width:31px!important;height:31px!important}.loteka-map-pin span::before{bottom:-7px;width:13px!important;height:13px!important}}
+
+
+
+/* AJUSTE FINAL OSCAR · MAPA LEGIBLE + ICONO ÚNICO POR COLOR + MÁS FLUIDEZ */
+#agenciasMap{
+  background:#dfe8ed!important;
+  transform:translateZ(0)!important;
+  contain:layout paint size!important;
+}
+#agenciasMap .leaflet-tile{
+  filter:saturate(1.08) contrast(1.06) brightness(.93)!important;
+  image-rendering:auto!important;
+  backface-visibility:hidden!important;
+  will-change:opacity!important;
+}
+#agenciasMap .leaflet-tile-container{
+  will-change:transform!important;
+}
+#agenciasMap .leaflet-marker-icon{
+  will-change:transform!important;
+  transform:translateZ(0);
+}
+.loteka-map-pin,
+.loteka-pin-badge{
+  background:transparent!important;
+  border:0!important;
+}
+.loteka-map-pin span{
+  position:relative!important;
+  width:35px!important;
+  height:35px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:50% 50% 50% 0!important;
+  transform:rotate(-45deg) translateZ(0)!important;
+  border:3px solid rgba(255,255,255,.96)!important;
+  background:var(--pin-bg)!important;
+  box-shadow:0 7px 16px rgba(4,28,55,.30),0 0 0 2px rgba(255,255,255,.72),inset 0 2px 5px rgba(255,255,255,.42),inset 0 -8px 12px rgba(0,0,0,.20)!important;
+  filter:none!important;
+  overflow:visible!important;
+  clip-path:none!important;
+  backface-visibility:hidden!important;
+}
+.loteka-map-pin span::before{
+  content:""!important;
+  position:absolute!important;
+  display:block!important;
+  inset:4px 6px auto 6px!important;
+  height:11px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0))!important;
+  opacity:.70!important;
+  animation:none!important;
+  z-index:1!important;
+}
+.loteka-map-pin span::after{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:7px!important;
+  height:7px!important;
+  border-radius:50%!important;
+  transform:translate(-50%,-50%)!important;
+  background:var(--pin-dot)!important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.34)!important;
+  opacity:.95!important;
+  z-index:2!important;
+}
+.loteka-map-pin span b{
+  position:relative!important;
+  z-index:4!important;
+  transform:rotate(45deg)!important;
+  width:100%!important;
+  height:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#fff!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  letter-spacing:-.65px!important;
+  text-align:center!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.55)!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  max-width:none!important;
+  padding:0!important;
+  margin:0!important;
+}
+.loteka-map-pin:hover span{
+  transform:rotate(-45deg) translateY(-2px) scale(1.035) translateZ(0)!important;
+  box-shadow:0 9px 18px rgba(4,28,55,.34),0 0 0 2px rgba(255,255,255,.82),inset 0 2px 5px rgba(255,255,255,.42),inset 0 -8px 12px rgba(0,0,0,.20)!important;
+}
+.map-filter-panel{box-shadow:0 18px 38px rgba(11,35,62,.16)!important;}
+@media(max-width:900px){.loteka-map-pin span{width:31px!important;height:31px!important}.loteka-map-pin span b{font-size:9px!important}}
 </style>
+
+<style id="loteka-agency-type-icons-css">
+/* LOTeka · Marcadores por TIPO DE AGENCIA · visibles y profesionales */
+.loteka-map-pin,
+.loteka-pin-badge{background:transparent!important;border:0!important;}
+.loteka-map-pin .mk{
+  --mk-main:#0b5fa5;
+  --mk-dark:#073b66;
+  --mk-soft:#56b8ff;
+  position:relative!important;
+  width:52px!important;
+  height:62px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  transform:translateZ(0)!important;
+  filter:drop-shadow(0 9px 13px rgba(5,25,48,.34))!important;
+  backface-visibility:hidden!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+.loteka-map-pin .mk-core{
+  position:relative!important;
+  z-index:3!important;
+  width:42px!important;
+  height:42px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:3px solid #fff!important;
+  box-shadow:inset 0 3px 7px rgba(255,255,255,.38), inset 0 -10px 15px rgba(0,0,0,.22), 0 0 0 2px rgba(7,38,73,.12)!important;
+  background:linear-gradient(145deg,var(--mk-soft) 0%,var(--mk-main) 48%,var(--mk-dark) 100%)!important;
+  overflow:hidden!important;
+}
+.loteka-map-pin .mk-core::before{
+  content:""!important;
+  position:absolute!important;
+  left:7px!important;right:7px!important;top:5px!important;
+  height:12px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,0))!important;
+  opacity:.8!important;
+}
+.loteka-map-pin .mk-symbol{
+  position:absolute!important;
+  z-index:5!important;
+  top:-5px!important;
+  right:-5px!important;
+  min-width:18px!important;
+  height:18px!important;
+  padding:0 3px!important;
+  border-radius:999px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#fff!important;
+  background:#09233e!important;
+  border:2px solid #fff!important;
+  font-family:Inter,Arial,sans-serif!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  font-style:normal!important;
+  box-shadow:0 4px 9px rgba(4,25,48,.28)!important;
+}
+.loteka-map-pin .mk-num{
+  position:relative!important;
+  z-index:6!important;
+  min-width:27px!important;
+  height:20px!important;
+  padding:0 5px!important;
+  border-radius:999px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-family:Inter,Arial,sans-serif!important;
+  font-weight:1000!important;
+  letter-spacing:-.75px!important;
+  line-height:1!important;
+  color:#fff!important;
+  background:rgba(1,18,34,.38)!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.72)!important;
+  white-space:nowrap!important;
+}
+.loteka-map-pin .mk-tail{
+  position:absolute!important;
+  z-index:1!important;
+  left:50%!important;
+  bottom:6px!important;
+  width:18px!important;
+  height:18px!important;
+  background:linear-gradient(135deg,var(--mk-main),var(--mk-dark))!important;
+  border-right:3px solid #fff!important;
+  border-bottom:3px solid #fff!important;
+  transform:translateX(-50%) rotate(45deg)!important;
+  box-shadow:inset -2px -2px 5px rgba(0,0,0,.18)!important;
+}
+.loteka-map-pin:hover .mk{transform:translateY(-3px) scale(1.045) translateZ(0)!important;filter:drop-shadow(0 13px 18px rgba(5,25,48,.40))!important;}
+
+/* Agencia normal: pin clásico con edificio */
+.loteka-map-pin.type-agencia .mk-core{border-radius:50% 50% 50% 0!important;transform:rotate(-45deg)!important;}
+.loteka-map-pin.type-agencia .mk-num,
+.loteka-map-pin.type-agencia .mk-symbol{transform:rotate(45deg)!important;}
+.loteka-map-pin.type-agencia .mk-symbol::before{content:"🏢";font-size:10px;}
+
+/* Agencia de pasante: pin con borde punteado y P */
+.loteka-map-pin.type-pasante .mk-core{border-radius:50% 50% 50% 0!important;transform:rotate(-45deg)!important;outline:2px dashed rgba(255,255,255,.92)!important;outline-offset:2px!important;}
+.loteka-map-pin.type-pasante .mk-num,
+.loteka-map-pin.type-pasante .mk-symbol{transform:rotate(45deg)!important;}
+.loteka-map-pin.type-pasante .mk-symbol::before{content:"P";font-size:11px;}
+
+/* Aprezio: etiqueta cuadrada tipo tienda */
+.loteka-map-pin.type-aprezio .mk{width:56px!important;height:54px!important;}
+.loteka-map-pin.type-aprezio .mk-core{width:48px!important;height:38px!important;border-radius:13px!important;}
+.loteka-map-pin.type-aprezio .mk-tail{bottom:2px!important;width:15px!important;height:15px!important;}
+.loteka-map-pin.type-aprezio .mk-symbol::before{content:"A";font-size:11px;}
+
+/* Centro de pago: círculo con dinero, muy distinto */
+.loteka-map-pin.type-centro-pago .mk{width:56px!important;height:56px!important;}
+.loteka-map-pin.type-centro-pago .mk-core{width:46px!important;height:46px!important;border-radius:50%!important;}
+.loteka-map-pin.type-centro-pago .mk-tail{display:none!important;}
+.loteka-map-pin.type-centro-pago .mk-symbol{top:-6px!important;right:-6px!important;background:#06253f!important;}
+.loteka-map-pin.type-centro-pago .mk-symbol::before{content:"$";font-size:12px;}
+.loteka-map-pin.type-centro-pago .mk-core::after{
+  content:"$"!important;position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-52%)!important;
+  font-size:24px!important;font-weight:1000!important;color:rgba(255,255,255,.28)!important;text-shadow:none!important;
+}
+
+/* Punto de pago: pin verde/dinero con símbolo visible */
+.loteka-map-pin.type-punto-pago .mk-core{border-radius:50% 50% 50% 0!important;transform:rotate(-45deg)!important;}
+.loteka-map-pin.type-punto-pago .mk-num,
+.loteka-map-pin.type-punto-pago .mk-symbol{transform:rotate(45deg)!important;}
+.loteka-map-pin.type-punto-pago .mk-symbol::before{content:"$";font-size:12px;}
+.loteka-map-pin.type-punto-pago .mk-core::after{
+  content:"$"!important;position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%) rotate(45deg)!important;
+  font-size:22px!important;font-weight:1000!important;color:rgba(255,255,255,.24)!important;
+}
+
+/* Agencia en supermercado: carrito + base morada */
+.loteka-map-pin.type-supermercado .mk{width:60px!important;height:60px!important;}
+.loteka-map-pin.type-supermercado .mk-core{width:46px!important;height:46px!important;border-radius:50% 50% 50% 0!important;transform:rotate(-45deg)!important;}
+.loteka-map-pin.type-supermercado .mk-num,
+.loteka-map-pin.type-supermercado .mk-symbol{transform:rotate(45deg)!important;}
+.loteka-map-pin.type-supermercado .mk-symbol::before{content:"🛒";font-size:11px;}
+.loteka-map-pin.type-supermercado .mk-cart{
+  position:absolute!important;z-index:0!important;left:7px!important;bottom:2px!important;width:44px!important;height:23px!important;
+  border:3px solid var(--mk-dark)!important;border-top:0!important;border-radius:0 0 8px 8px!important;opacity:.98!important;background:rgba(255,255,255,.05)!important;
+}
+.loteka-map-pin.type-supermercado .mk-cart::before{content:""!important;position:absolute!important;left:-10px!important;top:-7px!important;width:18px!important;height:8px!important;border-top:4px solid var(--mk-dark)!important;border-left:4px solid var(--mk-dark)!important;border-radius:8px 0 0 0!important;}
+.loteka-map-pin.type-supermercado .mk-cart::after{content:""!important;position:absolute!important;left:6px!important;right:6px!important;bottom:-10px!important;height:7px!important;border-radius:999px!important;background:linear-gradient(90deg,var(--mk-dark) 0 7px,transparent 7px calc(100% - 7px),var(--mk-dark) calc(100% - 7px))!important;}
+
+#agencyFieldTipoAgencia,#agenciaTipoAgencia{font-weight:800;}
+@media(max-width:900px){.loteka-map-pin .mk{transform:scale(.88) translateZ(0)!important;transform-origin:center bottom!important;}.loteka-map-pin:hover .mk{transform:scale(.92) translateY(-2px) translateZ(0)!important;}}
+</style>
+
+
+
+<style id="loteka-oscar-iconos-tipo-grandes-final">
+/* OSCAR · Marcadores finales por TIPO: símbolo grande, número oculto hasta dar clic en el popup */
+.loteka-map-pin,
+.loteka-pin-badge{
+  background:transparent!important;
+  border:0!important;
+}
+.loteka-map-pin .mk{
+  width:54px!important;
+  height:64px!important;
+  filter:drop-shadow(0 8px 12px rgba(5,24,47,.30))!important;
+  will-change:transform!important;
+}
+.loteka-map-pin .mk-core{
+  width:42px!important;
+  height:42px!important;
+  border:3px solid #fff!important;
+  box-shadow:
+    inset 0 3px 7px rgba(255,255,255,.42),
+    inset 0 -10px 16px rgba(0,0,0,.24),
+    0 0 0 2px rgba(9,39,73,.14)!important;
+  background:linear-gradient(145deg,var(--mk-soft) 0%,var(--mk-main) 46%,var(--mk-dark) 100%)!important;
+  overflow:visible!important;
+}
+.loteka-map-pin .mk-core::before{
+  content:""!important;
+  position:absolute!important;
+  left:7px!important;
+  right:7px!important;
+  top:5px!important;
+  height:11px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.64),rgba(255,255,255,0))!important;
+  opacity:.75!important;
+  z-index:1!important;
+}
+.loteka-map-pin .mk-tail{
+  width:17px!important;
+  height:17px!important;
+  bottom:7px!important;
+  border-right:3px solid #fff!important;
+  border-bottom:3px solid #fff!important;
+}
+.loteka-map-pin .mk-num{
+  display:none!important;
+}
+.loteka-map-pin .mk-symbol{
+  position:absolute!important;
+  z-index:9!important;
+  left:50%!important;
+  top:50%!important;
+  right:auto!important;
+  min-width:0!important;
+  width:34px!important;
+  height:34px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#fff!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-family:Inter,Arial,sans-serif!important;
+  font-weight:1000!important;
+  font-style:normal!important;
+  line-height:1!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.45)!important;
+}
+.loteka-map-pin .mk-symbol::before{
+  font-size:25px!important;
+  line-height:1!important;
+}
+
+/* Rotación correcta para los tipos con pin inclinado */
+.loteka-map-pin.type-agencia .mk-symbol,
+.loteka-map-pin.type-pasante .mk-symbol,
+.loteka-map-pin.type-punto-pago .mk-symbol,
+.loteka-map-pin.type-supermercado .mk-symbol{
+  transform:translate(-50%,-50%) rotate(45deg)!important;
+}
+.loteka-map-pin.type-aprezio .mk-symbol,
+.loteka-map-pin.type-centro-pago .mk-symbol{
+  transform:translate(-50%,-50%)!important;
+}
+
+/* Símbolos grandes y bien distinguibles */
+.loteka-map-pin.type-agencia .mk-symbol::before{content:"🏢"!important;font-size:23px!important;}
+.loteka-map-pin.type-pasante .mk-symbol::before{content:"P"!important;font-size:26px!important;letter-spacing:-1px!important;}
+.loteka-map-pin.type-aprezio .mk-symbol::before{content:"A"!important;font-size:27px!important;letter-spacing:-1px!important;}
+.loteka-map-pin.type-centro-pago .mk-symbol::before{content:"$"!important;font-size:31px!important;}
+.loteka-map-pin.type-punto-pago .mk-symbol::before{content:"$"!important;font-size:31px!important;}
+.loteka-map-pin.type-supermercado .mk-symbol::before{content:"🛒"!important;font-size:25px!important;}
+
+/* Formas diferentes por tipo */
+.loteka-map-pin.type-agencia .mk-core,
+.loteka-map-pin.type-pasante .mk-core,
+.loteka-map-pin.type-punto-pago .mk-core,
+.loteka-map-pin.type-supermercado .mk-core{
+  border-radius:50% 50% 50% 0!important;
+  transform:rotate(-45deg)!important;
+}
+.loteka-map-pin.type-centro-pago .mk-core{
+  width:46px!important;
+  height:46px!important;
+  border-radius:50%!important;
+}
+.loteka-map-pin.type-centro-pago .mk-tail{display:none!important;}
+.loteka-map-pin.type-aprezio .mk{
+  width:58px!important;
+  height:56px!important;
+}
+.loteka-map-pin.type-aprezio .mk-core{
+  width:50px!important;
+  height:40px!important;
+  border-radius:14px!important;
+}
+.loteka-map-pin.type-aprezio .mk-tail{
+  bottom:2px!important;
+  width:15px!important;
+  height:15px!important;
+}
+.loteka-map-pin.type-pasante .mk-core{
+  outline:2px dashed rgba(255,255,255,.96)!important;
+  outline-offset:2px!important;
+}
+.loteka-map-pin.type-supermercado .mk-cart{
+  display:block!important;
+  position:absolute!important;
+  z-index:0!important;
+  left:6px!important;
+  bottom:1px!important;
+  width:46px!important;
+  height:24px!important;
+  border:3px solid var(--mk-dark)!important;
+  border-top:0!important;
+  border-radius:0 0 8px 8px!important;
+  opacity:.92!important;
+}
+.loteka-map-pin.type-supermercado .mk-cart::before{
+  content:""!important;
+  position:absolute!important;
+  left:-10px!important;
+  top:-7px!important;
+  width:18px!important;
+  height:8px!important;
+  border-top:4px solid var(--mk-dark)!important;
+  border-left:4px solid var(--mk-dark)!important;
+  border-radius:8px 0 0 0!important;
+}
+.loteka-map-pin.type-supermercado .mk-cart::after{
+  content:""!important;
+  position:absolute!important;
+  left:7px!important;
+  right:7px!important;
+  bottom:-10px!important;
+  height:7px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,var(--mk-dark) 0 7px,transparent 7px calc(100% - 7px),var(--mk-dark) calc(100% - 7px))!important;
+}
+.loteka-map-pin:not(.type-supermercado) .mk-cart{display:none!important;}
+
+/* Popup revela número y datos al dar clic */
+.agency-popup strong{font-size:14px!important;}
+.agency-popup span{font-size:12px!important;}
+
+/* Mapa menos pesado visualmente y con calles legibles */
+#agenciasMap .leaflet-tile{
+  filter:saturate(1.04) contrast(1.09) brightness(.96)!important;
+  image-rendering:auto!important;
+}
+#agenciasMap .leaflet-marker-icon{
+  will-change:transform!important;
+  backface-visibility:hidden!important;
+}
+</style>
+
 </head>
 <body>
 
@@ -1798,14 +2415,14 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
       <div class="dashboard-card">
         <div class="dashboard-card-label">Total de agencias</div>
         <div class="dashboard-card-value" id="dashTotalAgencias">0</div>
-        <div class="dashboard-card-sub">Puntos de venta registrados en G-44</div>
+        <div class="dashboard-card-sub">Puntos de venta registrados por grupos</div>
       </div>
     </div>
 
     <div class="filter-card" style="margin-bottom:14px;">
       <div class="field-group">
         <label for="agencySearchInput">Buscar Agencias</label>
-        <input id="agencySearchInput" type="text" placeholder="Ej. 1088 o Agencia 1088, G-44" oninput="renderAgencias()" />
+        <input id="agencySearchInput" type="text" placeholder="Ej. 1088, 1200, G-45 o Jose Pacheco" oninput="renderAgencias()" />
       </div>
     </div>
 
@@ -1817,6 +2434,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         </div>
         <div class="agency-map-actions">
           <button type="button" class="agency-map-mini-btn" onclick="agencyMapFitAll()"><i class="fas fa-expand"></i> Ver todas</button>
+          <button type="button" class="agency-map-mini-btn" onclick="toggleAgencyMapFullscreen()"><i class="fas fa-up-right-and-down-left-from-center"></i> Pantalla completa</button>
           <button type="button" class="agency-map-mini-btn" onclick="agencyMapRefresh()"><i class="fas fa-rotate"></i> Actualizar mapa</button>
         </div>
       </div>
@@ -2366,6 +2984,16 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <input id="agenciaEncargado" type="text" placeholder="Nombre del encargado">
       </div>
       <div class="form-group">
+        <label for="agenciaTipoAgencia">Tipo de agencia</label>
+        <select id="agenciaTipoAgencia">
+          <option value="Agencia">Agencia</option>
+          <option value="Agencia de Pasante">Agencia de Pasante</option>
+          <option value="Aprezio">Aprezio</option>
+          <option value="Centro De Pago">Centro De Pago</option>
+          <option value="Punto de Pago">Punto de Pago</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label for="agenciaLatitud">Latitud</label>
         <input id="agenciaLatitud" type="number" step="any" placeholder="Ej. 18.53926">
       </div>
@@ -2465,7 +3093,11 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
               </div>
               <div class="agency-form-field"><label>Tipo de agencia</label>
                 <select id="agencyFieldTipoAgencia">
-                  <option>Regular</option><option>Premium</option><option>Mini punto</option><option>Especial</option>
+                  <option value="Agencia">Agencia</option>
+                  <option value="Agencia de Pasante">Agencia de Pasante</option>
+                  <option value="Aprezio">Aprezio</option>
+                  <option value="Centro De Pago">Centro De Pago</option>
+                  <option value="Punto de Pago">Punto de Pago</option>
                 </select>
               </div>
               <div class="agency-form-field"><label>Teléfono</label><input id="agencyFieldTelefono" type="text"></div>
@@ -3817,7 +4449,197 @@ const AGENCY_GEO_CATALOG = {
   1186: { lat: 18.54281, lng: -69.93962, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1186, G-44' },
   1187: { lat: 18.53729, lng: -69.93586, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1187, G-44' },
   1188: { lat: 18.53521, lng: -69.93818, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1188, G-44' },
-  1189: { lat: 18.53295, lng: -69.94509, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1189, G-44' }
+  1189: { lat: 18.53295, lng: -69.94509, encargado: 'encargado1', grupo: 'Grupo 44', direccion: 'Agencia 1189, G-44' },
+  147: { lat: 18.5466634, lng: -69.9162626, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 0147, G-45' },
+  449: { lat: 18.544266, lng: -69.941925, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 0449, G-45' },
+  468: { lat: 18.5451777, lng: -69.9433883, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 0468, G-45' },
+  469: { lat: 18.545726, lng: -69.941777, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 0469, G-45' },
+  1001: { lat: 18.550821, lng: -69.943429, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1001, G-45' },
+  1003: { lat: 18.539312, lng: -69.926788, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1003, G-45' },
+  1013: { lat: 18.54265, lng: -69.94234, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1013, G-45' },
+  1015: { lat: 18.54585, lng: -69.91448, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1015, G-45' },
+  1017: { lat: 18.546961, lng: -69.923225, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1017, G-45' },
+  1039: { lat: 18.540206, lng: -69.929702, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1039, G-45' },
+  1074: { lat: 18.53377393, lng: -69.95208045, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1074, G-45' },
+  1075: { lat: 18.545063, lng: -69.9259659, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1075, G-45' },
+  1076: { lat: 18.5396652, lng: -69.9296783, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1076, G-45' },
+  1080: { lat: 18.54498, lng: -69.93094, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1080, G-45' },
+  1091: { lat: 18.54164, lng: -69.92511, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1091, G-45' },
+  1108: { lat: 18.54487, lng: -69.92773, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1108, G-45' },
+  1113: { lat: 18.54242, lng: -69.93478, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1113, G-45' },
+  1135: { lat: 18.54086, lng: -69.93275, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1135, G-45' },
+  1136: { lat: 18.53955, lng: -69.92908, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1136, G-45' },
+  1138: { lat: 18.54519, lng: -69.94224, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1138, G-45' },
+  1144: { lat: 18.54107, lng: -69.92434, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1144, G-45' },
+  1145: { lat: 18.537783368, lng: -69.92610096, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1145, G-45' },
+  1146: { lat: 18.54107, lng: -69.92607, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1146, G-45' },
+  1147: { lat: 18.56015, lng: -69.95136, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1147, G-45' },
+  1148: { lat: 18.55851, lng: -69.95348, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1148, G-45' },
+  1149: { lat: 18.55747, lng: -69.95574, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1149, G-45' },
+  1150: { lat: 18.54046, lng: -69.93102, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1150, G-45' },
+  1169: { lat: 18.54397, lng: -69.92476, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1169, G-45' },
+  1173: { lat: 18.5654099, lng: -69.938017, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1173, G-45' },
+  1178: { lat: 18.54473, lng: -69.94296, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1178, G-45' },
+  1179: { lat: 18.54319, lng: -69.93537, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1179, G-45' },
+  1180: { lat: 18.54133, lng: -69.93489, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1180, G-45' },
+  1181: { lat: 18.54135, lng: -69.93523, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1181, G-45' },
+  1182: { lat: 18.542, lng: -69.93636, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1182, G-45' },
+  1194: { lat: 18.5433, lng: -69.93117, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1194, G-45' },
+  1195: { lat: 18.5446, lng: -69.92995, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1195, G-45' },
+  1196: { lat: 18.53999, lng: -69.92535, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1196, G-45' },
+  1197: { lat: 18.54375, lng: -69.9366, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1197, G-45' },
+  1198: { lat: 18.54525, lng: -69.93396, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1198, G-45' },
+  1199: { lat: 18.5438, lng: -69.94279, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1199, G-45' },
+  1200: { lat: 18.55084, lng: -69.92424, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1200, G-45' },
+  1201: { lat: 18.54338, lng: -69.92398, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1201, G-45' },
+  1211: { lat: 18.53787, lng: -69.93086, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1211, G-45' },
+  1212: { lat: 18.54523028, lng: -69.9335384, encargado: 'Jose Pacheco', grupo: 'Grupo 45', direccion: 'Agencia 1212, G-45' },
+  20: { lat: 18.532108, lng: -69.907968, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0020, G-42' },
+  40: { lat: 18.518021, lng: -69.906286, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0040, G-42' },
+  78: { lat: 18.5249762, lng: -69.9085271, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0078, G-42' },
+  164: { lat: 18.526316, lng: -69.915635, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0164, G-42' },
+  171: { lat: 18.5255662, lng: -69.9199212, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0171, G-42' },
+  172: { lat: 18.5262274, lng: -69.9202752, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0172, G-42' },
+  173: { lat: 18.526736, lng: -69.9140418, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0173, G-42' },
+  383: { lat: 18.52029562, lng: -69.9135794, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0383, G-42' },
+  384: { lat: 18.517458, lng: -69.908417, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0384, G-42' },
+  385: { lat: 18.530474, lng: -69.923444, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0385, G-42' },
+  386: { lat: 18.529236, lng: -69.92498, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0386, G-42' },
+  387: { lat: 18.536936, lng: -69.911942, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0387, G-42' },
+  388: { lat: 18.523741, lng: -69.91716, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0388, G-42' },
+  389: { lat: 18.529902, lng: -69.908325, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0389, G-42' },
+  390: { lat: 18.535532, lng: -69.907173, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0390, G-42' },
+  392: { lat: 18.530077, lng: -69.915367, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0392, G-42' },
+  433: { lat: 18.5284952, lng: -69.9035706, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0433, G-42' },
+  434: { lat: 18.5252447, lng: -69.9005304, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0434, G-42' },
+  436: { lat: 18.513687, lng: -69.903561, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0436, G-42' },
+  437: { lat: 18.514272, lng: -69.904444, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0437, G-42' },
+  438: { lat: 18.516355, lng: -69.902679, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0438, G-42' },
+  441: { lat: 18.521466, lng: -69.90848, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0441, G-42' },
+  442: { lat: 18.5270682, lng: -69.9111357, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0442, G-42' },
+  443: { lat: 18.527583, lng: -69.905996, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0443, G-42' },
+  444: { lat: 18.525484, lng: -69.906829, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 0444, G-42' },
+  1004: { lat: 18.523136, lng: -69.914986, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1004, G-42' },
+  1007: { lat: 18.531179, lng: -69.90744, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1007, G-42' },
+  1008: { lat: 18.5273091, lng: -69.9136024, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1008, G-42' },
+  1010: { lat: 18.5227706, lng: -69.9173386, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1010, G-42' },
+  1011: { lat: 18.527056, lng: -69.915314, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1011, G-42' },
+  1019: { lat: 18.525534, lng: -69.9124047, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1019, G-42' },
+  1020: { lat: 18.541748, lng: -69.896881, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1020, G-42' },
+  1036: { lat: 18.534449768, lng: -69.89467668, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1036, G-42' },
+  1037: { lat: 18.526878947, lng: -69.92086343, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1037, G-42' },
+  1103: { lat: 18.52608, lng: -69.91711, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1103, G-42' },
+  1104: { lat: 18.52717, lng: -69.91793, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1104, G-42' },
+  1106: { lat: 18.52772, lng: -69.91732, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1106, G-42' },
+  1120: { lat: 18.53008, lng: -69.91703, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1120, G-42' },
+  1121: { lat: 18.5306, lng: -69.91855, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1121, G-42' },
+  1122: { lat: 18.545414, lng: -69.889946, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1122, G-42' },
+  1140: { lat: 18.53924, lng: -69.88443, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1140, G-42' },
+  1141: { lat: 18.524952, lng: -69.917082, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1141, G-42' },
+  1143: { lat: 18.53424141, lng: -69.8978181, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1143, G-42' },
+  1154: { lat: 18.5252064, lng: -69.8994217, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1154, G-42' },
+  1155: { lat: 18.53134, lng: -69.9179, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1155, G-42' },
+  1156: { lat: 18.54334, lng: -69.90016, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1156, G-42' },
+  1164: { lat: 18.5203264, lng: -69.9094479, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1164, G-42' },
+  1165: { lat: 18.52414, lng: -69.91367, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1165, G-42' },
+  1172: { lat: 18.545443, lng: -69.89538, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1172, G-42' },
+  1202: { lat: 18.52437, lng: -69.91509, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1202, G-42' },
+  1203: { lat: 18.52487, lng: -69.91662, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1203, G-42' },
+  1204: { lat: 18.54137, lng: -69.90895, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1204, G-42' },
+  1205: { lat: 18.54023, lng: -69.90784, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1205, G-42' },
+  1206: { lat: 18.54397, lng: -69.90267, encargado: 'Jose Antonio', grupo: 'Grupo 42', direccion: 'Agencia 1206, G-42' },
+49: { lat: 18.505546, lng: -69.911858, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 49, G-08' },
+  57: { lat: 18.5040991, lng: -69.9007856, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 57, G-08' },
+  67: { lat: 18.5038142, lng: -69.9122262, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 67, G-08' },
+  76: { lat: 18.5036870, lng: -69.9123912, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 76, G-08' },
+  87: { lat: 18.5044103, lng: -69.9109120, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 87, G-08' },
+  89: { lat: 18.5002208, lng: -69.9076625, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 89, G-08' },
+  107: { lat: 18.5057292, lng: -69.9110853, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 107, G-08' },
+  134: { lat: 18.504883, lng: -69.911505, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 134, G-08' },
+  156: { lat: 18.495380, lng: -69.907074, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 156, G-08' },
+  186: { lat: 18.500469, lng: -69.910669, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 186, G-08' },
+  202: { lat: 18.501330, lng: -69.911263, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 202, G-08' },
+  205: { lat: 18.504688, lng: -69.910542, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 205, G-08' },
+  207: { lat: 18.5025844, lng: -69.9141477, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 207, G-08' },
+  227: { lat: 18.503823, lng: -69.910863, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 227, G-08' },
+  238: { lat: 18.5052073, lng: -69.9083387, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 238, G-08' },
+  345: { lat: 18.495405, lng: -69.896972, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 345, G-08' },
+  359: { lat: 18.5023313, lng: -69.8889401, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 359, G-08' },
+  641: { lat: 18.502055, lng: -69.910437, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 641, G-08' },
+  652: { lat: 18.505830, lng: -69.892628, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 652, G-08' },
+  697: { lat: 18.506224, lng: -69.900391, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 697, G-08' },
+  705: { lat: 18.505062, lng: -69.896179, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 705, G-08' },
+  706: { lat: 18.502502, lng: -69.894073, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 706, G-08' },
+  707: { lat: 18.504635, lng: -69.894699, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 707, G-08' },
+  708: { lat: 18.502544, lng: -69.900697, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 708, G-08' },
+  711: { lat: 18.506239, lng: -69.898178, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 711, G-08' },
+  712: { lat: 18.499018, lng: -69.889442, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 712, G-08' },
+  713: { lat: 18.504665, lng: -69.896805, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 713, G-08' },
+  719: { lat: 18.5016209, lng: -69.893475, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 719, G-08' },
+  911: { lat: 18.50167855, lng: -69.8905241, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 911, G-08' },
+  972: { lat: 18.503973, lng: -69.895645, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 972, G-08' },
+  973: { lat: 18.506737, lng: -69.899078, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 973, G-08' },
+  980: { lat: 18.5009644, lng: -69.8970246, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 980, G-08' },
+  982: { lat: 18.505713, lng: -69.895164, encargado: 'Yoscar G-8', grupo: 'Grupo 08', direccion: 'Agencia 982, G-08' },
+  4: { lat: 18.5058105, lng: -69.9199403, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 4, G-06' },
+  11: { lat: 18.5003266, lng: -69.9305259, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 11, G-06' },
+  28: { lat: 18.5033045, lng: -69.9190384, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 28, G-06' },
+  37: { lat: 18.5028429, lng: -69.9258874, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 37, G-06' },
+  44: { lat: 18.5066827, lng: -69.9189945, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 44, G-06' },
+  45: { lat: 18.496240, lng: -69.927400, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 45, G-06' },
+  54: { lat: 18.5047594, lng: -69.9501349, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 54, G-06' },
+  55: { lat: 18.5047906, lng: -69.9272097, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 55, G-06' },
+  60: { lat: 18.505252, lng: -69.927339, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 60, G-06' },
+  62: { lat: 18.5035993, lng: -69.9169563, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 62, G-06' },
+  63: { lat: 18.5089068, lng: -69.9215312, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 63, G-06' },
+  64: { lat: 18.4866142, lng: -69.9295027, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 64, G-06' },
+  66: { lat: 18.4906473, lng: -69.9684125, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 66, G-06' },
+  68: { lat: 18.5035334, lng: -69.9269244, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 68, G-06' },
+  71: { lat: 18.50058439, lng: -69.96078681, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 71, G-06' },
+  86: { lat: 18.4969945, lng: -69.9309960, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 86, G-06' },
+  93: { lat: 18.5026229, lng: -69.9158576, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 93, G-06' },
+  94: { lat: 18.5022559, lng: -69.9187692, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 94, G-06' },
+  95: { lat: 18.5030623, lng: -69.9255236, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 95, G-06' },
+  105: { lat: 18.5007276, lng: -69.9429771, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 105, G-06' },
+  117: { lat: 18.5007298, lng: -69.9220458, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 117, G-06' },
+  126: { lat: 18.5033780, lng: -69.9186049, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 126, G-06' },
+  133: { lat: 18.5053702, lng: -69.9191470, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 133, G-06' },
+  135: { lat: 18.497597, lng: -69.925230, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 135, G-06' },
+  161: { lat: 18.500484, lng: -69.9256383, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 161, G-06' },
+  191: { lat: 18.501163, lng: -69.939542, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 191, G-06' },
+  197: { lat: 18.4886419, lng: -69.9329403, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 197, G-06' },
+  198: { lat: 18.5006869, lng: -69.9253895, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 198, G-06' },
+  226: { lat: 18.497185, lng: -69.925114, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 226, G-06' },
+  229: { lat: 18.503207, lng: -69.916944, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 229, G-06' },
+  349: { lat: 18.488236, lng: -69.932912, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 349, G-06' },
+  350: { lat: 18.493042, lng: -69.933429, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 350, G-06' },
+  352: { lat: 18.501009, lng: -69.927300, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 352, G-06' },
+  353: { lat: 18.508539, lng: -69.920136, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 353, G-06' },
+  355: { lat: 18.492370, lng: -69.930822, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 355, G-06' },
+  356: { lat: 18.491972, lng: -69.929819, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 356, G-06' },
+  357: { lat: 18.490612, lng: -69.929814, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 357, G-06' },
+  358: { lat: 18.498774, lng: -69.941529, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 358, G-06' },
+  639: { lat: 18.506090, lng: -69.916931, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 639, G-06' },
+  640: { lat: 18.505021, lng: -69.921647, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 640, G-06' },
+  661: { lat: 18.503735, lng: -69.928124, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 661, G-06' },
+  665: { lat: 18.484830, lng: -69.928484, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 665, G-06' },
+  668: { lat: 18.5061046, lng: -69.921038, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 668, G-06' },
+  676: { lat: 18.483758, lng: -69.931459, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 676, G-06' },
+  693: { lat: 18.498692, lng: -69.932816, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 693, G-06' },
+  821: { lat: 18.490347, lng: -69.931694, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 821, G-06' },
+  823: { lat: 18.5046155, lng: -69.9179521, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 823, G-06' },
+  824: { lat: 18.50124997, lng: -69.923194660, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 824, G-06' },
+  825: { lat: 18.495187, lng: -69.964863, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 825, G-06' },
+  826: { lat: 18.49131194, lng: -69.92995779, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 826, G-06' },
+  827: { lat: 18.48472598, lng: -69.92852424, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 827, G-06' },
+  828: { lat: 18.499975, lng: -69.928520, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 828, G-06' },
+  829: { lat: 18.501028, lng: -69.926071, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 829, G-06' },
+  1260: { lat: 18.491223, lng: -69.930937, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1260, G-06' },
+  1261: { lat: 18.493385, lng: -69.928805, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1261, G-06' },
+  1266: { lat: 18.498344, lng: -69.960281, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1266, G-06' },
+  1267: { lat: 18.497601, lng: -69.923088, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1267, G-06' },
+  1268: { lat: 18.506374, lng: -69.936279, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1268, G-06' },
+  1270: { lat: 18.492954, lng: -69.966324, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1270, G-06' }
 };
 
 function createAgencyRecord(numero, grupo, encargado) {
@@ -3832,7 +4654,7 @@ function createAgencyRecord(numero, grupo, encargado) {
     nombre: `Agencia ${String(numero).padStart(4, '0')}`,
     grupo: geo.grupo || grupo,
     encargado: geo.encargado || encargado,
-    direccion: geo.direccion || `Agencia ${String(numero).padStart(4, '0')}, G-44`,
+    direccion: geo.direccion || `Agencia ${String(numero).padStart(4, '0')}, ${String(grupo || '').replace('Grupo ', 'G-')}`,
     latitud: typeof geo.lat === 'number' ? geo.lat : null,
     longitud: typeof geo.lng === 'number' ? geo.lng : null,
     equipos
@@ -3840,11 +4662,19 @@ function createAgencyRecord(numero, grupo, encargado) {
 }
 
 const AGENCIAS_GRUPO_44_COMPLETAS = [435,1000,1002,1005,1006,1009,1012,1014,1016,1078,1079,1081,1082,1083,1084,1085,1086,1088,1099,1107,1111,1112,1123,1130,1133,1134,1137,1139,1152,1166,1170,1183,1184,1185,1186,1187,1188,1189];
+const AGENCIAS_GRUPO_45_COMPLETAS = [147,449,468,469,1001,1003,1013,1015,1017,1039,1074,1075,1076,1080,1091,1108,1113,1135,1136,1138,1144,1145,1146,1147,1148,1149,1150,1169,1173,1178,1179,1180,1181,1182,1194,1195,1196,1197,1198,1199,1200,1201,1211,1212];
+const AGENCIAS_GRUPO_42_COMPLETAS = [20,40,78,164,171,172,173,383,384,385,386,387,388,389,390,392,433,434,436,437,438,441,442,443,444,1004,1007,1008,1010,1011,1019,1020,1036,1037,1103,1104,1106,1120,1121,1122,1140,1141,1143,1154,1155,1156,1164,1165,1172,1202,1203,1204,1205,1206];
+const AGENCIAS_GRUPO_08_COMPLETAS = [49,57,67,76,87,89,107,134,156,186,202,205,207,227,238,345,359,641,652,697,705,706,707,708,711,712,713,719,911,972,973,980,982];
+const AGENCIAS_GRUPO_06_COMPLETAS = [4,11,28,37,44,45,54,55,60,62,63,64,66,68,71,86,93,94,95,105,117,126,133,135,161,191,197,198,226,229,349,350,352,353,355,356,357,358,639,640,661,665,668,676,693,821,823,824,825,826,827,828,829,1260,1261,1266,1267,1268,1270];
 
 const GRUPO_44_COORDENADAS_ADICIONALES = {};
 
 let agencias = [
-  ...AGENCIAS_GRUPO_44_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 44', 'encargado1'))
+  ...AGENCIAS_GRUPO_44_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 44', 'encargado1')),
+  ...AGENCIAS_GRUPO_45_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 45', 'Jose Pacheco')),
+  ...AGENCIAS_GRUPO_42_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 42', 'Jose Antonio')),
+  ...AGENCIAS_GRUPO_08_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 08', 'Yoscar G-8')),
+  ...AGENCIAS_GRUPO_06_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06'))
 ];
 
 AGENCIAS_GRUPO_44_COMPLETAS.forEach((numero) => {
@@ -3854,23 +4684,54 @@ AGENCIAS_GRUPO_44_COMPLETAS.forEach((numero) => {
   }
 });
 
+AGENCIAS_GRUPO_45_COMPLETAS.forEach((numero) => {
+  const existe = agencias.some((agencia) => Number(agencia.numero) === Number(numero));
+  if (!existe) {
+    agencias.push(createAgencyRecord(numero, 'Grupo 45', 'Jose Pacheco'));
+  }
+});
+
+AGENCIAS_GRUPO_42_COMPLETAS.forEach((numero) => {
+  const existe = agencias.some((agencia) => Number(agencia.numero) === Number(numero));
+  if (!existe) {
+    agencias.push(createAgencyRecord(numero, 'Grupo 42', 'Jose Antonio'));
+  }
+});
+
+AGENCIAS_GRUPO_08_COMPLETAS.forEach((numero) => {
+  const existe = agencias.some((agencia) => Number(agencia.numero) === Number(numero));
+  if (!existe) {
+    agencias.push(createAgencyRecord(numero, 'Grupo 08', 'Yoscar G-8'));
+  }
+});
+
+AGENCIAS_GRUPO_06_COMPLETAS.forEach((numero) => {
+  const existe = agencias.some((agencia) => Number(agencia.numero) === Number(numero));
+  if (!existe) {
+    agencias.push(createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06'));
+  }
+});
+
 agencias = agencias.map((agencia) => {
   const numero = Number(agencia.numero);
   const geo = AGENCY_GEO_CATALOG[numero] || {};
   const geoGrupo44 = GRUPO_44_COORDENADAS_ADICIONALES[numero] || {};
-  const perteneceGrupo44 = AGENCIAS_GRUPO_44_COMPLETAS.includes(numero);
   return {
     ...agencia,
-    grupo: perteneceGrupo44 ? 'Grupo 44' : (geo.grupo || agencia.grupo),
-    encargado: perteneceGrupo44 ? 'encargado1' : (geo.encargado || agencia.encargado),
-    direccion: perteneceGrupo44 ? `Agencia ${String(numero).padStart(4, '0')}, G-44` : (geo.direccion || agencia.direccion),
+    grupo: geo.grupo || agencia.grupo,
+    encargado: geo.encargado || agencia.encargado,
+    direccion: geo.direccion || agencia.direccion,
     latitud: typeof geo.lat === 'number' ? geo.lat : (typeof geoGrupo44.lat === 'number' ? geoGrupo44.lat : agencia.latitud),
     longitud: typeof geo.lng === 'number' ? geo.lng : (typeof geoGrupo44.lng === 'number' ? geoGrupo44.lng : agencia.longitud)
   };
 });
 
 let grupos = [
-  {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'encargado1', flota:'(829) 340-6805', extension:'1144', correo:'encargado1@grupoortiz.com.do', custodia:[], agencias:AGENCIAS_GRUPO_44_COMPLETAS.slice()}
+  {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'encargado1', flota:'(829) 340-6805', extension:'1144', correo:'encargado1@grupoortiz.com.do', custodia:[], agencias:AGENCIAS_GRUPO_44_COMPLETAS.slice()},
+  {numero:'45', nombre:'Grupo 45', color:'#2d9bf0', encargado:'Jose Pacheco', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_45_COMPLETAS.slice()},
+  {numero:'42', nombre:'Grupo 42', color:'#d43ad7', encargado:'Jose Antonio', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_42_COMPLETAS.slice()},
+  {numero:'08', nombre:'Grupo 08', color:'#00b8ff', encargado:'Yoscar G-8', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_08_COMPLETAS.slice()},
+  {numero:'06', nombre:'Grupo 06', color:'#16c172', encargado:'Alejandro G-06', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_06_COMPLETAS.slice()}
 ];
 let editGrupoIndex = null;
 let detalleGrupoActualIndex = null;
@@ -5536,6 +6397,7 @@ function abrirModalAgencia(){
   document.getElementById('agenciaNumero').value = '';
   document.getElementById('agenciaGrupo').value = '';
   document.getElementById('agenciaEncargado').value = '';
+  if(document.getElementById('agenciaTipoAgencia')) document.getElementById('agenciaTipoAgencia').value = 'Agencia';
   document.getElementById('agenciaLatitud').value = '';
   document.getElementById('agenciaLongitud').value = '';
   document.getElementById('agenciaDireccion').value = '';
@@ -5553,6 +6415,7 @@ function editarAgencia(i){
   document.getElementById('agenciaNumero').value = agencia.numero;
   document.getElementById('agenciaGrupo').value = agencia.grupo;
   document.getElementById('agenciaEncargado').value = agencia.encargado;
+  if(document.getElementById('agenciaTipoAgencia')) document.getElementById('agenciaTipoAgencia').value = getAgencyTipoAgencia(agencia);
   document.getElementById('agenciaLatitud').value = agencia.latitud ?? '';
   document.getElementById('agenciaLongitud').value = agencia.longitud ?? '';
   document.getElementById('agenciaDireccion').value = agencia.direccion || agencia.nombre || '';
@@ -5563,6 +6426,7 @@ function guardarAgencia(){
   const numero = String(document.getElementById('agenciaNumero').value || '').trim();
   const grupo = document.getElementById('agenciaGrupo').value.trim() || 'Grupo 00';
   const encargado = document.getElementById('agenciaEncargado').value.trim() || 'Sin encargado';
+  const tipoAgencia = document.getElementById('agenciaTipoAgencia')?.value || 'Agencia';
   const latitud = normalizarNumeroGeografico(document.getElementById('agenciaLatitud').value);
   const longitud = normalizarNumeroGeografico(document.getElementById('agenciaLongitud').value);
   const direccion = document.getElementById('agenciaDireccion').value.trim() || `Agencia ${numero}`;
@@ -5588,6 +6452,7 @@ function guardarAgencia(){
       direccion,
       latitud,
       longitud,
+      detalle: { tipoAgencia },
       equipos: []
     };
     agencias.push(agenciaGuardada);
@@ -5600,6 +6465,8 @@ function guardarAgencia(){
     agenciaGuardada.direccion = direccion;
     agenciaGuardada.latitud = latitud;
     agenciaGuardada.longitud = longitud;
+    if(!agenciaGuardada.detalle) agenciaGuardada.detalle = {};
+    agenciaGuardada.detalle.tipoAgencia = tipoAgencia;
   }
 
   agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
@@ -5650,7 +6517,7 @@ function ensureAgencyDetailDefaults(agencia){
     telefono: agencia.detalle.telefono || '',
     horario: agencia.detalle.horario || '8:00 AM - 6:00 PM',
     estadoOperativo: agencia.detalle.estadoOperativo || 'Activa',
-    tipoAgencia: agencia.detalle.tipoAgencia || 'Regular',
+    tipoAgencia: normalizarTipoAgencia(agencia.detalle.tipoAgencia || 'Agencia'),
     observacion: agencia.detalle.observacion || '',
     estructura: {
       toldo: agencia.detalle.estructura?.toldo || 'Buen Estado',
@@ -5850,7 +6717,7 @@ function cargarFormularioDetalleAgencia(agencia){
   agencySetValue('agencyFieldGo', d.go || '');
   agencySetValue('agencyFieldLtk', d.ltk || '');
   agencySetValue('agencyFieldEstadoOperativo', d.estadoOperativo || 'Activa');
-  agencySetValue('agencyFieldTipoAgencia', d.tipoAgencia || 'Regular');
+  agencySetValue('agencyFieldTipoAgencia', normalizarTipoAgencia(d.tipoAgencia || 'Agencia'));
   agencySetValue('agencyFieldTelefono', d.telefono || '');
   agencySetValue('agencyFieldHorario', d.horario || '');
   agencySetValue('agencyFieldDireccion', agencia.direccion || '');
@@ -5933,7 +6800,7 @@ function guardarDetalleAgenciaCompleta(){
   agencia.detalle.telefono = document.getElementById('agencyFieldTelefono').value.trim();
   agencia.detalle.horario = document.getElementById('agencyFieldHorario').value.trim();
   agencia.detalle.estadoOperativo = document.getElementById('agencyFieldEstadoOperativo').value;
-  agencia.detalle.tipoAgencia = document.getElementById('agencyFieldTipoAgencia').value;
+  agencia.detalle.tipoAgencia = normalizarTipoAgencia(document.getElementById('agencyFieldTipoAgencia').value || 'Agencia');
   agencia.detalle.observacion = document.getElementById('agencyFieldObservacion').value.trim();
   agencia.detalle.estructura = {
     toldo: document.getElementById('agencyStructToldo').value,
@@ -6701,6 +7568,11 @@ renderTransferencias();
     // MAPA DE AGENCIAS + APPWRITE
     let agenciasMapInstance = null;
     let agenciasMapMarkers = [];
+    let agenciasMapLayerGroup = null;
+    let agenciasMapLastSource = [];
+    let agenciasMapSelectedGroups = new Set();
+    let agenciasMapGroupsInitialized = false;
+    let agenciasMapSearchText = '';
 
     function agencyToFloat(value){
       if(value === null || value === undefined || value === '') return null;
@@ -6716,46 +7588,277 @@ renderTransferencias();
       return {lat, lng};
     }
 
+    function agenciaMapGroupValue(agencia){
+      const raw = String(agencia?.grupo || agencia?.grupo_nombre || agencia?.grupoId || agencia?.grupo_id || 'Sin grupo').trim();
+      return raw || 'Sin grupo';
+    }
+
+    function agenciaMapGroupNumber(group){
+      const match = String(group || '').match(/\d+/);
+      return match ? match[0].padStart(2, '0') : String(group || 'SG');
+    }
+
+    function agenciaMapGroupStyle(group, index){
+      const groupNum = agenciaMapGroupNumber(group);
+      const special = {
+        '44': { color:'#0b77ba', color2:'#073f74', glow:'rgba(11,119,186,.18)', dot:'#ffc247', shape:'drop' },
+        '45': { color:'#ff7a18', color2:'#b83b00', glow:'rgba(255,122,24,.22)', dot:'#062743', shape:'diamond' },
+        '42': { color:'#d43ad7', color2:'#7e1481', glow:'rgba(212,58,215,.22)', dot:'#ffffff', shape:'hex' },
+        '08': { color:'#00d4ff', color2:'#005f99', glow:'rgba(0,212,255,.22)', dot:'#ffffff', shape:'shield' },
+        '06': { color:'#19d27d', color2:'#057245', glow:'rgba(25,210,125,.24)', dot:'#ffffff', shape:'triangle' }
+      };
+      if(special[groupNum]) return special[groupNum];
+      const palette = [
+        {color:'#9aa8b6',color2:'#54606d',glow:'rgba(154,168,182,.20)',dot:'#ffffff',shape:'circle'},
+        {color:'#ff2d37',color2:'#9b1119',glow:'rgba(255,45,55,.20)',dot:'#ffffff',shape:'square'},
+        {color:'#2bb7de',color2:'#057fa0',glow:'rgba(43,183,222,.20)',dot:'#ffffff',shape:'hex'},
+        {color:'#8ada34',color2:'#3c8d12',glow:'rgba(138,218,52,.20)',dot:'#062743',shape:'drop'},
+        {color:'#ffd33d',color2:'#d09200',glow:'rgba(255,211,61,.22)',dot:'#062743',shape:'diamond'},
+        {color:'#d43ad7',color2:'#7e1481',glow:'rgba(212,58,215,.20)',dot:'#ffffff',shape:'circle'},
+        {color:'#9a4dff',color2:'#4f16b6',glow:'rgba(154,77,255,.20)',dot:'#ffffff',shape:'square'},
+        {color:'#25b8db',color2:'#086f88',glow:'rgba(37,184,219,.20)',dot:'#ffffff',shape:'hex'}
+      ];
+      const n = parseInt(groupNum, 10);
+      return palette[Number.isFinite(n) ? n % palette.length : index % palette.length];
+    }
+
+    function agenciaMapGroupColor(group, index){
+      return agenciaMapGroupStyle(group, index).color;
+    }
+
+    function agenciaMapCurrentGroups(source){
+      const counts = new Map();
+      (Array.isArray(source) ? source : []).filter(agencyHasCoords).forEach(a => {
+        const g = agenciaMapGroupValue(a);
+        counts.set(g, (counts.get(g) || 0) + 1);
+      });
+      return Array.from(counts.entries()).sort((a,b) => agenciaMapGroupNumber(a[0]).localeCompare(agenciaMapGroupNumber(b[0]), undefined, {numeric:true}));
+    }
+
+    function ensureAgencyMapDashboard(el){
+      if(!el || document.getElementById('lotekaMapDashboard')) return;
+      const dash = document.createElement('div');
+      dash.id = 'lotekaMapDashboard';
+      dash.className = 'loteka-map-dashboard';
+      dash.innerHTML = `
+        <aside class="map-filter-panel">
+          <div class="map-filter-head">
+            <h3>Filtros</h3>
+            <span id="mapFilterCount">0 agencias visibles</span>
+          </div>
+          <div class="map-filter-search">
+            <i class="fas fa-search"></i>
+            <input id="agencyMapSearchInput" type="text" placeholder="Buscar grupo o agencia">
+          </div>
+          <div id="agencyGroupFilterList" class="map-filter-list"></div>
+          <div class="map-filter-actions">
+            <button type="button" onclick="agencyMapSelectAllGroups()">Todos</button>
+            <button type="button" onclick="agencyMapSelectNoGroups()">Ninguno</button>
+          </div>
+        </aside>`;
+      el.appendChild(dash);
+      const input = document.getElementById('agencyMapSearchInput');
+      if(input){
+        input.addEventListener('input', () => {
+          agenciasMapSearchText = input.value || '';
+          agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias);
+        });
+      }
+    }
+
+    function agencyMapMatchesFilter(agencia){
+      const group = agenciaMapGroupValue(agencia);
+      if(agenciasMapGroupsInitialized && agenciasMapSelectedGroups.size === 0) return false;
+      if(agenciasMapSelectedGroups.size && !agenciasMapSelectedGroups.has(group)) return false;
+      const q = String(agenciasMapSearchText || '').trim().toLowerCase();
+      if(!q) return true;
+      const label = typeof formatAgencyOptionLabel === 'function' ? formatAgencyOptionLabel(agencia) : (agencia.nombre || `Agencia ${agencia.numero || ''}`);
+      const haystack = [label, agencia?.numero, agencia?.codigo, agencia?.nombre, group, agencia?.encargado, agencia?.direccion].filter(v => v !== undefined && v !== null).join(' ').toLowerCase();
+      return haystack.includes(q);
+    }
+
+    function renderAgencyGroupFilters(source){
+      const list = document.getElementById('agencyGroupFilterList');
+      if(!list) return;
+      const groups = agenciaMapCurrentGroups(source);
+      if(!agenciasMapGroupsInitialized){
+        agenciasMapSelectedGroups = new Set(groups.map(([g]) => g));
+        agenciasMapGroupsInitialized = true;
+      } else {
+        const existing = new Set(groups.map(([g]) => g));
+        agenciasMapSelectedGroups = new Set(Array.from(agenciasMapSelectedGroups).filter(g => existing.has(g)));
+      }
+      list.innerHTML = groups.map(([group, count], index) => {
+        const checked = agenciasMapSelectedGroups.has(group) ? 'checked' : '';
+        const color = agenciaMapGroupColor(group, index);
+        const safeGroup = escapeHtml(group);
+        const safeNum = escapeHtml(agenciaMapGroupNumber(group));
+        return `<label class="map-filter-row ${checked ? '' : 'is-off'}" data-group="${safeGroup}">
+          <span class="filter-chevron"><i class="fas fa-chevron-right"></i></span>
+          <input type="checkbox" ${checked} data-map-group="${safeGroup}">
+          <span class="filter-color" style="background:${color}"></span>
+          <span class="filter-name">${safeNum}</span>
+          <b>${count}</b>
+        </label>`;
+      }).join('') || '<div class="map-filter-empty">No hay agencias con coordenadas.</div>';
+      list.querySelectorAll('input[data-map-group]').forEach(input => {
+        input.addEventListener('change', () => {
+          const group = input.getAttribute('data-map-group');
+          if(input.checked) agenciasMapSelectedGroups.add(group);
+          else agenciasMapSelectedGroups.delete(group);
+          const row = input.closest('.map-filter-row');
+          if(row) row.classList.toggle('is-off', !input.checked);
+          agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias);
+        });
+      });
+    }
+
+    function updateAgencyMapDashboard(source, visibleCount){
+      renderAgencyGroupFilters(source);
+      const count = document.getElementById('mapFilterCount');
+      if(count) count.textContent = `Mostrando ${visibleCount || 0} de ${(Array.isArray(source) ? source : []).filter(agencyHasCoords).length} agencias`;
+    }
+
+    function agencyMapToggleGroup(group, checked){
+      const clean = String(group || '').trim();
+      if(!clean) return;
+      if(checked) agenciasMapSelectedGroups.add(clean);
+      else agenciasMapSelectedGroups.delete(clean);
+      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias);
+    }
+
+    function agencyMapSelectAllGroups(){
+      agenciaMapCurrentGroups(agenciasMapLastSource.length ? agenciasMapLastSource : agencias).forEach(([g]) => agenciasMapSelectedGroups.add(g));
+      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias);
+    }
+
+    function agencyMapSelectNoGroups(){
+      agenciasMapSelectedGroups.clear();
+      agenciasMapGroupsInitialized = true;
+      const list = document.getElementById('agencyGroupFilterList');
+      if(list) list.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
+      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias);
+    }
+
+    function agencyMapFocus(lat, lng){
+      const map = ensureAgencyMap();
+      if(map) map.setView([lat, lng], 17, {animate:true});
+    }
+
     function ensureAgencyMap(){
       const el = document.getElementById('agenciasMap');
       if(!el || !window.L) return null;
+      ensureAgencyMapDashboard(el);
       if(agenciasMapInstance){ setTimeout(() => agenciasMapInstance.invalidateSize(), 80); return agenciasMapInstance; }
       agenciasMapInstance = L.map(el, {
         scrollWheelZoom: true,
         zoomControl: true,
         attributionControl: true,
-        preferCanvas: false
+        preferCanvas: true,
+        fadeAnimation: false,
+        zoomAnimation: true,
+        markerZoomAnimation: false,
+        inertia: true,
+        inertiaDeceleration: 4200,
+        wheelDebounceTime: 45,
+        wheelPxPerZoomLevel: 135,
+        zoomSnap: .5,
+        zoomDelta: .5
       }).setView([18.4861, -69.9312], 12);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        subdomains: 'abc',
         maxZoom: 19,
+        minZoom: 3,
         tileSize: 256,
         zoomOffset: 0,
+        detectRetina: true,
+        updateWhenIdle: true,
+        updateWhenZooming: false,
+        keepBuffer: 2,
         crossOrigin: true,
         attribution: '&copy; OpenStreetMap'
       }).addTo(agenciasMapInstance);
 
+      agenciasMapLayerGroup = L.layerGroup().addTo(agenciasMapInstance);
+
+      if(!document.getElementById('agenciasMapQuickPanel')){
+        const quickPanel = document.createElement('div');
+        quickPanel.id = 'agenciasMapQuickPanel';
+        quickPanel.className = 'map-quick-panel';
+        quickPanel.innerHTML = '<b>0</b><span>agencias visibles</span>';
+        el.appendChild(quickPanel);
+      }
+
+      if('ResizeObserver' in window){
+        const ro = new ResizeObserver(() => {
+          if(agenciasMapInstance) agenciasMapInstance.invalidateSize(false);
+        });
+        ro.observe(el);
+      }
+
       requestAnimationFrame(() => {
         agenciasMapInstance.invalidateSize(true);
         setTimeout(() => agenciasMapInstance.invalidateSize(true), 250);
+        setTimeout(() => agenciasMapInstance.invalidateSize(true), 900);
       });
       return agenciasMapInstance;
     }
 
     function agencyMapClear(){
       if(!agenciasMapInstance) return;
-      agenciasMapMarkers.forEach(marker => marker.remove());
+      if(agenciasMapLayerGroup){ agenciasMapLayerGroup.clearLayers(); }
+      else { agenciasMapMarkers.forEach(marker => marker.remove()); }
       agenciasMapMarkers = [];
     }
 
-    function agencyMapIcon(){
+
+    function normalizarTipoAgencia(tipo){
+      const t = String(tipo || '').trim().toLowerCase();
+      if(!t || t === 'regular' || t === 'normal' || t === 'agencia normal') return 'Agencia';
+      if(t.includes('pasante')) return 'Agencia de Pasante';
+      if(t.includes('aprezio') || t.includes('aprecio')) return 'Aprezio';
+      if(t.includes('centro')) return 'Centro De Pago';
+      if(t.includes('punto')) return 'Punto de Pago';
+      if(t.includes('supermercado')) return 'Agencia en Supermercado';
+      return tipo || 'Agencia';
+    }
+
+    function getAgencyTipoAgencia(agencia){
+      return normalizarTipoAgencia(agencia?.detalle?.tipoAgencia || agencia?.tipoAgencia || 'Agencia');
+    }
+
+    function agencyTypeClass(tipo){
+      const clean = normalizarTipoAgencia(tipo).toLowerCase();
+      if(clean.includes('pasante')) return 'type-pasante';
+      if(clean.includes('aprezio')) return 'type-aprezio';
+      if(clean.includes('centro')) return 'type-centro-pago';
+      if(clean.includes('punto')) return 'type-punto-pago';
+      if(clean.includes('supermercado')) return 'type-supermercado';
+      return 'type-agencia';
+    }
+
+    function agencyTypeSymbol(tipo){
+      return '';
+    }
+
+    function agencyMapIcon(agencyNumber, group, groupIndex, tipoAgencia){
       if(!window.L) return undefined;
+      const raw = String(agencyNumber ?? '').trim();
+      const safeNumber = raw && raw !== '0' ? raw : '';
+      const style = agenciaMapGroupStyle(group, groupIndex || 0);
+      const bg = `linear-gradient(145deg, ${style.color2} 0%, ${style.color} 56%, ${style.color2} 100%)`;
+      const digits = safeNumber.length;
+      const fontSize = digits >= 4 ? 9.2 : (digits === 3 ? 10.6 : 12.6);
+      const tipo = normalizarTipoAgencia(tipoAgencia || 'Agencia');
+      const typeClass = agencyTypeClass(tipo);
+      const symbol = agencyTypeSymbol(tipo);
       return L.divIcon({
-        className: 'loteka-map-pin',
-        html: '<span></span>',
-        iconSize: [34, 42],
-        iconAnchor: [17, 40],
-        popupAnchor: [0, -38]
+        className: `loteka-map-pin loteka-pin-badge ${typeClass}`,
+        html: `<div class="mk" title="${escapeHtml(tipo)}" style="--mk-main:${style.color};--mk-dark:${style.color2};--mk-soft:${style.dot};"><i class="mk-cart"></i><span class="mk-core"><em class="mk-symbol"></em><b class="mk-num" style="font-size:${fontSize}px">${escapeHtml(safeNumber)}</b></span><i class="mk-tail"></i></div>`,
+        iconSize: [62, 66],
+        iconAnchor: [31, 58],
+        popupAnchor: [0, -54]
       });
     }
 
@@ -6764,19 +7867,26 @@ renderTransferencias();
       if(!map) return;
       agencyMapClear();
       const source = Array.isArray(list) ? list : agencias;
+      agenciasMapLastSource = source;
+      const filteredSource = source.filter(a => agencyHasCoords(a) && agencyMapMatchesFilter(a));
+      const groupIndexMap = new Map(agenciaMapCurrentGroups(source).map(([g], i) => [g, i]));
       const bounds = [];
-      source.forEach((agencia) => {
+      filteredSource.forEach((agencia, index) => {
         const coords = agencyHasCoords(agencia);
         if(!coords) return;
         const label = typeof formatAgencyOptionLabel === 'function' ? formatAgencyOptionLabel(agencia) : (agencia.nombre || `Agencia ${agencia.numero || ''}`);
-        const grupo = agencia.grupo || '';
+        const grupo = agenciaMapGroupValue(agencia);
         const encargado = agencia.encargado || 'Sin encargado';
         const direccion = agencia.direccion || label;
-        const marker = L.marker([coords.lat, coords.lng], { icon: agencyMapIcon() }).addTo(map);
+        const agencyNumber = agencia.numero || agencia.codigo || agencia.agencia || '';
+        const tipoAgencia = getAgencyTipoAgencia(agencia);
+        const marker = L.marker([coords.lat, coords.lng], { icon: agencyMapIcon(agencyNumber, grupo, groupIndexMap.get(grupo) || 0, tipoAgencia), keyboard:false, riseOnHover:true });
+        if(agenciasMapLayerGroup) marker.addTo(agenciasMapLayerGroup); else marker.addTo(map);
         marker.bindPopup(`
           <div class="agency-popup">
             <strong>${escapeHtml(label)}</strong>
             <span>${escapeHtml(grupo)} · ${escapeHtml(encargado)}</span>
+            <span><strong>Tipo:</strong> ${escapeHtml(tipoAgencia)}</span>
             <span>${escapeHtml(direccion)}</span>
             <a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}">Cómo llegar</a>
           </div>
@@ -6785,13 +7895,36 @@ renderTransferencias();
         bounds.push([coords.lat, coords.lng]);
       });
       const status = document.getElementById('agenciasMapStatus');
-      if(status) status.textContent = bounds.length ? `${bounds.length} agencia(s) con coordenadas visibles en el mapa.` : 'No hay agencias con coordenadas válidas todavía.';
+      if(status) status.textContent = bounds.length ? `${bounds.length} agencia(s) visibles con los filtros actuales.` : 'No hay agencias visibles con los filtros actuales.';
+      const quickPanel = document.getElementById('agenciasMapQuickPanel');
+      if(quickPanel) quickPanel.innerHTML = `<b>${bounds.length}</b><span>agencias visibles</span>`;
+      updateAgencyMapDashboard(source, bounds.length);
       requestAnimationFrame(() => map.invalidateSize(true));
       if(bounds.length === 1) map.setView(bounds[0], 16);
-      if(bounds.length > 1) map.fitBounds(bounds, {padding:[48,48], maxZoom:16});
+      if(bounds.length > 1) map.fitBounds(bounds, {padding:[72,72], maxZoom:16});
       setTimeout(() => map.invalidateSize(true), 150);
       setTimeout(() => map.invalidateSize(true), 500);
     }
+
+
+    function toggleAgencyMapFullscreen(){
+      const mapEl = document.getElementById('agenciasMap');
+      const card = mapEl ? mapEl.closest('.agency-map-card') : null;
+      if(!card) return;
+      if(!document.fullscreenElement){
+        const req = card.requestFullscreen || card.webkitRequestFullscreen || card.msRequestFullscreen;
+        if(req) req.call(card);
+      }else{
+        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if(exit) exit.call(document);
+      }
+      setTimeout(() => { if(agenciasMapInstance) agenciasMapInstance.invalidateSize(true); }, 180);
+      setTimeout(() => { if(agenciasMapInstance) agencyMapFitAll(); }, 420);
+    }
+    document.addEventListener('fullscreenchange', () => {
+      setTimeout(() => { if(agenciasMapInstance) agenciasMapInstance.invalidateSize(true); }, 120);
+      setTimeout(() => { if(agenciasMapInstance) agencyMapFitAll(); }, 300);
+    });
 
     function agencyMapFitAll(){ agencyMapRefresh(); }
 
@@ -9565,6 +10698,95 @@ renderTransferencias();
   }
 }
 
+
+
+/* MAPA · FLUIDEZ + PANTALLA COMPLETA + ICONOS PRO */
+.agency-map-card:fullscreen{width:100vw!important;height:100vh!important;margin:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;background:#061e38!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+.agency-map-card:fullscreen .agency-map-head{flex:0 0 auto!important;}
+.agency-map-card:fullscreen #agenciasMap{height:calc(100vh - 116px)!important;min-height:calc(100vh - 116px)!important;flex:1 1 auto!important;}
+.agency-map-card:fullscreen .agency-map-empty{flex:0 0 auto!important;}
+.agency-map-card:fullscreen .map-filter-panel{top:18px!important;bottom:18px!important;max-height:none!important;}
+#agenciasMap{will-change:transform;contain:layout paint size;}
+#agenciasMap .leaflet-tile{filter:saturate(1.03) contrast(1.1) brightness(.96)!important;image-rendering:auto!important;}
+#agenciasMap .leaflet-marker-icon{will-change:transform;}
+.loteka-map-pin span{transform:translateZ(0);backface-visibility:hidden;}
+.loteka-map-pin span b{position:relative;z-index:3;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;line-height:1!important;text-align:center!important;padding-top:1px!important;}
+.loteka-map-pin.pin-shape-triangle span{clip-path:polygon(50% 0%,96% 88%,50% 100%,4% 88%)!important;border-radius:14px!important;}
+.loteka-map-pin.pin-shape-triangle span::after{display:none!important;}
+.map-filter-row{user-select:none;}
+
+
+/* MAPA · ICONO UNIFICADO PROFESIONAL + MEJOR FLUIDEZ */
+#agenciasMap{background:#dce8ef!important;transform:translateZ(0);}
+#agenciasMap .leaflet-tile{filter:none!important;image-rendering:auto!important;backface-visibility:hidden;will-change:opacity;}
+#agenciasMap:after{display:none!important;}
+#agenciasMap .leaflet-marker-pane{will-change:transform;}
+.loteka-map-pin{background:transparent!important;border:0!important;}
+.loteka-map-pin span{
+  position:relative!important;
+  width:34px!important;
+  height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:var(--pin-bg)!important;
+  border:3px solid #ffffff!important;
+  border-radius:50%!important;
+  box-shadow:0 6px 14px rgba(4,28,55,.26),0 0 0 2px rgba(255,255,255,.85)!important;
+  transform:none!important;
+  clip-path:none!important;
+  backface-visibility:hidden!important;
+  will-change:transform!important;
+}
+.loteka-map-pin span::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:-8px!important;
+  width:15px!important;
+  height:15px!important;
+  background:var(--pin-bg)!important;
+  border-right:3px solid #fff!important;
+  border-bottom:3px solid #fff!important;
+  transform:translateX(-50%) rotate(45deg)!important;
+  border-radius:3px!important;
+  animation:none!important;
+  opacity:1!important;
+  z-index:-1!important;
+  box-shadow:5px 5px 10px rgba(4,28,55,.18)!important;
+}
+.loteka-map-pin span::after{
+  content:""!important;
+  position:absolute!important;
+  inset:4px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,.38)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 48%)!important;
+  width:auto!important;height:auto!important;
+  left:4px!important;top:4px!important;transform:none!important;
+  opacity:1!important;
+  display:block!important;
+}
+.loteka-map-pin span b{
+  position:relative!important;
+  z-index:4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  color:#fff!important;
+  font-weight:950!important;
+  font-family:Inter,system-ui,Arial,sans-serif!important;
+  letter-spacing:-.45px!important;
+  line-height:1!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;
+  transform:none!important;
+}
+.loteka-map-pin:hover span{transform:translateY(-2px) scale(1.04)!important;box-shadow:0 10px 20px rgba(4,28,55,.32),0 0 0 3px rgba(255,255,255,.9)!important;}
+@media(max-width:900px){.loteka-map-pin span{width:31px!important;height:31px!important}.loteka-map-pin span::before{bottom:-7px;width:13px!important;height:13px!important}}
+
 </style></head><body>
 <div class="sheet">
   <div class="header">
@@ -10358,6 +11580,95 @@ renderTransferencias();
     padding-right:18px;
   }
 }
+
+
+
+/* MAPA · FLUIDEZ + PANTALLA COMPLETA + ICONOS PRO */
+.agency-map-card:fullscreen{width:100vw!important;height:100vh!important;margin:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;background:#061e38!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+.agency-map-card:fullscreen .agency-map-head{flex:0 0 auto!important;}
+.agency-map-card:fullscreen #agenciasMap{height:calc(100vh - 116px)!important;min-height:calc(100vh - 116px)!important;flex:1 1 auto!important;}
+.agency-map-card:fullscreen .agency-map-empty{flex:0 0 auto!important;}
+.agency-map-card:fullscreen .map-filter-panel{top:18px!important;bottom:18px!important;max-height:none!important;}
+#agenciasMap{will-change:transform;contain:layout paint size;}
+#agenciasMap .leaflet-tile{filter:saturate(1.03) contrast(1.1) brightness(.96)!important;image-rendering:auto!important;}
+#agenciasMap .leaflet-marker-icon{will-change:transform;}
+.loteka-map-pin span{transform:translateZ(0);backface-visibility:hidden;}
+.loteka-map-pin span b{position:relative;z-index:3;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;line-height:1!important;text-align:center!important;padding-top:1px!important;}
+.loteka-map-pin.pin-shape-triangle span{clip-path:polygon(50% 0%,96% 88%,50% 100%,4% 88%)!important;border-radius:14px!important;}
+.loteka-map-pin.pin-shape-triangle span::after{display:none!important;}
+.map-filter-row{user-select:none;}
+
+
+/* MAPA · ICONO UNIFICADO PROFESIONAL + MEJOR FLUIDEZ */
+#agenciasMap{background:#dce8ef!important;transform:translateZ(0);}
+#agenciasMap .leaflet-tile{filter:none!important;image-rendering:auto!important;backface-visibility:hidden;will-change:opacity;}
+#agenciasMap:after{display:none!important;}
+#agenciasMap .leaflet-marker-pane{will-change:transform;}
+.loteka-map-pin{background:transparent!important;border:0!important;}
+.loteka-map-pin span{
+  position:relative!important;
+  width:34px!important;
+  height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:var(--pin-bg)!important;
+  border:3px solid #ffffff!important;
+  border-radius:50%!important;
+  box-shadow:0 6px 14px rgba(4,28,55,.26),0 0 0 2px rgba(255,255,255,.85)!important;
+  transform:none!important;
+  clip-path:none!important;
+  backface-visibility:hidden!important;
+  will-change:transform!important;
+}
+.loteka-map-pin span::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:-8px!important;
+  width:15px!important;
+  height:15px!important;
+  background:var(--pin-bg)!important;
+  border-right:3px solid #fff!important;
+  border-bottom:3px solid #fff!important;
+  transform:translateX(-50%) rotate(45deg)!important;
+  border-radius:3px!important;
+  animation:none!important;
+  opacity:1!important;
+  z-index:-1!important;
+  box-shadow:5px 5px 10px rgba(4,28,55,.18)!important;
+}
+.loteka-map-pin span::after{
+  content:""!important;
+  position:absolute!important;
+  inset:4px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,.38)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 48%)!important;
+  width:auto!important;height:auto!important;
+  left:4px!important;top:4px!important;transform:none!important;
+  opacity:1!important;
+  display:block!important;
+}
+.loteka-map-pin span b{
+  position:relative!important;
+  z-index:4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  color:#fff!important;
+  font-weight:950!important;
+  font-family:Inter,system-ui,Arial,sans-serif!important;
+  letter-spacing:-.45px!important;
+  line-height:1!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;
+  transform:none!important;
+}
+.loteka-map-pin:hover span{transform:translateY(-2px) scale(1.04)!important;box-shadow:0 10px 20px rgba(4,28,55,.32),0 0 0 3px rgba(255,255,255,.9)!important;}
+@media(max-width:900px){.loteka-map-pin span{width:31px!important;height:31px!important}.loteka-map-pin span::before{bottom:-7px;width:13px!important;height:13px!important}}
 
 </style></head><body>
 <div class="sheet">
@@ -12288,7 +13599,96 @@ function levExportExcel(){
   const htmlDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
     table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}th,td{border:1px solid #b7c3d0;padding:6px 8px;text-align:left;vertical-align:top}
     th{background:#cfeccc;font-weight:700}.title{font-size:16px;font-weight:700;margin-bottom:10px}
-  </style></head><body><div class="title">${esc(title)}</div><table><thead><tr>${headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${tableRows}</tbody></table>
+  
+
+/* MAPA · FLUIDEZ + PANTALLA COMPLETA + ICONOS PRO */
+.agency-map-card:fullscreen{width:100vw!important;height:100vh!important;margin:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;background:#061e38!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+.agency-map-card:fullscreen .agency-map-head{flex:0 0 auto!important;}
+.agency-map-card:fullscreen #agenciasMap{height:calc(100vh - 116px)!important;min-height:calc(100vh - 116px)!important;flex:1 1 auto!important;}
+.agency-map-card:fullscreen .agency-map-empty{flex:0 0 auto!important;}
+.agency-map-card:fullscreen .map-filter-panel{top:18px!important;bottom:18px!important;max-height:none!important;}
+#agenciasMap{will-change:transform;contain:layout paint size;}
+#agenciasMap .leaflet-tile{filter:saturate(1.03) contrast(1.1) brightness(.96)!important;image-rendering:auto!important;}
+#agenciasMap .leaflet-marker-icon{will-change:transform;}
+.loteka-map-pin span{transform:translateZ(0);backface-visibility:hidden;}
+.loteka-map-pin span b{position:relative;z-index:3;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;line-height:1!important;text-align:center!important;padding-top:1px!important;}
+.loteka-map-pin.pin-shape-triangle span{clip-path:polygon(50% 0%,96% 88%,50% 100%,4% 88%)!important;border-radius:14px!important;}
+.loteka-map-pin.pin-shape-triangle span::after{display:none!important;}
+.map-filter-row{user-select:none;}
+
+
+/* MAPA · ICONO UNIFICADO PROFESIONAL + MEJOR FLUIDEZ */
+#agenciasMap{background:#dce8ef!important;transform:translateZ(0);}
+#agenciasMap .leaflet-tile{filter:none!important;image-rendering:auto!important;backface-visibility:hidden;will-change:opacity;}
+#agenciasMap:after{display:none!important;}
+#agenciasMap .leaflet-marker-pane{will-change:transform;}
+.loteka-map-pin{background:transparent!important;border:0!important;}
+.loteka-map-pin span{
+  position:relative!important;
+  width:34px!important;
+  height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:var(--pin-bg)!important;
+  border:3px solid #ffffff!important;
+  border-radius:50%!important;
+  box-shadow:0 6px 14px rgba(4,28,55,.26),0 0 0 2px rgba(255,255,255,.85)!important;
+  transform:none!important;
+  clip-path:none!important;
+  backface-visibility:hidden!important;
+  will-change:transform!important;
+}
+.loteka-map-pin span::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:-8px!important;
+  width:15px!important;
+  height:15px!important;
+  background:var(--pin-bg)!important;
+  border-right:3px solid #fff!important;
+  border-bottom:3px solid #fff!important;
+  transform:translateX(-50%) rotate(45deg)!important;
+  border-radius:3px!important;
+  animation:none!important;
+  opacity:1!important;
+  z-index:-1!important;
+  box-shadow:5px 5px 10px rgba(4,28,55,.18)!important;
+}
+.loteka-map-pin span::after{
+  content:""!important;
+  position:absolute!important;
+  inset:4px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(255,255,255,.38)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0) 48%)!important;
+  width:auto!important;height:auto!important;
+  left:4px!important;top:4px!important;transform:none!important;
+  opacity:1!important;
+  display:block!important;
+}
+.loteka-map-pin span b{
+  position:relative!important;
+  z-index:4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  color:#fff!important;
+  font-weight:950!important;
+  font-family:Inter,system-ui,Arial,sans-serif!important;
+  letter-spacing:-.45px!important;
+  line-height:1!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35)!important;
+  transform:none!important;
+}
+.loteka-map-pin:hover span{transform:translateY(-2px) scale(1.04)!important;box-shadow:0 10px 20px rgba(4,28,55,.32),0 0 0 3px rgba(255,255,255,.9)!important;}
+@media(max-width:900px){.loteka-map-pin span{width:31px!important;height:31px!important}.loteka-map-pin span::before{bottom:-7px;width:13px!important;height:13px!important}}
+
+</style></head><body><div class="title">${esc(title)}</div><table><thead><tr>${headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${tableRows}</tbody></table>
 <div id="ltkAutoSyncOverlay" class="ltk-auto-overlay" aria-hidden="true">
   <div class="ltk-auto-card">
     <div class="ltk-auto-ring"></div>
