@@ -1337,8 +1337,25 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .agency-map-actions{display:flex;gap:8px;flex-wrap:wrap}
 .agency-map-mini-btn{border:1px solid #cfe1ee;background:#fff;color:#1478a6;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer}
 .agency-map-mini-btn:hover{background:#eef8fc}
-#agenciasMap{height:460px;width:100%;background:#eef4f8;z-index:1}
+#agenciasMap{height:560px;width:100%;min-height:560px;background:#eaf2f7;z-index:1;position:relative;display:block;overflow:hidden;border-radius:0}
+#agenciasMap .leaflet-pane,#agenciasMap .leaflet-tile,#agenciasMap .leaflet-marker-icon,#agenciasMap .leaflet-marker-shadow,#agenciasMap .leaflet-tile-container,#agenciasMap .leaflet-pane>svg,#agenciasMap .leaflet-pane>canvas,#agenciasMap .leaflet-zoom-box,#agenciasMap .leaflet-image-layer,#agenciasMap .leaflet-layer{position:absolute;left:0;top:0}
+#agenciasMap .leaflet-container{overflow:hidden}
+#agenciasMap .leaflet-tile{width:256px!important;height:256px!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;border:0!important;object-fit:initial!important}
+#agenciasMap .leaflet-marker-icon,#agenciasMap .leaflet-marker-shadow{display:block;max-width:none!important}
+#agenciasMap .leaflet-control-container .leaflet-top,#agenciasMap .leaflet-control-container .leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+#agenciasMap .leaflet-top{top:0}#agenciasMap .leaflet-right{right:0}#agenciasMap .leaflet-bottom{bottom:0}#agenciasMap .leaflet-left{left:0}
+#agenciasMap .leaflet-control{position:relative;z-index:1000;pointer-events:auto;float:left;clear:both;margin:10px}
+#agenciasMap .leaflet-right .leaflet-control{float:right}
+#agenciasMap .leaflet-bottom .leaflet-control{margin-bottom:10px}
+#agenciasMap .leaflet-control-zoom a{display:block;width:30px;height:30px;line-height:30px;text-align:center;text-decoration:none;background:#fff;color:#17324d;border-bottom:1px solid #d7e3ec;font-weight:900;font-size:18px}
+#agenciasMap .leaflet-control-zoom{border:1px solid #c8d8e4;border-radius:10px;overflow:hidden;box-shadow:0 8px 20px rgba(15,37,61,.12)}
+#agenciasMap .leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}
+#agenciasMap .leaflet-popup-content-wrapper{background:#fff;border-radius:14px;box-shadow:0 14px 30px rgba(15,37,61,.18);padding:2px;text-align:left}
+#agenciasMap .leaflet-popup-content{margin:12px 14px;line-height:1.35}
+#agenciasMap .leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-left:-20px;overflow:hidden;pointer-events:none}
+#agenciasMap .leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;background:#fff;transform:rotate(45deg);box-shadow:0 8px 20px rgba(15,37,61,.12)}
 .agency-map-empty{padding:14px 18px;color:#6b7c8d;font-size:13px;border-top:1px solid #edf3f8;background:#fbfdff}
+.loteka-map-pin{background:transparent!important;border:0!important}.loteka-map-pin span{display:block;width:28px;height:28px;background:#0e93cf;border:4px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 8px 16px rgba(5,58,95,.28)}.loteka-map-pin span:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;left:50%;top:50%;transform:translate(-50%,-50%)}
 .agency-popup strong{display:block;color:#17324d;font-size:14px;margin-bottom:4px}
 .agency-popup span{display:block;color:#5f7283;font-size:12px;margin-bottom:3px}
 .agency-popup a{display:inline-flex;margin-top:8px;text-decoration:none;background:#0ea5c6;color:#fff;font-weight:800;border-radius:10px;padding:7px 10px}
@@ -1986,16 +2003,16 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
   <div class="ltk-sync-banner">
     <div>
       <h4>Conexión Jotform / Appwrite</h4>
-      <p>Este archivo queda preparado para trabajar con el webhook real ya configurado en Supabase. Desde aquí podrás guardar la configuración de lectura y sincronizar <strong>agencias</strong> y <strong>levantamientos</strong> reales sin romper la base visual actual.</p>
+      <p>Este archivo queda preparado para trabajar con el webhook real ya configurado en Appwrite. Desde aquí podrás guardar la configuración de lectura y sincronizar <strong>agencias</strong> y <strong>levantamientos</strong> reales sin romper la base visual actual.</p>
       <div class="ltk-sync-badges">
         <span class="ltk-sync-badge" id="ltkBadgeBackend"><i class="fas fa-plug"></i> Backend Jotform: pendiente</span>
         <span class="ltk-sync-badge" id="ltkBadgeFrontend"><i class="fas fa-database"></i> Lectura Appwrite: pendiente</span>
       </div>
-      <div class="ltk-sync-status" id="ltkSyncStatus">Modo seguro activado: si todavía no configuras la lectura desde Supabase, el sistema seguirá funcionando con su base local sin dañarse.</div>
+      <div class="ltk-sync-status" id="ltkSyncStatus">Modo seguro activado: si todavía no configuras la lectura desde Appwrite, el sistema seguirá funcionando con su base local sin dañarse.</div>
     </div>
     <div class="ltk-sync-actions">
       <button type="button" class="lev-btn secondary" onclick="ltkOpenBridgeModal()"><i class="fas fa-gear"></i> Configurar conexión</button>
-      <button type="button" class="lev-btn primary" onclick="ltkSyncAllFromSupabase()"><i class="fas fa-rotate"></i> Actualizar ahora</button>
+      <button type="button" class="lev-btn primary" onclick="ltkSyncAllFromAppwrite()"><i class="fas fa-rotate"></i> Actualizar ahora</button>
     </div>
   </div>
 
@@ -4023,7 +4040,7 @@ function resolveStorageMediaUrl(value) {
   const filePath = sanitized.startsWith(bucketPrefix)
     ? sanitized.slice(bucketPrefix.length)
     : sanitized.replace(/^reportes-operaciones\//i, '');
-  return supabaseClient?.storage ? (supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath).data?.publicUrl || raw) : raw;
+  return raw;
 }
 
 function getSafeMediaList(items = []) {
@@ -4119,7 +4136,7 @@ function cambiarVista(vista, el){
   if(target) target.classList.remove('hidden');
   activateSidebarLink(el, vista);
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
-  if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromSupabase === 'function') hrxSyncSolicitudesFromSupabase(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
+  if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromAppwrite === 'function') hrxSyncSolicitudesFromAppwrite(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
   if(vista==='historial-rrhh' && typeof hrhApplyFilters === 'function') hrhApplyFilters();
 }
@@ -6662,13 +6679,10 @@ llenarSelectsTransferencia();
 renderEntradas();
 renderTransferencias();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
 <script>
-    const SUPABASE_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0';
     const REPORTES_TABLE = 'reportes_operaciones';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // APPWRITE · NUEVO MOTOR PRINCIPAL DE OPERACIONES LOTEKA
     const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
@@ -6706,12 +6720,25 @@ renderTransferencias();
       const el = document.getElementById('agenciasMap');
       if(!el || !window.L) return null;
       if(agenciasMapInstance){ setTimeout(() => agenciasMapInstance.invalidateSize(), 80); return agenciasMapInstance; }
-      agenciasMapInstance = L.map(el, { scrollWheelZoom: true }).setView([18.4861, -69.9312], 12);
+      agenciasMapInstance = L.map(el, {
+        scrollWheelZoom: true,
+        zoomControl: true,
+        attributionControl: true,
+        preferCanvas: false
+      }).setView([18.4861, -69.9312], 12);
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        tileSize: 256,
+        zoomOffset: 0,
+        crossOrigin: true,
         attribution: '&copy; OpenStreetMap'
       }).addTo(agenciasMapInstance);
-      setTimeout(() => agenciasMapInstance.invalidateSize(), 150);
+
+      requestAnimationFrame(() => {
+        agenciasMapInstance.invalidateSize(true);
+        setTimeout(() => agenciasMapInstance.invalidateSize(true), 250);
+      });
       return agenciasMapInstance;
     }
 
@@ -6719,6 +6746,17 @@ renderTransferencias();
       if(!agenciasMapInstance) return;
       agenciasMapMarkers.forEach(marker => marker.remove());
       agenciasMapMarkers = [];
+    }
+
+    function agencyMapIcon(){
+      if(!window.L) return undefined;
+      return L.divIcon({
+        className: 'loteka-map-pin',
+        html: '<span></span>',
+        iconSize: [34, 42],
+        iconAnchor: [17, 40],
+        popupAnchor: [0, -38]
+      });
     }
 
     function agencyMapRefresh(list){
@@ -6734,7 +6772,7 @@ renderTransferencias();
         const grupo = agencia.grupo || '';
         const encargado = agencia.encargado || 'Sin encargado';
         const direccion = agencia.direccion || label;
-        const marker = L.marker([coords.lat, coords.lng]).addTo(map);
+        const marker = L.marker([coords.lat, coords.lng], { icon: agencyMapIcon() }).addTo(map);
         marker.bindPopup(`
           <div class="agency-popup">
             <strong>${escapeHtml(label)}</strong>
@@ -6748,9 +6786,11 @@ renderTransferencias();
       });
       const status = document.getElementById('agenciasMapStatus');
       if(status) status.textContent = bounds.length ? `${bounds.length} agencia(s) con coordenadas visibles en el mapa.` : 'No hay agencias con coordenadas válidas todavía.';
+      requestAnimationFrame(() => map.invalidateSize(true));
       if(bounds.length === 1) map.setView(bounds[0], 16);
-      if(bounds.length > 1) map.fitBounds(bounds, {padding:[34,34]});
-      setTimeout(() => map.invalidateSize(), 120);
+      if(bounds.length > 1) map.fitBounds(bounds, {padding:[48,48], maxZoom:16});
+      setTimeout(() => map.invalidateSize(true), 150);
+      setTimeout(() => map.invalidateSize(true), 500);
     }
 
     function agencyMapFitAll(){ agencyMapRefresh(); }
@@ -7289,7 +7329,7 @@ renderTransferencias();
       const source = String(op.source || '').trim().toLowerCase();
       if (source === 'app_movil') return 'App móvil';
       if (source === 'web_operacional') return 'Web operacional';
-      if (source === 'supabase') return 'Supabase';
+      if (source === 'appwrite') return 'Appwrite';
       return source ? source : 'No registrado';
     }
 
@@ -8301,7 +8341,7 @@ renderTransferencias();
       if (!document.getElementById('issuesView').classList.contains('hidden')) renderGenericTable('issue', issueSearch.value || '');
     }
 
-    function buildSupabasePayloadFromOperation(op) {
+    function buildAppwritePayloadFromOperation(op) {
       const normalized = enrichOperationWithAgencyContext(op);
       const locationAgencyNumber = normalizeAgencyNumber(normalized.agency_number || normalized.agency || normalized.agencia || '');
       const locationAgencyDisplay = String(normalized.agency_label || normalized.agency || normalized.agencia || '').trim();
@@ -8394,11 +8434,11 @@ renderTransferencias();
     }
 
     // Compatibilidad interna: cualquier parte vieja que llame el nombre anterior queda redirigida.
-    function mapSupabaseReportToOperation(item, fallbackIndex = 0, existing = null) {
+    function mapAppwriteReportToOperation(item, fallbackIndex = 0, existing = null) {
       return mapAppwriteDocumentToOperation(item, fallbackIndex, existing);
     }
 
-    async function syncOperationToSupabase(op) {
+    async function syncOperationToAppwrite(op) {
       // MOTOR APPWRITE: crea o actualiza SIEMPRE la operación en la colección operaciones.
       try {
         if (!op || !op.id) return null;
@@ -8443,7 +8483,7 @@ renderTransferencias();
       }
     }
 
-    async function deleteOperationFromSupabase(id) {
+    async function deleteOperationFromAppwrite(id) {
       // Ahora elimina en Appwrite. Se mantiene el nombre para no romper llamadas internas del HTML.
       try {
         if (!id) return;
@@ -8644,8 +8684,8 @@ renderTransferencias();
       }
     }
 
-    // Compatibilidad: si alguna parte vieja llama Supabase, realmente ejecuta Appwrite.
-    async function syncOperationsFromSupabase(options = {}) {
+    // Compatibilidad: si alguna parte vieja llama Appwrite, realmente ejecuta Appwrite.
+    async function syncOperationsFromAppwrite(options = {}) {
       return syncOperationsFromAppwrite(options);
     }
 
@@ -8818,7 +8858,7 @@ renderTransferencias();
               newOperation.images = results.filter(Boolean);
               operations.push(newOperation);
               saveOperations(operations);
-              await syncOperationToSupabase(newOperation);
+              await syncOperationToAppwrite(newOperation);
               saveOperations(operations);
               renderOperations();
               renderHistory();
@@ -8831,7 +8871,7 @@ renderTransferencias();
       } else {
         operations.push(newOperation);
         saveOperations(operations);
-        await syncOperationToSupabase(newOperation);
+        await syncOperationToAppwrite(newOperation);
         saveOperations(operations);
         renderOperations();
         renderHistory();
@@ -10686,7 +10726,7 @@ function openEditModal(id) {
                 newStatus: operations[index].status
               }));
               saveOperations(operations);
-              await syncOperationToSupabase(operations[index]);
+              await syncOperationToAppwrite(operations[index]);
               saveOperations(operations);
               triggerOperationPushNotifications(previousOperationSnapshot, operations[index]);
               closeEditModal();
@@ -10702,7 +10742,7 @@ function openEditModal(id) {
         });
       } else {
         saveOperations(operations);
-        await syncOperationToSupabase(operations[index]);
+        await syncOperationToAppwrite(operations[index]);
         saveOperations(operations);
         closeEditModal();
         renderOperations();
@@ -10717,7 +10757,7 @@ function openEditModal(id) {
     function deleteOperation(id) {
       const operations = loadOperations().filter(item => item.id !== id);
       saveOperations(operations);
-      deleteOperationFromSupabase(id);
+      deleteOperationFromAppwrite(id);
       renderOperations();
       renderDashboard();
       renderHistory();
@@ -10734,7 +10774,7 @@ function openEditModal(id) {
       if (index === -1) return;
       operations[index].images = Array.isArray(operations[index].images) ? operations[index].images.filter((_, i) => i !== imageIndex) : [];
       saveOperations(operations);
-      syncOperationToSupabase(operations[index]);
+      syncOperationToAppwrite(operations[index]);
       openEditModal(id);
       renderOperations();
       renderHistory();
@@ -10751,7 +10791,7 @@ function openEditModal(id) {
       if (index === -1) return;
       operations[index].resultImages = Array.isArray(operations[index].resultImages) ? operations[index].resultImages.filter((_, i) => i !== imageIndex) : [];
       saveOperations(operations);
-      syncOperationToSupabase(operations[index]);
+      syncOperationToAppwrite(operations[index]);
       openEditModal(id);
       renderOperations();
       renderHistory();
@@ -11253,7 +11293,7 @@ function cambiarVista(vista, el){
   activateSidebarLink(el, vista);
 
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
-  if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromSupabase === 'function') hrxSyncSolicitudesFromSupabase(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
+  if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromAppwrite === 'function') hrxSyncSolicitudesFromAppwrite(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
   if(vista==='historial-rrhh' && typeof hrhApplyFilters === 'function') hrhApplyFilters();
 }
@@ -12523,9 +12563,9 @@ function hrxLoad(){
   hrxSave();
 }
 
-/* ===== Conexión RRHH Solicitudes + Supabase ===== */
-const HRX_SUPABASE_TABLE = 'solicitudes_rrhh';
-let hrxSupabaseRealtimeChannel = null;
+/* ===== Conexión RRHH Solicitudes + Appwrite ===== */
+const HRX_APPWRITE_TABLE = 'solicitudes_rrhh';
+let hrxAppwriteRealtimeChannel = null;
 
 function hrxFormatJsonList(value){
   if(!value) return '';
@@ -12542,7 +12582,7 @@ function hrxFormatJsonList(value){
   }catch(e){ return String(value || ''); }
 }
 
-function hrxMapSupabaseSolicitud(row){
+function hrxMapAppwriteSolicitud(row){
   const fullName = hrxSafe(row.nombre_completo || row.nombre || '');
   const refs = hrxFormatJsonList(row.referencias_laborales);
   const hijos = hrxFormatJsonList(row.hijos);
@@ -12567,7 +12607,7 @@ function hrxMapSupabaseSolicitud(row){
 
   return hrxNormalize({
     id: `sb-${row.id}`,
-    supabaseId: row.id,
+    appwriteId: row.id,
     nombre: fullName,
     apellido: '',
     apodos: row.apodo || '',
@@ -12606,24 +12646,24 @@ function hrxMapSupabaseSolicitud(row){
   });
 }
 
-async function hrxSyncSolicitudesFromSupabase(showLog=false){
+async function hrxSyncSolicitudesFromAppwrite(showLog=false){
   try{
-    if(typeof supabaseClient === 'undefined' || !supabaseClient?.from) return;
-    const { data, error } = await supabaseClient
-      .from(HRX_SUPABASE_TABLE)
+    if(typeof appwriteClient === 'undefined' || !appwriteClient?.from) return;
+    const { data, error } = await appwriteClient
+      .from(HRX_APPWRITE_TABLE)
       .select('*')
       .order('created_at', { ascending:false });
 
     if(error){
-      console.error('Error sincronizando solicitudes RRHH desde Supabase:', error);
+      console.error('Error sincronizando solicitudes RRHH desde Appwrite:', error);
       return;
     }
 
     const remote = (data || [])
-      .map(hrxMapSupabaseSolicitud)
+      .map(hrxMapAppwriteSolicitud)
       .filter(r=>hrxActiveQueueStates().includes(r.estado));
 
-    const localOnly = hrxSolicitudes.filter(s=>!s.supabaseId);
+    const localOnly = hrxSolicitudes.filter(s=>!s.appwriteId);
     hrxSolicitudes = [...remote, ...localOnly].map(hrxNormalize).filter(r=>hrxActiveQueueStates().includes(r.estado));
     hrxSave();
 
@@ -12638,13 +12678,13 @@ async function hrxSyncSolicitudesFromSupabase(showLog=false){
   }
 }
 
-function hrxStartSupabaseRealtime(){
+function hrxStartAppwriteRealtime(){
   try{
-    if(typeof supabaseClient === 'undefined' || !supabaseClient?.channel || hrxSupabaseRealtimeChannel) return;
-    hrxSupabaseRealtimeChannel = supabaseClient
+    if(typeof appwriteClient === 'undefined' || !appwriteClient?.channel || hrxAppwriteRealtimeChannel) return;
+    hrxAppwriteRealtimeChannel = appwriteClient
       .channel('rrhh-solicitudes-realtime')
-      .on('postgres_changes', { event:'*', schema:'public', table:HRX_SUPABASE_TABLE }, () => {
-        hrxSyncSolicitudesFromSupabase(false);
+      .on('postgres_changes', { event:'*', schema:'public', table:HRX_APPWRITE_TABLE }, () => {
+        hrxSyncSolicitudesFromAppwrite(false);
       })
       .subscribe();
   }catch(err){
@@ -12883,8 +12923,8 @@ function hrxInit(){
   rrhdRender();
   hrxBindFilterEvents();
   ['rrhdFilterAgencia','rrhdFilterGrupo','rrhdFilterEstado','rrhdFilterTurno'].forEach(id=>document.getElementById(id)?.addEventListener('change', rrhdRender));
-  hrxSyncSolicitudesFromSupabase(false);
-  hrxStartSupabaseRealtime();
+  hrxSyncSolicitudesFromAppwrite(false);
+  hrxStartAppwriteRealtime();
 }
 window.addEventListener('DOMContentLoaded', hrxInit);
 
@@ -12893,16 +12933,16 @@ window.addEventListener('DOMContentLoaded', hrxInit);
 
 <div class="lev-modal" id="ltkBridgeModal">
   <div class="lev-modal-dialog" style="max-width:900px;width:min(94vw,900px)">
-    <div class="lev-modal-head"><h3>Configuración Jotform / Supabase</h3><button type="button" class="lev-btn ghost" onclick="ltkCloseBridgeModal()"><i class="fas fa-xmark"></i> Cerrar</button></div>
+    <div class="lev-modal-head"><h3>Configuración Jotform / Appwrite</h3><button type="button" class="lev-btn ghost" onclick="ltkCloseBridgeModal()"><i class="fas fa-xmark"></i> Cerrar</button></div>
     <div class="lev-modal-body">
       <div class="ltk-config-grid">
-        <div class="lev-field full"><label>URL base de Supabase</label><input id="ltkSupabaseUrl" placeholder="https://tu-proyecto.supabase.co"></div>
-        <div class="lev-field full"><label>Anon Key de Supabase</label><textarea id="ltkSupabaseAnonKey" placeholder="Pega aquí tu anon public key" style="min-height:110px"></textarea></div>
-        <div class="lev-field full"><label>Function URL del webhook Jotform</label><input id="ltkFunctionUrl" placeholder="https://tu-proyecto.supabase.co/functions/v1/jotform-levantamientos"></div>
+        <div class="lev-field full"><label>URL base de Appwrite</label><input id="ltkAppwriteUrl" placeholder="https://tu-proyecto.appwrite.co"></div>
+        <div class="lev-field full"><label>Anon Key de Appwrite</label><textarea id="ltkAppwriteAnonKey" placeholder="Pega aquí tu anon public key" style="min-height:110px"></textarea></div>
+        <div class="lev-field full"><label>Function URL del webhook Jotform</label><input id="ltkFunctionUrl" placeholder="https://tu-proyecto.appwrite.co/functions/v1/jotform-levantamientos"></div>
       </div>
       <div class="ltk-help-box">
         <strong>Qué hace esta configuración:</strong><br>
-        1. El <strong>webhook de Jotform</strong> ya lo manejas en Supabase.<br>
+        1. El <strong>webhook de Jotform</strong> ya lo manejas en Appwrite.<br>
         2. Este HTML solo necesita la <strong>URL base</strong> y la <strong>anon key</strong> para leer las tablas <code>agencias</code>, <code>levantamientos</code> y <code>levantamientos_detalle</code>.<br>
         3. Si todavía no pones la anon key, el sistema seguirá funcionando con su modo local sin romper detalle de agencias ni levantamientos.
       </div>
@@ -12917,22 +12957,22 @@ window.addEventListener('DOMContentLoaded', hrxInit);
 
 
 <script>
-const LTK_BRIDGE_STORAGE_KEY = 'loteka_jotform_supabase_bridge_v1';
-const LTK_DEFAULT_SUPABASE_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co';
-const LTK_DEFAULT_FUNCTION_URL = 'https://cvmkfzagrtwygmwsqomb.supabase.co/functions/v1/jotform-levantamientos';
-const LTK_DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bWtmemFncnR3eWdtd3Nxb21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTc2NDEsImV4cCI6MjA4ODM3MzY0MX0.YQ1tjN6F1Rb-rsJl10A1NCrTxgNrDoxxqa57E67Zhw0';
-let ltkBridgeConfig = { supabaseUrl: LTK_DEFAULT_SUPABASE_URL, anonKey: LTK_DEFAULT_SUPABASE_ANON_KEY, functionUrl: LTK_DEFAULT_FUNCTION_URL };
+const LTK_BRIDGE_STORAGE_KEY = 'loteka_jotform_appwrite_bridge_v1';
+const LTK_DEFAULT_APPWRITE_URL = 'https://nyc.cloud.appwrite.io/v1';
+const LTK_DEFAULT_FUNCTION_URL = '';
+const LTK_DEFAULT_APPWRITE_ANON_KEY = '';
+let ltkBridgeConfig = { appwriteUrl: LTK_DEFAULT_APPWRITE_URL, anonKey: LTK_DEFAULT_APPWRITE_ANON_KEY, functionUrl: LTK_DEFAULT_FUNCTION_URL };
 
 function ltkLoadBridgeConfig(){
   try {
     const saved = JSON.parse(localStorage.getItem(LTK_BRIDGE_STORAGE_KEY) || '{}');
     ltkBridgeConfig = {
-      supabaseUrl: saved.supabaseUrl || LTK_DEFAULT_SUPABASE_URL,
-      anonKey: saved.anonKey || LTK_DEFAULT_SUPABASE_ANON_KEY,
+      appwriteUrl: saved.appwriteUrl || LTK_DEFAULT_APPWRITE_URL,
+      anonKey: saved.anonKey || LTK_DEFAULT_APPWRITE_ANON_KEY,
       functionUrl: saved.functionUrl || LTK_DEFAULT_FUNCTION_URL
     };
   } catch(e){
-    ltkBridgeConfig = { supabaseUrl: LTK_DEFAULT_SUPABASE_URL, anonKey: LTK_DEFAULT_SUPABASE_ANON_KEY, functionUrl: LTK_DEFAULT_FUNCTION_URL };
+    ltkBridgeConfig = { appwriteUrl: LTK_DEFAULT_APPWRITE_URL, anonKey: LTK_DEFAULT_APPWRITE_ANON_KEY, functionUrl: LTK_DEFAULT_FUNCTION_URL };
   }
 }
 function ltkPersistBridgeConfig(){ localStorage.setItem(LTK_BRIDGE_STORAGE_KEY, JSON.stringify(ltkBridgeConfig)); }
@@ -12945,30 +12985,30 @@ function ltkUpdateBridgeBadges(){
     back.innerHTML = '<i class="fas fa-plug"></i> Webhook Jotform listo';
   }
   if(front){
-    const ok = !!(ltkBridgeConfig.supabaseUrl && ltkBridgeConfig.anonKey);
+    const ok = !!(ltkBridgeConfig.appwriteUrl && ltkBridgeConfig.anonKey);
     front.className = `ltk-sync-badge ${ok ? 'good' : 'warn'}`;
-    front.innerHTML = `<i class="fas fa-database"></i> Lectura Supabase: ${ok ? 'configurada' : 'pendiente'}`;
+    front.innerHTML = `<i class="fas fa-database"></i> Lectura Appwrite: ${ok ? 'configurada' : 'pendiente'}`;
   }
 }
 function ltkOpenBridgeModal(){
-  document.getElementById('ltkSupabaseUrl').value = ltkBridgeConfig.supabaseUrl || '';
-  document.getElementById('ltkSupabaseAnonKey').value = ltkBridgeConfig.anonKey || '';
+  document.getElementById('ltkAppwriteUrl').value = ltkBridgeConfig.appwriteUrl || '';
+  document.getElementById('ltkAppwriteAnonKey').value = ltkBridgeConfig.anonKey || '';
   document.getElementById('ltkFunctionUrl').value = ltkBridgeConfig.functionUrl || '';
   document.getElementById('ltkBridgeModal').style.display = 'flex';
 }
 function ltkCloseBridgeModal(){ const el=document.getElementById('ltkBridgeModal'); if(el) el.style.display='none'; }
 function ltkLoadBridgeDefaults(){
-  document.getElementById('ltkSupabaseUrl').value = LTK_DEFAULT_SUPABASE_URL;
-  document.getElementById('ltkSupabaseAnonKey').value = LTK_DEFAULT_SUPABASE_ANON_KEY;
+  document.getElementById('ltkAppwriteUrl').value = LTK_DEFAULT_APPWRITE_URL;
+  document.getElementById('ltkAppwriteAnonKey').value = LTK_DEFAULT_APPWRITE_ANON_KEY;
   document.getElementById('ltkFunctionUrl').value = LTK_DEFAULT_FUNCTION_URL;
 }
 function ltkSaveBridgeConfig(){
-  ltkBridgeConfig.supabaseUrl = (document.getElementById('ltkSupabaseUrl').value || '').trim().replace(/\/$/, '');
-  ltkBridgeConfig.anonKey = (document.getElementById('ltkSupabaseAnonKey').value || '').trim();
+  ltkBridgeConfig.appwriteUrl = (document.getElementById('ltkAppwriteUrl').value || '').trim().replace(/\/$/, '');
+  ltkBridgeConfig.anonKey = (document.getElementById('ltkAppwriteAnonKey').value || '').trim();
   ltkBridgeConfig.functionUrl = (document.getElementById('ltkFunctionUrl').value || '').trim();
   ltkPersistBridgeConfig();
   ltkUpdateBridgeBadges();
-  ltkSetSyncStatus(ltkBridgeConfig.anonKey ? 'Configuración guardada. Ya puedes sincronizar agencias y levantamientos reales desde Supabase.' : 'Configuración guardada sin anon key. El sistema seguirá en modo local hasta que completes la lectura desde Supabase.');
+  ltkSetSyncStatus(ltkBridgeConfig.anonKey ? 'Configuración guardada. Ya puedes sincronizar agencias y levantamientos reales desde Appwrite.' : 'Configuración guardada sin anon key. El sistema seguirá en modo local hasta que completes la lectura desde Appwrite.');
   ltkCloseBridgeModal();
 }
 function ltkNormalizeGroupName(value){
@@ -12979,7 +13019,7 @@ function ltkNormalizeGroupName(value){
 function ltkFindAgencyIndexByCode(code){
   return agencias.findIndex(a => String(a?.numero || '').replace(/\D+/g,'') === String(code || '').replace(/\D+/g,''));
 }
-function ltkEnsureAgencyFromSupabase(row){
+function ltkEnsureAgencyFromAppwrite(row){
   const code = String(row?.codigo_agencia || '').replace(/\D+/g,'');
   if(!code) return null;
   const num = Number(code);
@@ -13057,24 +13097,24 @@ function ltkBuildLevRecord(row, detailsByLev, position){
   }, position);
 }
 async function ltkFetchTable(table, query='select=*'){
-  const base = (ltkBridgeConfig.supabaseUrl || '').replace(/\/$/, '');
+  const base = (ltkBridgeConfig.appwriteUrl || '').replace(/\/$/, '');
   const key = ltkBridgeConfig.anonKey || '';
-  if(!base || !key) throw new Error('Falta configurar URL base o anon key de Supabase.');
+  if(!base || !key) throw new Error('Falta configurar URL base o anon key de Appwrite.');
   const url = `${base}/rest/v1/${table}?${query}`;
   const response = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
   if(!response.ok) throw new Error(`No se pudo leer ${table}: ${response.status}`);
   return await response.json();
 }
-async function ltkSyncAllFromSupabase(){
+async function ltkSyncAllFromAppwrite(){
   try {
-    ltkSetSyncStatus('Sincronizando agencias y levantamientos desde Supabase...');
+    ltkSetSyncStatus('Sincronizando agencias y levantamientos desde Appwrite...');
     ltkUpdateBridgeBadges();
     const [sbAgencias, sbLevs, sbDetails] = await Promise.all([
       ltkFetchTable('agencias', 'select=*&order=id.asc'),
       ltkFetchTable('levantamientos', 'select=*&order=id.asc'),
       ltkFetchTable('levantamientos_detalle', 'select=*&order=id.asc')
     ]);
-    (sbAgencias || []).forEach(row => ltkEnsureAgencyFromSupabase(row));
+    (sbAgencias || []).forEach(row => ltkEnsureAgencyFromAppwrite(row));
     const detailsByLev = {};
     (sbDetails || []).forEach(row => {
       const key = String(row.levantamiento_id);
@@ -13106,7 +13146,7 @@ async function ltkSyncAllFromSupabase(){
     ltkSetSyncStatus(`Sincronización completada. Agencias leídas: ${(sbAgencias||[]).length}. Levantamientos leídos: ${(sbLevs||[]).length}.`);
   } catch(error){
     console.error('LTK Sync error:', error);
-    ltkSetSyncStatus(`Modo seguro: no se pudo sincronizar Supabase (${error.message || error}). El sistema sigue funcionando local y el mapa usa agencias/Appwrite.`);
+    ltkSetSyncStatus(`Modo seguro: no se pudo sincronizar Appwrite (${error.message || error}). El sistema sigue funcionando local y el mapa usa agencias/Appwrite.`);
   }
 }
 let ltkAutoSyncBusy = false;
@@ -13127,7 +13167,7 @@ async function ltkAutoSync(forceOverlay=false, label='Cargando'){
   const started = Date.now();
   if(forceOverlay) ltkShowAutoSyncOverlay(label);
   try {
-    await ltkSyncAllFromSupabase();
+    await ltkSyncAllFromAppwrite();
   } finally {
     ltkAutoSyncBusy = false;
     if(forceOverlay){
@@ -13147,7 +13187,7 @@ function ltkInitBridge(){
   ltkLoadBridgeConfig();
   ltkPersistBridgeConfig();
   ltkUpdateBridgeBadges();
-  ltkSetSyncStatus('Modo seguro activado: no se abrirá el sincronizador Supabase automáticamente. Agencias y mapa se cargarán desde la base local/Appwrite.');
+  ltkSetSyncStatus('Modo seguro activado: no se abrirá el sincronizador Appwrite automáticamente. Agencias y mapa se cargarán desde la base local/Appwrite.');
   setTimeout(() => { try { if(typeof ltkHideAutoSyncOverlay === 'function') ltkHideAutoSyncOverlay(); } catch(e){} }, 120);
 }
 window.addEventListener('DOMContentLoaded', ltkInitBridge);
@@ -13177,7 +13217,7 @@ if ("serviceWorker" in navigator) {
 /* ==========================================================
    LOTEKA · FIX FINAL LEVANTAMIENTOS EN FICHA DE AGENCIA
    - Filtra levantamientos reales por agencia dentro de Consultas > Agencias.
-   - Consulta Supabase directo si hace falta.
+   - Consulta Appwrite directo si hace falta.
    - El botón Ver abre la ficha empresarial completa del levantamiento.
    - No toca la estructura general del sistema.
    ========================================================== */
@@ -13276,13 +13316,13 @@ if ("serviceWorker" in navigator) {
       </tr>`;
     }).join('');
   }
-  async function fetchLevsFromSupabaseForAgency(agencia){
+  async function fetchLevsFromAppwriteForAgency(agencia){
     try {
       const codes = getAgencyCodesFromAgency(agencia);
       const code = codes[0];
       if(!code) return [];
       if(typeof ltkBridgeConfig === 'undefined') return [];
-      const base = clean(ltkBridgeConfig.supabaseUrl).replace(/\/$/, '');
+      const base = clean(ltkBridgeConfig.appwriteUrl).replace(/\/$/, '');
       const key = clean(ltkBridgeConfig.anonKey);
       if(!base || !key) return [];
       const headers = { apikey:key, Authorization:`Bearer ${key}` };
@@ -13320,7 +13360,7 @@ if ("serviceWorker" in navigator) {
       } catch(e) {}
       return built;
     } catch(error){
-      console.error('Error leyendo levantamientos de la agencia desde Supabase:', error);
+      console.error('Error leyendo levantamientos de la agencia desde Appwrite:', error);
       return [];
     }
   }
@@ -13333,7 +13373,7 @@ if ("serviceWorker" in navigator) {
     const fetchKey = codes[0] || '';
     if(fetchKey){
       tbody.dataset.agencyCode = fetchKey;
-      fetchLevsFromSupabaseForAgency(agencia).then(fresh => {
+      fetchLevsFromAppwriteForAgency(agencia).then(fresh => {
         if(tbody.dataset.agencyCode !== fetchKey) return;
         const mergedMap = new Map(localLevs.map(item => [String(item.id), item]));
         fresh.forEach(item => mergedMap.set(String(item.id), item));
@@ -13433,7 +13473,7 @@ if ("serviceWorker" in navigator) {
     return raw.toUpperCase();
   }
   function publicUrl(path){
-    const base = cleanText((((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}) && ((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}).supabaseUrl) || (typeof LTK_DEFAULT_SUPABASE_URL !== 'undefined' ? LTK_DEFAULT_SUPABASE_URL : '') || '').replace(/\/$/, '');
+    const base = cleanText((((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}) && ((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}).appwriteUrl) || (typeof LTK_DEFAULT_APPWRITE_URL !== 'undefined' ? LTK_DEFAULT_APPWRITE_URL : '') || '').replace(/\/$/, '');
     return base ? `${base}/storage/v1/object/public/${LTK_LEV_BUCKET}/${String(path).split('/').map(encodeURIComponent).join('/')}` : path;
   }
   function guessLabelFromName(name){
@@ -13487,8 +13527,8 @@ if ("serviceWorker" in navigator) {
     return Array.from(map.values());
   }
   async function listStorage(prefix){
-    const base = cleanText((((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}) && ((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}).supabaseUrl) || (typeof LTK_DEFAULT_SUPABASE_URL !== 'undefined' ? LTK_DEFAULT_SUPABASE_URL : '') || '').replace(/\/$/, '');
-    const key = cleanText((((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}) && ((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}).anonKey) || (typeof LTK_DEFAULT_SUPABASE_ANON_KEY !== 'undefined' ? LTK_DEFAULT_SUPABASE_ANON_KEY : '') || '');
+    const base = cleanText((((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}) && ((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}).appwriteUrl) || (typeof LTK_DEFAULT_APPWRITE_URL !== 'undefined' ? LTK_DEFAULT_APPWRITE_URL : '') || '').replace(/\/$/, '');
+    const key = cleanText((((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}) && ((typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) || {}).anonKey) || (typeof LTK_DEFAULT_APPWRITE_ANON_KEY !== 'undefined' ? LTK_DEFAULT_APPWRITE_ANON_KEY : '') || '');
     if(!base || !key || !prefix) return [];
     const res = await fetch(`${base}/storage/v1/object/list/${LTK_LEV_BUCKET}`, {
       method:'POST',
@@ -13553,9 +13593,9 @@ if ("serviceWorker" in navigator) {
       return record;
     };
   }
-  const originalSync = window.ltkSyncAllFromSupabase;
+  const originalSync = window.ltkSyncAllFromAppwrite;
   if(typeof originalSync === 'function'){
-    window.ltkSyncAllFromSupabase = async function(){
+    window.ltkSyncAllFromAppwrite = async function(){
       await originalSync();
       try{
         if(typeof levRecords !== 'undefined' && Array.isArray(levRecords)){
@@ -13614,7 +13654,7 @@ if ("serviceWorker" in navigator) {
     }
     const galleryGrid = body.querySelector('.lev-gallery-grid');
     if(galleryGrid && gallery.length){
-      galleryGrid.innerHTML = gallery.map(p => `<div class="lev-gallery-card"><div class="lev-gallery-thumb"><img src="${esc(p.url)}" alt="${esc(p.label)}" style="width:100%;height:100%;object-fit:cover;"></div><div class="meta"><strong>${esc(p.label)}</strong><span>Foto recibida desde Jotform / Supabase Storage.</span></div></div>`).join('');
+      galleryGrid.innerHTML = gallery.map(p => `<div class="lev-gallery-card"><div class="lev-gallery-thumb"><img src="${esc(p.url)}" alt="${esc(p.label)}" style="width:100%;height:100%;object-fit:cover;"></div><div class="meta"><strong>${esc(p.label)}</strong><span>Foto recibida desde Jotform / Appwrite Storage.</span></div></div>`).join('');
     }
   }
   const originalAgencyViewLev = window.agencyViewLev;
@@ -13648,7 +13688,7 @@ if ("serviceWorker" in navigator) {
 </html>
 <script>
 /* ==========================================================
-   LOTEKA · FIX DEFINITIVO FOTOS SUPABASE EN LEVANTAMIENTOS
+   LOTEKA · FIX DEFINITIVO FOTOS APPWRITE EN LEVANTAMIENTOS
    - Trabaja sobre el HTML funcional sin cambiar diseño/base.
    - Busca fotos en buckets: levantamientos y levatamientos.
    - Rutas soportadas: agencia/LEV-x, agencia/id, agencia/sb-id.
@@ -13696,11 +13736,11 @@ if ("serviceWorker" in navigator) {
 
   function getBase(){
     const cfg = (typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) ? ltkBridgeConfig : {};
-    return txt(cfg.supabaseUrl || (typeof LTK_DEFAULT_SUPABASE_URL !== 'undefined' ? LTK_DEFAULT_SUPABASE_URL : '')).replace(/\/$/, '');
+    return txt(cfg.appwriteUrl || (typeof LTK_DEFAULT_APPWRITE_URL !== 'undefined' ? LTK_DEFAULT_APPWRITE_URL : '')).replace(/\/$/, '');
   }
   function getKey(){
     const cfg = (typeof ltkBridgeConfig !== 'undefined' && ltkBridgeConfig) ? ltkBridgeConfig : {};
-    return txt(cfg.anonKey || (typeof LTK_DEFAULT_SUPABASE_ANON_KEY !== 'undefined' ? LTK_DEFAULT_SUPABASE_ANON_KEY : ''));
+    return txt(cfg.anonKey || (typeof LTK_DEFAULT_APPWRITE_ANON_KEY !== 'undefined' ? LTK_DEFAULT_APPWRITE_ANON_KEY : ''));
   }
   function publicUrl(bucket, path){ return `${getBase()}/storage/v1/object/public/${bucket}/${encodePath(path)}`; }
 
@@ -13961,7 +14001,7 @@ if ("serviceWorker" in navigator) {
 
     const grid = body.querySelector('.lev-gallery-grid');
     if(grid){
-      grid.innerHTML = gallery.length ? gallery.map(p => `<div class="lev-gallery-card"><button type="button" class="lev-gallery-thumb ltk-gallery-button" onclick="ltkOpenPhotoViewer('${esc(p.url)}','${esc(p.label)}')"><img src="${esc(p.url)}" alt="${esc(p.label)}"></button><div class="meta"><strong>${esc(p.label)}</strong><span>Foto recibida desde Jotform / Supabase.</span></div></div>`).join('') : '<div class="lev-empty" style="padding:18px;">Sin fotografías vinculadas.</div>';
+      grid.innerHTML = gallery.length ? gallery.map(p => `<div class="lev-gallery-card"><button type="button" class="lev-gallery-thumb ltk-gallery-button" onclick="ltkOpenPhotoViewer('${esc(p.url)}','${esc(p.label)}')"><img src="${esc(p.url)}" alt="${esc(p.label)}"></button><div class="meta"><strong>${esc(p.label)}</strong><span>Foto recibida desde Jotform / Appwrite.</span></div></div>`).join('') : '<div class="lev-empty" style="padding:18px;">Sin fotografías vinculadas.</div>';
     }
   }
 
@@ -13990,9 +14030,9 @@ if ("serviceWorker" in navigator) {
     setTimeout(() => enhanceDetail(item?.id || id), 80);
   };
 
-  const prevSync = window.ltkSyncAllFromSupabase;
+  const prevSync = window.ltkSyncAllFromAppwrite;
   if(typeof prevSync === 'function'){
-    window.ltkSyncAllFromSupabase = async function(){
+    window.ltkSyncAllFromAppwrite = async function(){
       try{
         await prevSync();
         const list = (typeof levRecords !== 'undefined' && Array.isArray(levRecords)) ? levRecords.slice(0, 80) : [];
@@ -14013,7 +14053,7 @@ if ("serviceWorker" in navigator) {
     let timeoutId;
     try{
       const timeout = new Promise(resolve => { timeoutId = setTimeout(resolve, MAX_AUTO_MS); });
-      await Promise.race([window.ltkSyncAllFromSupabase ? window.ltkSyncAllFromSupabase() : Promise.resolve(), timeout]);
+      await Promise.race([window.ltkSyncAllFromAppwrite ? window.ltkSyncAllFromAppwrite() : Promise.resolve(), timeout]);
     }catch(e){ console.warn('AutoSync no bloqueante:', e); }
     finally{
       clearTimeout(timeoutId);
@@ -14038,9 +14078,9 @@ if ("serviceWorker" in navigator) {
 </script>
 <script>
 /* ==========================================================
-   LOTEKA · OPTIMIZACIÓN FINAL DE FOTOS SUPABASE
+   LOTEKA · OPTIMIZACIÓN FINAL DE FOTOS APPWRITE
    Fecha: 2026-04-24
-   - Mantiene conexión Supabase/Jotform para recibir fotos.
+   - Mantiene conexión Appwrite/Jotform para recibir fotos.
    - Reduce Egress: NO descarga miniaturas pesadas automáticamente.
    - Carga la foto grande solo al hacer clic en Ver foto.
    - Evita pantalla pegada en Actualizando con timeout seguro.
@@ -14072,7 +14112,7 @@ if ("serviceWorker" in navigator) {
     if(img){
       img.removeAttribute('src');
       img.onload=()=>{ if(loading) loading.style.display='none'; };
-      img.onerror=()=>{ if(loading) loading.textContent='No se pudo cargar la foto. Revisa el límite de Supabase o la URL.'; };
+      img.onerror=()=>{ if(loading) loading.textContent='No se pudo cargar la foto. Revisa el límite de Appwrite o la URL.'; };
       setTimeout(()=>{ img.src=url; }, 30);
     }
     modal.classList.add('open');
@@ -14131,7 +14171,7 @@ if ("serviceWorker" in navigator) {
     patch(1,['Componente','Estado'],item.electrical);
     const grid=body.querySelector('.lev-gallery-grid');
     if(grid){
-      grid.innerHTML=gallery.length?gallery.map((p,i)=>`<div class="lev-gallery-card ltk-gallery-card-optimized"><button type="button" class="lev-gallery-thumb ltk-gallery-button ltk-no-thumb" data-photo-url="${esc(p.url)}" data-photo-label="${esc(labelFrom(p))}" onclick="ltkOpenPhotoViewer(this.dataset.photoUrl,this.dataset.photoLabel)"><i class="fas fa-image"></i><span>Ver foto ${i+1}</span></button><div class="meta"><strong>${esc(labelFrom(p))}</strong><span>Foto enlazada desde Supabase. Se carga solo al abrir.</span></div></div>`).join(''):'<div class="lev-empty" style="padding:18px;">Sin fotografías vinculadas.</div>';
+      grid.innerHTML=gallery.length?gallery.map((p,i)=>`<div class="lev-gallery-card ltk-gallery-card-optimized"><button type="button" class="lev-gallery-thumb ltk-gallery-button ltk-no-thumb" data-photo-url="${esc(p.url)}" data-photo-label="${esc(labelFrom(p))}" onclick="ltkOpenPhotoViewer(this.dataset.photoUrl,this.dataset.photoLabel)"><i class="fas fa-image"></i><span>Ver foto ${i+1}</span></button><div class="meta"><strong>${esc(labelFrom(p))}</strong><span>Foto enlazada desde Appwrite. Se carga solo al abrir.</span></div></div>`).join(''):'<div class="lev-empty" style="padding:18px;">Sin fotografías vinculadas.</div>';
     }
     body.querySelectorAll('img').forEach(img=>{ img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; });
   }
@@ -14140,7 +14180,7 @@ if ("serviceWorker" in navigator) {
   window.levOpenDetail=async function(id){
     let item=null;
     try{ item=(typeof levRecords!=='undefined'&&Array.isArray(levRecords))?levRecords.find(r=>String(r.id)===String(id)||String(r.code)===String(id)):null; }catch(e){}
-    try{ if(item && typeof window.ltkHydratePhotosForLev==='function') await window.ltkHydratePhotosForLev(item,false); }catch(e){ console.warn('Fotos Supabase no hidratadas:',e); }
+    try{ if(item && typeof window.ltkHydratePhotosForLev==='function') await window.ltkHydratePhotosForLev(item,false); }catch(e){ console.warn('Fotos Appwrite no hidratadas:',e); }
     if(typeof prevLevOpen==='function') prevLevOpen(id);
     setTimeout(()=>optimizeDetailAfterOpen(item?.id||id),120);
     setTimeout(()=>optimizeDetailAfterOpen(item?.id||id),450);
@@ -14157,7 +14197,7 @@ if ("serviceWorker" in navigator) {
       if(Array.isArray(stored)) list.push(...stored);
       item=list.find(r=>String(r.id)===String(id)||String(r.code)===String(id));
     }catch(e){}
-    try{ if(item && typeof window.ltkHydratePhotosForLev==='function') await window.ltkHydratePhotosForLev(item,false); }catch(e){ console.warn('Fotos Supabase no hidratadas:',e); }
+    try{ if(item && typeof window.ltkHydratePhotosForLev==='function') await window.ltkHydratePhotosForLev(item,false); }catch(e){ console.warn('Fotos Appwrite no hidratadas:',e); }
     if(typeof prevAgencyView==='function') prevAgencyView(id);
     setTimeout(()=>optimizeDetailAfterOpen(item?.id||id),150);
     setTimeout(()=>optimizeDetailAfterOpen(item?.id||id),500);
@@ -14174,17 +14214,17 @@ if ("serviceWorker" in navigator) {
     holder.innerHTML=cards.length?cards.map(card=>`<div class="agency-gallery-card"><div class="agency-gallery-preview">${photoButton(card,card.label)}</div><div class="agency-gallery-meta"><strong>${esc(card.label)}</strong><span>${esc(card.source)} · carga bajo clic</span></div></div>`).join(''):'<div class="lev-empty">Sin evidencias fotográficas vinculadas.</div>';
   };
 
-  const previousSync=window.ltkSyncAllFromSupabase;
+  const previousSync=window.ltkSyncAllFromAppwrite;
   if(typeof previousSync==='function'){
-    window.ltkSyncAllFromSupabase=async function(){
+    window.ltkSyncAllFromAppwrite=async function(){
       const limitMs=9000;
       let timer;
       try{
         const timeout=new Promise(resolve=>{ timer=setTimeout(()=>resolve('__timeout__'),limitMs); });
         const result=await Promise.race([previousSync(), timeout]);
-        if(result==='__timeout__') console.warn('Supabase tardó demasiado; se liberó la pantalla para evitar bloqueo.');
+        if(result==='__timeout__') console.warn('Appwrite tardó demasiado; se liberó la pantalla para evitar bloqueo.');
         return result;
-      }catch(e){ console.error('Error sincronizando Supabase:',e); return false; }
+      }catch(e){ console.error('Error sincronizando Appwrite:',e); return false; }
       finally{ clearTimeout(timer); try{ if(typeof ltkHideAutoSyncOverlay==='function') ltkHideAutoSyncOverlay(); }catch(e){} }
     };
   }
@@ -14195,8 +14235,8 @@ if ("serviceWorker" in navigator) {
       const front=document.getElementById('ltkBadgeFrontend');
       const status=document.getElementById('ltkSyncStatus');
       if(back) back.innerHTML='<i class="fas fa-plug"></i> Backend Jotform listo';
-      if(front) front.innerHTML='<i class="fas fa-database"></i> Lectura Supabase activa';
-      if(status) status.innerHTML='Conexión Supabase/Jotform verificada en el HTML. Las fotos se enlazan desde Storage y se cargan solo cuando haces clic para reducir Egress.';
+      if(front) front.innerHTML='<i class="fas fa-database"></i> Lectura Appwrite activa';
+      if(status) status.innerHTML='Conexión Appwrite/Jotform verificada en el HTML. Las fotos se enlazan desde Storage y se cargan solo cuando haces clic para reducir Egress.';
     }catch(e){}
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',markConnectionReady); else markConnectionReady();
