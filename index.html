@@ -15,6 +15,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grupo Ortiz</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQZJ5liSh2w5S0E5p6fN6KN3aPZyqHY=" crossorigin=""/>
 <style>
 :root{
   --bg:#f3f5f7;
@@ -1327,6 +1328,22 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 
 .ltk-auto-overlay{position:fixed;inset:0;background:rgba(243,245,247,.86);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity .18s ease}.ltk-auto-overlay.show{opacity:1;pointer-events:auto}.ltk-auto-card{width:356px;max-width:92vw;background:#fff;border-radius:30px;box-shadow:0 22px 60px rgba(31,55,88,.18);padding:42px 28px 34px;display:flex;flex-direction:column;align-items:center;gap:16px}.ltk-auto-ring{width:176px;height:176px;border-radius:50%;border:7px solid #dfe8f2;border-top-color:#2f8fe8;border-right-color:#9fc6f4;animation:ltkSpin 1.1s linear infinite;position:relative}.ltk-auto-logo{margin-top:-126px;width:118px;height:118px;border-radius:50%;background:linear-gradient(180deg,#f5f8fc,#e8eef6);display:flex;align-items:center;justify-content:center;font-weight:900;color:#2b7fc3;letter-spacing:.4px;border:1px solid #dfe5eb;box-shadow:inset 0 4px 16px rgba(31,55,88,.06)}.ltk-auto-text{margin-top:6px;font-size:18px;font-weight:800;color:#51606f}.ltk-auto-dots{display:flex;gap:12px}.ltk-auto-dots span{width:12px;height:12px;border-radius:50%;background:#2f8fe8;animation:ltkPulse 1s ease-in-out infinite}.ltk-auto-dots span:nth-child(2){animation-delay:.15s}.ltk-auto-dots span:nth-child(3){animation-delay:.3s}.ltk-help-box code{background:#f4f7fb;border:1px solid #dfe5eb;border-radius:6px;padding:1px 6px}@keyframes ltkSpin{to{transform:rotate(360deg)}}@keyframes ltkPulse{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
 
+
+/* MAPA DE AGENCIAS */
+.agency-map-card{background:#fff;border:1px solid #e4edf5;border-radius:22px;box-shadow:0 14px 32px rgba(15,37,61,.08);overflow:hidden;margin:14px 0 16px}
+.agency-map-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid #e8f0f7;background:linear-gradient(135deg,#f8fbff,#eef8fc)}
+.agency-map-head h3{margin:0;color:#17324d;font-size:18px;font-weight:900}
+.agency-map-head p{margin:4px 0 0;color:#6b7c8d;font-size:13px}
+.agency-map-actions{display:flex;gap:8px;flex-wrap:wrap}
+.agency-map-mini-btn{border:1px solid #cfe1ee;background:#fff;color:#1478a6;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer}
+.agency-map-mini-btn:hover{background:#eef8fc}
+#agenciasMap{height:460px;width:100%;background:#eef4f8;z-index:1}
+.agency-map-empty{padding:14px 18px;color:#6b7c8d;font-size:13px;border-top:1px solid #edf3f8;background:#fbfdff}
+.agency-popup strong{display:block;color:#17324d;font-size:14px;margin-bottom:4px}
+.agency-popup span{display:block;color:#5f7283;font-size:12px;margin-bottom:3px}
+.agency-popup a{display:inline-flex;margin-top:8px;text-decoration:none;background:#0ea5c6;color:#fff;font-weight:800;border-radius:10px;padding:7px 10px}
+@media(max-width:900px){#agenciasMap{height:360px}.agency-map-head{align-items:flex-start;flex-direction:column}.agency-map-actions{width:100%}}
+
 </style>
 </head>
 <body>
@@ -1773,6 +1790,21 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
         <label for="agencySearchInput">Buscar Agencias</label>
         <input id="agencySearchInput" type="text" placeholder="Ej. 1088 o Agencia 1088, G-44" oninput="renderAgencias()" />
       </div>
+    </div>
+
+    <div class="agency-map-card">
+      <div class="agency-map-head">
+        <div>
+          <h3><i class="fas fa-map-location-dot"></i> Mapa de agencias</h3>
+          <p>Las agencias con coordenadas se agregan automáticamente al guardar o al sincronizar.</p>
+        </div>
+        <div class="agency-map-actions">
+          <button type="button" class="agency-map-mini-btn" onclick="agencyMapFitAll()"><i class="fas fa-expand"></i> Ver todas</button>
+          <button type="button" class="agency-map-mini-btn" onclick="agencyMapRefresh()"><i class="fas fa-rotate"></i> Actualizar mapa</button>
+        </div>
+      </div>
+      <div id="agenciasMap"></div>
+      <div class="agency-map-empty" id="agenciasMapStatus">Esperando agencias con latitud y longitud.</div>
     </div>
 
     <div class="card-table">
@@ -5529,8 +5561,9 @@ function guardarAgencia(){
     return;
   }
 
+  let agenciaGuardada;
   if(editAgenciaIndex === null){
-    agencias.push({
+    agenciaGuardada = {
       numero: Number(numero),
       nombre: `Agencia ${String(numero).padStart(4, '0')}`,
       grupo,
@@ -5539,19 +5572,22 @@ function guardarAgencia(){
       latitud,
       longitud,
       equipos: []
-    });
+    };
+    agencias.push(agenciaGuardada);
   } else {
-    agencias[editAgenciaIndex].numero = Number(numero);
-    agencias[editAgenciaIndex].nombre = `Agencia ${String(numero).padStart(4, '0')}`;
-    agencias[editAgenciaIndex].grupo = grupo;
-    agencias[editAgenciaIndex].encargado = encargado;
-    agencias[editAgenciaIndex].direccion = direccion;
-    agencias[editAgenciaIndex].latitud = latitud;
-    agencias[editAgenciaIndex].longitud = longitud;
+    agenciaGuardada = agencias[editAgenciaIndex];
+    agenciaGuardada.numero = Number(numero);
+    agenciaGuardada.nombre = `Agencia ${String(numero).padStart(4, '0')}`;
+    agenciaGuardada.grupo = grupo;
+    agenciaGuardada.encargado = encargado;
+    agenciaGuardada.direccion = direccion;
+    agenciaGuardada.latitud = latitud;
+    agenciaGuardada.longitud = longitud;
   }
 
   agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
   renderAgencias();
+  if(typeof syncAgencyToAppwrite === 'function') syncAgencyToAppwrite(agenciaGuardada);
   cerrarModalAgencia();
 }
 
@@ -5584,6 +5620,7 @@ function renderAgencias(){
     tbody.innerHTML = '<tr><td colspan="5" class="entry-empty">No se encontraron agencias para esa búsqueda.</td></tr>';
   }
   document.getElementById('dashTotalAgencias').innerText = agencias.length;
+  if(typeof agencyMapRefresh === 'function') agencyMapRefresh(filtered);
 }
 
 function ensureAgencyDetailDefaults(agencia){
@@ -6638,6 +6675,7 @@ renderTransferencias();
     const APPWRITE_PROJECT_ID = '69ef80760012b6fecbb9';
     const APPWRITE_DATABASE_ID = '69ef83b500026b218a31';
     const APPWRITE_OPERACIONES_COLLECTION_ID = 'operaciones';
+    const APPWRITE_AGENCIAS_COLLECTION_ID = 'agencias';
 
     const appwriteClient = new Appwrite.Client()
       .setEndpoint(APPWRITE_ENDPOINT)
@@ -6645,6 +6683,161 @@ renderTransferencias();
 
     const appwriteDatabases = new Appwrite.Databases(appwriteClient);
     const appwriteQuery = Appwrite.Query;
+
+    // MAPA DE AGENCIAS + APPWRITE
+    let agenciasMapInstance = null;
+    let agenciasMapMarkers = [];
+
+    function agencyToFloat(value){
+      if(value === null || value === undefined || value === '') return null;
+      const parsed = Number(String(value).replace(',', '.').trim());
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function agencyHasCoords(agencia){
+      const lat = agencyToFloat(agencia?.latitud ?? agencia?.lat ?? agencia?.latitude);
+      const lng = agencyToFloat(agencia?.longitud ?? agencia?.lng ?? agencia?.lon ?? agencia?.longitude);
+      if(lat === null || lng === null) return null;
+      if(lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+      return {lat, lng};
+    }
+
+    function ensureAgencyMap(){
+      const el = document.getElementById('agenciasMap');
+      if(!el || !window.L) return null;
+      if(agenciasMapInstance){ setTimeout(() => agenciasMapInstance.invalidateSize(), 80); return agenciasMapInstance; }
+      agenciasMapInstance = L.map(el, { scrollWheelZoom: true }).setView([18.4861, -69.9312], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(agenciasMapInstance);
+      setTimeout(() => agenciasMapInstance.invalidateSize(), 150);
+      return agenciasMapInstance;
+    }
+
+    function agencyMapClear(){
+      if(!agenciasMapInstance) return;
+      agenciasMapMarkers.forEach(marker => marker.remove());
+      agenciasMapMarkers = [];
+    }
+
+    function agencyMapRefresh(list){
+      const map = ensureAgencyMap();
+      if(!map) return;
+      agencyMapClear();
+      const source = Array.isArray(list) ? list : agencias;
+      const bounds = [];
+      source.forEach((agencia) => {
+        const coords = agencyHasCoords(agencia);
+        if(!coords) return;
+        const label = typeof formatAgencyOptionLabel === 'function' ? formatAgencyOptionLabel(agencia) : (agencia.nombre || `Agencia ${agencia.numero || ''}`);
+        const grupo = agencia.grupo || '';
+        const encargado = agencia.encargado || 'Sin encargado';
+        const direccion = agencia.direccion || label;
+        const marker = L.marker([coords.lat, coords.lng]).addTo(map);
+        marker.bindPopup(`
+          <div class="agency-popup">
+            <strong>${escapeHtml(label)}</strong>
+            <span>${escapeHtml(grupo)} · ${escapeHtml(encargado)}</span>
+            <span>${escapeHtml(direccion)}</span>
+            <a target="_blank" href="https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}">Cómo llegar</a>
+          </div>
+        `);
+        agenciasMapMarkers.push(marker);
+        bounds.push([coords.lat, coords.lng]);
+      });
+      const status = document.getElementById('agenciasMapStatus');
+      if(status) status.textContent = bounds.length ? `${bounds.length} agencia(s) con coordenadas visibles en el mapa.` : 'No hay agencias con coordenadas válidas todavía.';
+      if(bounds.length === 1) map.setView(bounds[0], 16);
+      if(bounds.length > 1) map.fitBounds(bounds, {padding:[34,34]});
+      setTimeout(() => map.invalidateSize(), 120);
+    }
+
+    function agencyMapFitAll(){ agencyMapRefresh(); }
+
+    function normalizeAppwriteAgencyDoc(doc){
+      if(!doc) return null;
+      return {
+        appwriteId: doc.$id || doc.appwriteId || '',
+        numero: Number(doc.numero || doc.codigo || doc.agencia || 0),
+        nombre: doc.nombre || (doc.numero ? `Agencia ${String(doc.numero).padStart(4,'0')}` : 'Agencia'),
+        grupo: doc.grupo || 'Grupo 00',
+        encargado: doc.encargado || doc.responsable || 'Sin encargado',
+        direccion: doc.direccion || doc.ubicacion || doc.nombre || '',
+        latitud: agencyToFloat(doc.latitud ?? doc.lat ?? doc.latitude),
+        longitud: agencyToFloat(doc.longitud ?? doc.lng ?? doc.lon ?? doc.longitude),
+        equipos: Array.isArray(doc.equipos) ? doc.equipos : []
+      };
+    }
+
+    function buildAppwriteAgencyPayload(agencia){
+      return {
+        numero: String(agencia.numero || '').trim(),
+        nombre: agencia.nombre || `Agencia ${String(agencia.numero || '').padStart(4,'0')}`,
+        grupo: agencia.grupo || 'Grupo 00',
+        encargado: agencia.encargado || 'Sin encargado',
+        direccion: agencia.direccion || agencia.nombre || '',
+        latitud: agencyToFloat(agencia.latitud),
+        longitud: agencyToFloat(agencia.longitud)
+      };
+    }
+
+    async function syncAgenciesFromAppwrite(){
+      try{
+        const data = await appwriteDatabases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_AGENCIAS_COLLECTION_ID,
+          [appwriteQuery.limit(500)]
+        );
+        const docs = (data.documents || []).map(normalizeAppwriteAgencyDoc).filter(Boolean).filter(a => a.numero);
+        docs.forEach(remote => {
+          const idx = agencias.findIndex(a => String(Number(a.numero)) === String(Number(remote.numero)));
+          if(idx >= 0) agencias[idx] = {...agencias[idx], ...remote, equipos: agencias[idx].equipos || remote.equipos || []};
+          else agencias.push(remote);
+        });
+        agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
+        renderAgencias();
+      }catch(error){
+        console.warn('Agencias Appwrite no sincronizadas:', error);
+        agencyMapRefresh();
+      }
+    }
+
+    async function syncAgencyToAppwrite(agencia){
+      try{
+        if(!agencia) return;
+        const payload = buildAppwriteAgencyPayload(agencia);
+        const existing = await appwriteDatabases.listDocuments(
+          APPWRITE_DATABASE_ID,
+          APPWRITE_AGENCIAS_COLLECTION_ID,
+          [appwriteQuery.equal('numero', payload.numero), appwriteQuery.limit(1)]
+        );
+        let saved;
+        if(existing.documents && existing.documents.length){
+          saved = await appwriteDatabases.updateDocument(APPWRITE_DATABASE_ID, APPWRITE_AGENCIAS_COLLECTION_ID, existing.documents[0].$id, payload);
+        }else{
+          saved = await appwriteDatabases.createDocument(APPWRITE_DATABASE_ID, APPWRITE_AGENCIAS_COLLECTION_ID, Appwrite.ID.unique(), payload);
+        }
+        agencia.appwriteId = saved.$id;
+        console.info('Agencia sincronizada con Appwrite:', payload.numero);
+      }catch(error){
+        console.warn('No se pudo sincronizar agencia con Appwrite:', error);
+      }
+    }
+
+    function initAgenciesRealtime(){
+      try{
+        const channel = `databases.${APPWRITE_DATABASE_ID}.collections.${APPWRITE_AGENCIAS_COLLECTION_ID}.documents`;
+        appwriteClient.subscribe(channel, () => syncAgenciesFromAppwrite());
+        console.info('Realtime Appwrite activo para agencias');
+      }catch(error){
+        console.warn('No se pudo activar realtime de agencias:', error);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { agencyMapRefresh(); syncAgenciesFromAppwrite(); initAgenciesRealtime(); }, 500);
+    });
 </script>
 <script>
     const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
@@ -12913,10 +13106,7 @@ async function ltkSyncAllFromSupabase(){
     ltkSetSyncStatus(`Sincronización completada. Agencias leídas: ${(sbAgencias||[]).length}. Levantamientos leídos: ${(sbLevs||[]).length}.`);
   } catch(error){
     console.error('LTK Sync error:', error);
-    ltkSetSyncStatus(`No se pudo sincronizar: ${error.message || error}`);
-    alert(`No se pudo sincronizar desde Supabase.
-
-${error.message || error}`);
+    ltkSetSyncStatus(`Modo seguro: no se pudo sincronizar Supabase (${error.message || error}). El sistema sigue funcionando local y el mapa usa agencias/Appwrite.`);
   }
 }
 let ltkAutoSyncBusy = false;
@@ -12957,9 +13147,8 @@ function ltkInitBridge(){
   ltkLoadBridgeConfig();
   ltkPersistBridgeConfig();
   ltkUpdateBridgeBadges();
-  ltkSetSyncStatus('Conexión cargada. Este módulo actualizará agencias y levantamientos automáticamente al abrir y al volver a la pestaña.');
-  ltkBindAutomaticRefresh();
-  setTimeout(() => ltkAutoSync(true, 'Cargando'), 120);
+  ltkSetSyncStatus('Modo seguro activado: no se abrirá el sincronizador Supabase automáticamente. Agencias y mapa se cargarán desde la base local/Appwrite.');
+  setTimeout(() => { try { if(typeof ltkHideAutoSyncOverlay === 'function') ltkHideAutoSyncOverlay(); } catch(e){} }, 120);
 }
 window.addEventListener('DOMContentLoaded', ltkInitBridge);
 </script>
