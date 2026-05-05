@@ -1892,7 +1892,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
 .loteka-map-pin.type-agencia .mk-symbol::before{content:"🏢"!important;font-size:23px!important;}
 .loteka-map-pin.type-pasante .mk-symbol::before{content:"P"!important;font-size:26px!important;letter-spacing:-1px!important;}
 .loteka-map-pin.type-aprezio .mk-symbol::before{content:"A"!important;font-size:27px!important;letter-spacing:-1px!important;}
-.loteka-map-pin.type-centro-pago .mk-symbol::before{content:"$"!important;font-size:31px!important;}
+.loteka-map-pin.type-centro-pago .mk-symbol::before{content:"💰"!important;font-size:30px!important;}
 .loteka-map-pin.type-punto-pago .mk-symbol::before{content:"$"!important;font-size:31px!important;}
 .loteka-map-pin.type-supermercado .mk-symbol::before{content:"🛒"!important;font-size:25px!important;}
 
@@ -1973,12 +1973,110 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
   filter:saturate(1.04) contrast(1.09) brightness(.96)!important;
   image-rendering:auto!important;
 }
+
+/* FIX FINAL OSCAR: Centro de Pago usa bolsa de dinero grande; se elimina cualquier dólar anterior */
+.loteka-map-pin.type-centro-pago .mk-core::after{content:none!important;display:none!important;}
+.loteka-map-pin.type-centro-pago .mk-symbol::before{content:"💰"!important;font-size:30px!important;line-height:1!important;}
+.loteka-map-pin.type-centro-pago .mk-symbol{transform:translate(-50%,-50%)!important;width:38px!important;height:38px!important;}
 #agenciasMap .leaflet-marker-icon{
   will-change:transform!important;
   backface-visibility:hidden!important;
 }
 </style>
 
+
+<style id="loteka-centro-bolsa-centrado-verificado-final">
+/* FIX VERIFICADO OSCAR: Centro de Pago con bolsa 💰 exactamente centrada.
+   Se coloca al final para ganarle a reglas viejas de span/marker. */
+.loteka-map-pin.loteka-pin-badge.type-centro-pago,
+.loteka-map-pin.loteka-pin-badge.type-centro-pago *{
+  box-sizing:border-box!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk{
+  width:54px!important;
+  height:54px!important;
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  transform:translateZ(0)!important;
+  filter:drop-shadow(0 8px 13px rgba(5,24,47,.32))!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-core{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  border-radius:50%!important;
+  transform:translate(-50%,-50%)!important;
+  clip-path:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:3px solid #fff!important;
+  background:linear-gradient(145deg,var(--mk-soft) 0%,var(--mk-main) 48%,var(--mk-dark) 100%)!important;
+  box-shadow:inset 0 4px 8px rgba(255,255,255,.42), inset 0 -10px 16px rgba(0,0,0,.24), 0 0 0 2px rgba(9,39,73,.14)!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-core::before{
+  content:""!important;
+  position:absolute!important;
+  left:8px!important;
+  right:8px!important;
+  top:6px!important;
+  height:11px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.64),rgba(255,255,255,0))!important;
+  opacity:.72!important;
+  z-index:1!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-core::after{
+  content:none!important;
+  display:none!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-symbol{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:translate(-50%,-50%)!important;
+  line-height:1!important;
+  text-align:center!important;
+  z-index:5!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-symbol::before{
+  content:"💰"!important;
+  display:block!important;
+  font-size:27px!important;
+  line-height:1!important;
+  transform:none!important;
+  margin:0!important;
+  padding:0!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.38)!important;
+}
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-tail,
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-cart,
+.loteka-map-pin.loteka-pin-badge.type-centro-pago .mk-num{
+  display:none!important;
+}
+</style>
 </head>
 <body>
 
@@ -2991,6 +3089,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
           <option value="Aprezio">Aprezio</option>
           <option value="Centro De Pago">Centro De Pago</option>
           <option value="Punto de Pago">Punto de Pago</option>
+          <option value="Agencia en Supermercado">Agencia en Supermercado</option>
         </select>
       </div>
       <div class="form-group">
@@ -3098,6 +3197,7 @@ input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .sele
                   <option value="Aprezio">Aprezio</option>
                   <option value="Centro De Pago">Centro De Pago</option>
                   <option value="Punto de Pago">Punto de Pago</option>
+                  <option value="Agencia en Supermercado">Agencia en Supermercado</option>
                 </select>
               </div>
               <div class="agency-form-field"><label>Teléfono</label><input id="agencyFieldTelefono" type="text"></div>
