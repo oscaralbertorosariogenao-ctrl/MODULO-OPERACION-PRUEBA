@@ -2169,6 +2169,85 @@ body.ltk-sidebar-collapsed .sidebar{width:0!important;min-width:0!important;max-
 body.ltk-sidebar-collapsed .content{padding-left:18px!important;}
 @media(max-width:900px){body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:14px}.brand-wrap::after{display:none}}
 </style>
+
+
+<style id="loteka-agency-status-map-css">
+/* ===== Estados operativos de agencias - Mapa LOTEKA ===== */
+.agency-status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.2px;border:1px solid rgba(15,45,75,.10);box-shadow:0 6px 14px rgba(2,30,55,.08);white-space:nowrap;}
+.agency-status-pill.status-activa{background:#e9fff4;color:#047647;border-color:#b8f7d5;}
+.agency-status-pill.status-proceso{background:#fff7dc;color:#9a6100;border-color:#ffe092;}
+.agency-status-pill.status-remodelacion{background:#e6f4ff;color:#075f9b;border-color:#a9dcff;}
+.agency-status-pill.status-cerrada{background:#eef1f4;color:#5c6670;border-color:#cfd8e2;}
+.loteka-map-pin.status-en-proceso .mk,
+.loteka-map-pin.status-remodelacion .mk,
+.loteka-map-pin.status-cerrada .mk{width:58px!important;height:58px!important;filter:drop-shadow(0 12px 18px rgba(5,25,48,.34))!important;}
+.loteka-map-pin.status-en-proceso .mk-core,
+.loteka-map-pin.status-remodelacion .mk-core,
+.loteka-map-pin.status-cerrada .mk-core{width:48px!important;height:48px!important;border-radius:18px!important;transform:none!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+.loteka-map-pin.status-en-proceso .mk-num,
+.loteka-map-pin.status-remodelacion .mk-num,
+.loteka-map-pin.status-cerrada .mk-num{display:none!important;}
+.loteka-map-pin.status-en-proceso .mk-symbol,
+.loteka-map-pin.status-remodelacion .mk-symbol,
+.loteka-map-pin.status-cerrada .mk-symbol{position:static!important;transform:none!important;width:auto!important;height:auto!important;border:0!important;background:transparent!important;box-shadow:none!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+.loteka-map-pin.status-en-proceso .mk-symbol::before,
+.loteka-map-pin.status-remodelacion .mk-symbol::before,
+.loteka-map-pin.status-cerrada .mk-symbol::before{font-size:27px!important;line-height:1!important;text-shadow:0 2px 5px rgba(0,0,0,.35)!important;}
+.loteka-map-pin.status-en-proceso .mk-core{background:linear-gradient(145deg,#ffd64d 0%,#ff9f1c 58%,#bb6500 100%)!important;border-color:#fff!important;box-shadow:inset 0 2px 10px rgba(255,255,255,.34),0 0 0 5px rgba(255,177,34,.24)!important;}
+.loteka-map-pin.status-en-proceso .mk-symbol::before{content:"⏳"!important;}
+.loteka-map-pin.status-en-proceso .mk-core::after{content:""!important;position:absolute!important;inset:-8px!important;border:2px solid rgba(255,174,25,.55)!important;border-radius:24px!important;animation:lotekaStatusPulse 1.7s ease-out infinite!important;}
+.loteka-map-pin.status-remodelacion .mk-core{background:linear-gradient(145deg,#52d7ff 0%,#0b87d1 58%,#075091 100%)!important;border-color:#fff!important;box-shadow:inset 0 2px 10px rgba(255,255,255,.32),0 0 0 5px rgba(23,145,220,.22)!important;}
+.loteka-map-pin.status-remodelacion .mk-symbol::before{content:"🔧"!important;}
+.loteka-map-pin.status-cerrada .mk{opacity:.78!important;filter:grayscale(.25) drop-shadow(0 8px 15px rgba(0,0,0,.30))!important;}
+.loteka-map-pin.status-cerrada .mk-core{background:linear-gradient(145deg,#87919c 0%,#45515f 58%,#1e2731 100%)!important;border-color:#e9eef3!important;box-shadow:inset 0 2px 10px rgba(255,255,255,.18),0 0 0 5px rgba(82,91,102,.22)!important;}
+.loteka-map-pin.status-cerrada .mk-symbol::before{content:"✖"!important;font-size:31px!important;}
+.loteka-map-pin.status-en-proceso .mk-tail,
+.loteka-map-pin.status-remodelacion .mk-tail,
+.loteka-map-pin.status-cerrada .mk-tail{display:none!important;}
+@keyframes lotekaStatusPulse{0%{transform:scale(.72);opacity:.75}70%{transform:scale(1.28);opacity:0}100%{transform:scale(1.28);opacity:0}}
+.agency-popup .agency-status-line{margin:6px 0 2px!important;display:flex!important;align-items:center!important;gap:7px!important;}
+.map-filter-row[data-group="DESACTIVADAS/CERRADAS"] .filter-color{background:#4b5563!important;}
+</style>
+
+
+<style id="loteka-agency-status-filter-css">
+.map-status-filter-list{display:grid;grid-template-columns:1fr;gap:7px;padding:10px 12px 8px;border-bottom:1px solid rgba(168,190,212,.35);}
+.map-status-row{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.map-status-row input{accent-color:#0ea5c6;}
+.map-status-row.is-off{opacity:.48;}
+.map-status-row .agency-status-pill{font-size:10px;padding:4px 8px;}
+</style>
+
+
+<style id="loteka-map-filter-professional-clean-css">
+/* ===== Filtros de mapa simplificados y profesionales ===== */
+.map-status-filter-list{display:none!important;}
+.map-filter-panel{width:310px!important;border-radius:22px!important;border:1px solid rgba(122,154,184,.44)!important;background:rgba(255,255,255,.97)!important;box-shadow:0 22px 55px rgba(7,33,59,.18)!important;overflow:hidden!important;}
+.map-filter-head{padding:18px 18px 14px!important;background:linear-gradient(135deg,#ffffff 0%,#f3f9ff 100%)!important;border-bottom:1px solid #dfeaf4!important;}
+.map-filter-head h3{font-size:17px!important;font-weight:950!important;color:#0b2b49!important;margin:0 0 5px!important;display:flex!important;align-items:center!important;gap:8px!important;}
+.map-filter-head h3:before{content:"\f3c5";font-family:"Font Awesome 6 Free";font-weight:900;color:#0ea5c6;font-size:15px;}
+.map-filter-head span{display:inline-flex!important;align-items:center!important;gap:6px!important;color:#506c83!important;font-size:12px!important;font-weight:900!important;background:#eef7ff!important;border:1px solid #d7eafb!important;border-radius:999px!important;padding:6px 10px!important;margin-top:4px!important;}
+.map-filter-search{margin:14px 18px 12px!important;height:46px!important;border:1px solid #cbdceb!important;border-radius:15px!important;background:#fff!important;box-shadow:0 10px 22px rgba(8,42,75,.07)!important;}
+.map-filter-search i{font-size:14px!important;color:#0b75b7!important;}
+.map-filter-search input#agencyMapSearchInput{font-size:13px!important;font-weight:800!important;color:#0e2a44!important;}
+.map-filter-search input#agencyMapSearchInput::placeholder{color:#7b8fa3!important;font-weight:700!important;}
+.map-filter-section-title{margin:0 18px 8px!important;padding:11px 12px!important;border-radius:14px!important;background:linear-gradient(135deg,#f8fbff,#eef7ff)!important;border:1px solid #dfeaf4!important;}
+.map-filter-section-title span{display:block!important;font-size:12px!important;font-weight:950!important;letter-spacing:.35px!important;text-transform:uppercase!important;color:#0a365b!important;}
+.map-filter-section-title small{display:block!important;margin-top:2px!important;font-size:11px!important;font-weight:750!important;color:#637d94!important;}
+.map-filter-list{padding:0 18px 10px!important;gap:8px!important;}
+.map-filter-row{height:42px!important;grid-template-columns:18px 22px 16px 1fr auto!important;padding:0 12px!important;border-radius:14px!important;background:linear-gradient(135deg,#eff8ff,#e6f4ff)!important;border:1px solid #cce3f7!important;box-shadow:0 8px 18px rgba(15,76,129,.06)!important;}
+.map-filter-row:hover{transform:translateX(2px)!important;background:linear-gradient(135deg,#e8f5ff,#dff1ff)!important;}
+.map-filter-row.is-off{background:#ffffff!important;border-color:#dfe8f1!important;opacity:.62!important;box-shadow:none!important;}
+.filter-chevron{color:#5e7489!important;font-size:12px!important;}
+.map-filter-row input[type="checkbox"]{width:17px!important;height:17px!important;accent-color:#0ea5c6!important;}
+.filter-color{width:14px!important;height:14px!important;border:3px solid #fff!important;box-shadow:0 0 0 1px rgba(7,39,70,.16),0 3px 8px rgba(7,39,70,.15)!important;}
+.filter-name{font-size:13px!important;font-weight:950!important;color:#0d2f4c!important;}
+.map-filter-row b{height:24px!important;min-width:34px!important;padding:0 8px!important;background:#ffffff!important;border:1px solid #d8e7f4!important;color:#0a2b49!important;box-shadow:0 5px 12px rgba(8,42,75,.05)!important;}
+.map-filter-actions{padding:13px 18px 18px!important;gap:12px!important;background:linear-gradient(180deg,#f8fbff,#ffffff)!important;}
+.map-filter-actions button{height:42px!important;border-radius:14px!important;border:1px solid #c6d9eb!important;background:#fff!important;color:#0b2b49!important;font-weight:950!important;}
+.map-filter-actions button:hover{background:#0b75b7!important;color:#fff!important;border-color:#0b75b7!important;}
+@media(max-width:900px){.map-filter-panel{width:calc(100% - 24px)!important;max-height:300px!important}.map-filter-section-title{display:none!important}}
+</style>
 </head>
 <body>
 
@@ -3190,6 +3269,15 @@ body.ltk-sidebar-collapsed .content{padding-left:18px!important;}
         </select>
       </div>
       <div class="form-group">
+        <label for="agenciaEstadoOperativo">Estado operativo</label>
+        <select id="agenciaEstadoOperativo">
+          <option value="ACTIVA">ACTIVA</option>
+          <option value="EN PROCESO">EN PROCESO</option>
+          <option value="REMODELACIÓN">REMODELACIÓN</option>
+          <option value="DESACTIVADA/CERRADA">DESACTIVADA/CERRADA</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label for="agenciaLatitud">Latitud</label>
         <input id="agenciaLatitud" type="number" step="any" placeholder="Ej. 18.53926">
       </div>
@@ -3284,7 +3372,10 @@ body.ltk-sidebar-collapsed .content{padding-left:18px!important;}
               <div class="agency-form-field"><label>LTK</label><input id="agencyFieldLtk" type="text"></div>
               <div class="agency-form-field"><label>Estado operativo</label>
                 <select id="agencyFieldEstadoOperativo">
-                  <option>Activa</option><option>En revisión</option><option>Intervenida</option><option>Inactiva</option>
+                  <option value="ACTIVA">ACTIVA</option>
+                  <option value="EN PROCESO">EN PROCESO</option>
+                  <option value="REMODELACIÓN">REMODELACIÓN</option>
+                  <option value="DESACTIVADA/CERRADA">DESACTIVADA/CERRADA</option>
                 </select>
               </div>
               <div class="agency-form-field"><label>Tipo de agencia</label>
@@ -4902,6 +4993,112 @@ function getFixedAgencyType(numero){
 }
 
 
+const AGENCY_SPECIAL_CLOSED_GROUP = 'DESACTIVADAS/CERRADAS';
+const AGENCY_STATUS_DEFAULT = 'ACTIVA';
+const AGENCY_STATUS_OPTIONS = ['ACTIVA','EN PROCESO','REMODELACIÓN','DESACTIVADA/CERRADA'];
+
+function normalizarEstadoAgencia(estado){
+  const raw = String(estado || '').trim();
+  const clean = raw.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ');
+  if(!clean || clean === 'activa' || clean === 'activo') return 'ACTIVA';
+  if(clean.includes('proceso') || clean.includes('revision') || clean.includes('pendiente') || clean.includes('instalacion')) return 'EN PROCESO';
+  if(clean.includes('remodel')) return 'REMODELACIÓN';
+  if(clean.includes('desactiv') || clean.includes('cerrad') || clean.includes('inactiv') || clean.includes('clausur') || clean.includes('cancel')) return 'DESACTIVADA/CERRADA';
+  return raw.toUpperCase();
+}
+
+function getAgencyEstadoOperativo(agencia){
+  return normalizarEstadoAgencia(
+    agencia?.detalle?.estadoOperativo ||
+    agencia?.estadoOperativo ||
+    agencia?.estado ||
+    AGENCY_STATUS_DEFAULT
+  );
+}
+
+function agencyStatusClass(estado){
+  const clean = normalizarEstadoAgencia(estado);
+  if(clean === 'EN PROCESO') return 'status-en-proceso';
+  if(clean === 'REMODELACIÓN') return 'status-remodelacion';
+  if(clean === 'DESACTIVADA/CERRADA') return 'status-cerrada';
+  return 'status-activa';
+}
+
+function agencyStatusLabel(estado){
+  return normalizarEstadoAgencia(estado);
+}
+
+function agencyStatusOptionsHtml(selected){
+  const current = normalizarEstadoAgencia(selected || AGENCY_STATUS_DEFAULT);
+  return AGENCY_STATUS_OPTIONS.map(op => `<option value="${op}" ${current === op ? 'selected' : ''}>${op}</option>`).join('');
+}
+
+
+function isAgencyClosedStatus(estado){
+  return normalizarEstadoAgencia(estado) === 'DESACTIVADA/CERRADA';
+}
+
+function getAgencyRealGroup(agencia){
+  const detalle = agencia?.detalle || {};
+  const current = String(agencia?.grupo || '').trim();
+  const stored = String(detalle.grupoReal || agencia?.grupoReal || detalle.grupoAnterior || agencia?.grupoOriginal || '').trim();
+  if(stored && stored !== AGENCY_SPECIAL_CLOSED_GROUP) return stored;
+  if(current && current !== AGENCY_SPECIAL_CLOSED_GROUP) return current;
+  return 'Grupo 00';
+}
+
+function applyAgencyClosedStatusRule(agencia, requestedGroup){
+  if(!agencia) return agencia;
+  if(!agencia.detalle) agencia.detalle = {};
+  const estado = getAgencyEstadoOperativo(agencia);
+  const requested = String(requestedGroup || '').trim();
+  const current = String(agencia.grupo || '').trim();
+  const previousReal = String(agencia.detalle.grupoReal || agencia.grupoReal || agencia.detalle.grupoAnterior || '').trim();
+  let realGroup = '';
+
+  if(requested && requested !== AGENCY_SPECIAL_CLOSED_GROUP){
+    realGroup = requested;
+  } else if(current && current !== AGENCY_SPECIAL_CLOSED_GROUP){
+    realGroup = current;
+  } else if(previousReal && previousReal !== AGENCY_SPECIAL_CLOSED_GROUP){
+    realGroup = previousReal;
+  }
+
+  if(estado === 'DESACTIVADA/CERRADA'){
+    if(realGroup){
+      agencia.detalle.grupoReal = realGroup;
+      agencia.grupoReal = realGroup;
+    }
+    agencia.grupo = AGENCY_SPECIAL_CLOSED_GROUP;
+  } else {
+    agencia.grupo = realGroup || current || 'Grupo 00';
+    if(agencia.grupo !== AGENCY_SPECIAL_CLOSED_GROUP){
+      agencia.detalle.grupoReal = agencia.grupo;
+      agencia.grupoReal = agencia.grupo;
+    }
+  }
+
+  agencia.estadoOperativo = estado;
+  agencia.detalle.estadoOperativo = estado;
+  return agencia;
+}
+
+function syncClosedAgenciesGroup(){
+  if(!Array.isArray(agencias)) return;
+  agencias.forEach(agencia => applyAgencyClosedStatusRule(agencia));
+  if(Array.isArray(grupos)){
+    const closedGroup = grupos.find(g => String(g.nombre || '').trim() === AGENCY_SPECIAL_CLOSED_GROUP);
+    if(closedGroup){
+      closedGroup.agencias = agencias
+        .filter(a => getAgencyEstadoOperativo(a) === 'DESACTIVADA/CERRADA')
+        .map(a => Number(a.numero));
+    }
+  }
+}
+
+
 const GRUPO_44_COORDENADAS_ADICIONALES = {};
 
 let agencias = [
@@ -4960,19 +5157,25 @@ agencias = agencias.map((agencia) => {
     longitud: typeof geo.lng === 'number' ? geo.lng : (typeof geoGrupo44.lng === 'number' ? geoGrupo44.lng : agencia.longitud),
     detalle: {
       ...(agencia.detalle || {}),
-      tipoAgencia: getFixedAgencyType(numero) || agencia.detalle?.tipoAgencia || agencia.tipoAgencia || 'Agencia'
+      tipoAgencia: getFixedAgencyType(numero) || agencia.detalle?.tipoAgencia || agencia.tipoAgencia || 'Agencia',
+      estadoOperativo: getAgencyEstadoOperativo(agencia)
     },
-    tipoAgencia: getFixedAgencyType(numero) || agencia.tipoAgencia || agencia.detalle?.tipoAgencia || 'Agencia'
+    tipoAgencia: getFixedAgencyType(numero) || agencia.tipoAgencia || agencia.detalle?.tipoAgencia || 'Agencia',
+    estadoOperativo: getAgencyEstadoOperativo(agencia)
   };
 });
+
+agencias.forEach(agencia => applyAgencyClosedStatusRule(agencia));
 
 let grupos = [
   {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'encargado1', flota:'(829) 340-6805', extension:'1144', correo:'encargado1@grupoortiz.com.do', custodia:[], agencias:AGENCIAS_GRUPO_44_COMPLETAS.slice()},
   {numero:'45', nombre:'Grupo 45', color:'#2d9bf0', encargado:'Jose Pacheco', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_45_COMPLETAS.slice()},
   {numero:'42', nombre:'Grupo 42', color:'#d43ad7', encargado:'Jose Antonio', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_42_COMPLETAS.slice()},
   {numero:'08', nombre:'Grupo 08', color:'#00b8ff', encargado:'Yoscar G-8', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_08_COMPLETAS.slice()},
-  {numero:'06', nombre:'Grupo 06', color:'#16c172', encargado:'Alejandro G-06', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_06_COMPLETAS.slice()}
+  {numero:'06', nombre:'Grupo 06', color:'#16c172', encargado:'Alejandro G-06', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_06_COMPLETAS.slice()},
+  {numero:'00', nombre:AGENCY_SPECIAL_CLOSED_GROUP, color:'#4b5563', encargado:'Sistema', flota:'', extension:'', correo:'', custodia:[], agencias:[]}
 ];
+syncClosedAgenciesGroup();
 let editGrupoIndex = null;
 let detalleGrupoActualIndex = null;
 
@@ -6638,6 +6841,7 @@ function abrirModalAgencia(){
   document.getElementById('agenciaGrupo').value = '';
   document.getElementById('agenciaEncargado').value = '';
   if(document.getElementById('agenciaTipoAgencia')) document.getElementById('agenciaTipoAgencia').value = 'Agencia';
+  if(document.getElementById('agenciaEstadoOperativo')) document.getElementById('agenciaEstadoOperativo').value = 'ACTIVA';
   document.getElementById('agenciaLatitud').value = '';
   document.getElementById('agenciaLongitud').value = '';
   document.getElementById('agenciaDireccion').value = '';
@@ -6653,9 +6857,10 @@ function editarAgencia(i){
   editAgenciaIndex = i;
   document.getElementById('tituloModalAgencia').innerText = 'Editar Agencia';
   document.getElementById('agenciaNumero').value = agencia.numero;
-  document.getElementById('agenciaGrupo').value = agencia.grupo;
+  document.getElementById('agenciaGrupo').value = getAgencyRealGroup(agencia);
   document.getElementById('agenciaEncargado').value = agencia.encargado;
   if(document.getElementById('agenciaTipoAgencia')) document.getElementById('agenciaTipoAgencia').value = getAgencyTipoAgencia(agencia);
+  if(document.getElementById('agenciaEstadoOperativo')) document.getElementById('agenciaEstadoOperativo').value = getAgencyEstadoOperativo(agencia);
   document.getElementById('agenciaLatitud').value = agencia.latitud ?? '';
   document.getElementById('agenciaLongitud').value = agencia.longitud ?? '';
   document.getElementById('agenciaDireccion').value = agencia.direccion || agencia.nombre || '';
@@ -6667,6 +6872,7 @@ function guardarAgencia(){
   const grupo = document.getElementById('agenciaGrupo').value.trim() || 'Grupo 00';
   const encargado = document.getElementById('agenciaEncargado').value.trim() || 'Sin encargado';
   const tipoAgencia = document.getElementById('agenciaTipoAgencia')?.value || 'Agencia';
+  const estadoOperativo = normalizarEstadoAgencia(document.getElementById('agenciaEstadoOperativo')?.value || 'ACTIVA');
   const latitud = normalizarNumeroGeografico(document.getElementById('agenciaLatitud').value);
   const longitud = normalizarNumeroGeografico(document.getElementById('agenciaLongitud').value);
   const direccion = document.getElementById('agenciaDireccion').value.trim() || `Agencia ${numero}`;
@@ -6692,7 +6898,9 @@ function guardarAgencia(){
       direccion,
       latitud,
       longitud,
-      detalle: { tipoAgencia },
+      detalle: { tipoAgencia, estadoOperativo, grupoReal: grupo },
+      grupoReal: grupo,
+      estadoOperativo,
       equipos: []
     };
     agencias.push(agenciaGuardada);
@@ -6707,7 +6915,14 @@ function guardarAgencia(){
     agenciaGuardada.longitud = longitud;
     if(!agenciaGuardada.detalle) agenciaGuardada.detalle = {};
     agenciaGuardada.detalle.tipoAgencia = tipoAgencia;
+    agenciaGuardada.detalle.estadoOperativo = estadoOperativo;
+    agenciaGuardada.detalle.grupoReal = (grupo !== AGENCY_SPECIAL_CLOSED_GROUP ? grupo : (agenciaGuardada.detalle.grupoReal || agenciaGuardada.grupoReal || 'Grupo 00'));
+    agenciaGuardada.grupoReal = agenciaGuardada.detalle.grupoReal;
+    agenciaGuardada.estadoOperativo = estadoOperativo;
   }
+
+  applyAgencyClosedStatusRule(agenciaGuardada, grupo);
+  syncClosedAgenciesGroup();
 
   agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
   renderAgencias();
@@ -6725,7 +6940,9 @@ function renderAgencias(){
     const label = formatAgencyOptionLabel(agencia).toLowerCase();
     const encargado = String(agencia.encargado || '').toLowerCase();
     const grupo = String(agencia.grupo || '').toLowerCase();
-    return numero.includes(query) || label.includes(query) || encargado.includes(query) || grupo.includes(query);
+    const grupoReal = String(getAgencyRealGroup(agencia) || '').toLowerCase();
+    const grupoMapa = String(agenciaMapGroupValue(agencia) || '').toLowerCase();
+    return numero.includes(query) || label.includes(query) || encargado.includes(query) || grupo.includes(query) || grupoReal.includes(query) || grupoMapa.includes(query);
   });
   tbody.innerHTML = '';
   filtered.forEach((agencia) => {
@@ -6733,9 +6950,9 @@ function renderAgencias(){
     tbody.innerHTML += `
       <tr>
         <td><strong>${formatAgencyOptionLabel(agencia)}</strong></td>
-        <td>${agencia.grupo.replace('Grupo ', 'G-')}</td>
+        <td>${agenciaMapGroupValue(agencia).replace('Grupo ', 'G-')}</td>
         <td>${agencia.encargado}</td>
-        <td>${formatAgencyGeoText(agencia)}</td>
+        <td>${formatAgencyGeoText(agencia)}<br><span class="agency-status-pill ${agencyStatusClass(getAgencyEstadoOperativo(agencia))}">${getAgencyEstadoOperativo(agencia)}</span></td>
         <td class="actions"><i class="fas fa-eye" onclick="verDetalleAgencia(${realIndex})" title="Consultar"></i><i class="fas fa-edit" onclick="editarAgencia(${realIndex})" title="Editar"></i></td>
       </tr>
     `;
@@ -6756,7 +6973,7 @@ function ensureAgencyDetailDefaults(agencia){
     ltk: agencia.detalle.ltk || `LTK-${numeroTxt}`,
     telefono: agencia.detalle.telefono || '',
     horario: agencia.detalle.horario || '8:00 AM - 6:00 PM',
-    estadoOperativo: agencia.detalle.estadoOperativo || 'Activa',
+    estadoOperativo: getAgencyEstadoOperativo(agencia),
     tipoAgencia: normalizarTipoAgencia(agencia.detalle.tipoAgencia || 'Agencia'),
     observacion: agencia.detalle.observacion || '',
     estructura: {
@@ -6952,11 +7169,11 @@ function cargarFormularioDetalleAgencia(agencia){
   ensureAgencyDetailDefaults(agencia);
   const d = agencia.detalle || {};
   agencySetValue('agencyFieldNumero', String(agencia.numero || ''));
-  agencySetValue('agencyFieldGrupo', agencia.grupo || '');
+  agencySetValue('agencyFieldGrupo', getAgencyRealGroup(agencia));
   agencySetValue('agencyFieldEncargado', agencia.encargado || '');
   agencySetValue('agencyFieldGo', d.go || '');
   agencySetValue('agencyFieldLtk', d.ltk || '');
-  agencySetValue('agencyFieldEstadoOperativo', d.estadoOperativo || 'Activa');
+  agencySetValue('agencyFieldEstadoOperativo', getAgencyEstadoOperativo(agencia));
   agencySetValue('agencyFieldTipoAgencia', normalizarTipoAgencia(d.tipoAgencia || 'Agencia'));
   agencySetValue('agencyFieldTelefono', d.telefono || '');
   agencySetValue('agencyFieldHorario', d.horario || '');
@@ -7030,7 +7247,8 @@ function guardarDetalleAgenciaCompleta(){
   ensureAgencyDetailDefaults(agencia);
   agencia.numero = Number(document.getElementById('agencyFieldNumero').value || agencia.numero);
   agencia.nombre = `Agencia ${String(agencia.numero).padStart(4,'0')}`;
-  agencia.grupo = document.getElementById('agencyFieldGrupo').value.trim() || agencia.grupo;
+  const detalleGrupoSolicitado = document.getElementById('agencyFieldGrupo').value.trim() || getAgencyRealGroup(agencia);
+  agencia.grupo = detalleGrupoSolicitado;
   agencia.encargado = document.getElementById('agencyFieldEncargado').value.trim() || agencia.encargado;
   agencia.direccion = document.getElementById('agencyFieldDireccion').value.trim();
   agencia.latitud = normalizarNumeroGeografico(document.getElementById('agencyFieldLatitud').value);
@@ -7039,7 +7257,12 @@ function guardarDetalleAgenciaCompleta(){
   agencia.detalle.ltk = document.getElementById('agencyFieldLtk').value.trim();
   agencia.detalle.telefono = document.getElementById('agencyFieldTelefono').value.trim();
   agencia.detalle.horario = document.getElementById('agencyFieldHorario').value.trim();
-  agencia.detalle.estadoOperativo = document.getElementById('agencyFieldEstadoOperativo').value;
+  agencia.detalle.estadoOperativo = normalizarEstadoAgencia(document.getElementById('agencyFieldEstadoOperativo').value);
+  agencia.estadoOperativo = agencia.detalle.estadoOperativo;
+  agencia.detalle.grupoReal = (detalleGrupoSolicitado !== AGENCY_SPECIAL_CLOSED_GROUP ? detalleGrupoSolicitado : (agencia.detalle.grupoReal || agencia.grupoReal || 'Grupo 00'));
+  agencia.grupoReal = agencia.detalle.grupoReal;
+  applyAgencyClosedStatusRule(agencia, detalleGrupoSolicitado);
+  syncClosedAgenciesGroup();
   agencia.detalle.tipoAgencia = normalizarTipoAgencia(document.getElementById('agencyFieldTipoAgencia').value || 'Agencia');
   agencia.detalle.observacion = document.getElementById('agencyFieldObservacion').value.trim();
   agencia.detalle.estructura = {
@@ -7152,10 +7375,10 @@ function verDetalleAgencia(i){
   agencySetText('detalleAgenciaTitulo', 'Actualización de Agencia');
   agencySetText('detalleAgenciaNombre', agencia.nombre || `Agencia ${String(agencia.numero || '').padStart(4,'0')}`);
   agencySetText('detalleAgenciaEncargadoChip', agencia.encargado || 'Sin encargado');
-  agencySetText('detalleAgenciaGrupoCodigo', agencia.grupo || '-');
+  agencySetText('detalleAgenciaGrupoCodigo', agenciaMapGroupValue(agencia) || '-');
   agencySetText('detalleAgenciaGoCodigo', agencia.detalle?.go || '-');
   agencySetText('detalleAgenciaLtkCodigo', agencia.detalle?.ltk || '-');
-  agencySetText('detalleAgenciaSub', `${agencia.grupo || '-'} · Encargado: ${agencia.encargado || 'Sin encargado'}`);
+  agencySetText('detalleAgenciaSub', `${agenciaMapGroupValue(agencia) || '-'} · Grupo real: ${getAgencyRealGroup(agencia) || '-'} · Encargado: ${agencia.encargado || 'Sin encargado'}`);
   agencySetText('detalleAgenciaEquipos', Array.isArray(agencia.equipos) ? agencia.equipos.length : 0);
   agencySetText('detalleAgenciaSeriales', Array.isArray(agencia.equipos) ? agencia.equipos.filter(item => item.serial).length : 0);
   agencySetText('detalleAgenciaCamaras', Array.isArray(agencia.equipos) ? agencia.equipos.filter(item => item.categoria === 'camara').length : 0);
@@ -7521,10 +7744,20 @@ function guardarGrupo(){
 
   agencias.forEach(agencia => {
     if(agenciasSeleccionadas.includes(agencia.numero)){
-      agencia.grupo = nombre;
+      if(!agencia.detalle) agencia.detalle = {};
+      if(getAgencyEstadoOperativo(agencia) === 'DESACTIVADA/CERRADA'){
+        agencia.detalle.grupoReal = nombre;
+        agencia.grupoReal = nombre;
+        agencia.grupo = AGENCY_SPECIAL_CLOSED_GROUP;
+      }else{
+        agencia.grupo = nombre;
+        agencia.detalle.grupoReal = nombre;
+        agencia.grupoReal = nombre;
+      }
       agencia.encargado = encargado;
     }
   });
+  syncClosedAgenciesGroup();
 
   renderAgencias();
   renderGrupos();
@@ -7537,7 +7770,7 @@ function renderGrupos(){
   tbody.innerHTML = '';
 
   grupos.forEach((grupo, i) => {
-    const agenciasDelGrupo = agencias.filter(a => a.grupo === grupo.nombre || (grupo.agencias || []).includes(a.numero));
+    const agenciasDelGrupo = agencias.filter(a => agenciaMapGroupValue(a) === grupo.nombre || (grupo.agencias || []).includes(a.numero));
     grupo.agencias = agenciasDelGrupo.map(a => a.numero);
     const equiposCustodia = (grupo.custodia || []).length;
     const serialesActivos = (grupo.custodia || []).filter(item => item.serial).length;
@@ -7566,7 +7799,7 @@ function renderGrupos(){
 function verDetalleGrupo(i){
   detalleGrupoActualIndex = i;
   const grupo = grupos[i];
-  const agenciasDelGrupo = agencias.filter(a => a.grupo === grupo.nombre || (grupo.agencias || []).includes(a.numero));
+  const agenciasDelGrupo = agencias.filter(a => agenciaMapGroupValue(a) === grupo.nombre || (grupo.agencias || []).includes(a.numero));
 
   document.getElementById('detalleGrupoTitulo').innerText = 'Detalle de grupo';
   document.getElementById('detalleGrupoNombre').innerText = grupo.nombre;
@@ -7813,6 +8046,7 @@ renderTransferencias();
     let agenciasMapSelectedGroups = new Set();
     let agenciasMapGroupsInitialized = false;
     let agenciasMapSearchText = '';
+    // Los estados se muestran visualmente en los iconos, pero no se filtran aquí para mantener el panel simple.
 
     function agencyToFloat(value){
       if(value === null || value === undefined || value === '') return null;
@@ -7829,11 +8063,13 @@ renderTransferencias();
     }
 
     function agenciaMapGroupValue(agencia){
+      if(getAgencyEstadoOperativo(agencia) === 'DESACTIVADA/CERRADA') return AGENCY_SPECIAL_CLOSED_GROUP;
       const raw = String(agencia?.grupo || agencia?.grupo_nombre || agencia?.grupoId || agencia?.grupo_id || 'Sin grupo').trim();
       return raw || 'Sin grupo';
     }
 
     function agenciaMapGroupNumber(group){
+      if(String(group || '').trim() === AGENCY_SPECIAL_CLOSED_GROUP) return 'CERRADAS';
       const match = String(group || '').match(/\d+/);
       return match ? match[0].padStart(2, '0') : String(group || 'SG');
     }
@@ -7841,6 +8077,7 @@ renderTransferencias();
     function agenciaMapGroupStyle(group, index){
       const groupNum = agenciaMapGroupNumber(group);
       const special = {
+        'CERRADAS': { color:'#65717f', color2:'#252f3a', glow:'rgba(76,86,99,.24)', dot:'#ffffff', shape:'circle' },
         '44': { color:'#0b77ba', color2:'#073f74', glow:'rgba(11,119,186,.18)', dot:'#ffc247', shape:'drop' },
         '45': { color:'#ff7a18', color2:'#b83b00', glow:'rgba(255,122,24,.22)', dot:'#062743', shape:'diamond' },
         '42': { color:'#d43ad7', color2:'#7e1481', glow:'rgba(212,58,215,.22)', dot:'#ffffff', shape:'hex' },
@@ -7883,13 +8120,14 @@ renderTransferencias();
       dash.innerHTML = `
         <aside class="map-filter-panel">
           <div class="map-filter-head">
-            <h3>Filtros</h3>
+            <h3>Panel de filtros</h3>
             <span id="mapFilterCount">0 agencias visibles</span>
           </div>
           <div class="map-filter-search">
             <i class="fas fa-search"></i>
-            <input id="agencyMapSearchInput" type="text" placeholder="Buscar grupo o agencia">
+            <input id="agencyMapSearchInput" type="text" placeholder="Buscar agencia, grupo o encargado">
           </div>
+          <div class="map-filter-section-title"><span>Grupos visibles</span><small>Activa o desactiva zonas del mapa</small></div>
           <div id="agencyGroupFilterList" class="map-filter-list"></div>
           <div class="map-filter-actions">
             <button type="button" onclick="agencyMapSelectAllGroups()">Todos</button>
@@ -7906,7 +8144,14 @@ renderTransferencias();
       }
     }
 
+
+
+    function renderAgencyStatusFilters(){
+      // Panel simplificado: solo filtros por grupo y búsqueda de agencia.
+    }
+
     function agencyMapMatchesFilter(agencia){
+      // El estado operativo se refleja en el icono. El filtro principal queda por grupo y búsqueda.
       const group = agenciaMapGroupValue(agencia);
       if(agenciasMapGroupsInitialized && agenciasMapSelectedGroups.size === 0) return false;
       if(agenciasMapSelectedGroups.size && !agenciasMapSelectedGroups.has(group)) return false;
@@ -8083,20 +8328,27 @@ renderTransferencias();
       return '';
     }
 
-    function agencyMapIcon(agencyNumber, group, groupIndex, tipoAgencia){
+    function agencyMapIcon(agencyNumber, group, groupIndex, tipoAgencia, estadoOperativo){
       if(!window.L) return undefined;
       const raw = String(agencyNumber ?? '').trim();
       const safeNumber = raw && raw !== '0' ? raw : '';
-      const style = agenciaMapGroupStyle(group, groupIndex || 0);
-      const bg = `linear-gradient(145deg, ${style.color2} 0%, ${style.color} 56%, ${style.color2} 100%)`;
+      const status = getAgencyEstadoOperativo({estadoOperativo});
+      const statusClass = agencyStatusClass(status);
+      const style = status === 'ACTIVA'
+        ? agenciaMapGroupStyle(group, groupIndex || 0)
+        : (status === 'EN PROCESO'
+            ? {color:'#ffae23', color2:'#a65d00', dot:'#ffffff'}
+            : status === 'REMODELACIÓN'
+              ? {color:'#1397df', color2:'#075091', dot:'#ffffff'}
+              : {color:'#626d78', color2:'#232d38', dot:'#ffffff'});
       const digits = safeNumber.length;
       const fontSize = digits >= 4 ? 9.2 : (digits === 3 ? 10.6 : 12.6);
       const tipo = normalizarTipoAgencia(tipoAgencia || 'Agencia');
-      const typeClass = agencyTypeClass(tipo);
-      const symbol = agencyTypeSymbol(tipo);
+      const typeClass = status === 'ACTIVA' ? agencyTypeClass(tipo) : statusClass;
+      const title = status === 'ACTIVA' ? tipo : status;
       return L.divIcon({
         className: `loteka-map-pin loteka-pin-badge ${typeClass}`,
-        html: `<div class="mk" title="${escapeHtml(tipo)}" style="--mk-main:${style.color};--mk-dark:${style.color2};--mk-soft:${style.dot};"><i class="mk-cart"></i><span class="mk-core"><em class="mk-symbol"></em><b class="mk-num" style="font-size:${fontSize}px">${escapeHtml(safeNumber)}</b></span><i class="mk-tail"></i></div>`,
+        html: `<div class="mk" title="${escapeHtml(title)}" style="--mk-main:${style.color};--mk-dark:${style.color2};--mk-soft:${style.dot};"><i class="mk-cart"></i><span class="mk-core"><em class="mk-symbol"></em><b class="mk-num" style="font-size:${fontSize}px">${escapeHtml(safeNumber)}</b></span><i class="mk-tail"></i></div>`,
         iconSize: [62, 66],
         iconAnchor: [31, 58],
         popupAnchor: [0, -54]
@@ -8121,12 +8373,14 @@ renderTransferencias();
         const direccion = agencia.direccion || label;
         const agencyNumber = agencia.numero || agencia.codigo || agencia.agencia || '';
         const tipoAgencia = getAgencyTipoAgencia(agencia);
-        const marker = L.marker([coords.lat, coords.lng], { icon: agencyMapIcon(agencyNumber, grupo, groupIndexMap.get(grupo) || 0, tipoAgencia), keyboard:false, riseOnHover:true });
+        const estadoOperativo = getAgencyEstadoOperativo(agencia);
+        const marker = L.marker([coords.lat, coords.lng], { icon: agencyMapIcon(agencyNumber, grupo, groupIndexMap.get(grupo) || 0, tipoAgencia, estadoOperativo), keyboard:false, riseOnHover:true });
         if(agenciasMapLayerGroup) marker.addTo(agenciasMapLayerGroup); else marker.addTo(map);
         marker.bindPopup(`
           <div class="agency-popup">
             <strong>${escapeHtml(label)}</strong>
             <span>${escapeHtml(grupo)} · ${escapeHtml(encargado)}</span>
+            <span class="agency-status-line"><strong>Estado:</strong> <em class="agency-status-pill ${agencyStatusClass(estadoOperativo)}">${escapeHtml(estadoOperativo)}</em></span>
             <span><strong>Tipo:</strong> ${escapeHtml(tipoAgencia)}</span>
             <span>${escapeHtml(direccion)}</span>
             <div class="agency-popup-actions">
