@@ -15918,5 +15918,133 @@ if ("serviceWorker" in navigator) {
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bootHomeMap); else bootHomeMap();
 })();
 </script>
+
+
+<!-- LOTEKA: Sidebar colapsable + logo refresh seguro -->
+<style id="loteka-sidebar-refresh-style">
+  :root{--loteka-sidebar-width:320px;}
+  #lotekaSidebarToggle{
+    position:fixed;
+    left:calc(var(--loteka-sidebar-width) - 24px);
+    top:18px;
+    z-index:999999;
+    width:48px;
+    height:48px;
+    border:0;
+    border-radius:18px;
+    background:linear-gradient(135deg,#064b78,#0ea5c6);
+    color:#fff;
+    box-shadow:0 14px 30px rgba(2,43,70,.28);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:left .24s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  #lotekaSidebarToggle:hover{transform:translateY(-1px);box-shadow:0 18px 34px rgba(2,43,70,.34);}
+  #lotekaSidebarToggle i{font-size:18px;line-height:1;}
+  body.loteka-sidebar-collapsed .sidebar{
+    width:0!important;
+    min-width:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    border-right:0!important;
+    overflow:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    transform:translateX(-18px);
+  }
+  body.loteka-sidebar-collapsed #lotekaSidebarToggle{left:14px;}
+  body.loteka-sidebar-collapsed #lotekaSidebarToggle i{transform:rotate(180deg);}
+  body .sidebar{transition:width .24s ease, padding .24s ease, opacity .2s ease, transform .24s ease;}
+  .brand-wrap,.brand-logo-shell,.brand-logo{cursor:pointer;}
+  .brand-wrap:hover .brand-logo-shell{transform:translateY(-1px);filter:drop-shadow(0 10px 18px rgba(14,165,198,.18));}
+  @media(max-width:760px){
+    #lotekaSidebarToggle{left:12px;top:12px;width:44px;height:44px;border-radius:16px;}
+    body:not(.loteka-sidebar-collapsed) #lotekaSidebarToggle{left:calc(min(88vw,320px) - 22px);}
+  }
+</style>
+<script id="loteka-sidebar-refresh-script">
+(function(){
+  'use strict';
+  const KEY='lotekaSidebarCollapsed';
+  const HOME_KEY='lotekaForceHome';
+
+  function safeInvalidateMap(){
+    setTimeout(function(){
+      try{
+        if(window.agencyMap && typeof window.agencyMap.invalidateSize==='function') window.agencyMap.invalidateSize(true);
+        if(window.homeAgencyMap && typeof window.homeAgencyMap.invalidateSize==='function') window.homeAgencyMap.invalidateSize(true);
+        if(window.L && document.getElementById('agenciasMap')){
+          window.dispatchEvent(new Event('resize'));
+        }
+      }catch(e){console.warn('Ajuste de mapa:', e);}
+    },280);
+  }
+
+  function forceHome(){
+    try{
+      const nav=document.getElementById('navHome') || document.querySelector('[onclick*="cambiarVista(\'home\'"]');
+      if(typeof window.cambiarVista==='function'){
+        window.cambiarVista('home', nav || null);
+        safeInvalidateMap();
+        return true;
+      }
+    }catch(e){console.warn('Ir a HOME:', e);}
+    return false;
+  }
+
+  function boot(){
+    if(!document.body) return;
+
+    if(localStorage.getItem(KEY)==='1') document.body.classList.add('loteka-sidebar-collapsed');
+
+    let btn=document.getElementById('lotekaSidebarToggle');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='lotekaSidebarToggle';
+      btn.type='button';
+      btn.title='Ocultar / mostrar menú';
+      btn.setAttribute('aria-label','Ocultar o mostrar menú lateral');
+      btn.innerHTML='<i class="fas fa-angles-left" aria-hidden="true"></i>';
+      document.body.appendChild(btn);
+    }
+
+    btn.onclick=function(){
+      document.body.classList.toggle('loteka-sidebar-collapsed');
+      localStorage.setItem(KEY, document.body.classList.contains('loteka-sidebar-collapsed') ? '1' : '0');
+      safeInvalidateMap();
+    };
+
+    const brand=document.querySelector('.brand-wrap') || document.querySelector('.brand-logo-shell') || document.querySelector('.brand-logo');
+    if(brand){
+      brand.title='Recargar e ir a HOME';
+      brand.setAttribute('role','button');
+      brand.setAttribute('tabindex','0');
+      const go=function(ev){
+        if(ev){ev.preventDefault();ev.stopPropagation();}
+        try{sessionStorage.setItem(HOME_KEY,'1');}catch(e){}
+        window.location.reload();
+      };
+      brand.addEventListener('click',go);
+      brand.addEventListener('keydown',function(ev){ if(ev.key==='Enter'||ev.key===' '){ go(ev); } });
+    }
+
+    try{
+      if(sessionStorage.getItem(HOME_KEY)==='1'){
+        sessionStorage.removeItem(HOME_KEY);
+        let attempts=0;
+        const timer=setInterval(function(){
+          attempts++;
+          if(forceHome() || attempts>20) clearInterval(timer);
+        },120);
+      }
+    }catch(e){}
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
+</script>
 </body>
 </html>
