@@ -2717,7 +2717,7 @@
     function extractEvidenceUrls(text, tag) {
       const value = String(text || "");
       const urls = [];
-      const safeTag = String(tag || "").replace(/[.*+?^${}()|[\]\]/g, "\\$&");
+      const safeTag = String(tag || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const re = new RegExp(`\\[${safeTag}\\]\\s*(https?:\\/\\/\\S+)`, "gi");
       let match;
       while ((match = re.exec(value)) !== null) {
