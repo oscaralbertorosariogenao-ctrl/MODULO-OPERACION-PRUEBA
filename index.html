@@ -5439,6 +5439,9 @@ function cambiarVista(vista, el){
   const target = document.getElementById('vista-' + vista);
   if(target) target.classList.remove('hidden');
   activateSidebarLink(el, vista);
+  if(vista==='agencias' && typeof renderAgencias === 'function') renderAgencias();
+  if(vista==='grupos' && typeof renderGrupos === 'function') renderGrupos();
+  if(vista==='home' && typeof agencyMapRefresh === 'function') setTimeout(() => agencyMapRefresh(agencias), 120);
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
   if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromAppwrite === 'function') hrxSyncSolicitudesFromAppwrite(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
@@ -6930,7 +6933,60 @@ function guardarAgencia(){
   cerrarModalAgencia();
 }
 
+
+function lotekaEnsureAgenciasGruposBase(){
+  try{
+    const debeRepararAgencias = !Array.isArray(agencias) || agencias.length === 0;
+    if(debeRepararAgencias){
+      agencias = [
+        ...AGENCIAS_GRUPO_44_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 44', 'encargado1')),
+        ...AGENCIAS_GRUPO_45_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 45', 'Jose Pacheco')),
+        ...AGENCIAS_GRUPO_42_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 42', 'Jose Antonio')),
+        ...AGENCIAS_GRUPO_08_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 08', 'Yoscar G-8')),
+        ...AGENCIAS_GRUPO_06_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06'))
+      ].map((agencia) => {
+        const numero = Number(agencia.numero);
+        const geo = AGENCY_GEO_CATALOG[numero] || {};
+        return {
+          ...agencia,
+          grupo: geo.grupo || agencia.grupo,
+          encargado: geo.encargado || agencia.encargado,
+          direccion: geo.direccion || agencia.direccion,
+          latitud: typeof geo.lat === 'number' ? geo.lat : agencia.latitud,
+          longitud: typeof geo.lng === 'number' ? geo.lng : agencia.longitud,
+          detalle: {
+            ...(agencia.detalle || {}),
+            tipoAgencia: getFixedAgencyType(numero) || agencia.detalle?.tipoAgencia || agencia.tipoAgencia || 'Agencia',
+            estadoOperativo: getAgencyEstadoOperativo(agencia)
+          },
+          tipoAgencia: getFixedAgencyType(numero) || agencia.tipoAgencia || agencia.detalle?.tipoAgencia || 'Agencia',
+          estadoOperativo: getAgencyEstadoOperativo(agencia)
+        };
+      });
+      agencias.forEach(agencia => applyAgencyClosedStatusRule(agencia));
+    }
+
+    const debeRepararGrupos = !Array.isArray(grupos) || grupos.length === 0;
+    if(debeRepararGrupos){
+      grupos = [
+        {numero:'44', nombre:'Grupo 44', color:'#89c541', encargado:'encargado1', flota:'(829) 340-6805', extension:'1144', correo:'encargado1@grupoortiz.com.do', custodia:[], agencias:AGENCIAS_GRUPO_44_COMPLETAS.slice()},
+        {numero:'45', nombre:'Grupo 45', color:'#2d9bf0', encargado:'Jose Pacheco', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_45_COMPLETAS.slice()},
+        {numero:'42', nombre:'Grupo 42', color:'#d43ad7', encargado:'Jose Antonio', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_42_COMPLETAS.slice()},
+        {numero:'08', nombre:'Grupo 08', color:'#00b8ff', encargado:'Yoscar G-8', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_08_COMPLETAS.slice()},
+        {numero:'06', nombre:'Grupo 06', color:'#16c172', encargado:'Alejandro G-06', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_06_COMPLETAS.slice()},
+        {numero:'00', nombre:AGENCY_SPECIAL_CLOSED_GROUP, color:'#4b5563', encargado:'Sistema', flota:'', extension:'', correo:'', custodia:[], agencias:[]}
+      ];
+    }
+    syncClosedAgenciesGroup();
+    window.agencias = agencias;
+    window.grupos = grupos;
+  }catch(error){
+    console.warn('No se pudo reparar la base local de agencias/grupos:', error);
+  }
+}
+
 function renderAgencias(){
+  lotekaEnsureAgenciasGruposBase();
   const tbody = document.getElementById('tabla-agencias');
   if(!tbody) return;
   const query = String(document.getElementById('agencySearchInput')?.value || '').trim().toLowerCase();
@@ -7765,6 +7821,7 @@ function guardarGrupo(){
 }
 
 function renderGrupos(){
+  lotekaEnsureAgenciasGruposBase();
   const tbody = document.getElementById('tabla-grupos');
   if(!tbody) return;
   tbody.innerHTML = '';
@@ -8012,6 +8069,7 @@ function agregarSerialRapidoGrupo(){
 
 renderProductos();
 renderAlmacenes();
+lotekaEnsureAgenciasGruposBase();
 renderAgencias();
 renderGrupos();
 llenarFiltrosEntrada();
@@ -13112,6 +13170,9 @@ function cambiarVista(vista, el){
     }, 180);
   }
 
+  if(vista==='agencias' && typeof renderAgencias === 'function') renderAgencias();
+  if(vista==='grupos' && typeof renderGrupos === 'function') renderGrupos();
+  if(vista==='home' && typeof agencyMapRefresh === 'function') setTimeout(() => agencyMapRefresh(agencias), 120);
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
   if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromAppwrite === 'function') hrxSyncSolicitudesFromAppwrite(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
@@ -16175,7 +16236,7 @@ if ("serviceWorker" in navigator) {
       if(home){ document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.remove('active')); home.classList.add('active'); }
       setTimeout(function(){
         try{
-          if(typeof agencyMapRefresh === 'function') agencyMapRefresh(window.agencias || []);
+          if(typeof agencyMapRefresh === 'function') agencyMapRefresh(typeof agencias !== 'undefined' ? agencias : (window.agencias || []));
           if(window.agencyMap && typeof window.agencyMap.invalidateSize === 'function') window.agencyMap.invalidateSize(true);
           if(typeof agencyMapFitAll === 'function') agencyMapFitAll();
         }catch(e){ console.warn('Home map boot:', e); }
@@ -16184,7 +16245,7 @@ if ("serviceWorker" in navigator) {
   }
   window.consultarAgenciaDesdeMapa=function(numero){
     try{
-      const idx=(window.agencias||[]).findIndex(a=>String(a.numero||a.codigo||a.agencia||'').padStart(4,'0')===String(numero).padStart(4,'0') || String(a.numero||a.codigo||a.agencia||'')===String(numero));
+      const idx=(typeof agencias !== 'undefined' ? agencias : (window.agencias||[])).findIndex(a=>String(a.numero||a.codigo||a.agencia||'').padStart(4,'0')===String(numero).padStart(4,'0') || String(a.numero||a.codigo||a.agencia||'')===String(numero));
       if(idx>=0 && typeof window.verDetalleAgencia==='function'){
         cambiarVista('agencias', document.querySelector('[onclick*="cambiarVista(\'agencias\'"]'));
         setTimeout(()=>window.verDetalleAgencia(idx),120);
