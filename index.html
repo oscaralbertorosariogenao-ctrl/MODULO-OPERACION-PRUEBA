@@ -15,7 +15,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="loteka-build" content="2026-05-07-v44-auto-refresh-gestion-agencias">
+<meta name="loteka-build" content="2026-05-08-v59-grupo01-agencias-tipos">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grupo Ortiz</title>
@@ -5907,6 +5907,28 @@ const AGENCY_GEO_CATALOG = {
   1267: { lat: 18.497601, lng: -69.923088, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1267, G-06' },
   1268: { lat: 18.506374, lng: -69.936279, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1268, G-06' },
   1270: { lat: 18.492954, lng: -69.966324, encargado: 'Alejandro G-06', grupo: 'Grupo 06', direccion: 'Agencia 1270, G-06' }
+,
+  9: { lat: 18.4881227, lng: -69.8981624, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0009, G-03' },
+  31: { lat: 18.4894839, lng: -69.9006243, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0031, G-03' },
+  33: { lat: 18.4869105, lng: -69.9017539, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0033, G-03' },
+  38: { lat: 18.492920, lng: -69.885770, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0038, G-03' },
+  39: { lat: 18.4871321, lng: -69.8967679, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0039, G-03' },
+  46: { lat: 18.4904645, lng: -69.9011353, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0046, G-03' },
+  69: { lat: 18.4876934, lng: -69.8992886, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0069, G-03' },
+  80: { lat: 18.4888003, lng: -69.9024999, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0080, G-03' },
+  85: { lat: 18.4894581, lng: -69.8924979, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0085, G-03' },
+  101: { lat: 18.4882664, lng: -69.9007950, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0101, G-03' },
+  108: { lat: 18.4864231, lng: -69.9026632, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0108, G-03' },
+  113: { lat: 18.4884161, lng: -69.9034644, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0113, G-03' },
+  136: { lat: 18.4859509, lng: -69.8911370, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0136, G-03' },
+  137: { lat: 18.4903027, lng: -69.9026997, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0137, G-03' },
+  192: { lat: 18.4871540, lng: -69.8980100, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0192, G-03' },
+  222: { lat: 18.4871726, lng: -69.9011631, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0222, G-03' },
+  223: { lat: 18.4882661, lng: -69.9007353, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0223, G-03' },
+  246: { lat: 18.4898343, lng: -69.9026005, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0246, G-03' },
+  644: { lat: 18.493979, lng: -69.895757, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0644, G-03' },
+  675: { lat: 18.490011, lng: -69.899490, encargado: 'Juan Gavilan', grupo: 'Grupo 03', direccion: 'Agencia 0675, G-03' }
+
 };
 
 function createAgencyRecord(numero, grupo, encargado) {
@@ -5933,10 +5955,13 @@ const AGENCIAS_GRUPO_45_COMPLETAS = [147,449,468,469,1001,1003,1013,1015,1017,10
 const AGENCIAS_GRUPO_42_COMPLETAS = [20,40,78,164,171,172,173,383,384,385,386,387,388,389,390,392,433,434,436,437,438,441,442,443,444,1004,1007,1008,1010,1011,1019,1020,1036,1037,1103,1104,1106,1120,1121,1122,1140,1141,1143,1154,1155,1156,1164,1165,1172,1202,1203,1204,1205,1206];
 const AGENCIAS_GRUPO_08_COMPLETAS = [49,57,67,76,87,89,107,134,156,186,202,205,207,227,238,345,359,641,652,697,705,706,707,708,711,712,713,719,911,972,973,980,982];
 const AGENCIAS_GRUPO_06_COMPLETAS = [4,11,28,37,44,45,54,55,60,62,63,64,66,68,71,86,93,94,95,105,117,126,133,135,161,191,197,198,226,229,349,350,352,353,355,356,357,358,639,640,661,665,668,676,693,821,823,824,825,826,827,828,829,1260,1261,1266,1267,1268,1270];
+const AGENCIAS_GRUPO_01_COMPLETAS = [9,31,33,38,39,46,69,80,85,101,108,113,136,137,192,222,223,246,644,675];
 
 // Tipos de agencia FIJOS solicitados por Oscar.
 // Todas las demás agencias quedan como "Agencia" normal hasta que se editen manualmente.
 const AGENCY_TYPE_FIXED = {
+  1000: 'Centro De Pago',
+  101: 'Centro De Pago',
   147: 'Agencia en Supermercado',
 
   1108: 'Centro De Pago',
@@ -6085,7 +6110,8 @@ let agencias = [
   ...AGENCIAS_GRUPO_45_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 45', 'Jose Pacheco')),
   ...AGENCIAS_GRUPO_42_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 42', 'Jose Antonio')),
   ...AGENCIAS_GRUPO_08_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 08', 'Yoscar G-8')),
-  ...AGENCIAS_GRUPO_06_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06'))
+  ...AGENCIAS_GRUPO_06_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06')),
+  ...AGENCIAS_GRUPO_01_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 03', 'Juan Gavilan'))
 ];
 
 AGENCIAS_GRUPO_44_COMPLETAS.forEach((numero) => {
@@ -6123,6 +6149,13 @@ AGENCIAS_GRUPO_06_COMPLETAS.forEach((numero) => {
   }
 });
 
+AGENCIAS_GRUPO_01_COMPLETAS.forEach((numero) => {
+  const existe = agencias.some((agencia) => Number(agencia.numero) === Number(numero));
+  if (!existe) {
+    agencias.push(createAgencyRecord(numero, 'Grupo 03', 'Juan Gavilan'));
+  }
+});
+
 agencias = agencias.map((agencia) => {
   const numero = Number(agencia.numero);
   const geo = AGENCY_GEO_CATALOG[numero] || {};
@@ -6152,6 +6185,7 @@ let grupos = [
   {numero:'42', nombre:'Grupo 42', color:'#d43ad7', encargado:'Jose Antonio', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_42_COMPLETAS.slice()},
   {numero:'08', nombre:'Grupo 08', color:'#00b8ff', encargado:'Yoscar G-8', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_08_COMPLETAS.slice()},
   {numero:'06', nombre:'Grupo 06', color:'#16c172', encargado:'Alejandro G-06', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_06_COMPLETAS.slice()},
+  {numero:'03', nombre:'Grupo 03', color:'#0ea5c6', encargado:'Juan Gavilan', flota:'', extension:'', correo:'', custodia:[], agencias:AGENCIAS_GRUPO_01_COMPLETAS.slice()},
   {numero:'00', nombre:AGENCY_SPECIAL_CLOSED_GROUP, color:'#4b5563', encargado:'Sistema', flota:'', extension:'', correo:'', custodia:[], agencias:[]}
 ];
 syncClosedAgenciesGroup();
@@ -7924,7 +7958,8 @@ function lotekaEnsureAgenciasGruposBase(){
         ...AGENCIAS_GRUPO_45_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 45', 'Jose Pacheco')),
         ...AGENCIAS_GRUPO_42_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 42', 'Jose Antonio')),
         ...AGENCIAS_GRUPO_08_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 08', 'Yoscar G-8')),
-        ...AGENCIAS_GRUPO_06_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06'))
+        ...AGENCIAS_GRUPO_06_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 06', 'Alejandro G-06')),
+        ...AGENCIAS_GRUPO_01_COMPLETAS.map((numero) => createAgencyRecord(numero, 'Grupo 03', 'Juan Gavilan'))
       ].map((agencia) => {
         const numero = Number(agencia.numero);
         const geo = AGENCY_GEO_CATALOG[numero] || {};
@@ -17698,7 +17733,7 @@ if ("serviceWorker" in navigator) {
 
 <script id="loteka-menu-refresh-cache-fix-js">
 (function(){
-  const BUILD = '2026-05-07-v44-auto-refresh-gestion-agencias-v1';
+  const BUILD = '2026-05-08-v59-grupo01-agencias-tipos-v1';
 
   function safeInvalidateMap(){
     try { if (window.agenciasMapInstance && typeof window.agenciasMapInstance.invalidateSize === 'function') window.agenciasMapInstance.invalidateSize(true); } catch(e){}
