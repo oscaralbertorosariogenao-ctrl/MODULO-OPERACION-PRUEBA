@@ -1,4 +1,4 @@
-const CACHE_NAME = "loteka-pwa-v119";
+const CACHE_NAME = "loteka-pwa-v120";
 
 const APP_SHELL = [
   "/app-reportes.html",
