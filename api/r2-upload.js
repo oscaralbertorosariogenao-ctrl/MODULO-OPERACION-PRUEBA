@@ -1,7 +1,7 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const formidable = require("formidable");
-const fs = require("fs");
-const path = require("path");
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import formidable from "formidable";
+import fs from "fs";
+import path from "path";
 
 const {
   R2_ACCOUNT_ID,
@@ -37,11 +37,11 @@ function parseForm(req) {
   });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "GET") {
     return sendJson(res, 405, {
       ok: false,
-      message: "Method Not Allowed. El API existe y solo acepta POST con foto."
+      message: "Method Not Allowed. El API R2 existe y solo acepta POST con foto."
     });
   }
 
@@ -134,4 +134,4 @@ module.exports = async function handler(req, res) {
       error: error.message || String(error)
     });
   }
-};
+}
