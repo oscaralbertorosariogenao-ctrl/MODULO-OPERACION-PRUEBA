@@ -1,11 +1,16 @@
-/* LOTEKA App Movil PWA Service Worker v20260519-03
-   FIX: Android instalado abriendo / o ruta vieja ya no muestra 404.
+/* LOTEKA App Movil PWA Service Worker v20260519-04
+   Compatible Android + iPhone. No cachea Supabase/R2/API.
 */
-const CACHE_NAME = 'loteka-app-movil-v20260519-03';
+const CACHE_NAME = 'loteka-app-movil-v20260519-04';
 const APP_URL = '/app-movil-reportes.html';
 const STATIC_ASSETS = [
   APP_URL,
-  '/manifest-app-movil.json',
+  '/manifest-app-movil.webmanifest',
+  '/icons/loteka-mobile-180.png',
+  '/icons/loteka-mobile-192.png',
+  '/icons/loteka-mobile-512.png',
+  '/icons/loteka-mobile-maskable-192.png',
+  '/icons/loteka-mobile-maskable-512.png',
   '/icon-192.svg',
   '/icon-512.svg',
   '/sounds/whatsapp.mp3'
@@ -30,63 +35,56 @@ self.addEventListener('activate', event => {
   );
 });
 
-async function appFallback(request) {
-  const cache = await caches.open(CACHE_NAME);
+function isDataRequest(url) {
+  return (
+    url.pathname.startsWith('/api/') ||
+    url.hostname.includes('supabase.co') ||
+    url.hostname.includes('r2.dev') ||
+    url.hostname.includes('cloudflarestorage.com')
+  );
+}
 
+async function navigationResponse(request) {
   try {
-    const response = await fetch(request, { cache: 'no-store' });
-
-    // Si Vercel devuelve 404 para /, usamos la app móvil.
-    if (response && response.ok) {
-      if (request.mode === 'navigate' || new URL(request.url).pathname.endsWith('.html')) {
-        cache.put(request, response.clone()).catch(() => null);
-      }
+    const response = await fetch(APP_URL, { cache: 'no-store' });
+    if(response && response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(APP_URL, response.clone()).catch(() => null);
       return response;
     }
-  } catch (e) {}
+  } catch(e) {}
 
-  const appCached = await caches.match(APP_URL);
-  if (appCached) return appCached;
+  const cached = await caches.match(APP_URL);
+  if(cached) return cached;
 
-  return fetch(APP_URL, { cache: 'no-store' });
+  return new Response('LOTEKA Móvil no pudo cargar.', {
+    status: 503,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
 }
 
 self.addEventListener('fetch', event => {
   const req = event.request;
   const url = new URL(req.url);
 
-  if (req.method !== 'GET') return;
+  if(req.method !== 'GET') return;
 
-  // Nunca tocar API, Supabase ni R2.
-  if (
-    url.pathname.startsWith('/api/') ||
-    url.hostname.includes('supabase.co') ||
-    url.hostname.includes('r2.dev') ||
-    url.hostname.includes('cloudflarestorage.com')
-  ) {
+  if(isDataRequest(url)) {
     event.respondWith(fetch(req, { cache: 'no-store' }));
     return;
   }
 
-  // Cualquier navegación del PWA debe caer en la app, no en 404.
-  if (
-    req.mode === 'navigate' ||
-    url.pathname === '/' ||
-    url.pathname === '/app-reportes.html' ||
-    url.pathname === '/app-movil-reportes' ||
-    url.pathname.endsWith('.html')
-  ) {
-    event.respondWith(appFallback(req));
+  if(req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(navigationResponse(req));
     return;
   }
 
-  // Assets estáticos.
   event.respondWith(
     caches.match(req).then(cached => {
-      if (cached) return cached;
+      if(cached) return cached;
 
       return fetch(req).then(res => {
-        if (res && res.ok) {
+        if(res && res.ok) {
           const copy = res.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(() => null);
         }
