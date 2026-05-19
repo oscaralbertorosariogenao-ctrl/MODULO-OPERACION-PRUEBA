@@ -4,6 +4,8 @@
   "type": "module",
   "dependencies": {
     "@supabase/supabase-js": "2.57.0",
-    "web-push": "3.6.7"
+    "web-push": "3.6.7",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "formidable": "^3.5.2"
   }
 }
