@@ -1,0 +1,77 @@
+{
+  "id": "/app-movil-reportes.html",
+  "name": "LOTEKA Operaciones Móvil",
+  "short_name": "LOTEKA",
+  "description": "App móvil para reportes, evidencias, operaciones y consulta rápida de agencias.",
+  "start_url": "/app-movil-reportes.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
+  "orientation": "portrait",
+  "background_color": "#06111d",
+  "theme_color": "#06111d",
+  "lang": "es-DO",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/loteka-mobile-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/loteka-mobile-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/loteka-mobile-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/loteka-mobile-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Crear reporte",
+      "short_name": "Crear",
+      "description": "Crear un reporte operacional",
+      "url": "/app-movil-reportes.html#crear",
+      "icons": [
+        {
+          "src": "/icons/loteka-mobile-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Reportes",
+      "short_name": "Reportes",
+      "description": "Ver reportes operacionales",
+      "url": "/app-movil-reportes.html#reportes",
+      "icons": [
+        {
+          "src": "/icons/loteka-mobile-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
