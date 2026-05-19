@@ -302,7 +302,7 @@
     }
 
   </style>
-  <link rel="manifest" href="/manifest-app-movil.json">
+  <link rel="manifest" href="/manifest-app-movil.json?v=20260519-03">
   <meta name="theme-color" content="#06111d">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -341,7 +341,8 @@
         <form id="reportForm" class="card">
           <div class="field"><label>Tipo</label><select id="reportType"><option>Avería</option><option>Trabajo</option></select></div>
           <div class="field"><label>Agencia</label><input id="reportAgency" list="agencyOptions" placeholder="Ej: 1088" autocomplete="off"><datalist id="agencyOptions"></datalist></div>
-          <div class="field"><label>Categoría / título</label><input id="reportTitle" placeholder="Ej: Impresora no imprime"></div>
+          <div class="field"><label id="reportCategoryLabel">Tipo de avería</label><select id="reportTitle"><option value="">Seleccionar...</option></select></div>
+          <div class="field hidden" id="customTitleWrap"><label>Otro tipo / título</label><input id="customReportTitle" placeholder="Escribe el tipo específico"></div>
           <div class="field"><label>Descripción</label><textarea id="reportDescription" placeholder="Describe el caso claramente"></textarea></div>
           <div class="field"><label>Fotos/evidencias iniciales</label><input id="reportFiles" type="file" accept="image/*,video/*" capture="environment" multiple></div>
           <button id="btnSaveReport" class="btn btn-primary btn-full" type="submit">Guardar reporte</button>
@@ -401,13 +402,15 @@
   const TABLE_PERFILES = 'perfiles';
   const TABLE_AGENCIAS = 'agencias';
   const TABLE_GRUPOS = 'grupos';
+  const TABLE_AVERIAS = 'averias';
+  const TABLE_TRABAJOS = 'trabajos';
   const TABLE_NOTIFS = 'notificaciones';
   const STORE = 'loteka_mobile_v2_session';
   const R2_UPLOAD_ENDPOINT = 'https://modulo-operacion-prueba.vercel.app/api/r2-upload';
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }, realtime: { params: { eventsPerSecond: 8 } } });
   const $ = id => document.getElementById(id);
-  const state = { profile:null, identity:'', role:'general', username:'', operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', channels:[], selectedEvidenceFiles:[] };
+  const state = { profile:null, identity:'', role:'general', username:'', operations:[], agencies:[], groups:[], averias:[], trabajos:[], notifs:[], filter:'Todos', channels:[], selectedEvidenceFiles:[] };
 
   function clean(v){ return String(v ?? '').trim(); }
   function esc(v){ return clean(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
@@ -512,6 +515,90 @@
   }
   function findAgency(value){ const q=clean(value).toLowerCase(); if(!q) return null; return state.agencies.find(a=>[agencyNumber(a),agencyName(a),agencyGroup(a),agencyManager(a),rawAgencyGroup(a)].some(x=>clean(x).toLowerCase()===q)) || state.agencies.find(a=>[agencyNumber(a),agencyName(a),agencyGroup(a),agencyManager(a),rawAgencyGroup(a)].some(x=>clean(x).toLowerCase().includes(q))) || null; }
 
+  function catalogName(x){
+    return clean(
+      x?.nombre ||
+      x?.titulo ||
+      x?.descripcion ||
+      x?.tipo ||
+      x?.categoria ||
+      x?.label ||
+      x?.name ||
+      ''
+    );
+  }
+  function activeCatalogItem(x){
+    const st=clean(x?.estado||x?.status||x?.activo||'').toLowerCase();
+    if(st==='false' || st==='inactivo' || st==='desactivado') return false;
+    if(x?.activo === false) return false;
+    return true;
+  }
+  function fallbackAverias(){
+    return [
+      'Falla de internet',
+      'Impresora no imprime',
+      'Impresora dañada',
+      'Problema con POS',
+      'POS apagado',
+      'POS lento',
+      'Scanner no funciona',
+      'Cámara fuera de servicio',
+      'Teléfono IP no funciona',
+      'Problema eléctrico',
+      'Batería / UPS',
+      'Cableado / red',
+      'Sistema no abre',
+      'Otro'
+    ];
+  }
+  function fallbackTrabajos(){
+    return [
+      'Instalación de equipo',
+      'Cambio de equipo',
+      'Instalación de impresora',
+      'Instalación de POS',
+      'Instalación de scanner',
+      'Instalación de cámara',
+      'Instalación de teléfono IP',
+      'Mantenimiento preventivo',
+      'Reubicación de equipo',
+      'Retiro de equipo',
+      'Remodelación / adecuación',
+      'Levantamiento técnico',
+      'Otro'
+    ];
+  }
+  function currentCatalogList(){
+    const type=clean($('reportType')?.value || 'Avería').toLowerCase();
+    const source = type.includes('trab') ? state.trabajos : state.averias;
+    const fallback = type.includes('trab') ? fallbackTrabajos() : fallbackAverias();
+    const names=(source||[]).filter(activeCatalogItem).map(catalogName).filter(Boolean);
+    return [...new Set((names.length ? names : fallback).concat(['Otro']))];
+  }
+  function renderReportCategoryOptions(){
+    const select=$('reportTitle');
+    if(!select) return;
+    const type=clean($('reportType')?.value || 'Avería');
+    const label=$('reportCategoryLabel');
+    if(label) label.textContent = type === 'Trabajo' ? 'Tipo de trabajo' : 'Tipo de avería';
+    const prev=select.value;
+    const opts=currentCatalogList();
+    select.innerHTML='<option value="">Seleccionar...</option>'+opts.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+    if(prev && opts.includes(prev)) select.value=prev;
+    toggleCustomTitle();
+  }
+  function toggleCustomTitle(){
+    const wrap=$('customTitleWrap');
+    const sel=$('reportTitle');
+    if(!wrap || !sel) return;
+    wrap.classList.toggle('hidden', clean(sel.value).toLowerCase() !== 'otro');
+  }
+  function selectedReportTitle(){
+    const val=clean($('reportTitle')?.value);
+    if(val.toLowerCase()==='otro') return clean($('customReportTitle')?.value);
+    return val;
+  }
+
   async function login(){
     const identity=clean($('loginIdentity').value); const pass=$('loginPassword').value;
     $('loginError').textContent=''; if(!identity){ $('loginError').textContent='Escribe usuario o correo.'; return; }
@@ -530,8 +617,24 @@
   function enterApp(){ $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('userName').textContent=nameOf(state.profile); $('userRole').textContent=`${state.role.toUpperCase()}${groupOf(state.profile)?' · '+groupOf(state.profile):''}`; renderProfile(); refreshAll(); setupRealtime(); }
   function logout(){ localStorage.removeItem(STORE); try{ sb.auth.signOut(); }catch{} location.reload(); }
 
-  async function refreshAll(){ await Promise.all([loadGroups(), loadAgencies(), loadOps(), loadNotifs()]); renderAll(); }
+  async function refreshAll(){ await Promise.all([loadGroups(), loadAgencies(), loadCatalogs(), loadOps(), loadNotifs()]); renderAll(); }
   async function loadGroups(){ try{ const r=await sb.from(TABLE_GRUPOS).select('*').limit(1000); if(r.error) throw r.error; state.groups=r.data||[]; log('Grupos: '+state.groups.length); }catch(e){ state.groups=[]; log('Grupos error: '+(e.message||e)); } }
+  async function loadCatalogs(){
+    try{
+      const [a,t]=await Promise.all([
+        sb.from(TABLE_AVERIAS).select('*').limit(1000),
+        sb.from(TABLE_TRABAJOS).select('*').limit(1000)
+      ]);
+      state.averias = (!a.error && a.data) ? a.data : [];
+      state.trabajos = (!t.error && t.data) ? t.data : [];
+      log('Catálogos: averías '+state.averias.length+' · trabajos '+state.trabajos.length);
+    }catch(e){
+      state.averias=[];
+      state.trabajos=[];
+      log('Catálogos fallback: '+(e.message||e));
+    }
+    renderReportCategoryOptions();
+  }
   async function loadAgencies(){ try{ const r=await sb.from(TABLE_AGENCIAS).select('*').limit(6000); if(r.error) throw r.error; state.agencies=r.data||[]; renderAgencyOptions(); log('Agencias: '+state.agencies.length); }catch(e){ state.agencies=[]; renderAgencyOptions(); log('Agencias error: '+(e.message||e)); } }
   async function loadOps(){ try{ const r=await sb.from(TABLE_OPS).select('*').order('fecha_creacion',{ascending:false}).limit(500); if(r.error) throw r.error; state.operations=r.data||[]; log('Operaciones: '+state.operations.length); }catch(e){ state.operations=[]; log('Operaciones error: '+(e.message||e)); } }
   async function loadNotifs(){ try{ const r=await sb.from(TABLE_NOTIFS).select('*').order('creado_en',{ascending:false}).limit(80); if(r.error) throw r.error; state.notifs=r.data||[]; }catch(e){ state.notifs=[]; log('Notificaciones error: '+(e.message||e)); } }
@@ -640,9 +743,7 @@
       const agencyNum=agency?agencyNumber(agency):agencyValue;
       const grupo=agency?agencyGroup(agency):'';
       const encargadoAgencia=agency?agencyManager(agency):'No registrado';
-      const title=clean($('reportTitle').value);
-      const desc=clean($('reportDescription').value);
-      if(!agencyNum||!title||!desc) throw new Error('Completa agencia, título y descripción.');
+      const title=selectedReportTitle(); const desc=clean($('reportDescription').value); if(!agencyNum||!title||!desc) throw new Error('Completa agencia, tipo/categoría y descripción.');
 
       const id='APP-'+Date.now()+'-'+uid();
       const codigo='OP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+uid();
@@ -656,6 +757,7 @@
         codigo,
         tipo:$('reportType').value,
         titulo:title,
+        tipo_seleccionado:title,
         descripcion:desc,
         estado:'Pendiente',
         prioridad:'Media',
@@ -868,6 +970,7 @@ function openDetail(id){
       const hist=Array.isArray(op.historial)?op.historial:[];
       const patch={
         titulo:title,
+        tipo_seleccionado:title,
         descripcion:desc,
         prioridad:priority,
         actualizado_en:nowIso(),
@@ -999,7 +1102,7 @@ function openDetail(id){
     $(map[tab]||'viewHome').classList.remove('hidden');
     if(tab==='profile') renderProfile();
   }
-  function boot(){ $('btnLogin').onclick=login; $('loginIdentity').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); }); $('loginPassword').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); }); $('btnLogout').onclick=logout; $('btnRefresh').onclick=refreshAll; $('reportForm').onsubmit=createReport; $('opsSearch').oninput=renderAll; $('btnAgencySearch').onclick=()=>renderAgencyResult(true); $('btnMarkRead').onclick=markRead; $('btnCloseDetail').onclick=()=>$('detailModal').classList.add('hidden'); $('detailModal').onclick=e=>{ if(e.target.id==='detailModal') $('detailModal').classList.add('hidden'); }; document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab)); document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showTab(b.dataset.go)); if('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js').catch(()=>{}); const saved=localStorage.getItem(STORE); if(saved){ try{ const s=JSON.parse(saved); state.profile=s.profile; state.identity=s.identity; state.role=s.role||roleOf(s.profile); state.username=s.username||userOf(s.profile,s.identity); enterApp(); }catch{} } log('App móvil v2 lista.'); }
+  function boot(){ $('btnLogin').onclick=login; $('loginIdentity').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); }); $('loginPassword').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); }); $('btnLogout').onclick=logout; $('btnRefresh').onclick=refreshAll; $('reportForm').onsubmit=createReport; $('reportType').onchange=renderReportCategoryOptions; $('reportTitle').onchange=toggleCustomTitle; $('opsSearch').oninput=renderAll; $('btnAgencySearch').onclick=()=>renderAgencyResult(true); $('btnMarkRead').onclick=markRead; $('btnCloseDetail').onclick=()=>$('detailModal').classList.add('hidden'); $('detailModal').onclick=e=>{ if(e.target.id==='detailModal') $('detailModal').classList.add('hidden'); }; document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab)); document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showTab(b.dataset.go)); if('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js').catch(()=>{}); const saved=localStorage.getItem(STORE); if(saved){ try{ const s=JSON.parse(saved); state.profile=s.profile; state.identity=s.identity; state.role=s.role||roleOf(s.profile); state.username=s.username||userOf(s.profile,s.identity); enterApp(); }catch{} } log('App móvil v2 lista.'); }
   boot();
 })();
 </script>
@@ -1053,11 +1156,27 @@ function openDetail(id){
 
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('/sw-app-movil.js?v=20260519-01')
+      navigator.serviceWorker.register('/sw-app-movil.js?v=20260519-03')
         .then(function(reg){ console.log('[LOTEKA PWA] Service Worker activo:', reg.scope); })
         .catch(function(err){ console.warn('[LOTEKA PWA] Service Worker error:', err); });
     });
   }
+})();
+</script>
+
+
+<script id="loteka-pwa-android-data-fix">
+(function(){
+  'use strict';
+  // En Android el PWA a veces conserva una versión vieja. Esta capa limpia caches anteriores sin tocar Supabase/R2.
+  window.addEventListener('load', async function(){
+    try{
+      if('caches' in window){
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.indexOf('loteka-app-movil-') === 0 && k !== 'loteka-app-movil-v20260519-02').map(k => caches.delete(k)));
+      }
+    }catch(e){}
+  });
 })();
 </script>
 
