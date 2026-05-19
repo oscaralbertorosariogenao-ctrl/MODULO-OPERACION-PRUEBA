@@ -1,8 +1,8 @@
 {
-  "name": "LOTEKA Móvil",
-  "short_name": "LOTEKA",
+  "name": "LOTEKA Operaciones Móvil",
+  "short_name": "LOTEKA Móvil",
   "description": "App móvil ligera para operaciones, evidencias y reportes LOTEKA.",
-  "start_url": "/app-movil-reportes.html?v=20260519-02",
+  "start_url": "/app-movil-reportes.html",
   "scope": "/",
   "id": "/app-movil-reportes.html",
   "display": "standalone",
