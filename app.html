@@ -338,7 +338,8 @@
         <form id="reportForm" class="card">
           <div class="field"><label>Tipo</label><select id="reportType"><option>Avería</option><option>Trabajo</option></select></div>
           <div class="field"><label>Agencia</label><input id="reportAgency" list="agencyOptions" placeholder="Ej: 1088" autocomplete="off"><datalist id="agencyOptions"></datalist></div>
-          <div class="field"><label>Categoría / título</label><input id="reportTitle" placeholder="Ej: Impresora no imprime"></div>
+          <div class="field"><label id="reportCategoryLabel">Tipo de avería</label><select id="reportTitle"><option value="">Seleccionar...</option></select></div>
+          <div class="field hidden" id="customTitleWrap"><label>Otro tipo / título</label><input id="customReportTitle" placeholder="Escribe el tipo específico"></div>
           <div class="field"><label>Descripción</label><textarea id="reportDescription" placeholder="Describe el caso claramente"></textarea></div>
           <div class="field"><label>Fotos/evidencias iniciales</label><input id="reportFiles" type="file" accept="image/*,video/*" capture="environment" multiple></div>
           <button id="btnSaveReport" class="btn btn-primary btn-full" type="submit">Guardar reporte</button>
@@ -509,7 +510,38 @@
   }
   function findAgency(value){ const q=clean(value).toLowerCase(); if(!q) return null; return state.agencies.find(a=>[agencyNumber(a),agencyName(a),agencyGroup(a),agencyManager(a),rawAgencyGroup(a)].some(x=>clean(x).toLowerCase()===q)) || state.agencies.find(a=>[agencyNumber(a),agencyName(a),agencyGroup(a),agencyManager(a),rawAgencyGroup(a)].some(x=>clean(x).toLowerCase().includes(q))) || null; }
 
-  async function login(){
+  
+  function fallbackAverias(){
+    return ['Falla de internet','Impresora no imprime','Impresora dañada','Problema con POS','POS apagado','POS lento','Scanner no funciona','Cámara fuera de servicio','Teléfono IP no funciona','Problema eléctrico','Batería / UPS','Cableado / red','Sistema no abre','Otro'];
+  }
+  function fallbackTrabajos(){
+    return ['Instalación de equipo','Cambio de equipo','Instalación de impresora','Instalación de POS','Instalación de scanner','Instalación de cámara','Instalación de teléfono IP','Mantenimiento preventivo','Reubicación de equipo','Retiro de equipo','Remodelación / adecuación','Levantamiento técnico','Otro'];
+  }
+  function renderReportCategoryOptions(){
+    const select=$('reportTitle');
+    if(!select) return;
+    const type=clean($('reportType')?.value || 'Avería');
+    const list=type==='Trabajo'?fallbackTrabajos():fallbackAverias();
+    const label=$('reportCategoryLabel');
+    if(label) label.textContent=type==='Trabajo'?'Tipo de trabajo':'Tipo de avería';
+    const prev=select.value;
+    select.innerHTML='<option value="">Seleccionar...</option>'+list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+    if(prev && list.includes(prev)) select.value=prev;
+    toggleCustomTitle();
+  }
+  function toggleCustomTitle(){
+    const wrap=$('customTitleWrap');
+    const sel=$('reportTitle');
+    if(!wrap || !sel) return;
+    wrap.classList.toggle('hidden', clean(sel.value).toLowerCase() !== 'otro');
+  }
+  function selectedReportTitle(){
+    const val=clean($('reportTitle')?.value);
+    if(val.toLowerCase()==='otro') return clean($('customReportTitle')?.value);
+    return val;
+  }
+
+async function login(){
     const identity=clean($('loginIdentity').value); const pass=$('loginPassword').value;
     $('loginError').textContent=''; if(!identity){ $('loginError').textContent='Escribe usuario o correo.'; return; }
     try{ if(identity.includes('@') && pass){ const r=await sb.auth.signInWithPassword({email:identity,password:pass}); if(r.error) throw r.error; } }catch(e){ log('Auth omitido/falló: '+(e.message||e)); }
@@ -637,9 +669,7 @@
       const agencyNum=agency?agencyNumber(agency):agencyValue;
       const grupo=agency?agencyGroup(agency):'';
       const encargadoAgencia=agency?agencyManager(agency):'No registrado';
-      const title=clean($('reportTitle').value);
-      const desc=clean($('reportDescription').value);
-      if(!agencyNum||!title||!desc) throw new Error('Completa agencia, título y descripción.');
+      const title=selectedReportTitle(); const desc=clean($('reportDescription').value); if(!agencyNum||!title||!desc) throw new Error('Completa agencia, tipo/categoría y descripción.');
 
       const id='APP-'+Date.now()+'-'+uid();
       const codigo='OP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+uid();
@@ -996,7 +1026,45 @@ function openDetail(id){
     $(map[tab]||'viewHome').classList.remove('hidden');
     if(tab==='profile') renderProfile();
   }
-  function boot(){ $('btnLogin').onclick=login; $('loginIdentity').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); }); $('loginPassword').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); }); $('btnLogout').onclick=logout; $('btnRefresh').onclick=refreshAll; $('reportForm').onsubmit=createReport; $('opsSearch').oninput=renderAll; $('btnAgencySearch').onclick=()=>renderAgencyResult(true); $('btnMarkRead').onclick=markRead; $('btnCloseDetail').onclick=()=>$('detailModal').classList.add('hidden'); $('detailModal').onclick=e=>{ if(e.target.id==='detailModal') $('detailModal').classList.add('hidden'); }; document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab)); document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showTab(b.dataset.go)); if('serviceWorker' in navigator) const saved=localStorage.getItem(STORE); if(saved){ try{ const s=JSON.parse(saved); state.profile=s.profile; state.identity=s.identity; state.role=s.role||roleOf(s.profile); state.username=s.username||userOf(s.profile,s.identity); enterApp(); }catch{} } log('App móvil v2 lista.'); }
+  function boot(){
+    $('btnLogin').onclick=login;
+    $('loginIdentity').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('loginPassword').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+    $('btnLogout').onclick=logout;
+    $('btnRefresh').onclick=refreshAll;
+    $('reportForm').onsubmit=createReport;
+    if($('reportType') && typeof renderReportCategoryOptions === 'function'){
+      $('reportType').onchange=renderReportCategoryOptions;
+    }
+    if($('reportTitle') && typeof toggleCustomTitle === 'function'){
+      $('reportTitle').onchange=toggleCustomTitle;
+    }
+    try{
+      if(typeof renderReportCategoryOptions === 'function') renderReportCategoryOptions();
+    }catch(e){}
+    $('opsSearch').oninput=renderAll;
+    $('btnAgencySearch').onclick=()=>renderAgencyResult(true);
+    $('btnMarkRead').onclick=markRead;
+    const closeBtn=$('btnCloseDetail');
+    if(closeBtn) closeBtn.onclick=()=>$('detailModal').classList.add('hidden');
+    const detailModal=$('detailModal');
+    if(detailModal) detailModal.onclick=e=>{ if(e.target.id==='detailModal') $('detailModal').classList.add('hidden'); };
+    document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+    document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showTab(b.dataset.go));
+
+    const saved=localStorage.getItem(STORE);
+    if(saved){
+      try{
+        const s=JSON.parse(saved);
+        state.profile=s.profile;
+        state.identity=s.identity;
+        state.role=s.role||roleOf(s.profile);
+        state.username=s.username||userOf(s.profile,s.identity);
+        enterApp();
+      }catch(e){}
+    }
+    log('App móvil v2 lista.');
+  }
   boot();
 })();
 </script>
