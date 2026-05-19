@@ -1,4 +1,4 @@
-const webpush = require("web-push");
+import webpush from "web-push";
 
 function sendJson(res, status, data) {
   res.statusCode = status;
@@ -6,7 +6,7 @@ function sendJson(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "GET") {
     return sendJson(res, 200, {
       ok: true,
@@ -65,4 +65,4 @@ module.exports = async function handler(req, res) {
       error: error.message || String(error)
     });
   }
-};
+}
