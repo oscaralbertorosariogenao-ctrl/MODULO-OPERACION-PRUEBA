@@ -302,6 +302,13 @@
     }
 
   </style>
+  <link rel="manifest" href="/manifest-app-movil.json">
+  <meta name="theme-color" content="#06111d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LOTEKA Móvil">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icon-192.svg">
 </head>
 <body>
   <div id="loginView" class="login">
@@ -317,7 +324,11 @@
   </div>
 
   <main id="appView" class="app hidden">
-    <header class="topbar"><div class="toprow"><div class="brand"><div class="logo" style="width:42px;height:42px;border-radius:15px">LT</div><div class="userbox"><strong id="userName">Usuario</strong><span id="userRole">Perfil</span></div></div><div style="display:flex;gap:8px"><button id="btnRefresh" class="icon-btn">↻</button><button id="btnLogout" class="icon-btn">⎋</button></div></div></header>
+    <header class="topbar"><div class="toprow"><div class="brand"><div class="logo" style="width:42px;height:42px;border-radius:15px">LT</div><div class="userbox"><strong id="userName">Usuario</strong><span id="userRole">Perfil</span></div></div><div style="display:flex;gap:8px">
+  <button id="btnInstallPWA" class="icon-btn hidden" title="Instalar app">⬇</button>
+  <button id="btnRefresh" class="icon-btn">↻</button>
+  <button id="btnLogout" class="icon-btn">⎋</button>
+</div></div></header>
     <div class="container">
       <section id="viewHome" class="view">
         <div class="hero"><h2>Operaciones móvil</h2><p>Base limpia conectada a Supabase, R2 y al centro de notificaciones.</p></div>
@@ -992,5 +1003,63 @@ function openDetail(id){
   boot();
 })();
 </script>
+
+<script id="loteka-pwa-mobile-installer">
+(function(){
+  'use strict';
+
+  var deferredPrompt = null;
+
+  function showInstallButton(){
+    var btn = document.getElementById('btnInstallPWA');
+    if(btn) btn.classList.remove('hidden');
+  }
+
+  function hideInstallButton(){
+    var btn = document.getElementById('btnInstallPWA');
+    if(btn) btn.classList.add('hidden');
+  }
+
+  window.addEventListener('beforeinstallprompt', function(ev){
+    ev.preventDefault();
+    deferredPrompt = ev;
+    showInstallButton();
+  });
+
+  window.addEventListener('appinstalled', function(){
+    deferredPrompt = null;
+    hideInstallButton();
+  });
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('btnInstallPWA');
+    if(btn){
+      btn.addEventListener('click', async function(){
+        try{
+          if(!deferredPrompt){
+            alert('Si no aparece la opción automática, abre el menú del navegador y toca “Agregar a pantalla de inicio”.');
+            return;
+          }
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          hideInstallButton();
+        }catch(e){
+          alert('No se pudo abrir el instalador. Usa el menú del navegador y toca “Agregar a pantalla de inicio”.');
+        }
+      });
+    }
+  });
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('/sw-app-movil.js?v=20260519-01')
+        .then(function(reg){ console.log('[LOTEKA PWA] Service Worker activo:', reg.scope); })
+        .catch(function(err){ console.warn('[LOTEKA PWA] Service Worker error:', err); });
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
