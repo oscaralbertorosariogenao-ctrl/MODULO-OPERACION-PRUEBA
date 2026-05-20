@@ -5,7 +5,7 @@
    Versión: 2026-05-20-final-android
 */
 
-const CACHE_NAME = "loteka-pwa-final-android-20260520-v7";
+const CACHE_NAME = "loteka-pwa-final-android-20260520-v8";
 const APP_MOVIL = "/app.html";
 const WEB_OPERACIONAL = "/index.html";
 
