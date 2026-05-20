@@ -77,6 +77,13 @@
     .mobile-edit-panel.hidden{display:none}
     .mobile-edit-panel textarea{min-height:110px}
     .hidden-file{display:none}
+    .file-pick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    .file-pick-actions .btn{min-height:46px}
+    .file-preview-box{margin-top:12px}
+    .file-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .file-preview-grid img,.file-preview-grid video{width:100%;height:92px;object-fit:cover;background:#000;border-radius:14px;border:1px solid rgba(255,255,255,.12)}
+    .file-preview-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
+    @media(max-width:360px){.file-pick-actions{grid-template-columns:1fr}.file-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:720px){
       .app{max-width:430px;margin:0 auto;border-left:1px solid rgba(255,255,255,.05);border-right:1px solid rgba(255,255,255,.05)}
       .topbar{max-width:430px;left:50%;transform:translateX(-50%)}
@@ -340,7 +347,19 @@
           <div class="field"><label id="reportCategoryLabel">Tipo de avería</label><select id="reportTitle"><option value="">Seleccionar...</option></select></div>
           <div class="field hidden" id="customTitleWrap"><label>Otro tipo / título</label><input id="customReportTitle" placeholder="Escribe el tipo específico"></div>
           <div class="field"><label>Descripción</label><textarea id="reportDescription" placeholder="Describe el caso claramente"></textarea></div>
-          <div class="field"><label>Fotos/evidencias iniciales</label><input id="reportFiles" type="file" accept="image/*,video/*" capture="environment" multiple></div>
+          <div class="field">
+            <label>Fotos/evidencias iniciales</label>
+            <div class="file-pick-actions">
+              <label class="btn btn-secondary">Tomar foto
+                <input id="reportFilesCamera" class="hidden-file" type="file" accept="image/*" capture="environment" multiple>
+              </label>
+              <label class="btn btn-secondary">Galería
+                <input id="reportFilesGallery" class="hidden-file" type="file" accept="image/*,video/*" multiple>
+              </label>
+            </div>
+            <div id="reportFilesPreview" class="file-preview-box"><div class="empty">No has seleccionado fotos o videos.</div></div>
+            <div class="file-preview-note">Puedes tomar una foto en tiempo real o elegir imágenes/videos desde la galería.</div>
+          </div>
           <button id="btnSaveReport" class="btn btn-primary btn-full" type="submit">Guardar reporte</button>
         </form>
       </section>
@@ -404,7 +423,7 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }, realtime: { params: { eventsPerSecond: 8 } } });
   const $ = id => document.getElementById(id);
-  const state = { profile:null, identity:'', role:'general', username:'', operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', channels:[], selectedEvidenceFiles:[] };
+  const state = { profile:null, identity:'', role:'general', username:'', operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', channels:[], selectedEvidenceFiles:[], selectedReportFiles:[] };
 
   function clean(v){ return String(v ?? '').trim(); }
   function esc(v){ return clean(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
@@ -443,7 +462,70 @@
   function opCode(o){ return clean(o?.codigo||o?.code||o?.id); }
   function opTitle(o){ return clean(o?.titulo||o?.categoria||o?.title||'Operación'); }
   function opDesc(o){ return clean(o?.descripcion||o?.description||o?.detalle||''); }
-  function opAgency(o){ return clean(o?.agencia||o?.numero_agencia||o?.agencia_label||''); }
+
+  function normalizeAgencyCode(value){
+    const raw = clean(value);
+    if(!raw) return '';
+
+    const firstGroup = raw.match(/\d+/);
+    if(!firstGroup) return raw.toLowerCase();
+
+    const number = String(parseInt(firstGroup[0], 10));
+    return number === 'NaN' ? firstGroup[0].replace(/^0+/, '') : number;
+  }
+
+  function agencySearchValues(value){
+    const raw = clean(value);
+    const norm = normalizeAgencyCode(raw);
+    const digitsOnly = raw.replace(/\D+/g, '');
+    const noLeading = digitsOnly ? String(parseInt(digitsOnly, 10)) : '';
+
+    return [...new Set([
+      raw.toLowerCase(),
+      raw.replace(/^0+/, '').toLowerCase(),
+      norm,
+      digitsOnly,
+      noLeading
+    ].filter(Boolean))];
+  }
+
+  function opAgency(o){
+    return clean(
+      o?.agencia ||
+      o?.numero_agencia ||
+      o?.agencia_numero ||
+      o?.codigo_agencia ||
+      o?.agencia_codigo ||
+      o?.id_agencia ||
+      o?.agencia_id ||
+      o?.agencia_label ||
+      o?.nombre_agencia ||
+      ''
+    );
+  }
+
+  function opAgencySearchText(o){
+    const vals = [
+      opAgency(o),
+      o?.agencia,
+      o?.numero_agencia,
+      o?.agencia_numero,
+      o?.codigo_agencia,
+      o?.agencia_codigo,
+      o?.id_agencia,
+      o?.agencia_id,
+      o?.agencia_label,
+      o?.nombre_agencia
+    ];
+
+    const agency = findAgency(opAgency(o));
+    if(agency){
+      vals.push(agencyNumber(agency), agencyName(agency), agencyGroup(agency), rawAgencyGroup(agency));
+    }
+
+    return vals.flatMap(agencySearchValues).join(' ');
+  }
+
   function opGroup(o){ return clean(o?.grupo||o?.grupo_nombre||''); }
   function opTech(o){ return clean(o?.tecnico||o?.asignado_a||o?.responsable||'Sin asignar'); }
   function opCreator(o){
@@ -747,7 +829,38 @@ function isProfileActive(profile){
   async function loadNotifs(){ try{ const r=await sb.from(TABLE_NOTIFS).select('*').order('creado_en',{ascending:false}).limit(80); if(r.error) throw r.error; state.notifs=r.data||[]; }catch(e){ state.notifs=[]; log('Notificaciones error: '+(e.message||e)); } }
 
   function renderAgencyOptions(){ const dl=$('agencyOptions'); if(!dl) return; dl.innerHTML=state.agencies.map(a=>`<option value="${esc(agencyNumber(a))}">${esc(agencyName(a))} · ${esc(agencyGroup(a))}</option>`).join(''); }
-  function filteredOps(){ const q=clean($('opsSearch')?.value).toLowerCase(); return state.operations.filter(o=>{ const st=normStatus(o.estado||o.status); if(state.filter!=='Todos' && st!==state.filter) return false; if(q){ const hay=[opCode(o),opTitle(o),opDesc(o),opAgency(o),opGroup(o),opTech(o)].join(' ').toLowerCase(); if(!hay.includes(q)) return false; } return true; }); }
+  function filteredOps(){
+    const rawQ = clean($('opsSearch')?.value);
+    const q = rawQ.toLowerCase();
+    const qAgencyValues = agencySearchValues(rawQ);
+
+    return state.operations.filter(o=>{
+      const st=normStatus(o.estado||o.status);
+      if(state.filter!=='Todos' && st!==state.filter) return false;
+
+      if(q){
+        const hay = [
+          opCode(o),
+          opTitle(o),
+          opDesc(o),
+          opAgency(o),
+          opAgencySearchText(o),
+          opGroup(o),
+          opTech(o),
+          opCreator(o)
+        ].join(' ').toLowerCase();
+
+        const agencyHay = opAgencySearchText(o).toLowerCase();
+
+        const textMatch = hay.includes(q);
+        const agencyMatch = qAgencyValues.some(v => v && agencyHay.split(/\s+/).includes(String(v).toLowerCase()));
+
+        if(!textMatch && !agencyMatch) return false;
+      }
+
+      return true;
+    });
+  }
   function renderFilters(){ const box=$('statusFilters'); const arr=['Todos','Pendiente','Asignada','En proceso','Completado']; box.innerHTML=arr.map(x=>`<button class="btn btn-secondary btn-sm filter ${state.filter===x?'active':''}" data-filter="${esc(x)}">${esc(x)}</button>`).join(''); box.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.filter; renderAll();}); }
   function renderAll(){ renderFilters(); renderStats(); renderLists(); renderNotifs(); renderAgencyResult(false); renderProfile(); }
   function renderStats(){ const rows=state.operations; $('sPending').textContent=rows.filter(o=>normStatus(o.estado)==='Pendiente').length; $('sAssigned').textContent=rows.filter(o=>normStatus(o.estado)==='Asignada').length; $('sProcess').textContent=rows.filter(o=>normStatus(o.estado)==='En proceso').length; $('sDone').textContent=rows.filter(o=>normStatus(o.estado)==='Completado').length; }
@@ -839,6 +952,60 @@ function isProfileActive(profile){
     return urls;
   }
 
+  function fileKey(file){
+    return [file.name, file.size, file.lastModified, file.type].join('|');
+  }
+
+  function mergeUniqueFiles(current, incoming){
+    const map = new Map();
+    [...(current||[]), ...(incoming||[])].forEach(file=>{
+      if(file) map.set(fileKey(file), file);
+    });
+    return Array.from(map.values());
+  }
+
+  function renderReportFilesPreview(){
+    const box=$('reportFilesPreview');
+    if(!box) return;
+
+    const files=state.selectedReportFiles||[];
+    if(!files.length){
+      box.innerHTML='<div class="empty">No has seleccionado fotos o videos.</div>';
+      return;
+    }
+
+    box.innerHTML='<div class="file-preview-grid">'+files.map((file,i)=>{
+      const url=URL.createObjectURL(file);
+      const isVideo=/video/i.test(file.type||'');
+      return isVideo
+        ? `<video controls src="${url}"></video>`
+        : `<img src="${url}" loading="lazy" alt="Archivo ${i+1}">`;
+    }).join('')+'</div><div class="file-preview-note">'+files.length+' archivo(s) seleccionado(s).</div>';
+  }
+
+  function bindReportFileInputs(){
+    const camera=$('reportFilesCamera');
+    const gallery=$('reportFilesGallery');
+
+    const bind=(input, sourceName)=>{
+      if(!input) return;
+      input.onchange=()=>{
+        const files=Array.from(input.files||[]);
+        state.selectedReportFiles=mergeUniqueFiles(state.selectedReportFiles, files);
+        renderReportFilesPreview();
+        if(files.length) toast(sourceName, files.length+' archivo(s) agregado(s) al reporte.');
+        input.value='';
+      };
+    };
+
+    bind(camera, 'Foto tomada');
+    bind(gallery, 'Archivo de galería');
+  }
+
+  function getReportFiles(){
+    return state.selectedReportFiles||[];
+  }
+
   async function createReport(ev){
     ev.preventDefault();
     const btn=$('btnSaveReport');
@@ -854,7 +1021,7 @@ function isProfileActive(profile){
 
       const id='APP-'+Date.now()+'-'+uid();
       const codigo='OP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+uid();
-      const urls=await uploadFiles($('reportFiles').files,codigo);
+      const urls=await uploadFiles(getReportFiles(),codigo);
       const creadorNombre=nameOf(state.profile);
       const creadorUsuario=state.username || userOf(state.profile,state.identity);
       const creadorCorreo=clean(state.profile?.email||state.profile?.correo||state.identity);
@@ -893,6 +1060,8 @@ function isProfileActive(profile){
       if(r.error) throw r.error;
       await createNotif('Nueva operación creada',`Agencia #${agencyNum} · ${title} · Creado por: ${creadorNombre}`,id,codigo);
       $('reportForm').reset();
+      state.selectedReportFiles=[];
+      renderReportFilesPreview();
       toast('Reporte guardado','Ya debe verse en la web operacional.');
       await refreshAll();
       showTab('ops');
@@ -925,13 +1094,26 @@ function isProfileActive(profile){
   }
 
   function bindEvidenceInput(){
-    const input=$('mobileEvidenceFiles') || $('detailEvidenceFiles') || $('completeFiles');
-    if(!input) return;
-    input.onchange=()=>{
-      state.selectedEvidenceFiles=Array.from(input.files||[]);
-      renderSelectedEvidencePreview();
-      if(state.selectedEvidenceFiles.length) toast('Evidencia seleccionada', state.selectedEvidenceFiles.length+' archivo(s). Ahora toca Guardar evidencia.');
-    };
+    const inputs=[
+      ['mobileEvidenceCamera','Foto tomada'],
+      ['mobileEvidenceGallery','Archivo de galería'],
+      ['mobileEvidenceFiles','Evidencia seleccionada'],
+      ['detailEvidenceFiles','Evidencia seleccionada'],
+      ['completeFiles','Evidencia seleccionada']
+    ];
+
+    inputs.forEach(([id,label])=>{
+      const input=$(id);
+      if(!input) return;
+
+      input.onchange=()=>{
+        const files=Array.from(input.files||[]);
+        state.selectedEvidenceFiles=mergeUniqueFiles(state.selectedEvidenceFiles, files);
+        renderSelectedEvidencePreview();
+        if(files.length) toast(label, files.length+' archivo(s). Ahora toca Guardar evidencia.');
+        input.value='';
+      };
+    });
   }
 
 function openDetail(id){
@@ -952,7 +1134,8 @@ function openDetail(id){
     let actions='';
     if(maps) actions += `<a class="btn btn-secondary" href="${esc(maps)}" target="_blank" rel="noopener">Cómo llegar</a>`;
     actions += '<button class="btn btn-secondary" id="btnMobileEdit">Editar</button>';
-    actions += '<label class="btn btn-secondary">Subir evidencia<input id="mobileEvidenceFiles" class="hidden-file" type="file" accept="image/*,video/*" capture="environment" multiple></label>';
+    actions += '<label class="btn btn-secondary">Tomar foto<input id="mobileEvidenceCamera" class="hidden-file" type="file" accept="image/*" capture="environment" multiple></label>';
+    actions += '<label class="btn btn-secondary">Galería<input id="mobileEvidenceGallery" class="hidden-file" type="file" accept="image/*,video/*" multiple></label>';
     actions += '<button class="btn btn-primary" id="btnMobileSaveEvidence">Guardar evidencia</button>';
     if(st==='Pendiente'||st==='Asignada') actions += '<button class="btn btn-secondary span-2" id="btnMobileToProcess">Marcar En proceso</button>';
     if(st==='En proceso') actions += '<button class="btn btn-good span-2" id="btnMobileComplete">Completar con evidencia</button>';
@@ -1097,7 +1280,7 @@ function openDetail(id){
     const files=state.selectedEvidenceFiles||[];
 
     if(!files.length){
-      toast('Selecciona evidencia','Toca “Subir evidencia” y elige foto o video.');
+      toast('Selecciona evidencia','Toca “Tomar foto” o “Galería” y selecciona la evidencia.');
       return;
     }
 
@@ -1135,7 +1318,7 @@ function openDetail(id){
     const alreadyHasEvidence = old.length || getMedia(op).length;
 
     if(!hasNewEvidence && !alreadyHasEvidence){
-      toast('Falta evidencia','Sube foto o video antes de completar.');
+      toast('Falta evidencia','Toma una foto o selecciona una evidencia desde galería antes de completar.');
       return;
     }
 
@@ -1214,6 +1397,8 @@ function openDetail(id){
     $('btnLogout').onclick=logout;
     $('btnRefresh').onclick=refreshAll;
     $('reportForm').onsubmit=createReport;
+    bindReportFileInputs();
+    renderReportFilesPreview();
     if($('reportType') && typeof renderReportCategoryOptions === 'function'){
       $('reportType').onchange=renderReportCategoryOptions;
     }
