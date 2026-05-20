@@ -903,14 +903,16 @@ function isProfileActive(profile){
     fd.append('codigo', code || 'app-movil');
     fd.append('origen', 'app-movil-v2');
 
-    const endpoint = '/api/r2-upload';
+    const endpoint = R2_UPLOAD_ENDPOINT || (location.origin + '/api/r2-upload');
 
     try{
       log('R2 móvil: subiendo a '+endpoint+' · '+file.name+' · '+Math.round((file.size||0)/1024)+' KB');
 
       const res = await fetch(endpoint, {
         method:'POST',
-        body:fd
+        body:fd,
+        cache:'no-store',
+        credentials:'omit'
       });
 
       let raw='';
@@ -924,7 +926,10 @@ function isProfileActive(profile){
       }
 
       if(!res.ok || !data.ok){
-        const detail = data.message || data.error || raw || ('HTTP '+res.status);
+        let detail = data.message || data.error || raw || ('HTTP '+res.status);
+        if(String(detail).includes('<Code>UnsupportedHttpVerb</Code>')){
+          detail = 'La app está intentando subir por una ruta incorrecta. Debe usar la función /api/r2-upload de Vercel, no el enlace público de R2.';
+        }
         throw new Error('R2 rechazó la evidencia: '+detail);
       }
 
@@ -1010,6 +1015,74 @@ function isProfileActive(profile){
   function getReportFiles(){
     return state.selectedReportFiles||[];
   }
+      
+
+  function missingColumnFromSupabaseError(error){
+    const msg = clean(error?.message || error?.details || error?.hint || '');
+    const m =
+      msg.match(/'([^']+)'\s+column/i) ||
+      msg.match(/column\s+"([^"]+)"/i) ||
+      msg.match(/Could not find the '([^']+)' column/i);
+    return m ? m[1] : '';
+  }
+
+  function friendlySaveError(e){
+    const msg = clean(e?.message || e?.details || String(e || ''));
+    if(msg.includes('schema cache') || msg.includes('PGRST204') || msg.includes('column')){
+      return 'No se pudo registrar el reporte porque Supabase rechazó una columna. La app ya intentó limpiar el envío; revisa que la tabla reportes_operaciones tenga las columnas básicas.';
+    }
+    return msg || 'No se pudo guardar. Intente otra vez.';
+  }
+
+  async function safeInsertOperation(payload){
+    let current = { ...(payload || {}) };
+
+    for(let i=0; i<18; i++){
+      const res = await sb.from(TABLE_OPS).insert(current).select('*').single();
+
+      if(!res.error) return res;
+
+      const missing = missingColumnFromSupabaseError(res.error);
+      const code = clean(res.error.code);
+
+      if((code === 'PGRST204' || missing) && missing && Object.prototype.hasOwnProperty.call(current, missing)){
+        console.warn('[LOTEKA] Campo omitido porque no existe en reportes_operaciones:', missing);
+        delete current[missing];
+        continue;
+      }
+
+      return res;
+    }
+
+    return { data:null, error:new Error('No se pudo guardar la operación.') };
+  }
+
+  async function safeInsertOperationMinimal(payload){
+    const minimal = {
+      id: payload.id,
+      codigo: payload.codigo,
+      tipo: payload.tipo,
+      titulo: payload.titulo,
+      descripcion: payload.descripcion,
+      estado: payload.estado || 'Pendiente',
+      prioridad: payload.prioridad || 'Media',
+      agencia: payload.agencia,
+      grupo: payload.grupo || '',
+      tecnico: payload.tecnico || 'Sin asignar',
+      encargado: payload.encargado || '',
+      creado_por: payload.creado_por || '',
+      foto_url: payload.foto_url || '',
+      fecha_creacion: payload.fecha_creacion || nowIso()
+    };
+
+    const cleanMinimal = {};
+    Object.entries(minimal).forEach(([k,v])=>{
+      if(v !== undefined) cleanMinimal[k]=v;
+    });
+
+    return await safeInsertOperation(cleanMinimal);
+  }
+
 
   async function createReport(ev){
     ev.preventDefault();
@@ -1029,7 +1102,6 @@ function isProfileActive(profile){
       const urls=await uploadFiles(getReportFiles(),codigo);
       const creadorNombre=nameOf(state.profile);
       const creadorUsuario=state.username || userOf(state.profile,state.identity);
-      const creadorCorreo=clean(state.profile?.email||state.profile?.correo||state.identity);
 
       const payload={
         id,
@@ -1050,7 +1122,6 @@ function isProfileActive(profile){
         reportado_por_nombre:creadorNombre,
         usuario_nombre:creadorNombre,
         usuario_creador:creadorUsuario,
-        correo_creador:creadorCorreo,
         foto_url:urls[0]||'',
         fotos_reportadas:urls,
         fotos_evidencia:[],
@@ -1061,7 +1132,11 @@ function isProfileActive(profile){
         historial:[{fecha:nowIso(),accion:'Creado desde app móvil',usuario:creadorUsuario,nombre:creadorNombre}]
       };
 
-      const r=await sb.from(TABLE_OPS).insert(payload).select('*').single();
+      let r = await safeInsertOperation(payload);
+      if(r.error){
+        console.warn('[LOTEKA] Insert completo falló, intentando payload mínimo:', r.error);
+        r = await safeInsertOperationMinimal(payload);
+      }
       if(r.error) throw r.error;
       await createNotif('Nueva operación creada',`Agencia #${agencyNum} · ${title} · Creado por: ${creadorNombre}`,id,codigo);
       $('reportForm').reset();
@@ -1071,8 +1146,8 @@ function isProfileActive(profile){
       await refreshAll();
       showTab('ops');
     }catch(e){
-      toast('No se pudo guardar',e.message||String(e));
-      log('Crear reporte: '+(e.message||e));
+      toast('No se pudo guardar', friendlySaveError(e));
+      log('Crear reporte: '+friendlySaveError(e));
     }finally{
       btn.disabled=false;
       btn.innerHTML='Guardar reporte';
