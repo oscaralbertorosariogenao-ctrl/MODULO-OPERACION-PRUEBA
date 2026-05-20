@@ -307,6 +307,10 @@
       transform:translate(-50%,140%)!important;
     }
 
+  
+    .logo-img{width:42px;height:42px;border-radius:15px;object-fit:cover;background:#fff;padding:2px;border:1px solid rgba(255,255,255,.22);box-shadow:0 12px 26px rgba(0,0,0,.25);flex:0 0 auto}
+    .login-logo-img{width:64px;height:64px;border-radius:20px;object-fit:cover;background:#fff;padding:3px;border:1px solid rgba(255,255,255,.22);box-shadow:0 14px 30px rgba(0,0,0,.28);flex:0 0 auto}
+
   </style>
   <link rel="manifest" href="/manifest-app-movil.json">
   <meta name="application-name" content="LOTEKA Móvil">
@@ -315,12 +319,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="LOTEKA Móvil">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/icon-192.svg">
+  <link rel="apple-touch-icon" href="/icon-192.png">
 </head>
 <body>
   <div id="loginView" class="login">
     <div class="login-card">
-      <div class="brand"><div class="logo">GO</div><div><h1>Grupo Ortiz · LOTEKA</h1><small>App móvil v2 limpia</small></div></div>
+      <div class="brand"><img class="login-logo-img" src="/loteka-go-logo.webp" alt="Loteka GO Grupo Ortiz"><div><h1>Grupo Ortiz · LOTEKA</h1><small>App móvil</small></div></div>
       <h2>Iniciar sesión</h2>
       <p class="muted">Acceso restringido. Solo usuarios creados y activos en el sistema pueden entrar.</p>
       <div class="field"><label>Correo o usuario</label><input id="loginIdentity" placeholder="tecnico1, encargado1 o correo" autocomplete="username"></div>
@@ -331,7 +335,7 @@
   </div>
 
   <main id="appView" class="app hidden">
-    <header class="topbar"><div class="toprow"><div class="brand"><div class="logo" style="width:42px;height:42px;border-radius:15px">LT</div><div class="userbox"><strong id="userName">Usuario</strong><span id="userRole">Perfil</span></div></div><div style="display:flex;gap:8px"><button id="btnRefresh" class="icon-btn">↻</button><button id="btnLogout" class="icon-btn">⎋</button></div></div></header>
+    <header class="topbar"><div class="toprow"><div class="brand"><img class="logo-img" src="/loteka-go-logo.webp" alt="Loteka GO Grupo Ortiz"><div class="userbox"><strong id="userName">Usuario</strong><span id="userRole">Perfil</span></div></div><div style="display:flex;gap:8px"><button id="btnRefresh" class="icon-btn">↻</button><button id="btnLogout" class="icon-btn">⎋</button></div></div></header>
     <div class="container">
       <section id="viewHome" class="view">
         <div class="hero"><h2>Operaciones móvil</h2><p>Base limpia conectada a Supabase, R2 y al centro de notificaciones.</p></div>
