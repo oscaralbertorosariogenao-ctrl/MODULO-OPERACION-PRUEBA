@@ -1211,6 +1211,51 @@ function isProfileActive(profile){
     return await safeInsertOperation(cleanMinimal);
   }
 
+  function operationSequenceFromCode(value){
+    const code = clean(value).toUpperCase();
+    const m = code.match(/^OP-(\d{4,})$/);
+    return m ? Number(m[1]) : 0;
+  }
+
+  function formatOperationSequenceCode(number){
+    const n = Math.max(1, Number(number || 1));
+    return 'OP-' + String(n).padStart(4, '0');
+  }
+
+  async function getNextOperationCode(){
+    let max = 0;
+
+    try{
+      const localOps = Array.isArray(state.operations) ? state.operations : [];
+      localOps.forEach(op=>{ max = Math.max(max, operationSequenceFromCode(op?.codigo || op?.code)); });
+    }catch(e){}
+
+    try{
+      const r = await sb
+        .from(TABLE_OPS)
+        .select('codigo')
+        .not('codigo','is',null)
+        .order('fecha_creacion',{ascending:false})
+        .limit(1000);
+
+      if(!r.error && Array.isArray(r.data)){
+        r.data.forEach(row=>{ max = Math.max(max, operationSequenceFromCode(row?.codigo)); });
+      }else if(r.error){
+        log('Secuencia OP: no se pudo leer Supabase: ' + r.error.message);
+      }
+    }catch(e){
+      log('Secuencia OP: ' + (e.message || e));
+    }
+
+    return formatOperationSequenceCode(max + 1);
+  }
+
+  function isDuplicateOperationCodeError(error){
+    const msg = clean(error?.message || error?.details || error?.hint || '');
+    const code = clean(error?.code);
+    return code === '23505' || /duplicate key|already exists|codigo/i.test(msg);
+  }
+
 
   async function createReport(ev){
     ev.preventDefault();
@@ -1226,7 +1271,7 @@ function isProfileActive(profile){
       const title=selectedReportTitle(); const desc=clean($('reportDescription').value); if(!agencyNum||!title||!desc) throw new Error('Completa agencia, tipo/categoría y descripción.');
 
       const id='APP-'+Date.now()+'-'+uid();
-      const codigo='OP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+uid();
+      let codigo=await getNextOperationCode();
       const selectedFilesCount = getReportFiles().length;
       const urls=await uploadFiles(getReportFiles(),codigo);
       const creadorNombre=nameOf(state.profile);
@@ -1272,8 +1317,18 @@ function isProfileActive(profile){
       };
 
       let r = await safeInsertOperation(payload);
+      if(r.error && isDuplicateOperationCodeError(r.error)){
+        codigo = await getNextOperationCode();
+        payload.codigo = codigo;
+        r = await safeInsertOperation(payload);
+      }
       if(r.error){
         console.warn('[LOTEKA] Insert completo falló, intentando payload mínimo:', r.error);
+        r = await safeInsertOperationMinimal(payload);
+      }
+      if(r.error && isDuplicateOperationCodeError(r.error)){
+        codigo = await getNextOperationCode();
+        payload.codigo = codigo;
         r = await safeInsertOperationMinimal(payload);
       }
       if(r.error) throw r.error;
