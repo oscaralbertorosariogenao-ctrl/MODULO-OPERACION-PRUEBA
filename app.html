@@ -312,14 +312,14 @@
     .login-logo-img{width:64px;height:64px;border-radius:20px;object-fit:cover;background:#fff;padding:3px;border:1px solid rgba(255,255,255,.22);box-shadow:0 14px 30px rgba(0,0,0,.28);flex:0 0 auto}
 
   </style>
-  <link rel="manifest" href="/manifest-app-movil.json">
+  <link rel="manifest" href="/manifest-app-movil-v4.webmanifest">
   <meta name="application-name" content="LOTEKA Móvil">
   <meta name="theme-color" content="#06111d">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="LOTEKA Móvil">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192-v4.png">
 </head>
 <body>
   <div id="loginView" class="login">
@@ -1444,7 +1444,7 @@ function openDetail(id){
       return;
     }
 
-    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+    navigator.serviceWorker.register('/service-worker.js?v=4', { scope: '/' })
       .then(function(registration){
         console.log('[LOTEKA PWA] Service Worker registrado:', registration.scope);
       })
