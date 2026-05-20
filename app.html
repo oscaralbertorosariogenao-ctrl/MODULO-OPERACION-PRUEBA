@@ -583,15 +583,14 @@
   function opTech(o){ return clean(o?.tecnico||o?.asignado_a||o?.responsable||'Sin asignar'); }
   function opCreator(o){
     return clean(
-      o?.reportado_por_nombre ||
-      o?.reportado_por ||
       o?.creado_por_nombre ||
-      o?.creado_por ||
-      o?.usuario_creador_nombre ||
+      o?.reportado_por_nombre ||
       o?.usuario_creador ||
-      o?.created_by_name ||
-      o?.created_by ||
       o?.usuario_nombre ||
+      o?.creado_por ||
+      o?.reportado_por ||
+      o?.encargado ||
+      o?.created_by ||
       o?.email_creador ||
       o?.correo ||
       'No identificado'
@@ -647,10 +646,42 @@
 
   
   function fallbackAverias(){
-    return ['Falla de internet','Impresora no imprime','Impresora dañada','Problema con POS','POS apagado','POS lento','Scanner no funciona','Cámara fuera de servicio','Teléfono IP no funciona','Problema eléctrico','Batería / UPS','Cableado / red','Sistema no abre','Otro'];
+    return [
+      'Falla de internet',
+      'Printer dañado',
+      'Escáner dañado',
+      'TV dañada',
+      'POS con falla',
+      'Cable de red dañado',
+      'Cámara averiada',
+      'Teléfono averiado',
+      'Punto eléctrico con falla',
+      'Aire acondicionado averiado'
+    ];
   }
   function fallbackTrabajos(){
-    return ['Instalación de equipo','Cambio de equipo','Instalación de impresora','Instalación de POS','Instalación de scanner','Instalación de cámara','Instalación de teléfono IP','Mantenimiento preventivo','Reubicación de equipo','Retiro de equipo','Remodelación / adecuación','Levantamiento técnico','Otro'];
+    return [
+      'Trabajo a agencia nueva',
+      'Remodelación a agencia',
+      'Pintura',
+      'Mantenimiento de Aire Acondicionado',
+      'Instalación de Aire Acondicionado',
+      'Reparación de Filtraciones y Renovación',
+      'Renovación de Pintura y Corrección de Piso y Mocheta',
+      'Renovación y Pintura',
+      'Fabricación de Letrero (ACM)',
+      'Instalación de publicidad en pecho (ACM)',
+      'Fabricación de toldo',
+      'Reparación de toldo'
+    ];
+  }
+  function getEstadoOperativoDesdeTrabajoMovil(title, tipo){
+    const cleanTitle = clean(title).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const cleanTipo = clean(tipo).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(!cleanTipo.includes('trab')) return '';
+    if(cleanTitle.includes('trabajo a agencia nueva')) return 'EN PROCESO';
+    if(cleanTitle.includes('remodelacion a agencia')) return 'REMODELACIÓN';
+    return '';
   }
   function renderReportCategoryOptions(){
     const select=$('reportTitle');
@@ -1163,15 +1194,12 @@ function isProfileActive(profile){
       grupo: payload.grupo || '',
       tecnico: payload.tecnico || 'Sin asignar',
       encargado: payload.encargado || '',
-      reportado_por_nombre: payload.reportado_por_nombre || payload.creado_por_nombre || payload.created_by_name || '',
-      reportado_por: payload.reportado_por || payload.creado_por || payload.created_by || '',
-      creado_por_nombre: payload.creado_por_nombre || payload.reportado_por_nombre || '',
-      creado_por: payload.creado_por || payload.reportado_por || '',
-      usuario_creador_nombre: payload.usuario_creador_nombre || payload.reportado_por_nombre || '',
-      usuario_creador: payload.usuario_creador || payload.reportado_por || '',
-      created_by_name: payload.created_by_name || payload.reportado_por_nombre || '',
-      created_by: payload.created_by || payload.reportado_por || payload.creado_por || '',
+      creado_por: payload.creado_por || '',
       foto_url: payload.foto_url || '',
+      trabajos_seleccionados: payload.trabajos_seleccionados || [],
+      afecta_estado_operativo: !!payload.afecta_estado_operativo,
+      estado_operativo_generado: payload.estado_operativo_generado || null,
+      estado_operativo_aplicado: !!payload.estado_operativo_aplicado,
       fecha_creacion: payload.fecha_creacion || nowIso()
     };
 
@@ -1204,10 +1232,14 @@ function isProfileActive(profile){
       const creadorNombre=nameOf(state.profile);
       const creadorUsuario=state.username || userOf(state.profile,state.identity);
 
+      const tipoReporte = $('reportType').value;
+      const trabajosSeleccionados = tipoReporte === 'Trabajo' ? [title] : [];
+      const estadoOperativoGenerado = getEstadoOperativoDesdeTrabajoMovil(title, tipoReporte);
+
       const payload={
         id,
         codigo,
-        tipo:$('reportType').value,
+        tipo:tipoReporte,
         titulo:title,
         descripcion:desc,
         estado:'Pendiente',
@@ -1216,17 +1248,13 @@ function isProfileActive(profile){
         agencia_label: agency?agencyName(agency):('Agencia '+agencyNum),
         grupo,
         tecnico:'Sin asignar',
-        encargado:creadorNombre,
-        encargado_agencia:encargadoAgencia,
-        reportado_por_nombre:creadorNombre,
-        reportado_por:creadorUsuario,
-        creado_por_nombre:creadorNombre,
+        encargado:encargadoAgencia,
         creado_por:creadorUsuario,
-        usuario_creador_nombre:creadorNombre,
-        usuario_creador:creadorUsuario,
-        created_by_name:creadorNombre,
-        created_by:creadorUsuario,
+        creado_por_nombre:creadorNombre,
+        reportado_por:creadorUsuario,
+        reportado_por_nombre:creadorNombre,
         usuario_nombre:creadorNombre,
+        usuario_creador:creadorUsuario,
         foto_url:urls[0]||'',
         fotos_reportadas:urls,
         fotos_evidencia:[],
@@ -1236,6 +1264,10 @@ function isProfileActive(profile){
         creado_en:nowIso(),
         actualizado_en:nowIso(),
         source:'app_movil_v2',
+        trabajos_seleccionados:trabajosSeleccionados,
+        afecta_estado_operativo:!!estadoOperativoGenerado,
+        estado_operativo_generado:estadoOperativoGenerado || null,
+        estado_operativo_aplicado:!!estadoOperativoGenerado,
         historial:[{fecha:nowIso(),accion:'Creado desde app móvil',usuario:creadorUsuario,nombre:creadorNombre}]
       };
 
