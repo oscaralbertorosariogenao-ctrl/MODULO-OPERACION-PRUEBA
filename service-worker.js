@@ -1,26 +1,23 @@
 /* LOTEKA / Grupo Ortiz
-   Service Worker PWA estable
+   Service Worker PWA estable final
    App móvil oficial: /app.html
    Web operacional: /index.html
-   Versión: 2026-05-20-v3-logo-android
+   Versión: 2026-05-20-final-android
 */
 
-const CACHE_NAME = "loteka-pwa-v20260520-v6-logo-android";
-
+const CACHE_NAME = "loteka-pwa-final-android-20260520";
 const APP_MOVIL = "/app.html";
 const WEB_OPERACIONAL = "/index.html";
 
-const STATIC_FILES = [
+const PRECACHE_FILES = [
   "/",
   "/index.html",
   "/app.html",
   "/manifest.json",
   "/manifest-app-movil.json",
-  "/loteka-go-logo.webp",
   "/icon-192.png",
   "/icon-512.png",
-  "/icon-192.svg",
-  "/icon-512.svg",
+  "/loteka-go-logo.webp",
   "/sounds/whatsapp.mp3"
 ];
 
@@ -29,14 +26,14 @@ self.addEventListener("install", (event) => {
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      for (const file of STATIC_FILES) {
+      for (const file of PRECACHE_FILES) {
         try {
           const response = await fetch(file, { cache: "reload" });
           if (response && response.ok) {
             await cache.put(file, response.clone());
           }
         } catch (error) {
-          console.warn("[LOTEKA SW] No se pudo cachear:", file, error);
+          console.warn("[LOTEKA SW] No se pudo precargar:", file);
         }
       }
     })
@@ -45,8 +42,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
+    caches.keys()
       .then((keys) =>
         Promise.all(
           keys
@@ -78,22 +74,12 @@ self.addEventListener("fetch", (event) => {
 
   const isNavigation =
     request.mode === "navigate" ||
-    request.headers.get("accept")?.includes("text/html");
-
-  const isPwaCriticalAsset =
-    url.pathname.endsWith(".json") ||
-    url.pathname.endsWith(".webmanifest") ||
-    url.pathname.endsWith(".png") ||
-    url.pathname.endsWith(".webp") ||
-    url.pathname === "/app.html" ||
-    url.pathname === "/index.html";
+    (request.headers.get("accept") || "").includes("text/html");
 
   if (isNavigation) {
     event.respondWith(
-      fetch(request, { cache: "reload" }).catch(async () => {
-        const path = url.pathname || "/";
-
-        if (path.includes("app")) {
+      fetch(request, { cache: "no-store" }).catch(async () => {
+        if (url.pathname.includes("app")) {
           return (
             (await caches.match(APP_MOVIL)) ||
             (await caches.match(WEB_OPERACIONAL))
@@ -109,7 +95,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (isPwaCriticalAsset) {
+  const isCritical =
+    url.pathname === "/manifest-app-movil.json" ||
+    url.pathname === "/manifest.json" ||
+    url.pathname === "/icon-192.png" ||
+    url.pathname === "/icon-512.png" ||
+    url.pathname === "/loteka-go-logo.webp" ||
+    url.pathname === "/app.html" ||
+    url.pathname === "/index.html";
+
+  if (isCritical) {
     event.respondWith(
       fetch(request, { cache: "reload" })
         .then((response) => {
@@ -117,14 +112,11 @@ self.addEventListener("fetch", (event) => {
             const copy = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           }
+
           return response;
         })
         .catch(async () => {
-          return (
-            (await caches.match(request)) ||
-            (await caches.match(url.pathname)) ||
-            Response.error()
-          );
+          return (await caches.match(request)) || Response.error();
         })
     );
     return;
