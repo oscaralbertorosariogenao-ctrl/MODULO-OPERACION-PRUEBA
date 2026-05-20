@@ -315,7 +315,7 @@
     <div class="login-card">
       <div class="brand"><div class="logo">GO</div><div><h1>Grupo Ortiz · LOTEKA</h1><small>App móvil v2 limpia</small></div></div>
       <h2>Iniciar sesión</h2>
-      <p class="muted">App ligera para crear reportes, consultar operaciones, subir evidencias, revisar agencias y recibir notificaciones.</p>
+      <p class="muted">Acceso restringido. Solo usuarios creados y activos en el sistema pueden entrar.</p>
       <div class="field"><label>Correo o usuario</label><input id="loginIdentity" placeholder="tecnico1, encargado1 o correo" autocomplete="username"></div>
       <div class="field"><label>Contraseña</label><input id="loginPassword" type="password" placeholder="Contraseña si aplica" autocomplete="current-password"></div>
       <button id="btnLogin" class="btn btn-primary btn-full">Entrar</button>
@@ -540,21 +540,203 @@
     return val;
   }
 
-async function login(){
-    const identity=clean($('loginIdentity').value); const pass=$('loginPassword').value;
-    $('loginError').textContent=''; if(!identity){ $('loginError').textContent='Escribe usuario o correo.'; return; }
-    try{ if(identity.includes('@') && pass){ const r=await sb.auth.signInWithPassword({email:identity,password:pass}); if(r.error) throw r.error; } }catch(e){ log('Auth omitido/falló: '+(e.message||e)); }
-    try{
-      let profile=null;
-      const cols='*';
-      const tries=[['usuario',identity],['username',identity],['email',identity],['correo',identity]];
-      for(const [col,val] of tries){ try{ const r=await sb.from(TABLE_PERFILES).select(cols).eq(col,val).limit(1); if(!r.error && r.data && r.data.length){ profile=r.data[0]; break; } }catch(e){} }
-      if(!profile) profile={ usuario:identity, nombre:identity, rol:'general' };
-      state.profile=profile; state.identity=identity; state.role=roleOf(profile,identity); state.username=userOf(profile,identity);
-      localStorage.setItem(STORE, JSON.stringify({profile,identity,role:state.role,username:state.username,savedAt:nowIso()}));
-      enterApp();
-    }catch(e){ $('loginError').textContent=e.message||String(e); }
+function isProfileActive(profile){
+    if(!profile) return false;
+
+    const activo = profile.activo;
+    if(activo === false || activo === 0 || activo === 'false' || activo === '0') return false;
+
+    const estado = clean(profile.estado || profile.status || profile.estatus || '').toLowerCase();
+    if(estado && (
+      estado.includes('inactivo') ||
+      estado.includes('desactivado') ||
+      estado.includes('bloqueado') ||
+      estado.includes('suspendido') ||
+      estado.includes('cancelado')
+    )){
+      return false;
+    }
+
+    return true;
   }
+
+  async function findAuthorizedProfile(identity, authUser){
+    const value = clean(identity);
+    if(!value) return null;
+
+    const cols = '*';
+    const attempts = [];
+
+    if(authUser && authUser.id){
+      attempts.push(['id', authUser.id]);
+    }
+
+    attempts.push(
+      ['usuario', value],
+      ['username', value],
+      ['email', value],
+      ['correo', value]
+    );
+
+    if(authUser && authUser.email){
+      attempts.push(['email', authUser.email], ['correo', authUser.email]);
+    }
+
+    for(const [col, val] of attempts){
+      try{
+        const r = await sb.from(TABLE_PERFILES).select(cols).eq(col, val).limit(1);
+        if(!r.error && r.data && r.data.length){
+          return r.data[0];
+        }
+      }catch(e){}
+    }
+
+    const lowerValue = value.toLowerCase();
+    const lowerEmail = authUser && authUser.email ? String(authUser.email).toLowerCase() : '';
+
+    for(const col of ['usuario','username','email','correo']){
+      try{
+        const r = await sb.from(TABLE_PERFILES).select(cols).ilike(col, lowerValue).limit(1);
+        if(!r.error && r.data && r.data.length){
+          return r.data[0];
+        }
+      }catch(e){}
+    }
+
+    if(lowerEmail){
+      for(const col of ['email','correo']){
+        try{
+          const r = await sb.from(TABLE_PERFILES).select(cols).ilike(col, lowerEmail).limit(1);
+          if(!r.error && r.data && r.data.length){
+            return r.data[0];
+          }
+        }catch(e){}
+      }
+    }
+
+    return null;
+  }
+
+  async function login(){
+    const identity = clean($('loginIdentity').value);
+    const pass = $('loginPassword').value;
+    const btn = $('btnLogin');
+
+    $('loginError').textContent = '';
+
+    if(!identity){
+      $('loginError').textContent = 'Escribe tu usuario o correo.';
+      return;
+    }
+
+    if(btn){
+      btn.disabled = true;
+      btn.textContent = 'Verificando...';
+    }
+
+    try{
+      let authUser = null;
+
+      if(identity.includes('@')){
+        if(!pass){
+          throw new Error('Información inválida, intente otra vez.');
+        }
+
+        const auth = await sb.auth.signInWithPassword({ email: identity, password: pass });
+
+        if(auth.error){
+          throw new Error('Información inválida, intente otra vez.');
+        }
+
+        authUser = auth.data && auth.data.user ? auth.data.user : null;
+      }
+
+      const profile = await findAuthorizedProfile(identity, authUser);
+
+      if(!profile){
+        try{ await sb.auth.signOut(); }catch(e){}
+        localStorage.removeItem(STORE);
+        throw new Error('Información inválida, intente otra vez.');
+      }
+
+      if(!isProfileActive(profile)){
+        try{ await sb.auth.signOut(); }catch(e){}
+        localStorage.removeItem(STORE);
+        throw new Error('Información inválida, intente otra vez.');
+      }
+
+      state.profile = profile;
+      state.identity = identity;
+      state.role = roleOf(profile, identity);
+      state.username = userOf(profile, identity);
+
+      localStorage.setItem(STORE, JSON.stringify({
+        profile,
+        identity,
+        role: state.role,
+        username: state.username,
+        savedAt: nowIso()
+      }));
+
+      enterApp();
+    }catch(e){
+      $('loginError').textContent = e.message || String(e);
+    }finally{
+      if(btn){
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      }
+    }
+  }
+
+  async function validateStoredSession(){
+    const saved = localStorage.getItem(STORE);
+    if(!saved) return false;
+
+    try{
+      const s = JSON.parse(saved);
+      const identity = clean(s.identity || s.username || s?.profile?.usuario || s?.profile?.username || s?.profile?.email || s?.profile?.correo);
+
+      if(!identity){
+        localStorage.removeItem(STORE);
+        return false;
+      }
+
+      const authSession = await sb.auth.getSession().catch(()=>({ data:null, error:null }));
+      const authUser = authSession && authSession.data && authSession.data.session
+        ? authSession.data.session.user
+        : null;
+
+      const profile = await findAuthorizedProfile(identity, authUser);
+
+      if(!profile || !isProfileActive(profile)){
+        localStorage.removeItem(STORE);
+        try{ await sb.auth.signOut(); }catch(e){}
+        return false;
+      }
+
+      state.profile = profile;
+      state.identity = identity;
+      state.role = roleOf(profile, identity);
+      state.username = userOf(profile, identity);
+
+      localStorage.setItem(STORE, JSON.stringify({
+        profile,
+        identity,
+        role: state.role,
+        username: state.username,
+        savedAt: nowIso()
+      }));
+
+      enterApp();
+      return true;
+    }catch(e){
+      localStorage.removeItem(STORE);
+      try{ await sb.auth.signOut(); }catch(err){}
+      return false;
+    }
+  }
+
   function enterApp(){ $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('userName').textContent=nameOf(state.profile); $('userRole').textContent=`${state.role.toUpperCase()}${groupOf(state.profile)?' · '+groupOf(state.profile):''}`; renderProfile(); refreshAll(); setupRealtime(); }
   function logout(){ localStorage.removeItem(STORE); try{ sb.auth.signOut(); }catch{} location.reload(); }
 
@@ -1051,18 +1233,13 @@ function openDetail(id){
     document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
     document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>showTab(b.dataset.go));
 
-    const saved=localStorage.getItem(STORE);
-    if(saved){
-      try{
-        const s=JSON.parse(saved);
-        state.profile=s.profile;
-        state.identity=s.identity;
-        state.role=s.role||roleOf(s.profile);
-        state.username=s.username||userOf(s.profile,s.identity);
-        enterApp();
-      }catch(e){}
-    }
-    log('App móvil v2 lista.');
+    validateStoredSession().then(function(restored){
+      if(restored){
+        log('Sesión validada contra usuarios del sistema.');
+      }else{
+        log('App móvil v2 lista. Esperando inicio de sesión autorizado.');
+      }
+    });
   }
   boot();
 })();
