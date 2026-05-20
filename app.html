@@ -392,7 +392,21 @@
 
       <section id="viewAgencies" class="view hidden">
         <div class="section-head"><h3>Agencias</h3><small>Consulta rápida</small></div>
-        <div class="card"><div class="field"><label>Buscar agencia</label><input id="agencySearch" list="agencyOptions" placeholder="Número, nombre o grupo"></div><button id="btnAgencySearch" class="btn btn-primary btn-full">Consultar agencia</button></div>
+        <div class="card">
+          <div class="field"><label>Buscar agencia</label><input id="agencySearch" list="agencyOptions" placeholder="Número, nombre o grupo"></div>
+          <button id="btnAgencySearch" class="btn btn-primary btn-full">Consultar agencia</button>
+        </div>
+        <div class="card">
+          <div class="field">
+            <label for="agencyOperationalFilter">Consultar por estado operativo</label>
+            <select id="agencyOperationalFilter">
+              <option value="Todas">Todas</option>
+              <option value="EN PROCESO">En proceso / En construcción</option>
+              <option value="REMODELACIÓN">En remodelación</option>
+            </select>
+          </div>
+          <div id="agencyOperationalList"></div>
+        </div>
         <div id="agencyResult"></div>
       </section>
 
@@ -434,7 +448,7 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }, realtime: { params: { eventsPerSecond: 8 } } });
   const $ = id => document.getElementById(id);
-  const state = { profile:null, identity:'', role:'general', username:'', operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', typeFilter:'Todas', channels:[], selectedEvidenceFiles:[], selectedReportFiles:[] };
+  const state = { profile:null, identity:'', role:'general', username:'', operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', typeFilter:'Todas', agencyOperationalFilter:'Todas', channels:[], selectedEvidenceFiles:[], selectedReportFiles:[] };
 
   function clean(v){ return String(v ?? '').trim(); }
   function esc(v){ return clean(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
@@ -682,6 +696,114 @@
     if(cleanTitle.includes('trabajo a agencia nueva')) return 'EN PROCESO';
     if(cleanTitle.includes('remodelacion a agencia')) return 'REMODELACIÓN';
     return '';
+  }
+
+  function normalizeOperationalState(value){
+    const n = clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+    if(!n) return '';
+    if(n.includes('PROCESO') || n.includes('CONSTRUCCION') || n.includes('CONSTRUCCION')) return 'EN PROCESO';
+    if(n.includes('REMODELACION')) return 'REMODELACIÓN';
+    if(n.includes('CERRAD') || n.includes('DESACTIV')) return 'CERRADA';
+    if(n.includes('ACTIV')) return 'ACTIVA';
+    return clean(value).toUpperCase();
+  }
+
+  function agencyOperationalState(a){
+    return normalizeOperationalState(a?.estado_operativo || a?.estado || a?.status || '');
+  }
+
+  function agencyOperationalLabel(value){
+    const s = normalizeOperationalState(value);
+    if(s === 'EN PROCESO') return 'En proceso / En construcción';
+    if(s === 'REMODELACIÓN') return 'En remodelación';
+    if(s === 'CERRADA') return 'Cerrada';
+    if(s === 'ACTIVA') return 'Activa';
+    return s || 'N/D';
+  }
+
+  async function safeUpdateAgencyOperationalState(agency, status, operationRef, motivo, actor){
+    if(!agency || !status) return false;
+
+    let current = {
+      estado_operativo: status,
+      estado_operativo_operacion_id: operationRef || null,
+      estado_operativo_motivo: motivo || status,
+      estado_operativo_actualizado_en: nowIso(),
+      estado_operativo_actualizado_por: actor || nameOf(state.profile)
+    };
+
+    const applyLocal = ()=>{
+      try{
+        agency.estado_operativo = status;
+        agency.estado_operativo_operacion_id = operationRef || null;
+        agency.estado_operativo_motivo = motivo || status;
+        agency.estado_operativo_actualizado_en = current.estado_operativo_actualizado_en || nowIso();
+        agency.estado_operativo_actualizado_por = actor || nameOf(state.profile);
+      }catch(e){}
+    };
+
+    for(let i=0; i<8; i++){
+      let req = sb.from(TABLE_AGENCIAS).update(current);
+      const agencyId = clean(agency?.id);
+      if(agencyId){
+        req = req.eq('id', agencyId);
+      }else{
+        const num = agencyNumber(agency);
+        if(!num) return false;
+        req = req.eq('numero', num);
+      }
+
+      const res = await req.select('*').limit(1);
+      if(!res.error){
+        if(Array.isArray(res.data) && res.data[0]) Object.assign(agency, res.data[0]);
+        else applyLocal();
+        return true;
+      }
+
+      const missing = missingColumnFromSupabaseError(res.error);
+      const code = clean(res.error.code);
+      if((code === 'PGRST204' || missing) && missing && Object.prototype.hasOwnProperty.call(current, missing)){
+        console.warn('[LOTEKA] Campo omitido porque no existe en agencias:', missing);
+        delete current[missing];
+        continue;
+      }
+
+      throw res.error;
+    }
+
+    return false;
+  }
+
+  async function syncAgencyOperationalStateFromMobileReport(payload, savedOperation){
+    const status = clean(payload?.estado_operativo_generado);
+    if(!status) return false;
+
+    const agency = findAgency(payload?.agencia || payload?.agencia_label);
+    if(!agency){
+      log('Estado operativo: no se encontró agencia ' + clean(payload?.agencia));
+      return false;
+    }
+
+    const motivo = clean(payload?.titulo) || status;
+    const operationRef = clean(savedOperation?.codigo || payload?.codigo || savedOperation?.id || payload?.id);
+    const actor = clean(payload?.reportado_por_nombre || payload?.creado_por_nombre || nameOf(state.profile));
+
+    const ok = await safeUpdateAgencyOperationalState(agency, status, operationRef, motivo, actor);
+
+    if(ok){
+      try{
+        await sb.from(TABLE_OPS).update({
+          estado_operativo_aplicado:true,
+          estado_operativo_generado:status,
+          actualizado_en:nowIso()
+        }).eq('id', savedOperation?.id || payload?.id);
+      }catch(e){ log('Marca estado operativo omitida: ' + (e.message || e)); }
+
+      toast('Estado operativo actualizado', 'Agencia #' + agencyNumber(agency) + ' → ' + agencyOperationalLabel(status));
+      return true;
+    }
+
+    return false;
   }
   function renderReportCategoryOptions(){
     const select=$('reportTitle');
@@ -976,7 +1098,7 @@ function isProfileActive(profile){
     $('opsStatusFilter').onchange=e=>{ state.filter=e.target.value; renderAll(); };
     $('opsTypeFilter').onchange=e=>{ state.typeFilter=e.target.value; renderAll(); };
   }
-  function renderAll(){ renderFilters(); renderStats(); renderLists(); renderNotifs(); renderAgencyResult(false); renderProfile(); }
+  function renderAll(){ renderFilters(); renderStats(); renderLists(); renderNotifs(); renderAgencyOperationalList(); renderAgencyResult(false); renderProfile(); }
   function renderStats(){ const rows=state.operations; $('sPending').textContent=rows.filter(o=>normStatus(o.estado)==='Pendiente').length; $('sAssigned').textContent=rows.filter(o=>normStatus(o.estado)==='Asignada').length; $('sProcess').textContent=rows.filter(o=>normStatus(o.estado)==='En proceso').length; $('sDone').textContent=rows.filter(o=>normStatus(o.estado)==='Completado').length; }
   function opCard(o, compact=false){
     const st=normStatus(o.estado||o.status);
@@ -1332,6 +1454,16 @@ function isProfileActive(profile){
         r = await safeInsertOperationMinimal(payload);
       }
       if(r.error) throw r.error;
+
+      if(estadoOperativoGenerado){
+        try{
+          await syncAgencyOperationalStateFromMobileReport(payload, r.data || payload);
+        }catch(syncError){
+          log('Estado operativo no aplicado: ' + (syncError.message || syncError));
+          toast('Reporte guardado', 'Pero no se pudo actualizar el estado operativo de la agencia.');
+        }
+      }
+
       await createNotif('Nueva operación creada',`Agencia #${agencyNum} · ${title} · Creado por: ${creadorNombre}`,id,codigo);
       $('reportForm').reset();
       state.selectedReportFiles=[];
@@ -1619,6 +1751,50 @@ function openDetail(id){
   async function openNotif(id){ const n=state.notifs.find(x=>String(x.id)===String(id)); if(!n) return; try{ await sb.from(TABLE_NOTIFS).update({leida:true,visto_en_panel:true}).eq('id',id); }catch{} const ref=clean(n.referencia_codigo || n?.detalle?.codigo || n?.detalle?.id_texto || n.referencia_id); const op=state.operations.find(o=>opCode(o)===ref || opId(o)===ref); if(op){ showTab('ops'); setTimeout(()=>openDetail(opId(op)),150); } else toast('Notificación abierta', n.mensaje||'Sin referencia directa.'); await loadNotifs(); renderNotifs(); }
   async function markRead(){ try{ await sb.from(TABLE_NOTIFS).update({leida:true,visto_en_panel:true}).eq('leida',false); await loadNotifs(); renderNotifs(); }catch(e){ toast('No se pudo marcar',e.message||String(e)); } }
 
+  function filteredAgenciesByOperationalState(){
+    const wanted = normalizeOperationalState(state.agencyOperationalFilter || 'Todas');
+    if(!wanted || wanted === 'TODAS') return state.agencies || [];
+    return (state.agencies || []).filter(a => agencyOperationalState(a) === wanted);
+  }
+
+  function renderAgencyOperationalList(){
+    const select = $('agencyOperationalFilter');
+    const box = $('agencyOperationalList');
+    if(!select || !box) return;
+
+    if(select.value !== (state.agencyOperationalFilter || 'Todas')) select.value = state.agencyOperationalFilter || 'Todas';
+
+    const rows = filteredAgenciesByOperationalState();
+    const filterLabel = agencyOperationalLabel(state.agencyOperationalFilter || 'Todas');
+
+    box.innerHTML = `
+      <div class="filter-summary">Resultado: ${esc(rows.length)} agencia(s) · ${esc(filterLabel === 'N/D' ? 'Todas' : filterLabel)}</div>
+      ${rows.length ? rows.slice(0,80).map(a=>{
+        const num = agencyNumber(a);
+        return `<article class="card" style="margin:9px 0" data-agency-op="${esc(num)}">
+          <div class="card-top">
+            <div>
+              <h4>Agencia ${esc(num)}</h4>
+              <div class="meta">${esc(agencyGroup(a) || 'Sin grupo')} · ${esc(agencyName(a))}</div>
+            </div>
+            <span class="pill ${agencyOperationalState(a)==='REMODELACIÓN'?'proceso':agencyOperationalState(a)==='EN PROCESO'?'asignada':''}">${esc(agencyOperationalLabel(agencyOperationalState(a)))}</span>
+          </div>
+          <p class="desc">${esc(a?.estado_operativo_motivo || a?.estado_motivo || 'Sin motivo registrado')}</p>
+        </article>`;
+      }).join('') : '<div class="empty">No hay agencias con ese estado operativo.</div>'}
+    `;
+
+    select.onchange = e=>{ state.agencyOperationalFilter = e.target.value; renderAgencyOperationalList(); };
+
+    document.querySelectorAll('[data-agency-op]').forEach(el=>{
+      el.onclick = ()=>{
+        const num = el.dataset.agencyOp || '';
+        $('agencySearch').value = num;
+        renderAgencyResult(true);
+      };
+    });
+  }
+
   function renderAgencyResult(force){
     if(!force) return;
     const q=$('agencySearch').value;
@@ -1642,7 +1818,7 @@ function openDetail(id){
         <div class="detail-grid">
           <div class="detail"><small>Grupo real</small><b>${esc(grupo)}</b></div>
           <div class="detail"><small>Encargado</small><b>${esc(encargado)}</b></div>
-          <div class="detail"><small>Estado</small><b>${esc(a.estado||a.estado_operativo||'N/D')}</b></div>
+          <div class="detail"><small>Estado operativo</small><b>${esc(agencyOperationalLabel(agencyOperationalState(a)))}</b></div>
           <div class="detail"><small>Tipo</small><b>${esc(a.tipo||a.tipo_agencia||'N/D')}</b></div>
           <div class="detail"><small>Operaciones</small><b>${ops.length}</b></div>
           <div class="detail"><small>Ubicación</small><b>${esc(geo)}</b></div>
@@ -1684,6 +1860,7 @@ function openDetail(id){
     }catch(e){}
     $('opsSearch').oninput=renderAll;
     $('btnAgencySearch').onclick=()=>renderAgencyResult(true);
+    if($('agencyOperationalFilter')) $('agencyOperationalFilter').onchange=e=>{ state.agencyOperationalFilter=e.target.value; renderAgencyOperationalList(); };
     $('btnMarkRead').onclick=markRead;
     const closeBtn=$('btnCloseDetail');
     if(closeBtn) closeBtn.onclick=()=>$('detailModal').classList.add('hidden');
