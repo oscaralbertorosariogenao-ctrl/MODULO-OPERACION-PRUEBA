@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#071522" />
   <title>LOTEKA Operaciones Móvil</title>
-  <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://tnymrjxdhzdmpcbilftj.supabase.co" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -639,7 +638,7 @@ async function login(){
       log('R2 móvil error real: '+msg);
 
       if(msg === 'Failed to fetch'){
-        throw new Error('Failed to fetch: la app no pudo alcanzar /api/r2-upload. Abre la app desde el mismo Vercel donde funciona la web: https://modulo-operacion-prueba.vercel.app/app-reportes.html');
+        throw new Error('Failed to fetch: la app no pudo alcanzar /api/r2-upload. Abre la app desde el mismo Vercel donde funciona la web: https://modulo-operacion-prueba.vercel.app/app.html');
       }
 
       throw new Error(msg);
@@ -1066,6 +1065,27 @@ function openDetail(id){
     log('App móvil v2 lista.');
   }
   boot();
+})();
+</script>
+
+
+<script id="loteka-mobile-pwa-register">
+(function(){
+  'use strict';
+
+  window.addEventListener('load', function(){
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+      .then(function(registration){
+        console.log('[LOTEKA PWA] Service Worker registrado:', registration.scope);
+      })
+      .catch(function(error){
+        console.warn('[LOTEKA PWA] No se pudo registrar el Service Worker:', error);
+      });
+  });
 })();
 </script>
 
