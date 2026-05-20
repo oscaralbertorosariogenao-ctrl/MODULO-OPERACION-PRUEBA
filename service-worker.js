@@ -5,7 +5,7 @@
    Versión: 2026-05-20-v3-logo-android
 */
 
-const CACHE_NAME = "loteka-pwa-v20260520-v5-logo-android";
+const CACHE_NAME = "loteka-pwa-v20260520-v6-logo-android";
 
 const APP_MOVIL = "/app.html";
 const WEB_OPERACIONAL = "/index.html";
