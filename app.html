@@ -583,14 +583,15 @@
   function opTech(o){ return clean(o?.tecnico||o?.asignado_a||o?.responsable||'Sin asignar'); }
   function opCreator(o){
     return clean(
-      o?.creado_por_nombre ||
       o?.reportado_por_nombre ||
-      o?.usuario_creador ||
-      o?.usuario_nombre ||
-      o?.creado_por ||
       o?.reportado_por ||
-      o?.encargado ||
+      o?.creado_por_nombre ||
+      o?.creado_por ||
+      o?.usuario_creador_nombre ||
+      o?.usuario_creador ||
+      o?.created_by_name ||
       o?.created_by ||
+      o?.usuario_nombre ||
       o?.email_creador ||
       o?.correo ||
       'No identificado'
@@ -1162,7 +1163,14 @@ function isProfileActive(profile){
       grupo: payload.grupo || '',
       tecnico: payload.tecnico || 'Sin asignar',
       encargado: payload.encargado || '',
-      creado_por: payload.creado_por || '',
+      reportado_por_nombre: payload.reportado_por_nombre || payload.creado_por_nombre || payload.created_by_name || '',
+      reportado_por: payload.reportado_por || payload.creado_por || payload.created_by || '',
+      creado_por_nombre: payload.creado_por_nombre || payload.reportado_por_nombre || '',
+      creado_por: payload.creado_por || payload.reportado_por || '',
+      usuario_creador_nombre: payload.usuario_creador_nombre || payload.reportado_por_nombre || '',
+      usuario_creador: payload.usuario_creador || payload.reportado_por || '',
+      created_by_name: payload.created_by_name || payload.reportado_por_nombre || '',
+      created_by: payload.created_by || payload.reportado_por || payload.creado_por || '',
       foto_url: payload.foto_url || '',
       fecha_creacion: payload.fecha_creacion || nowIso()
     };
@@ -1208,13 +1216,17 @@ function isProfileActive(profile){
         agencia_label: agency?agencyName(agency):('Agencia '+agencyNum),
         grupo,
         tecnico:'Sin asignar',
-        encargado:encargadoAgencia,
-        creado_por:creadorUsuario,
-        creado_por_nombre:creadorNombre,
-        reportado_por:creadorUsuario,
+        encargado:creadorNombre,
+        encargado_agencia:encargadoAgencia,
         reportado_por_nombre:creadorNombre,
-        usuario_nombre:creadorNombre,
+        reportado_por:creadorUsuario,
+        creado_por_nombre:creadorNombre,
+        creado_por:creadorUsuario,
+        usuario_creador_nombre:creadorNombre,
         usuario_creador:creadorUsuario,
+        created_by_name:creadorNombre,
+        created_by:creadorUsuario,
+        usuario_nombre:creadorNombre,
         foto_url:urls[0]||'',
         fotos_reportadas:urls,
         fotos_evidencia:[],
