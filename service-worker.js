@@ -5,7 +5,7 @@
    Version: 2026-05-20-v2
 */
 
-const CACHE_NAME = "loteka-pwa-v20260520-v3";
+const CACHE_NAME = "loteka-pwa-v20260520-v4";
 
 const STATIC_FILES = [
   "/",
