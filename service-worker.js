@@ -1,11 +1,14 @@
 /* LOTEKA / Grupo Ortiz
    Service Worker PWA estable
-   App movil oficial: /app.html
+   App móvil oficial: /app.html
    Web operacional: /index.html
-   Version: 2026-05-20-v2
+   Versión: 2026-05-20-v3-logo-android
 */
 
-const CACHE_NAME = "loteka-pwa-v20260520-v5";
+const CACHE_NAME = "loteka-pwa-v20260520-v3-logo-android";
+
+const APP_MOVIL = "/app.html";
+const WEB_OPERACIONAL = "/index.html";
 
 const STATIC_FILES = [
   "/",
@@ -13,13 +16,13 @@ const STATIC_FILES = [
   "/app.html",
   "/manifest.json",
   "/manifest-app-movil.json",
+  "/loteka-go-logo.webp",
+  "/icon-192.png",
+  "/icon-512.png",
   "/icon-192.svg",
   "/icon-512.svg",
   "/sounds/whatsapp.mp3"
 ];
-
-const APP_MOVIL = "/app.html";
-const WEB_OPERACIONAL = "/index.html";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -29,11 +32,11 @@ self.addEventListener("install", (event) => {
       for (const file of STATIC_FILES) {
         try {
           const response = await fetch(file, { cache: "reload" });
-          if (response.ok) {
-            await cache.put(file, response);
+          if (response && response.ok) {
+            await cache.put(file, response.clone());
           }
         } catch (error) {
-          console.warn("[LOTEKA SW] No se pudo cachear:", file);
+          console.warn("[LOTEKA SW] No se pudo cachear:", file, error);
         }
       }
     })
@@ -44,13 +47,13 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => {
-        return Promise.all(
+      .then((keys) =>
+        Promise.all(
           keys
             .filter((key) => key !== CACHE_NAME)
             .map((key) => caches.delete(key))
-        );
-      })
+        )
+      )
       .then(() => self.clients.claim())
   );
 });
@@ -58,15 +61,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  if (request.method !== "GET") {
-    return;
-  }
+  if (request.method !== "GET") return;
 
   const url = new URL(request.url);
 
-  if (url.origin !== self.location.origin) {
-    return;
-  }
+  if (url.origin !== self.location.origin) return;
 
   if (
     url.hostname.includes("supabase.co") ||
@@ -81,9 +80,17 @@ self.addEventListener("fetch", (event) => {
     request.mode === "navigate" ||
     request.headers.get("accept")?.includes("text/html");
 
+  const isPwaCriticalAsset =
+    url.pathname.endsWith(".json") ||
+    url.pathname.endsWith(".webmanifest") ||
+    url.pathname.endsWith(".png") ||
+    url.pathname.endsWith(".webp") ||
+    url.pathname === "/app.html" ||
+    url.pathname === "/index.html";
+
   if (isNavigation) {
     event.respondWith(
-      fetch(request, { cache: "no-store" }).catch(async () => {
+      fetch(request, { cache: "reload" }).catch(async () => {
         const path = url.pathname || "/";
 
         if (path.includes("app")) {
@@ -102,11 +109,30 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (isPwaCriticalAsset) {
+    event.respondWith(
+      fetch(request, { cache: "reload" })
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(async () => {
+          return (
+            (await caches.match(request)) ||
+            (await caches.match(url.pathname)) ||
+            Response.error()
+          );
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
+      if (cached) return cached;
 
       return fetch(request).then((response) => {
         if (response && response.ok) {
@@ -128,16 +154,16 @@ self.addEventListener("push", (event) => {
   } catch (error) {
     data = {
       title: "LOTEKA",
-      body: "Nueva notificacion"
+      body: "Nueva notificación"
     };
   }
 
   const title = data.title || "LOTEKA Operaciones";
 
   const options = {
-    body: data.body || "Tienes una nueva notificacion",
-    icon: data.icon || "/icon-192.svg",
-    badge: data.badge || "/icon-192.svg",
+    body: data.body || "Tienes una nueva notificación",
+    icon: data.icon || "/icon-192.png",
+    badge: data.badge || "/icon-192.png",
     vibrate: [200, 100, 200],
     tag: data.tag || "loteka-notificacion",
     renotify: true,
