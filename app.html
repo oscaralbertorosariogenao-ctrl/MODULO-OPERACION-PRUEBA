@@ -1908,6 +1908,39 @@ function isProfileActive(profile){
     return { data:null, error:new Error('No se pudo guardar la operación.') };
   }
 
+
+  async function safeUpdateOperationEvidence(opId, codigo, urls, selectedCount){
+    const confirmed = Array.isArray(urls) ? urls.filter(Boolean) : [];
+    if(!confirmed.length && !selectedCount) return { data:null, error:null };
+
+    let current = {
+      foto_url: confirmed[0] || '',
+      fotos_reportadas: confirmed,
+      evidencia_estado: selectedCount && !confirmed.length ? 'subida_no_confirmada_r2' : (confirmed.length ? 'confirmada' : 'sin_evidencia'),
+      evidencia_archivos_seleccionados: Number(selectedCount || confirmed.length || 0),
+      actualizado_en: nowIso()
+    };
+
+    for(let i=0; i<10; i++){
+      let q = sb.from(TABLE_OPS).update(current);
+      if(opId) q = q.eq('id', opId);
+      else q = q.eq('codigo', codigo);
+      const res = await q.select('id,codigo,foto_url,fotos_reportadas').limit(1);
+
+      if(!res.error) return res;
+
+      const missing = missingColumnFromSupabaseError(res.error);
+      const code = clean(res.error.code);
+      if((code === 'PGRST204' || missing) && missing && Object.prototype.hasOwnProperty.call(current, missing)){
+        console.warn('[LOTEKA] Campo de evidencia omitido porque no existe:', missing);
+        delete current[missing];
+        continue;
+      }
+      return res;
+    }
+    return { data:null, error:new Error('No se pudo actualizar la evidencia del reporte.') };
+  }
+
   async function safeInsertOperationMinimal(payload){
     const minimal = {
       id: payload.id,
@@ -1923,6 +1956,10 @@ function isProfileActive(profile){
       encargado: payload.encargado || '',
       creado_por: payload.creado_por || '',
       foto_url: payload.foto_url || '',
+      fotos_reportadas: Array.isArray(payload.fotos_reportadas) ? payload.fotos_reportadas : [],
+      fotos_evidencia: Array.isArray(payload.fotos_evidencia) ? payload.fotos_evidencia : [],
+      evidencia_estado: payload.evidencia_estado || '',
+      evidencia_archivos_seleccionados: Number(payload.evidencia_archivos_seleccionados || 0),
       trabajos_seleccionados: payload.trabajos_seleccionados || [],
       categoria_visible: payload.categoria_visible || '',
       problema_reportado: payload.problema_reportado || '',
@@ -2084,6 +2121,17 @@ function isProfileActive(profile){
         r = await safeInsertOperationMinimal(payload);
       }
       if(r.error) throw r.error;
+
+      if(selectedFilesCount || urls.length){
+        try{
+          const evRes = await safeUpdateOperationEvidence((r.data && r.data.id) || id, codigo, urls, selectedFilesCount);
+          if(evRes && evRes.error){
+            log('Evidencia guardada parcialmente: ' + (evRes.error.message || evRes.error));
+          }
+        }catch(evErr){
+          log('Evidencia post-guardado no confirmada: ' + (evErr.message || evErr));
+        }
+      }
 
       if(estadoOperativoGenerado){
         try{
