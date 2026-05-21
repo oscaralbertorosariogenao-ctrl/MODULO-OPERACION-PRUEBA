@@ -472,6 +472,28 @@
     #selectedEvidencePreview{
       min-height:56px;
     }
+
+
+    /* LOTEKA v3.6 · Roles móvil: Encargado / Técnico */
+    .role-banner{border:1px solid rgba(125,211,252,.20);border-radius:20px;padding:13px 14px;margin:0 0 13px;background:linear-gradient(135deg,rgba(14,165,198,.12),rgba(255,255,255,.045));box-shadow:0 12px 26px rgba(0,0,0,.14)}
+    .role-banner strong{display:block;color:#fff;font-size:15px;margin-bottom:4px}
+    .role-banner span{display:block;color:var(--muted);font-size:12px;font-weight:800;line-height:1.4}
+    .role-encargado .btn-whatsapp,.role-encargado .btn-whatsapp-soft,.role-encargado .btn-wa-close,.role-tecnico .btn-whatsapp,.role-tecnico .btn-whatsapp-soft,.role-tecnico .btn-wa-close{display:none!important}
+    .role-hidden{display:none!important}
+    .readonly-note{border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.08);color:#fde68a;border-radius:16px;padding:12px;font-size:12px;font-weight:850;line-height:1.45;margin-top:10px}
+
+    /* LOTEKA v3.7 · Selección visual de reporte */
+    .report-choice-field{margin-top:4px}
+    .report-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+    .report-choice{position:relative;min-height:104px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.035));color:var(--text);padding:14px 12px;text-align:left;display:grid;align-content:start;gap:6px;box-shadow:0 12px 26px rgba(0,0,0,.12);transition:.18s ease}
+    .report-choice:hover{transform:translateY(-1px);border-color:rgba(14,165,198,.38);background:rgba(255,255,255,.075)}
+    .report-choice.active{border-color:rgba(45,212,191,.55);background:linear-gradient(135deg,rgba(34,197,94,.22),rgba(14,165,198,.22));box-shadow:0 16px 32px rgba(20,184,166,.16),inset 0 1px 0 rgba(255,255,255,.08)}
+    .report-choice.active:after{content:'✓';position:absolute;right:12px;top:10px;width:22px;height:22px;border-radius:999px;display:grid;place-items:center;background:rgba(45,212,191,.24);border:1px solid rgba(45,212,191,.42);color:#ccfbf1;font-size:12px;font-weight:1000}
+    .report-choice-icon{width:34px;height:34px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);font-size:16px}
+    .report-choice strong{font-size:15px;line-height:1.15;color:#fff}
+    .report-choice small{font-size:11.5px;line-height:1.35;color:#9fc4d5;font-weight:850}
+    .role-tecnico .report-choice[data-report-type="Avería"]{display:none}
+    @media(max-width:360px){.report-choice-grid{grid-template-columns:1fr}.report-choice{min-height:92px}}
 </style>
   <link rel="manifest" href="/manifest-app-movil.json">
   <meta name="application-name" content="LOTEKA Móvil">
@@ -540,7 +562,22 @@
       <section id="viewCreate" class="view hidden">
         <div class="section-head"><h3>Crear reporte</h3><small>Operaciones</small></div>
         <form id="reportForm" class="card">
-          <div class="field"><label>Tipo</label><select id="reportType"><option>Avería</option><option>Trabajo</option></select></div>
+          <div class="field report-choice-field">
+            <label>¿Qué deseas reportar?</label>
+            <input id="reportType" type="hidden" value="Avería">
+            <div class="report-choice-grid" id="reportTypeChoices">
+              <button type="button" class="report-choice active" data-report-type="Avería">
+                <span class="report-choice-icon">⚠️</span>
+                <strong>Avería</strong>
+                <small>Problema técnico u operativo</small>
+              </button>
+              <button type="button" class="report-choice" data-report-type="Estado de agencia">
+                <span class="report-choice-icon">🏢</span>
+                <strong>Estado de agencia</strong>
+                <small>Condición física o mantenimiento</small>
+              </button>
+            </div>
+          </div>
           <div class="field"><label>Agencia</label><input id="reportAgency" list="agencyOptions" placeholder="Ej: 1088" autocomplete="off"><datalist id="agencyOptions"></datalist></div>
           <div class="field"><label id="reportCategoryLabel">Tipo de avería</label><select id="reportTitle"><option value="">Seleccionar...</option></select></div>
           <div class="field hidden" id="customTitleWrap"><label>Otro tipo / título</label><input id="customReportTitle" placeholder="Escribe el tipo específico"></div>
@@ -685,6 +722,54 @@
   function nameOf(p){ return clean(p?.nombre_completo||p?.nombre||p?.display_name||p?.usuario_login||p?.usuario||p?.username||p?.correo||p?.email)||'Usuario'; }
   function userOf(p, identity=''){ return clean(p?.usuario_login||p?.usuario||p?.username||p?.correo||p?.email||identity)||'usuario'; }
   function groupOf(p){ return clean(p?.grupo_asignado||p?.grupo||p?.grupo_nombre||p?.grupo_codigo||p?.zona||p?.departamento||''); }
+  function isAdminRole(){ return state.role === 'administrador' || state.role === 'admin'; }
+  function isEncargadoRole(){ return state.role === 'encargado'; }
+  function isTecnicoRole(){ return state.role === 'tecnico'; }
+  function profileGroupCode(){ return groupNumberFrom(groupOf(state.profile)); }
+  function sameLoose(a,b){
+    const aa=clean(a).toLowerCase();
+    const bb=clean(b).toLowerCase();
+    if(!aa || !bb) return false;
+    return aa===bb || aa.includes(bb) || bb.includes(aa);
+  }
+  function operationCreatedByCurrent(o){
+    const vals=[opCreator(o),o?.creado_por,o?.reportado_por,o?.usuario_creador,o?.usuario_nombre,o?.creado_por_nombre,o?.reportado_por_nombre,o?.email_creador,o?.correo].map(clean);
+    const mine=[state.username,state.identity,nameOf(state.profile),state.profile?.correo,state.profile?.email,state.profile?.usuario_login,state.profile?.usuario,state.profile?.username].map(clean);
+    return vals.some(v=>mine.some(m=>sameLoose(v,m)));
+  }
+  function operationAssignedToCurrent(o){
+    const vals=[opTech(o),o?.tecnico,o?.asignado_a,o?.responsable,o?.tecnico_nombre,o?.tecnico_asignado,o?.tecnico_email,o?.usuario_tecnico].map(clean);
+    const mine=[state.username,state.identity,nameOf(state.profile),state.profile?.correo,state.profile?.email,state.profile?.usuario_login,state.profile?.usuario,state.profile?.username].map(clean);
+    return vals.some(v=>mine.some(m=>sameLoose(v,m)));
+  }
+  function agencyAllowedForRole(a){
+    if(!a) return false;
+    if(isEncargadoRole()){
+      const myGroup=profileGroupCode();
+      if(!myGroup) return false;
+      return groupNumberFrom(agencyGroup(a) || rawAgencyGroup(a)) === myGroup;
+    }
+    return true;
+  }
+  function operationAllowedForRole(o){
+    if(isEncargadoRole()) return operationCreatedByCurrent(o);
+    if(isTecnicoRole()) return operationAssignedToCurrent(o);
+    return true;
+  }
+  function visibleOperations(){ return (state.operations||[]).filter(operationAllowedForRole); }
+  function visibleAgencies(){ return (state.agencies||[]).filter(agencyAllowedForRole); }
+  function canCreateReport(){ return true; }
+  function canUseWhatsApp(){ return isAdminRole() || state.role==='general'; }
+  function canCloseWithoutEvidence(){ return isAdminRole() || state.role==='general'; }
+  function canEditOperation(){ return isAdminRole() || state.role==='general'; }
+  function canUploadEvidence(){ return isTecnicoRole() || isAdminRole() || state.role==='general'; }
+  function canAdvanceToProcess(op){ return (isTecnicoRole() && operationAssignedToCurrent(op)) || isAdminRole() || state.role==='general'; }
+  function canCompleteOperation(op){ return (isTecnicoRole() && operationAssignedToCurrent(op)) || isAdminRole() || state.role==='general'; }
+  function roleHomeText(){
+    if(isEncargadoRole()) return {title:'Panel del Encargado', text:'Crea reportes, consulta tus casos y revisa las agencias de tu grupo.', chip:'Encargado'};
+    if(isTecnicoRole()) return {title:'Panel del Técnico', text:'Consulta tus asignaciones, sube evidencias, completa trabajos asignados y reporta estados de agencia.', chip:'Técnico'};
+    return {title:'Centro de Operaciones', text:'Supervisa reportes, asignaciones y seguimiento operativo desde una vista clara, rápida y profesional.', chip:'Seguimiento activo'};
+  }
   function normStatus(v){ const s=clean(v)||'Pendiente'; const n=s.toLowerCase(); if(n.includes('proceso')) return 'En proceso'; if(n.includes('complet')) return 'Completado'; if(n.includes('asign')) return 'Asignada'; return 'Pendiente'; }
   function statusClass(s){ s=normStatus(s); return s==='Completado'?'completado':s==='En proceso'?'proceso':s==='Asignada'?'asignada':'pendiente'; }
   function opId(o){ return clean(o?.id); }
@@ -935,10 +1020,9 @@
     return direct || creator || null;
   }
   function requireEncargadoWhatsApp(profile, identity){
-    const role=roleOf(profile, identity);
-    if(role==='encargado' && !profileWhatsAppPhone(profile)){
-      throw new Error('Tu usuario de encargado no tiene teléfono WhatsApp válido. Debe agregarse en Catálogos → Usuarios antes de usar la app móvil.');
-    }
+    // v36: el Encargado NO usa WhatsApp en la app móvil. El teléfono sigue existiendo en perfiles,
+    // pero no bloquea el inicio de sesión ni la creación de reportes del Encargado.
+    return true;
   }
   function formatPhoneForView(value){
     const n=normalizeWhatsAppPhone(value);
@@ -1129,6 +1213,30 @@ Antes de asignar técnico, ¿puedes confirmarme si la avería todavía continúa
       'Reparación de toldo'
     ];
   }
+  function fallbackEstadosAgencia(){
+    return [
+      'Toldo no enciende',
+      'Toldo en mal estado',
+      'Bombillo quemado',
+      'Pintura deteriorada',
+      'Cerámica rota',
+      'Filtración',
+      'Puerta dañada',
+      'Letrero en mal estado',
+      'Problema eléctrico',
+      'Baño en mal estado',
+      'Otro'
+    ];
+  }
+  function currentReportVisualType(){
+    return clean($('reportType')?.value || 'Avería');
+  }
+  function internalReportType(visualType){
+    return clean(visualType) === 'Estado de agencia' ? 'Trabajo' : 'Avería';
+  }
+  function isEstadoAgenciaReport(){
+    return currentReportVisualType() === 'Estado de agencia';
+  }
   function getEstadoOperativoDesdeTrabajoMovil(title, tipo){
     const cleanTitle = clean(title).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
     const cleanTipo = clean(tipo).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -1248,14 +1356,31 @@ Antes de asignar técnico, ¿puedes confirmarme si la avería todavía continúa
   function renderReportCategoryOptions(){
     const select=$('reportTitle');
     if(!select) return;
-    const type=clean($('reportType')?.value || 'Avería');
-    const list=type==='Trabajo'?fallbackTrabajos():fallbackAverias();
+    const visualType=currentReportVisualType();
+    const list=visualType==='Estado de agencia'?fallbackEstadosAgencia():fallbackAverias();
     const label=$('reportCategoryLabel');
-    if(label) label.textContent=type==='Trabajo'?'Tipo de trabajo':'Tipo de avería';
+    if(label) label.textContent=visualType==='Estado de agencia'?'Estado de agencia':'Tipo de avería';
     const prev=select.value;
     select.innerHTML='<option value="">Seleccionar...</option>'+list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
     if(prev && list.includes(prev)) select.value=prev;
     toggleCustomTitle();
+  }
+  function setReportVisualType(type){
+    const visual = clean(type)==='Estado de agencia' ? 'Estado de agencia' : 'Avería';
+    const input=$('reportType');
+    if(input) input.value=visual;
+    document.querySelectorAll('[data-report-type]').forEach(btn=>{
+      btn.classList.toggle('active', clean(btn.dataset.reportType)===visual);
+    });
+    renderReportCategoryOptions();
+  }
+  function bindReportTypeChoices(){
+    const choices=document.querySelectorAll('[data-report-type]');
+    choices.forEach(btn=>{
+      btn.onclick=()=>setReportVisualType(btn.dataset.reportType);
+    });
+    if(isTecnicoRole()) setReportVisualType('Estado de agencia');
+    else setReportVisualType(currentReportVisualType() || 'Avería');
   }
   function toggleCustomTitle(){
     const wrap=$('customTitleWrap');
@@ -1477,7 +1602,24 @@ function isProfileActive(profile){
     }
   }
 
-  function enterApp(){ $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('userName').textContent=nameOf(state.profile); $('userRole').textContent=`${state.role.toUpperCase()}${groupOf(state.profile)?' · '+groupOf(state.profile):''}`; renderProfile(); refreshAll(); setupRealtime(); }
+  function enterApp(){ $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); document.body.classList.toggle('role-encargado', isEncargadoRole()); document.body.classList.toggle('role-tecnico', isTecnicoRole()); $('userName').textContent=nameOf(state.profile); $('userRole').textContent=`${state.role.toUpperCase()}${groupOf(state.profile)?' · '+groupOf(state.profile):''}`; applyRoleUI(); renderProfile(); refreshAll(); setupRealtime(); }
+  function applyRoleUI(){
+    const info=roleHomeText();
+    const h=document.querySelector('#viewHome .hero-home h2'); if(h) h.textContent=info.title;
+    const p=document.querySelector('#viewHome .hero-home p'); if(p) p.textContent=info.text;
+    const chip=document.querySelector('#viewHome .hero-status-pill'); if(chip) chip.textContent=info.chip;
+    const recientes=document.querySelector('#viewHome .section-head-home h3'); if(recientes) recientes.textContent=isTecnicoRole()?'Mis asignaciones recientes':(isEncargadoRole()?'Mis reportes recientes':'Operaciones recientes');
+    const recientesSmall=document.querySelector('#viewHome .section-head-home small'); if(recientesSmall) recientesSmall.textContent=isTecnicoRole()?'Últimos trabajos asignados a ti':(isEncargadoRole()?'Últimos reportes creados por ti':'Últimos reportes registrados');
+    const opsTitle=document.querySelector('#viewOps .section-head h3'); if(opsTitle) opsTitle.textContent=isTecnicoRole()?'Mis asignaciones':(isEncargadoRole()?'Mis reportes':'Operaciones');
+    const newBtn=document.querySelector('#viewOps [data-go="create"]'); if(newBtn) newBtn.classList.toggle('role-hidden', !canCreateReport());
+    const createTab=document.querySelector('.tab[data-tab="create"]'); if(createTab) createTab.classList.toggle('role-hidden', !canCreateReport());
+    const opsTab=document.querySelector('.tab[data-tab="ops"] span'); if(opsTab) opsTab.textContent=isTecnicoRole()?'Asignadas':(isEncargadoRole()?'Reportes':'Reportes');
+    const agencyTitle=document.querySelector('#viewAgencies .section-head h3'); if(agencyTitle) agencyTitle.textContent=isEncargadoRole()?'Agencias de mi grupo':'Agencias';
+    const nav=document.querySelector('.tabs');
+    if(nav){ const visible=[...nav.querySelectorAll('.tab')].filter(x=>!x.classList.contains('role-hidden')).length || 1; nav.style.gridTemplateColumns='repeat('+visible+',1fr)'; }
+    try{ if(typeof bindReportTypeChoices === 'function') bindReportTypeChoices(); }catch(e){}
+  }
+
   function logout(){ localStorage.removeItem(STORE); try{ sb.auth.signOut(); }catch{} location.reload(); }
 
   async function refreshAll(){ await Promise.all([loadProfiles(), loadGroups(), loadAgencies(), loadOps(), loadNotifs()]); renderAll(); }
@@ -1498,13 +1640,13 @@ function isProfileActive(profile){
   async function loadOps(){ try{ const r=await sb.from(TABLE_OPS).select('*').order('fecha_creacion',{ascending:false}).limit(500); if(r.error) throw r.error; state.operations=r.data||[]; log('Operaciones: '+state.operations.length); }catch(e){ state.operations=[]; log('Operaciones error: '+(e.message||e)); } }
   async function loadNotifs(){ try{ const r=await sb.from(TABLE_NOTIFS).select('*').order('creado_en',{ascending:false}).limit(80); if(r.error) throw r.error; state.notifs=r.data||[]; }catch(e){ state.notifs=[]; log('Notificaciones error: '+(e.message||e)); } }
 
-  function renderAgencyOptions(){ const dl=$('agencyOptions'); if(!dl) return; dl.innerHTML=state.agencies.map(a=>`<option value="${esc(agencyNumber(a))}">${esc(agencyName(a))} · ${esc(agencyGroup(a))}</option>`).join(''); }
+  function renderAgencyOptions(){ const dl=$('agencyOptions'); if(!dl) return; dl.innerHTML=visibleAgencies().map(a=>`<option value="${esc(agencyNumber(a))}">${esc(agencyName(a))} · ${esc(agencyGroup(a))}</option>`).join(''); }
   function filteredOps(){
     const rawQ = clean($('opsSearch')?.value);
     const q = rawQ.toLowerCase();
     const qAgencyValues = agencySearchValues(rawQ);
 
-    return state.operations.filter(o=>{
+    return visibleOperations().filter(o=>{
       const st=normStatus(o.estado||o.status);
       if(state.filter!=='Todos' && st!==state.filter) return false;
 
@@ -1561,8 +1703,8 @@ function isProfileActive(profile){
     $('opsStatusFilter').onchange=e=>{ state.filter=e.target.value; renderAll(); };
     $('opsTypeFilter').onchange=e=>{ state.typeFilter=e.target.value; renderAll(); };
   }
-  function renderAll(){ renderFilters(); renderStats(); renderLists(); renderNotifs(); renderAgencyOperationalList(); renderAgencyResult(false); renderProfile(); }
-  function renderStats(){ const rows=state.operations; $('sPending').textContent=rows.filter(o=>normStatus(o.estado)==='Pendiente').length; $('sAssigned').textContent=rows.filter(o=>normStatus(o.estado)==='Asignada').length; $('sProcess').textContent=rows.filter(o=>normStatus(o.estado)==='En proceso').length; $('sDone').textContent=rows.filter(o=>normStatus(o.estado)==='Completado').length; }
+  function renderAll(){ applyRoleUI(); renderFilters(); renderStats(); renderLists(); renderNotifs(); renderAgencyOperationalList(); renderAgencyResult(false); renderProfile(); }
+  function renderStats(){ const rows=visibleOperations(); $('sPending').textContent=rows.filter(o=>normStatus(o.estado)==='Pendiente').length; $('sAssigned').textContent=rows.filter(o=>normStatus(o.estado)==='Asignada').length; $('sProcess').textContent=rows.filter(o=>normStatus(o.estado)==='En proceso').length; $('sDone').textContent=rows.filter(o=>normStatus(o.estado)==='Completado').length; }
   function opCard(o, compact=false){
     const st=normStatus(o.estado||o.status);
     const media=getMedia(o);
@@ -1587,7 +1729,7 @@ function isProfileActive(profile){
       ${maps && !compact ? `<div class="row-actions" style="margin-top:10px"><a class="btn btn-secondary btn-sm" href="${esc(maps)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Cómo llegar</a></div>` : ''}
     </article>`;
   }
-  function renderLists(){ $('homeList').innerHTML=state.operations.slice(0,5).map(o=>opCard(o,true)).join('') || '<div class="empty">Sin operaciones todavía.</div>'; $('opsList').innerHTML=filteredOps().map(o=>opCard(o,false)).join('') || '<div class="empty">No hay operaciones con ese filtro.</div>'; document.querySelectorAll('[data-op]').forEach(el=>el.onclick=()=>openDetail(el.dataset.op)); }
+  function renderLists(){ $('homeList').innerHTML=visibleOperations().slice(0,5).map(o=>opCard(o,true)).join('') || '<div class="empty">Sin operaciones todavía.</div>'; $('opsList').innerHTML=filteredOps().map(o=>opCard(o,false)).join('') || '<div class="empty">No hay operaciones con ese filtro.</div>'; document.querySelectorAll('[data-op]').forEach(el=>el.onclick=()=>openDetail(el.dataset.op)); }
 
   async function uploadToR2(file, code){
     if(!file) throw new Error('No se seleccionó archivo.');
@@ -1782,6 +1924,12 @@ function isProfileActive(profile){
       creado_por: payload.creado_por || '',
       foto_url: payload.foto_url || '',
       trabajos_seleccionados: payload.trabajos_seleccionados || [],
+      categoria_visible: payload.categoria_visible || '',
+      problema_reportado: payload.problema_reportado || '',
+      estado_agencia_reportado: payload.estado_agencia_reportado || '',
+      trabajo_a_realizar: payload.trabajo_a_realizar || '',
+      origen_reporte: payload.origen_reporte || '',
+      reportado_por_rol: payload.reportado_por_rol || '',
       afecta_estado_operativo: !!payload.afecta_estado_operativo,
       estado_operativo_generado: payload.estado_operativo_generado || null,
       estado_operativo_aplicado: !!payload.estado_operativo_aplicado,
@@ -1844,6 +1992,10 @@ function isProfileActive(profile){
 
   async function createReport(ev){
     ev.preventDefault();
+    if(!canCreateReport()){
+      toast('No permitido','Tu rol no puede crear reportes desde la app.');
+      return;
+    }
     const btn=$('btnSaveReport');
     btn.disabled=true;
     btn.innerHTML='Guardando...';
@@ -1862,11 +2014,11 @@ function isProfileActive(profile){
       const creadorNombre=nameOf(state.profile);
       const creadorUsuario=state.username || userOf(state.profile,state.identity);
       const creadorWhatsapp=profileWhatsAppPhone(state.profile);
-      if(state.role==='encargado' && !creadorWhatsapp){
-        throw new Error('Tu usuario de encargado no tiene teléfono WhatsApp válido. Actualízalo en Catálogos → Usuarios.');
-      }
 
-      const tipoReporte = $('reportType').value;
+      const tipoVisible = currentReportVisualType();
+      const esEstadoAgencia = tipoVisible === 'Estado de agencia';
+      const tipoReporte = internalReportType(tipoVisible);
+      if(isTecnicoRole() && !esEstadoAgencia) throw new Error('El técnico solo puede crear reportes de Estado de agencia.');
       const trabajosSeleccionados = tipoReporte === 'Trabajo' ? [title] : [];
       const estadoOperativoGenerado = getEstadoOperativoDesdeTrabajoMovil(title, tipoReporte);
 
@@ -1876,6 +2028,12 @@ function isProfileActive(profile){
         tipo:tipoReporte,
         titulo:title,
         descripcion:desc,
+        categoria_visible: esEstadoAgencia ? 'Estado de agencia' : '',
+        problema_reportado: esEstadoAgencia ? title : '',
+        estado_agencia_reportado: esEstadoAgencia ? title : '',
+        origen_reporte:'app_movil',
+        reportado_por_rol:state.role || '',
+        trabajo_a_realizar:'',
         estado:'Pendiente',
         prioridad:'Media',
         agencia:agencyNum,
@@ -1907,7 +2065,7 @@ function isProfileActive(profile){
         afecta_estado_operativo:!!estadoOperativoGenerado,
         estado_operativo_generado:estadoOperativoGenerado || null,
         estado_operativo_aplicado:!!estadoOperativoGenerado,
-        historial:[{fecha:nowIso(),accion:'Creado desde app móvil',usuario:creadorUsuario,nombre:creadorNombre}]
+        historial:[{fecha:nowIso(),accion:esEstadoAgencia?'Estado de agencia reportado':'Creado desde app móvil',usuario:creadorUsuario,nombre:creadorNombre,detalle:esEstadoAgencia?('Problema reportado: '+title):''}]
       };
 
       let r = await safeInsertOperation(payload);
@@ -1936,7 +2094,7 @@ function isProfileActive(profile){
         }
       }
 
-      await createNotif('Nueva operación creada',`Agencia #${agencyNum} · ${title} · Creado por: ${creadorNombre}`,id,codigo);
+      await createNotif(esEstadoAgencia ? 'Nuevo estado de agencia reportado' : 'Nueva operación creada', esEstadoAgencia ? `Agencia #${agencyNum} · ${title} · Reportado por: ${creadorNombre}` : `Agencia #${agencyNum} · ${title} · Creado por: ${creadorNombre}`, id, codigo, { tipo: esEstadoAgencia ? 'ESTADO_AGENCIA_CREADO' : 'OPERACION_CREADA', importancia: 'importante', categoria_visible: esEstadoAgencia ? 'Estado de agencia' : '' });
       $('reportForm').reset();
       state.selectedReportFiles=[];
       renderReportFilesPreview();
@@ -1951,7 +2109,7 @@ function isProfileActive(profile){
       btn.innerHTML='Guardar reporte';
     }
   }
-  async function createNotif(title,msg,refId='',refCode=''){ try{ await sb.from(TABLE_NOTIFS).insert({ modulo:'OPERACIONES', tipo:'OPERACION_CREADA', titulo:title, mensaje:msg, importancia:'normal', referencia_tipo:'operacion', referencia_id:null, referencia_codigo:refCode||refId, usuario_nombre:nameOf(state.profile), leida:false, visto_en_panel:false, creado_en:nowIso(), detalle:{id_texto:refId,codigo:refCode,origen:'app_movil_v2'} }); }catch(e){ log('Notif omitida: '+(e.message||e)); } }
+  async function createNotif(title,msg,refId='',refCode='',opts={}){ try{ await sb.from(TABLE_NOTIFS).insert({ modulo:'OPERACIONES', tipo:opts.tipo || 'OPERACION_CREADA', titulo:title, mensaje:msg, importancia:opts.importancia || 'importante', referencia_tipo:'operacion', referencia_id:null, referencia_codigo:refCode||refId, usuario_nombre:nameOf(state.profile), leida:false, visto_en_panel:false, creado_en:nowIso(), detalle:{id_texto:refId,codigo:refCode,origen:'app_movil_v2',categoria_visible:opts.categoria_visible||''} }); }catch(e){ log('Notif omitida: '+(e.message||e)); } }
 
   
   function renderSelectedEvidencePreview(){
@@ -1997,6 +2155,7 @@ function isProfileActive(profile){
 function openDetail(id){
     const op=state.operations.find(o=>opId(o)===id) || state.operations.find(o=>opCode(o)===id);
     if(!op) return;
+    if(!operationAllowedForRole(op)){ toast('Acceso restringido','Este reporte no corresponde a tu rol.'); showTab('ops'); return; }
 
     const st=normStatus(op.estado||op.status);
     const media=getMedia(op);
@@ -2013,15 +2172,18 @@ function openDetail(id){
     const encargadoMostrado = waContact && waContact.profile ? nameOf(waContact.profile) : encargado;
 
     let actions='';
-    actions += '<button class="btn btn-whatsapp span-2" id="btnMobileWhatsAppMain">💬 WhatsApp encargado</button>';
+    if(canUseWhatsApp()) actions += '<button class="btn btn-whatsapp span-2" id="btnMobileWhatsAppMain">💬 WhatsApp encargado</button>';
     if(maps) actions += `<a class="btn btn-secondary" href="${esc(maps)}" target="_blank" rel="noopener">Cómo llegar</a>`;
-    actions += '<button class="btn btn-secondary" id="btnMobileEdit">Editar</button>';
-    actions += '<label class="btn btn-secondary">Tomar foto<input id="mobileEvidenceCamera" class="hidden-file" type="file" accept="image/*" capture="environment" multiple></label>';
-    actions += '<label class="btn btn-secondary">Galería<input id="mobileEvidenceGallery" class="hidden-file" type="file" accept="image/*,video/*" multiple></label>';
-    actions += '<button class="btn btn-primary" id="btnMobileSaveEvidence">Guardar evidencia</button>';
-    if(st==='Pendiente'||st==='Asignada') actions += '<button class="btn btn-secondary span-2" id="btnMobileToProcess">Marcar En proceso</button>';
-    if(st==='En proceso') actions += '<button class="btn btn-good span-2" id="btnMobileComplete">Completar con evidencia</button>';
-    if(st!=='Completado') actions += '<button class="btn btn-wa-close span-2" id="btnMobileCloseNoEvidence">✅ Cerrar sin evidencia (WhatsApp)</button>';
+    if(canEditOperation()) actions += '<button class="btn btn-secondary" id="btnMobileEdit">Editar</button>';
+    if(canUploadEvidence()){
+      actions += '<label class="btn btn-secondary">Tomar foto<input id="mobileEvidenceCamera" class="hidden-file" type="file" accept="image/*" capture="environment" multiple></label>';
+      actions += '<label class="btn btn-secondary">Galería<input id="mobileEvidenceGallery" class="hidden-file" type="file" accept="image/*,video/*" multiple></label>';
+      actions += '<button class="btn btn-primary" id="btnMobileSaveEvidence">Guardar evidencia</button>';
+    }
+    if(canAdvanceToProcess(op) && (st==='Pendiente'||st==='Asignada')) actions += '<button class="btn btn-secondary span-2" id="btnMobileToProcess">Marcar En proceso</button>';
+    if(canCompleteOperation(op) && st==='En proceso') actions += '<button class="btn btn-good span-2" id="btnMobileComplete">Completar con evidencia</button>';
+    if(canCloseWithoutEvidence() && st!=='Completado') actions += '<button class="btn btn-wa-close span-2" id="btnMobileCloseNoEvidence">✅ Cerrar sin evidencia (WhatsApp)</button>';
+    if(isEncargadoRole()) actions += '<div class="readonly-note span-2">Vista de encargado: puedes consultar el estado e historial de tus reportes. No puedes cerrar, completar, editar ni usar WhatsApp.</div>';
 
     content.innerHTML=`
       <div class="mobile-op-hero">
@@ -2150,6 +2312,8 @@ function openDetail(id){
   }
 
   async function updateStatus(op,status,extra={}){
+    if(status==='En proceso' && !canAdvanceToProcess(op)){ toast('No permitido','Tu rol no puede cambiar el estado de esta operación.'); return; }
+    if(status==='Completado' && !canCompleteOperation(op)){ toast('No permitido','Tu rol no puede completar esta operación.'); return; }
     try{
       const patch={ estado:status, actualizado_en:nowIso(), ...extra };
       if(status==='En proceso') patch.fecha_inicio=nowIso();
@@ -2170,6 +2334,7 @@ function openDetail(id){
   }
 
   async function saveOperationEdit(op){
+    if(!canEditOperation()){ toast('No permitido','Tu rol no puede editar operaciones.'); return; }
     try{
       const title=clean($('mobileEditTitle')?.value || $('editTitle')?.value);
       const desc=clean($('mobileEditDesc')?.value || $('editDesc')?.value);
@@ -2198,6 +2363,7 @@ function openDetail(id){
   }
 
   async function uploadEvidenceOnly(op){
+    if(!canUploadEvidence()){ toast('No permitido','Tu rol no puede subir evidencia en esta operación.'); return; }
     const files=state.selectedEvidenceFiles||[];
 
     if(!files.length){
@@ -2233,6 +2399,7 @@ function openDetail(id){
   }
 
   async function closeOperationWithoutEvidenceByWhatsApp(op){
+    if(!canCloseWithoutEvidence()){ toast('No permitido','Tu rol no puede cerrar operaciones.'); return; }
     const st=normStatus(op.estado||op.status);
     if(st==='Completado'){
       toast('Ya está completada','Esta avería ya fue cerrada.');
@@ -2277,6 +2444,7 @@ function openDetail(id){
   }
 
   async function completeOperation(op){
+    if(!canCompleteOperation(op)){ toast('No permitido','Tu rol no puede completar esta operación.'); return; }
     const files=state.selectedEvidenceFiles||[];
     const hasNewEvidence = files.length > 0;
     const old=Array.isArray(op.fotos_evidencia)?op.fotos_evidencia:[];
@@ -2306,15 +2474,16 @@ function openDetail(id){
     }
   }
 
-  function renderNotifs(){ const unread=state.notifs.filter(n=>!n.leida).length; $('notifBadge').textContent=unread; $('notifBadge').classList.toggle('hidden',!unread); $('notifList').innerHTML=state.notifs.length?state.notifs.map(n=>`<article class="card" data-notif="${esc(n.id)}"><div class="card-top"><div><h4>${esc(n.titulo||'Notificación')}</h4><div class="meta">${esc(n.modulo||'Sistema')} · ${n.creado_en?new Date(n.creado_en).toLocaleString():''}</div></div>${n.leida?'':'<span class="pill pendiente">Nueva</span>'}</div><p class="desc">${esc(n.mensaje||'')}</p></article>`).join(''):'<div class="empty">No hay notificaciones.</div>'; document.querySelectorAll('[data-notif]').forEach(el=>el.onclick=()=>openNotif(el.dataset.notif)); }
-  async function openNotif(id){ const n=state.notifs.find(x=>String(x.id)===String(id)); if(!n) return; try{ await sb.from(TABLE_NOTIFS).update({leida:true,visto_en_panel:true}).eq('id',id); }catch{} const ref=clean(n.referencia_codigo || n?.detalle?.codigo || n?.detalle?.id_texto || n.referencia_id); const op=state.operations.find(o=>opCode(o)===ref || opId(o)===ref); if(op){ showTab('ops'); setTimeout(()=>openDetail(opId(op)),150); } else toast('Notificación abierta', n.mensaje||'Sin referencia directa.'); await loadNotifs(); renderNotifs(); }
+  function visibleNotifs(){ return (state.notifs||[]).filter(n=>{ const ref=clean(n.referencia_codigo || n?.detalle?.codigo || n?.detalle?.id_texto || n.referencia_id); if(!ref) return !isEncargadoRole() && !isTecnicoRole(); const op=(state.operations||[]).find(o=>opCode(o)===ref || opId(o)===ref); return op ? operationAllowedForRole(op) : (!isEncargadoRole() && !isTecnicoRole()); }); }
+  function renderNotifs(){ const rows=visibleNotifs(); const unread=rows.filter(n=>!n.leida).length; $('notifBadge').textContent=unread; $('notifBadge').classList.toggle('hidden',!unread); $('notifList').innerHTML=rows.length?rows.map(n=>`<article class="card" data-notif="${esc(n.id)}"><div class="card-top"><div><h4>${esc(n.titulo||'Notificación')}</h4><div class="meta">${esc(n.modulo||'Sistema')} · ${n.creado_en?new Date(n.creado_en).toLocaleString():''}</div></div>${n.leida?'':'<span class="pill pendiente">Nueva</span>'}</div><p class="desc">${esc(n.mensaje||'')}</p></article>`).join(''):'<div class="empty">No hay notificaciones.</div>'; document.querySelectorAll('[data-notif]').forEach(el=>el.onclick=()=>openNotif(el.dataset.notif)); }
+  async function openNotif(id){ const n=state.notifs.find(x=>String(x.id)===String(id)); if(!n) return; try{ await sb.from(TABLE_NOTIFS).update({leida:true,visto_en_panel:true}).eq('id',id); }catch{} const ref=clean(n.referencia_codigo || n?.detalle?.codigo || n?.detalle?.id_texto || n.referencia_id); const op=state.operations.find(o=>opCode(o)===ref || opId(o)===ref); if(op && operationAllowedForRole(op)){ showTab('ops'); setTimeout(()=>openDetail(opId(op)),150); } else toast('Notificación abierta', n.mensaje||'Sin referencia directa.'); await loadNotifs(); renderNotifs(); }
   async function markRead(){ try{ await sb.from(TABLE_NOTIFS).update({leida:true,visto_en_panel:true}).eq('leida',false); await loadNotifs(); renderNotifs(); }catch(e){ toast('No se pudo marcar',e.message||String(e)); } }
 
   function filteredAgenciesByOperationalState(){
     const wanted = normalizeOperationalState(state.agencyOperationalFilter || 'Todas');
     const q = clean(($('agencySearch') && $('agencySearch').value) || '').toLowerCase();
 
-    let rows = state.agencies || [];
+    let rows = visibleAgencies();
 
     // Si el usuario escribe un número de agencia, la lista se reduce a esa agencia
     // en vez de seguir mostrando todas las agencias del filtro operativo.
@@ -2375,9 +2544,10 @@ function openDetail(id){
     const a=findAgency(q);
     const box=$('agencyResult');
     if(!a){ box.innerHTML='<div class="empty">No encontré esa agencia.</div>'; return; }
+    if(!agencyAllowedForRole(a)){ box.innerHTML='<div class="empty">Esta agencia no pertenece a tu grupo asignado.</div>'; return; }
 
     const num=agencyNumber(a);
-    const ops=state.operations.filter(o=>opAgency(o)===num);
+    const ops=visibleOperations().filter(o=>opAgency(o)===num);
     const grupo=agencyGroup(a)||'Sin grupo';
     const encargado=agencyManager(a)||'No registrado';
     const mapsUrl=googleMapsUrlForAgency(a);
@@ -2404,7 +2574,7 @@ function openDetail(id){
       </div>`;
     $('btnOpsAgency').onclick=()=>{ showTab('ops'); $('opsSearch').value=num; renderAll(); };
   }
-  function renderProfile(){ const p=state.profile||{}; const phone=profileWhatsAppPhone(p); $('profileBox').innerHTML=`<h4>${esc(nameOf(p))}</h4><p class="desc">Usuario: ${esc(state.username)}<br>Rol base: ${esc(state.role)}<br>Grupo: ${esc(groupOf(p)||'Sin grupo')}<br>WhatsApp: ${phone?esc(formatPhoneForView(phone)):'No registrado'}<br>Modo: App móvil v31 · WhatsApp celular</p><div class="row-actions"><button class="btn btn-danger" id="btnLogout2">Cerrar sesión</button></div>`; const b=$('btnLogout2'); if(b) b.onclick=logout; }
+  function renderProfile(){ const p=state.profile||{}; const phone=profileWhatsAppPhone(p); const extra=isEncargadoRole()?'Modo encargado: crear reportes, consultar estado y agencias de tu grupo.':(isTecnicoRole()?'Modo técnico: gestionar asignaciones, evidencias y cierre con evidencia.':'Modo operativo completo.'); $('profileBox').innerHTML=`<h4>${esc(nameOf(p))}</h4><p class="desc">Usuario: ${esc(state.username)}<br>Rol base: ${esc(state.role)}<br>Grupo: ${esc(groupOf(p)||'Sin grupo')}<br>${canUseWhatsApp()?('WhatsApp: '+(phone?esc(formatPhoneForView(phone)):'No registrado')+'<br>'):''}${esc(extra)}<br>Modo: App móvil v36 · Roles móviles</p><div class="row-actions"><button class="btn btn-danger" id="btnLogout2">Cerrar sesión</button></div>`; const b=$('btnLogout2'); if(b) b.onclick=logout; }
 
   function setupRealtime(){ state.channels.forEach(ch=>{ try{ sb.removeChannel(ch); }catch{} }); state.channels=[]; [TABLE_OPS,TABLE_NOTIFS].forEach(table=>{ try{ const ch=sb.channel('mobile-v2-'+table).on('postgres_changes',{event:'*',schema:'public',table},payload=>{ if(table===TABLE_OPS){ loadOps().then(renderAll); if(payload.eventType!=='DELETE') toast('Operación actualizada',opTitle(payload.new||{})); } else { loadNotifs().then(renderNotifs); const n=payload.new||{}; if(payload.eventType==='INSERT') toast(n.titulo||'Nueva notificación',n.mensaje||''); } }).subscribe(s=>log('Realtime '+table+': '+s)); state.channels.push(ch); }catch(e){ log('Realtime '+table+' error: '+(e.message||e)); } }); }
   function updateMobileBackButton(){
@@ -2456,8 +2626,8 @@ function openDetail(id){
     $('reportForm').onsubmit=createReport;
     bindReportFileInputs();
     renderReportFilesPreview();
-    if($('reportType') && typeof renderReportCategoryOptions === 'function'){
-      $('reportType').onchange=renderReportCategoryOptions;
+    if(typeof bindReportTypeChoices === 'function'){
+      bindReportTypeChoices();
     }
     if($('reportTitle') && typeof toggleCustomTitle === 'function'){
       $('reportTitle').onchange=toggleCustomTitle;
