@@ -1844,14 +1844,58 @@ function isProfileActive(profile){
     }).join('')+'</div><div class="file-preview-note">'+files.length+' archivo(s) seleccionado(s).</div>';
   }
 
+  function imageFileToJpeg(file, maxSize=1600, quality=.86){
+    return new Promise((resolve)=>{
+      try{
+        if(!file || !/^image\//i.test(file.type||'')) return resolve(file);
+        // Las fotos tomadas en tiempo real pueden venir muy pesadas o con metadatos raros.
+        // Las normalizamos a JPG para que R2/API las reciba igual que una imagen de galería.
+        const img=new Image();
+        const url=URL.createObjectURL(file);
+        img.onload=()=>{
+          try{
+            const w=img.naturalWidth||img.width||0;
+            const h=img.naturalHeight||img.height||0;
+            if(!w || !h){ URL.revokeObjectURL(url); return resolve(file); }
+            const scale=Math.min(1, maxSize/Math.max(w,h));
+            const cw=Math.max(1, Math.round(w*scale));
+            const ch=Math.max(1, Math.round(h*scale));
+            const canvas=document.createElement('canvas');
+            canvas.width=cw; canvas.height=ch;
+            const ctx=canvas.getContext('2d', {alpha:false});
+            ctx.drawImage(img,0,0,cw,ch);
+            canvas.toBlob((blob)=>{
+              URL.revokeObjectURL(url);
+              if(!blob) return resolve(file);
+              const base=(file.name||'foto-camara').replace(/\.[^.]+$/,'');
+              resolve(new File([blob], base+'-app.jpg', {type:'image/jpeg', lastModified:Date.now()}));
+            }, 'image/jpeg', quality);
+          }catch(e){ URL.revokeObjectURL(url); resolve(file); }
+        };
+        img.onerror=()=>{ URL.revokeObjectURL(url); resolve(file); };
+        img.src=url;
+      }catch(e){ resolve(file); }
+    });
+  }
+
+  async function normalizeCameraFiles(files){
+    const list=Array.from(files||[]);
+    const out=[];
+    for(const file of list){
+      out.push(await imageFileToJpeg(file));
+    }
+    return out;
+  }
+
   function bindReportFileInputs(){
     const camera=$('reportFilesCamera');
     const gallery=$('reportFilesGallery');
 
-    const bind=(input, sourceName)=>{
+    const bind=(input, sourceName, isCamera=false)=>{
       if(!input) return;
-      input.onchange=()=>{
-        const files=Array.from(input.files||[]);
+      input.onchange=async()=>{
+        const rawFiles=Array.from(input.files||[]);
+        const files=isCamera ? await normalizeCameraFiles(rawFiles) : rawFiles;
         state.selectedReportFiles=mergeUniqueFiles(state.selectedReportFiles, files);
         renderReportFilesPreview();
         if(files.length) toast(sourceName, files.length+' archivo(s) agregado(s) al reporte.');
@@ -1859,8 +1903,8 @@ function isProfileActive(profile){
       };
     };
 
-    bind(camera, 'Foto tomada');
-    bind(gallery, 'Archivo de galería');
+    bind(camera, 'Foto tomada', true);
+    bind(gallery, 'Archivo de galería', false);
   }
 
   function getReportFiles(){
