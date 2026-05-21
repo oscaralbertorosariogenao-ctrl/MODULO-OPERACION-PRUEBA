@@ -429,6 +429,49 @@
     #homeList .card .pill{padding:7px 11px;font-size:11px;font-weight:1000}
     #homeList .card .card-top{gap:10px}
     @media(max-width:390px){.hero-main{flex-direction:column}.hero-home p{max-width:none}.hero-highlights{grid-template-columns:1fr}.hero-status-pill{width:fit-content}}
+
+    /* LOTEKA v3.4 WhatsApp bajo demanda */
+    .wa-card.hidden{display:none!important}
+    .wa-card{animation:waPanelIn .18s ease-out}
+    @keyframes waPanelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+
+    /* LOTEKA v3.5 FIX: acciones del detalle sin pegarse encima de evidencias */
+    #viewOpDetail.mobile-detail-view{
+      padding-bottom:128px!important;
+      overflow:visible!important;
+    }
+    #mobileDetailContent{
+      padding-bottom:24px!important;
+    }
+    #mobileDetailContent .mobile-action-bar{
+      position:relative!important;
+      left:auto!important;
+      right:auto!important;
+      bottom:auto!important;
+      transform:none!important;
+      width:100%!important;
+      max-width:none!important;
+      z-index:1!important;
+      margin:14px 0 22px!important;
+      padding:0!important;
+      background:transparent!important;
+      border-top:0!important;
+      box-shadow:none!important;
+      display:grid!important;
+      grid-template-columns:1fr 1fr!important;
+      gap:8px!important;
+    }
+    #mobileDetailContent .mobile-action-bar .btn{
+      min-height:46px!important;
+      border-radius:15px!important;
+    }
+    #mobileDetailContent .mobile-section-card:last-of-type{
+      margin-bottom:10px!important;
+    }
+    #selectedEvidencePreview{
+      min-height:56px;
+    }
 </style>
   <link rel="manifest" href="/manifest-app-movil.json">
   <meta name="application-name" content="LOTEKA Móvil">
@@ -2010,7 +2053,7 @@ function openDetail(id){
         <p class="desc">${esc(opDesc(op)||'Sin descripción')}</p>
       </div>
 
-      <div class="mobile-section-card wa-card">
+      <div class="mobile-section-card wa-card hidden" id="whatsappPanel">
         <h4>WhatsApp encargado <span class="wa-badge">${waContact.phone?'Disponible':'Teléfono requerido'}</span></h4>
         <p class="desc">
           <b>${esc(waContact.name||encargado)}</b><br>
@@ -2053,7 +2096,14 @@ function openDetail(id){
     if(saveEv) saveEv.onclick=()=>uploadEvidenceOnly(op);
 
     const waMain=$('btnMobileWhatsAppMain');
-    if(waMain) waMain.onclick=()=>openWhatsAppForOperation(op,'confirmar');
+    if(waMain) waMain.onclick=()=>{
+      const panel=$('whatsappPanel');
+      if(!panel) return;
+      const willOpen=panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !willOpen);
+      waMain.innerHTML = willOpen ? '💬 Ocultar WhatsApp encargado' : '💬 WhatsApp encargado';
+      if(willOpen) setTimeout(()=>panel.scrollIntoView({behavior:'smooth', block:'start'}),80);
+    };
     const waConfirmar=$('btnWaConfirmar');
     if(waConfirmar) waConfirmar.onclick=()=>openWhatsAppForOperation(op,'confirmar');
     const waEvidencia=$('btnWaEvidencia');
