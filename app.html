@@ -525,7 +525,7 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }, realtime: { params: { eventsPerSecond: 8 } } });
   const $ = id => document.getElementById(id);
-  const state = { profile:null, identity:'', role:'general', username:'', currentTab:'home', tabHistory:[], operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', typeFilter:'Todas', agencyOperationalFilter:'Todas', channels:[], selectedEvidenceFiles:[], selectedReportFiles:[] };
+  const state = { profile:null, identity:'', role:'general', username:'', currentTab:'home', tabHistory:[], operations:[], agencies:[], groups:[], notifs:[], filter:'Todos', typeFilter:'Todas', agencyOperationalFilter:'Todas', channels:[], selectedEvidenceFiles:[], selectedReportFiles:[], profiles:[] };
 
   function clean(v){ return String(v ?? '').trim(); }
   function esc(v){ return clean(v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
@@ -554,10 +554,27 @@
       t.querySelector('span').textContent='';
     },5200);
   }
-  function roleOf(p, identity=''){ const raw=clean(p?.rol||p?.role||p?.perfil||p?.tipo||identity).toLowerCase(); if(raw.includes('admin')) return 'administrador'; if(raw.includes('tecn')) return 'tecnico'; if(raw.includes('encarg')) return 'encargado'; return 'general'; }
-  function nameOf(p){ return clean(p?.nombre_completo||p?.nombre||p?.display_name||p?.usuario||p?.username||p?.email)||'Usuario'; }
-  function userOf(p, identity=''){ return clean(p?.usuario||p?.username||p?.email||identity)||'usuario'; }
-  function groupOf(p){ return clean(p?.grupo||p?.grupo_nombre||p?.grupo_codigo||p?.zona||''); }
+  function relatedName(obj, key){
+    try{
+      const v = obj && obj[key];
+      if(!v) return '';
+      if(Array.isArray(v)) return clean(v[0]?.nombre || v[0]?.name || '');
+      return clean(v.nombre || v.name || v.titulo || '');
+    }catch(e){ return ''; }
+  }
+  function roleOf(p, identity=''){
+    const raw=clean(
+      p?.rol || p?.role || p?.perfil || p?.tipo || p?.rol_nombre || relatedName(p,'roles') ||
+      p?.puesto || p?.puesto_nombre || relatedName(p,'puestos') || identity
+    ).toLowerCase();
+    if(raw.includes('admin')) return 'administrador';
+    if(raw.includes('tecn')) return 'tecnico';
+    if(raw.includes('encarg')) return 'encargado';
+    return 'general';
+  }
+  function nameOf(p){ return clean(p?.nombre_completo||p?.nombre||p?.display_name||p?.usuario_login||p?.usuario||p?.username||p?.correo||p?.email)||'Usuario'; }
+  function userOf(p, identity=''){ return clean(p?.usuario_login||p?.usuario||p?.username||p?.correo||p?.email||identity)||'usuario'; }
+  function groupOf(p){ return clean(p?.grupo_asignado||p?.grupo||p?.grupo_nombre||p?.grupo_codigo||p?.zona||p?.departamento||''); }
   function normStatus(v){ const s=clean(v)||'Pendiente'; const n=s.toLowerCase(); if(n.includes('proceso')) return 'En proceso'; if(n.includes('complet')) return 'Completado'; if(n.includes('asign')) return 'Asignada'; return 'Pendiente'; }
   function statusClass(s){ s=normStatus(s); return s==='Completado'?'completado':s==='En proceso'?'proceso':s==='Asignada'?'asignada':'pendiente'; }
   function opId(o){ return clean(o?.id); }
@@ -759,6 +776,54 @@
   function profileWhatsAppPhone(profile){
     return normalizeWhatsAppPhone(recordPhone(profile));
   }
+  function profileSearchTokens(profile){
+    const vals=[
+      profile?.id, profile?.nombre_completo, profile?.nombre, profile?.usuario_login, profile?.usuario,
+      profile?.username, profile?.correo, profile?.email, profile?.rol, profile?.puesto,
+      relatedName(profile,'roles'), relatedName(profile,'puestos')
+    ];
+    return vals.map(v=>clean(v).toLowerCase()).filter(Boolean);
+  }
+  function sameLooseText(a,b){
+    const x=clean(a).toLowerCase(), y=clean(b).toLowerCase();
+    if(!x || !y) return false;
+    const xs=x.replace(/[^a-z0-9áéíóúñ]/gi,''), ys=y.replace(/[^a-z0-9áéíóúñ]/gi,'');
+    return x===y || xs===ys || (xs.length>=4 && ys.includes(xs)) || (ys.length>=4 && xs.includes(ys));
+  }
+  function findProfileByAny(){
+    const wanted=Array.from(arguments).map(v=>clean(v)).filter(Boolean);
+    if(!wanted.length || !Array.isArray(state.profiles)) return null;
+    for(const w of wanted){
+      const wl=w.toLowerCase();
+      const hit=(state.profiles||[]).find(p=>profileSearchTokens(p).some(t=>t===wl || sameLooseText(t, wl)));
+      if(hit) return hit;
+    }
+    return null;
+  }
+  function profileForOperationContact(op){
+    const candidates=[
+      op?.encargado_id, op?.reportante_id, op?.creado_por_id, op?.usuario_id,
+      op?.encargado_nombre, op?.nombre_encargado, op?.encargado,
+      op?.reportado_por_nombre, op?.reportado_por, op?.creado_por_nombre, op?.creado_por,
+      op?.usuario_nombre, op?.usuario_creador, opCreator(op)
+    ];
+    const direct=findProfileByAny.apply(null,candidates);
+    if(direct && profileWhatsAppPhone(direct)) return direct;
+
+    const creator=findProfileByAny(op?.reportado_por_nombre, op?.creado_por_nombre, op?.usuario_nombre, opCreator(op));
+    if(creator && profileWhatsAppPhone(creator)) return creator;
+
+    const grupoNum=groupNumberFrom(opGroup(op));
+    if(grupoNum){
+      const byGroup=(state.profiles||[]).find(p=>{
+        if(!profileWhatsAppPhone(p)) return false;
+        if(roleOf(p)!=='encargado') return false;
+        return groupNumberFrom(groupOf(p))===grupoNum;
+      });
+      if(byGroup) return byGroup;
+    }
+    return direct || creator || null;
+  }
   function requireEncargadoWhatsApp(profile, identity){
     const role=roleOf(profile, identity);
     if(role==='encargado' && !profileWhatsAppPhone(profile)){
@@ -774,25 +839,29 @@
   function whatsappContactForOperation(op){
     const agency=findAgency(opAgency(op));
     const group=agency?findGroupForAgency(agency):null;
+    const matchedProfile=profileForOperationContact(op);
     const rawPhone=firstText(
       recordPhone(op),
-      recordPhone(state.profile),
-      recordPhone(agency),
-      recordPhone(group),
+      recordPhone(matchedProfile),
       op?.telefono_reportante,
       op?.reportante_telefono,
       op?.telefono_creador,
-      op?.creador_telefono
+      op?.creador_telefono,
+      recordPhone(agency),
+      recordPhone(group)
     );
     const phone=normalizeWhatsAppPhone(rawPhone);
     const name=firstText(
+      matchedProfile ? nameOf(matchedProfile) : '',
       op?.encargado_nombre,
       op?.nombre_encargado,
       op?.encargado,
+      op?.reportado_por_nombre,
+      op?.creado_por_nombre,
       agencyManager(agency),
       opCreator(op)
     ) || 'Encargado';
-    return { phone, rawPhone, name, agency, group };
+    return { phone, rawPhone, name, agency, group, profile: matchedProfile };
   }
   function whatsappMessageForOperation(op, mode){
     const contact=whatsappContactForOperation(op);
@@ -853,6 +922,37 @@ ${descripcion}
 
 Antes de asignar técnico, ¿puedes confirmarme si la avería todavía continúa?`;
   }
+  function isMobileWhatsAppDevice(){
+    return /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(navigator.userAgent || '');
+  }
+  function buildWhatsAppLinks(phone, message){
+    const cleanPhone = String(phone || '').replace(/\D/g,'');
+    const cleanText = encodeURIComponent(message || '');
+    if(!cleanPhone) return null;
+
+    // APP MÓVIL SOLAMENTE:
+    // Para celular usamos el puente oficial de WhatsApp. En Android/iPhone normalmente abre
+    // WhatsApp instalado directamente con el mensaje preparado.
+    return {
+      primary: 'https://api.whatsapp.com/send?phone=' + cleanPhone + '&text=' + cleanText,
+      fallback: 'whatsapp://send?phone=' + cleanPhone + '&text=' + cleanText
+    };
+  }
+  function openWhatsAppInstalledOrFallback(phone, message){
+    const links = buildWhatsAppLinks(phone, message);
+    if(!links) return false;
+
+    // En móvil/PWA lo más estable es abrir el enlace oficial en una acción directa del usuario.
+    // No usamos WhatsApp Web ni WhatsApp Desktop aquí.
+    const a = document.createElement('a');
+    a.href = links.primary;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ try{ a.remove(); }catch(e){} }, 300);
+    return true;
+  }
   function openWhatsAppForOperation(op, mode){
     const contact=whatsappContactForOperation(op);
     const phone=contact.phone;
@@ -861,8 +961,11 @@ Antes de asignar técnico, ¿puedes confirmarme si la avería todavía continúa
       return;
     }
     const message=whatsappMessageForOperation(op, mode || 'confirmar');
-    const url='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
-    window.open(url,'_blank','noopener');
+    const ok=openWhatsAppInstalledOrFallback(phone, message);
+    if(!ok){
+      toast('WhatsApp no disponible','No se pudo preparar el enlace de WhatsApp. Verifica el teléfono del encargado.');
+      return;
+    }
     toast('WhatsApp abierto','Mensaje preparado para '+(contact.name||'el encargado')+'.');
   }
   function callContactForOperation(op){
@@ -1267,7 +1370,19 @@ function isProfileActive(profile){
   function enterApp(){ $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('userName').textContent=nameOf(state.profile); $('userRole').textContent=`${state.role.toUpperCase()}${groupOf(state.profile)?' · '+groupOf(state.profile):''}`; renderProfile(); refreshAll(); setupRealtime(); }
   function logout(){ localStorage.removeItem(STORE); try{ sb.auth.signOut(); }catch{} location.reload(); }
 
-  async function refreshAll(){ await Promise.all([loadGroups(), loadAgencies(), loadOps(), loadNotifs()]); renderAll(); }
+  async function refreshAll(){ await Promise.all([loadProfiles(), loadGroups(), loadAgencies(), loadOps(), loadNotifs()]); renderAll(); }
+  async function loadProfiles(){
+    try{
+      let r=await sb.from(TABLE_PERFILES).select('*,roles(nombre),puestos(nombre)').limit(1000);
+      if(r.error){ r=await sb.from(TABLE_PERFILES).select('*').limit(1000); }
+      if(r.error) throw r.error;
+      state.profiles=r.data||[];
+      log('Perfiles: '+state.profiles.length);
+    }catch(e){
+      state.profiles=[];
+      log('Perfiles error: '+(e.message||e));
+    }
+  }
   async function loadGroups(){ try{ const r=await sb.from(TABLE_GRUPOS).select('*').limit(1000); if(r.error) throw r.error; state.groups=r.data||[]; log('Grupos: '+state.groups.length); }catch(e){ state.groups=[]; log('Grupos error: '+(e.message||e)); } }
   async function loadAgencies(){ try{ const r=await sb.from(TABLE_AGENCIAS).select('*').limit(6000); if(r.error) throw r.error; state.agencies=r.data||[]; renderAgencyOptions(); log('Agencias: '+state.agencies.length); }catch(e){ state.agencies=[]; renderAgencyOptions(); log('Agencias error: '+(e.message||e)); } }
   async function loadOps(){ try{ const r=await sb.from(TABLE_OPS).select('*').order('fecha_creacion',{ascending:false}).limit(500); if(r.error) throw r.error; state.operations=r.data||[]; log('Operaciones: '+state.operations.length); }catch(e){ state.operations=[]; log('Operaciones error: '+(e.message||e)); } }
@@ -1785,6 +1900,7 @@ function openDetail(id){
     $('mobileDetailStatus').textContent=st;
 
     const waContact=whatsappContactForOperation(op);
+    const encargadoMostrado = waContact && waContact.profile ? nameOf(waContact.profile) : encargado;
 
     let actions='';
     actions += '<button class="btn btn-whatsapp span-2" id="btnMobileWhatsAppMain">💬 WhatsApp encargado</button>';
@@ -1816,7 +1932,7 @@ function openDetail(id){
         <div class="mobile-detail-card"><small>Estado</small><b>${esc(st)}</b></div>
         <div class="mobile-detail-card"><small>Agencia</small><b>${esc(opAgency(op)||'N/D')}</b></div>
         <div class="mobile-detail-card"><small>Grupo real</small><b>${esc(grupo||'Sin grupo')}</b></div>
-        <div class="mobile-detail-card"><small>Encargado</small><b>${esc(encargado)}</b></div>
+        <div class="mobile-detail-card"><small>Encargado</small><b>${esc(encargadoMostrado)}</b></div>
         <div class="mobile-detail-card"><small>Creado por</small><b>${esc(creador)}</b></div>
         <div class="mobile-detail-card"><small>Responsable</small><b>${esc(opTech(op))}</b></div>
         <div class="mobile-detail-card"><small>Fecha</small><b>${opDate(op)?esc(new Date(opDate(op)).toLocaleString()):'N/D'}</b></div>
@@ -2171,7 +2287,7 @@ function openDetail(id){
       </div>`;
     $('btnOpsAgency').onclick=()=>{ showTab('ops'); $('opsSearch').value=num; renderAll(); };
   }
-  function renderProfile(){ const p=state.profile||{}; const phone=profileWhatsAppPhone(p); $('profileBox').innerHTML=`<h4>${esc(nameOf(p))}</h4><p class="desc">Usuario: ${esc(state.username)}<br>Rol base: ${esc(state.role)}<br>Grupo: ${esc(groupOf(p)||'Sin grupo')}<br>WhatsApp: ${phone?esc(formatPhoneForView(phone)):'No registrado'}<br>Modo: App móvil v2 limpia</p><div class="row-actions"><button class="btn btn-danger" id="btnLogout2">Cerrar sesión</button></div>`; const b=$('btnLogout2'); if(b) b.onclick=logout; }
+  function renderProfile(){ const p=state.profile||{}; const phone=profileWhatsAppPhone(p); $('profileBox').innerHTML=`<h4>${esc(nameOf(p))}</h4><p class="desc">Usuario: ${esc(state.username)}<br>Rol base: ${esc(state.role)}<br>Grupo: ${esc(groupOf(p)||'Sin grupo')}<br>WhatsApp: ${phone?esc(formatPhoneForView(phone)):'No registrado'}<br>Modo: App móvil v31 · WhatsApp celular</p><div class="row-actions"><button class="btn btn-danger" id="btnLogout2">Cerrar sesión</button></div>`; const b=$('btnLogout2'); if(b) b.onclick=logout; }
 
   function setupRealtime(){ state.channels.forEach(ch=>{ try{ sb.removeChannel(ch); }catch{} }); state.channels=[]; [TABLE_OPS,TABLE_NOTIFS].forEach(table=>{ try{ const ch=sb.channel('mobile-v2-'+table).on('postgres_changes',{event:'*',schema:'public',table},payload=>{ if(table===TABLE_OPS){ loadOps().then(renderAll); if(payload.eventType!=='DELETE') toast('Operación actualizada',opTitle(payload.new||{})); } else { loadNotifs().then(renderNotifs); const n=payload.new||{}; if(payload.eventType==='INSERT') toast(n.titulo||'Nueva notificación',n.mensaje||''); } }).subscribe(s=>log('Realtime '+table+': '+s)); state.channels.push(ch); }catch(e){ log('Realtime '+table+' error: '+(e.message||e)); } }); }
   function updateMobileBackButton(){
