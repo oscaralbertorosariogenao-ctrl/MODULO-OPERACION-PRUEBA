@@ -336,6 +336,65 @@
     .mobile-back-btn.hidden{display:none!important;}
     .toprow .brand{min-width:0;}
 
+
+    /* LOTEKA móvil v2.6 · WhatsApp obligatorio para encargados */
+    .wa-card{
+      border:1px solid rgba(37,211,102,.28)!important;
+      background:linear-gradient(135deg,rgba(37,211,102,.12),rgba(255,255,255,.04))!important;
+    }
+    .wa-card h4{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .wa-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      border:1px solid rgba(37,211,102,.34);
+      background:rgba(37,211,102,.14);
+      color:#d9fff0;
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:10px;
+      font-weight:1000;
+      white-space:nowrap;
+    }
+    .wa-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:11px;
+    }
+    .wa-actions .btn{
+      min-height:42px;
+      border-radius:14px;
+      font-size:12px;
+      padding:9px 10px;
+    }
+
+    .btn-wa-close{
+      background:rgba(45,212,191,.16)!important;
+      color:#d7fff8!important;
+      border:1px solid rgba(45,212,191,.34)!important;
+      box-shadow:0 10px 24px rgba(45,212,191,.13)!important;
+    }
+    .btn-whatsapp{
+      background:linear-gradient(135deg,#25D366,#128C7E)!important;
+      color:#ffffff!important;
+      border:0!important;
+      box-shadow:0 12px 28px rgba(37,211,102,.23)!important;
+    }
+    .btn-whatsapp-soft{
+      background:rgba(37,211,102,.12)!important;
+      color:#ddfff1!important;
+      border:1px solid rgba(37,211,102,.28)!important;
+    }
+    @media(max-width:360px){
+      .wa-actions{grid-template-columns:1fr}
+    }
+
   </style>
   <link rel="manifest" href="/manifest-app-movil.json">
   <meta name="application-name" content="LOTEKA Móvil">
@@ -665,6 +724,156 @@
     const g = findGroupForAgency(a);
     return groupManager(g) || 'No registrado';
   }
+
+  function firstText(){
+    for(const value of arguments){
+      const v=clean(value);
+      if(v) return v;
+    }
+    return '';
+  }
+  function recordPhone(record){
+    if(!record) return '';
+    const keys=[
+      'whatsapp','whatsapp_numero','numero_whatsapp','telefono_whatsapp','celular_whatsapp',
+      'encargado_whatsapp','whatsapp_encargado','telefono_encargado','encargado_telefono',
+      'celular_encargado','encargado_celular','telefono','teléfono','celular','movil','móvil',
+      'phone','mobile','contacto','contacto_encargado','responsable_telefono','telefono_responsable'
+    ];
+    for(const key of keys){
+      const v=clean(record[key]);
+      if(v) return v;
+    }
+    return '';
+  }
+  function normalizeWhatsAppPhone(value){
+    let n=clean(value).replace(/\D/g,'');
+    if(n.startsWith('00')) n=n.slice(2);
+    if(n.length===10 && ['809','829','849'].includes(n.slice(0,3))) n='1'+n;
+    if(n.length===11 && n.startsWith('1') && ['809','829','849'].includes(n.slice(1,4))) return n;
+    return '';
+  }
+  function isValidWhatsAppPhone(value){
+    return !!normalizeWhatsAppPhone(value);
+  }
+  function profileWhatsAppPhone(profile){
+    return normalizeWhatsAppPhone(recordPhone(profile));
+  }
+  function requireEncargadoWhatsApp(profile, identity){
+    const role=roleOf(profile, identity);
+    if(role==='encargado' && !profileWhatsAppPhone(profile)){
+      throw new Error('Tu usuario de encargado no tiene teléfono WhatsApp válido. Debe agregarse en Catálogos → Usuarios antes de usar la app móvil.');
+    }
+  }
+  function formatPhoneForView(value){
+    const n=normalizeWhatsAppPhone(value);
+    if(!n) return clean(value);
+    if(n.length===11 && n.startsWith('1')) return '+'+n.slice(0,1)+' '+n.slice(1,4)+' '+n.slice(4,7)+' '+n.slice(7);
+    return '+'+n;
+  }
+  function whatsappContactForOperation(op){
+    const agency=findAgency(opAgency(op));
+    const group=agency?findGroupForAgency(agency):null;
+    const rawPhone=firstText(
+      recordPhone(op),
+      recordPhone(state.profile),
+      recordPhone(agency),
+      recordPhone(group),
+      op?.telefono_reportante,
+      op?.reportante_telefono,
+      op?.telefono_creador,
+      op?.creador_telefono
+    );
+    const phone=normalizeWhatsAppPhone(rawPhone);
+    const name=firstText(
+      op?.encargado_nombre,
+      op?.nombre_encargado,
+      op?.encargado,
+      agencyManager(agency),
+      opCreator(op)
+    ) || 'Encargado';
+    return { phone, rawPhone, name, agency, group };
+  }
+  function whatsappMessageForOperation(op, mode){
+    const contact=whatsappContactForOperation(op);
+    const agencia=opAgency(op)||'N/D';
+    const grupo=opGroup(op) || (contact.agency?agencyGroup(contact.agency):'Sin grupo');
+    const titulo=opTitle(op)||'Avería reportada';
+    const codigo=opCode(op)||opId(op)||'N/D';
+    const estado=normStatus(op.estado||op.status)||'Pendiente';
+    const descripcion=opDesc(op)||'Sin descripción';
+
+    if(mode==='evidencia'){
+      return `Hola ${contact.name}, necesito que me envíes una foto o video corto de la avería reportada para validar antes de asignar técnico.
+
+*Operación:* ${codigo}
+*Agencia:* ${agencia}
+*Grupo:* ${grupo}
+*Avería:* ${titulo}
+
+Favor enviarme una evidencia clara donde se vea el problema.`;
+    }
+
+    if(mode==='solucion'){
+      return `Hola ${contact.name}, vamos a validar esta avería antes de asignar técnico.
+
+*Operación:* ${codigo}
+*Agencia:* ${agencia}
+*Avería:* ${titulo}
+
+Intenta por favor estos pasos:
+1. Verifica que el equipo esté encendido.
+2. Revisa cables/conexión.
+3. Reinicia el equipo.
+4. Confirma si aparece algún error en pantalla.
+5. Avísame si después de eso continúa igual.`;
+    }
+
+    if(mode==='asignacion'){
+      return `Hola ${contact.name}, ya estamos dando seguimiento a este reporte.
+
+*Operación:* ${codigo}
+*Agencia:* ${agencia}
+*Estado:* ${estado}
+*Avería:* ${titulo}
+
+Te avisaremos cuando sea asignado o completado.`;
+    }
+
+    return `Hola ${contact.name}, estoy revisando este reporte.
+
+*Operación:* ${codigo}
+*Agencia:* ${agencia}
+*Grupo:* ${grupo}
+*Avería:* ${titulo}
+*Estado:* ${estado}
+
+*Descripción:*
+${descripcion}
+
+Antes de asignar técnico, ¿puedes confirmarme si la avería todavía continúa?`;
+  }
+  function openWhatsAppForOperation(op, mode){
+    const contact=whatsappContactForOperation(op);
+    const phone=contact.phone;
+    if(!phone){
+      toast('WhatsApp no disponible','El encargado no tiene teléfono WhatsApp registrado. Corrígelo en Catálogos → Usuarios.');
+      return;
+    }
+    const message=whatsappMessageForOperation(op, mode || 'confirmar');
+    const url='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
+    window.open(url,'_blank','noopener');
+    toast('WhatsApp abierto','Mensaje preparado para '+(contact.name||'el encargado')+'.');
+  }
+  function callContactForOperation(op){
+    const contact=whatsappContactForOperation(op);
+    const phone=contact.phone || normalizeWhatsAppPhone(contact.rawPhone);
+    if(!phone){
+      toast('Llamada no disponible','El encargado no tiene teléfono registrado en Catálogos → Usuarios.');
+      return;
+    }
+    location.href='tel:+'+phone;
+  }
   function agencyLat(a){ return clean(a?.lat||a?.latitud||a?.latitude||a?.coordenada_lat||a?.geo_lat||''); }
   function agencyLng(a){ return clean(a?.lng||a?.lon||a?.longitud||a?.longitude||a?.coordenada_lng||a?.geo_lng||''); }
   function agencyAddress(a){ return clean(a?.direccion||a?.ubicacion||a?.referencia||a?.sector||a?.municipio||a?.provincia||agencyName(a)); }
@@ -972,6 +1181,8 @@ function isProfileActive(profile){
         throw new Error('Información inválida, intente otra vez.');
       }
 
+      requireEncargadoWhatsApp(profile, identity);
+
       state.profile = profile;
       state.identity = identity;
       state.role = roleOf(profile, identity);
@@ -1019,6 +1230,15 @@ function isProfileActive(profile){
       if(!profile || !isProfileActive(profile)){
         localStorage.removeItem(STORE);
         try{ await sb.auth.signOut(); }catch(e){}
+        return false;
+      }
+
+      try{
+        requireEncargadoWhatsApp(profile, identity);
+      }catch(phoneError){
+        localStorage.removeItem(STORE);
+        try{ await sb.auth.signOut(); }catch(e){}
+        toast('Teléfono requerido', phoneError.message || String(phoneError));
         return false;
       }
 
@@ -1416,6 +1636,10 @@ function isProfileActive(profile){
       const urls=await uploadFiles(getReportFiles(),codigo);
       const creadorNombre=nameOf(state.profile);
       const creadorUsuario=state.username || userOf(state.profile,state.identity);
+      const creadorWhatsapp=profileWhatsAppPhone(state.profile);
+      if(state.role==='encargado' && !creadorWhatsapp){
+        throw new Error('Tu usuario de encargado no tiene teléfono WhatsApp válido. Actualízalo en Catálogos → Usuarios.');
+      }
 
       const tipoReporte = $('reportType').value;
       const trabajosSeleccionados = tipoReporte === 'Trabajo' ? [title] : [];
@@ -1434,10 +1658,15 @@ function isProfileActive(profile){
         grupo,
         tecnico:'Sin asignar',
         encargado:encargadoAgencia,
+        encargado_telefono:creadorWhatsapp || normalizeWhatsAppPhone(recordPhone(agency)) || '',
+        telefono_encargado:creadorWhatsapp || normalizeWhatsAppPhone(recordPhone(agency)) || '',
+        whatsapp_encargado:creadorWhatsapp || normalizeWhatsAppPhone(recordPhone(agency)) || '',
         creado_por:creadorUsuario,
         creado_por_nombre:creadorNombre,
         reportado_por:creadorUsuario,
         reportado_por_nombre:creadorNombre,
+        reportante_telefono:creadorWhatsapp || '',
+        telefono_reportante:creadorWhatsapp || '',
         usuario_nombre:creadorNombre,
         usuario_creador:creadorUsuario,
         foto_url:urls[0]||'',
@@ -1555,7 +1784,10 @@ function openDetail(id){
     const content=$('mobileDetailContent');
     $('mobileDetailStatus').textContent=st;
 
+    const waContact=whatsappContactForOperation(op);
+
     let actions='';
+    actions += '<button class="btn btn-whatsapp span-2" id="btnMobileWhatsAppMain">💬 WhatsApp encargado</button>';
     if(maps) actions += `<a class="btn btn-secondary" href="${esc(maps)}" target="_blank" rel="noopener">Cómo llegar</a>`;
     actions += '<button class="btn btn-secondary" id="btnMobileEdit">Editar</button>';
     actions += '<label class="btn btn-secondary">Tomar foto<input id="mobileEvidenceCamera" class="hidden-file" type="file" accept="image/*" capture="environment" multiple></label>';
@@ -1563,6 +1795,7 @@ function openDetail(id){
     actions += '<button class="btn btn-primary" id="btnMobileSaveEvidence">Guardar evidencia</button>';
     if(st==='Pendiente'||st==='Asignada') actions += '<button class="btn btn-secondary span-2" id="btnMobileToProcess">Marcar En proceso</button>';
     if(st==='En proceso') actions += '<button class="btn btn-good span-2" id="btnMobileComplete">Completar con evidencia</button>';
+    if(st!=='Completado') actions += '<button class="btn btn-wa-close span-2" id="btnMobileCloseNoEvidence">✅ Cerrar sin evidencia (WhatsApp)</button>';
 
     content.innerHTML=`
       <div class="mobile-op-hero">
@@ -1594,6 +1827,21 @@ function openDetail(id){
         <p class="desc">${esc(opDesc(op)||'Sin descripción')}</p>
       </div>
 
+      <div class="mobile-section-card wa-card">
+        <h4>WhatsApp encargado <span class="wa-badge">${waContact.phone?'Disponible':'Teléfono requerido'}</span></h4>
+        <p class="desc">
+          <b>${esc(waContact.name||encargado)}</b><br>
+          ${waContact.phone ? esc(formatPhoneForView(waContact.phone)) : '⚠️ Encargado sin teléfono registrado. Actualizar en Catálogos → Usuarios.'}
+        </p>
+        <div class="wa-actions">
+          <button class="btn btn-whatsapp" id="btnWaConfirmar">💬 Confirmar avería</button>
+          <button class="btn btn-whatsapp-soft" id="btnWaEvidencia">📸 Pedir evidencia</button>
+          <button class="btn btn-whatsapp-soft" id="btnWaSolucion">⚡ Solución rápida</button>
+          ${st!=='Completado'?'<button class="btn btn-wa-close" id="btnWaCloseNoEvidence">✅ Cerrar sin evidencia</button>':''}
+          <button class="btn btn-secondary" id="btnWaLlamar">📞 Llamar</button>
+        </div>
+      </div>
+
       <div class="mobile-section-card">
         <h4>Evidencias guardadas</h4>
         ${media.length?`<div class="mobile-evidence-grid">${media.map(url=>/\.(mp4|mov|webm)(\?|$)/i.test(url)?`<video controls src="${esc(url)}"></video>`:`<img src="${esc(url)}" loading="lazy">`).join('')}</div>`:'<div class="empty">Sin evidencias todavía.</div>'}
@@ -1621,11 +1869,27 @@ function openDetail(id){
     const saveEv=$('btnMobileSaveEvidence');
     if(saveEv) saveEv.onclick=()=>uploadEvidenceOnly(op);
 
+    const waMain=$('btnMobileWhatsAppMain');
+    if(waMain) waMain.onclick=()=>openWhatsAppForOperation(op,'confirmar');
+    const waConfirmar=$('btnWaConfirmar');
+    if(waConfirmar) waConfirmar.onclick=()=>openWhatsAppForOperation(op,'confirmar');
+    const waEvidencia=$('btnWaEvidencia');
+    if(waEvidencia) waEvidencia.onclick=()=>openWhatsAppForOperation(op,'evidencia');
+    const waSolucion=$('btnWaSolucion');
+    if(waSolucion) waSolucion.onclick=()=>openWhatsAppForOperation(op,'solucion');
+    const waLlamar=$('btnWaLlamar');
+    if(waLlamar) waLlamar.onclick=()=>callContactForOperation(op);
+
     const process=$('btnMobileToProcess');
     if(process) process.onclick=()=>updateStatus(op,'En proceso');
 
     state.selectedEvidenceFiles=[];
     bindEvidenceInput();
+
+    const closeNoEvidence=$('btnMobileCloseNoEvidence');
+    if(closeNoEvidence) closeNoEvidence.onclick=()=>closeOperationWithoutEvidenceByWhatsApp(op);
+    const waCloseNoEvidence=$('btnWaCloseNoEvidence');
+    if(waCloseNoEvidence) waCloseNoEvidence.onclick=()=>closeOperationWithoutEvidenceByWhatsApp(op);
 
     const complete=$('btnMobileComplete');
     if(complete) complete.onclick=()=>completeOperation(op);
@@ -1732,6 +1996,50 @@ function openDetail(id){
     }catch(e){
       toast('No se pudo subir',e.message||String(e));
       log('Evidencia error: '+(e.message||e));
+    }
+  }
+
+  async function closeOperationWithoutEvidenceByWhatsApp(op){
+    const st=normStatus(op.estado||op.status);
+    if(st==='Completado'){
+      toast('Ya está completada','Esta avería ya fue cerrada.');
+      return;
+    }
+
+    const ok=confirm('¿Cerrar esta avería sin evidencia?\n\nUsa esta opción solo cuando se resolvió por soporte vía WhatsApp y no fue necesario enviar técnico.');
+    if(!ok) return;
+
+    let comentario=prompt('Comentario obligatorio del cierre por WhatsApp:', 'Resuelto por soporte vía WhatsApp. No fue necesario enviar técnico.');
+    comentario=clean(comentario);
+
+    if(!comentario){
+      toast('Comentario requerido','Debes indicar cómo se resolvió por WhatsApp.');
+      return;
+    }
+
+    try{
+      const hist=Array.isArray(op.historial)?op.historial:[];
+      const patch={
+        estado:'Completado',
+        actualizado_en:nowIso(),
+        fecha_completado:nowIso(),
+        historial:[...hist,{
+          fecha:nowIso(),
+          accion:'Cerrada sin evidencia - soporte vía WhatsApp',
+          comentario,
+          usuario:state.username,
+          nombre:nameOf(state.profile)
+        }]
+      };
+
+      await updateOperationPatch(op, patch);
+
+      toast('Avería cerrada','Se completó sin evidencia por soporte vía WhatsApp.');
+      await refreshAll();
+      showTab('ops');
+    }catch(e){
+      toast('No se pudo cerrar',e.message||String(e));
+      log('Cerrar sin evidencia error: '+(e.message||e));
     }
   }
 
@@ -1863,7 +2171,7 @@ function openDetail(id){
       </div>`;
     $('btnOpsAgency').onclick=()=>{ showTab('ops'); $('opsSearch').value=num; renderAll(); };
   }
-  function renderProfile(){ const p=state.profile||{}; $('profileBox').innerHTML=`<h4>${esc(nameOf(p))}</h4><p class="desc">Usuario: ${esc(state.username)}<br>Rol base: ${esc(state.role)}<br>Grupo: ${esc(groupOf(p)||'Sin grupo')}<br>Modo: App móvil v2 limpia</p><div class="row-actions"><button class="btn btn-danger" id="btnLogout2">Cerrar sesión</button></div>`; const b=$('btnLogout2'); if(b) b.onclick=logout; }
+  function renderProfile(){ const p=state.profile||{}; const phone=profileWhatsAppPhone(p); $('profileBox').innerHTML=`<h4>${esc(nameOf(p))}</h4><p class="desc">Usuario: ${esc(state.username)}<br>Rol base: ${esc(state.role)}<br>Grupo: ${esc(groupOf(p)||'Sin grupo')}<br>WhatsApp: ${phone?esc(formatPhoneForView(phone)):'No registrado'}<br>Modo: App móvil v2 limpia</p><div class="row-actions"><button class="btn btn-danger" id="btnLogout2">Cerrar sesión</button></div>`; const b=$('btnLogout2'); if(b) b.onclick=logout; }
 
   function setupRealtime(){ state.channels.forEach(ch=>{ try{ sb.removeChannel(ch); }catch{} }); state.channels=[]; [TABLE_OPS,TABLE_NOTIFS].forEach(table=>{ try{ const ch=sb.channel('mobile-v2-'+table).on('postgres_changes',{event:'*',schema:'public',table},payload=>{ if(table===TABLE_OPS){ loadOps().then(renderAll); if(payload.eventType!=='DELETE') toast('Operación actualizada',opTitle(payload.new||{})); } else { loadNotifs().then(renderNotifs); const n=payload.new||{}; if(payload.eventType==='INSERT') toast(n.titulo||'Nueva notificación',n.mensaje||''); } }).subscribe(s=>log('Realtime '+table+': '+s)); state.channels.push(ch); }catch(e){ log('Realtime '+table+' error: '+(e.message||e)); } }); }
   function updateMobileBackButton(){
