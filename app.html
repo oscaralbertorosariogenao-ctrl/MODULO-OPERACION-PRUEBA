@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!-- LOTEKA mobile logo recovery: inline logo build 2026-05-20 -->
+  <!-- LOTEKA mobile logo recovery: inline logo build 2026-05-20 · R2 upload fix JSON/FormData -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#071522" />
@@ -1771,59 +1771,186 @@ function isProfileActive(profile){
   }
   function renderLists(){ $('homeList').innerHTML=visibleOperations().slice(0,5).map(o=>opCard(o,true)).join('') || '<div class="empty">Sin operaciones todavía.</div>'; $('opsList').innerHTML=filteredOps().map(o=>opCard(o,false)).join('') || '<div class="empty">No hay operaciones con ese filtro.</div>'; document.querySelectorAll('[data-op]').forEach(el=>el.onclick=()=>openDetail(el.dataset.op)); }
 
+  function resolveR2Endpoint(){
+    try{
+      const host = String(location.hostname || '').toLowerCase();
+      const isLocal = host === 'localhost' || host === '127.0.0.1' || location.protocol === 'file:';
+      if(!isLocal && location.origin) return location.origin.replace(/\/$/,'') + '/api/r2-upload';
+    }catch(e){}
+    return R2_UPLOAD_ENDPOINT || '/api/r2-upload';
+  }
+
+  function r2ExtensionFromType(type, fallbackName){
+    const cleanType = String(type || '').toLowerCase();
+    const map = {
+      'image/jpeg':'jpg',
+      'image/jpg':'jpg',
+      'image/png':'png',
+      'image/webp':'webp',
+      'image/gif':'gif',
+      'video/mp4':'mp4',
+      'video/webm':'webm',
+      'video/quicktime':'mov'
+    };
+    if(map[cleanType]) return map[cleanType];
+    const ext = String(fallbackName || '').split('.').pop();
+    return ext && ext.length <= 5 ? ext.toLowerCase() : 'bin';
+  }
+
+  function readFileAsDataUrl(file){
+    return new Promise((resolve, reject)=>{
+      try{
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('No se pudo leer el archivo seleccionado.'));
+        reader.readAsDataURL(file);
+      }catch(error){
+        reject(error);
+      }
+    });
+  }
+
+  function extractR2Url(data, raw){
+    if(typeof raw === 'string' && /^https?:\/\//i.test(raw.trim())) return raw.trim();
+
+    const candidates = [];
+    function scan(value){
+      if(!value) return;
+      if(typeof value === 'string'){
+        const v = value.trim();
+        if(/^https?:\/\//i.test(v)) candidates.push(v);
+        return;
+      }
+      if(Array.isArray(value)){
+        value.forEach(scan);
+        return;
+      }
+      if(typeof value === 'object'){
+        [
+          'url','publicUrl','public_url','r2_url','r2Url','fileUrl','file_url',
+          'downloadUrl','download_url','location','Location','href','path'
+        ].forEach(k => scan(value[k]));
+        scan(value.data);
+        scan(value.result);
+        scan(value.file);
+        scan(value.object);
+      }
+    }
+    scan(data);
+
+    return candidates.find(Boolean) || '';
+  }
+
+  async function postR2Json(file, code, endpoint){
+    const normalized = /^image\//i.test(file.type || '') ? await imageFileToJpeg(file) : file;
+    const dataUrl = await readFileAsDataUrl(normalized);
+    const base64 = dataUrl.includes(',') ? dataUrl.split(',').pop() : dataUrl;
+    const contentType = normalized.type || file.type || 'application/octet-stream';
+    const extension = r2ExtensionFromType(contentType, normalized.name || file.name);
+    const safeCode = clean(code || 'app-movil') || 'app-movil';
+    const filename = safeCode + '-' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + extension;
+
+    const res = await fetch(endpoint, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({
+        folder:'operaciones',
+        codigo:safeCode,
+        filename,
+        contentType,
+        base64,
+        origen:'app-movil-v2'
+      }),
+      cache:'no-store',
+      credentials:'omit'
+    });
+
+    const raw = await res.text().catch(()=> '');
+    let data = {};
+    try{ data = raw ? JSON.parse(raw) : {}; }catch(e){ data = {}; }
+
+    if(!res.ok || data.ok === false){
+      const detail = data.message || data.error || raw || ('HTTP '+res.status);
+      throw new Error('R2 rechazó la evidencia: '+detail);
+    }
+
+    const finalUrl = extractR2Url(data, raw);
+    if(!finalUrl){
+      throw new Error('R2 respondió OK, pero no devolvió URL pública.');
+    }
+
+    return finalUrl;
+  }
+
+  async function postR2FormData(file, code, endpoint){
+    const normalized = /^image\//i.test(file.type || '') ? await imageFileToJpeg(file) : file;
+
+    const fd=new FormData();
+    fd.append('file', normalized);
+    fd.append('codigo', code || 'app-movil');
+    fd.append('folder', 'operaciones');
+    fd.append('origen', 'app-movil-v2');
+
+    const res = await fetch(endpoint, {
+      method:'POST',
+      body:fd,
+      cache:'no-store',
+      credentials:'omit'
+    });
+
+    const raw = await res.text().catch(()=> '');
+    let data = {};
+    try{ data = raw ? JSON.parse(raw) : {}; }catch(e){ data = {}; }
+
+    if(!res.ok || data.ok === false){
+      let detail = data.message || data.error || raw || ('HTTP '+res.status);
+      if(String(detail).includes('<Code>UnsupportedHttpVerb</Code>')){
+        detail = 'La app intentó subir por una ruta incorrecta. Debe usar /api/r2-upload de Vercel, no el enlace público de R2.';
+      }
+      throw new Error('R2 rechazó la evidencia: '+detail);
+    }
+
+    const finalUrl = extractR2Url(data, raw);
+    if(!finalUrl){
+      throw new Error('R2 respondió OK, pero no devolvió URL pública.');
+    }
+
+    return finalUrl;
+  }
+
   async function uploadToR2(file, code){
     if(!file) throw new Error('No se seleccionó archivo.');
 
-    const fd=new FormData();
-    fd.append('file', file);
-    fd.append('codigo', code || 'app-movil');
-    fd.append('origen', 'app-movil-v2');
+    const endpoint = resolveR2Endpoint();
+    const sizeKb = Math.round((file.size || 0) / 1024);
+    log('R2 móvil: subiendo a '+endpoint+' · '+file.name+' · '+sizeKb+' KB');
 
-    const endpoint = R2_UPLOAD_ENDPOINT || (location.origin + '/api/r2-upload');
+    const errores = [];
 
     try{
-      log('R2 móvil: subiendo a '+endpoint+' · '+file.name+' · '+Math.round((file.size||0)/1024)+' KB');
-
-      const res = await fetch(endpoint, {
-        method:'POST',
-        body:fd,
-        cache:'no-store',
-        credentials:'omit'
-      });
-
-      let raw='';
-      let data={};
-
-      try{
-        raw = await res.text();
-        data = raw ? JSON.parse(raw) : {};
-      }catch(e){
-        data = {};
-      }
-
-      if(!res.ok || !data.ok){
-        let detail = data.message || data.error || raw || ('HTTP '+res.status);
-        if(String(detail).includes('<Code>UnsupportedHttpVerb</Code>')){
-          detail = 'La app está intentando subir por una ruta incorrecta. Debe usar la función /api/r2-upload de Vercel, no el enlace público de R2.';
-        }
-        throw new Error('R2 rechazó la evidencia: '+detail);
-      }
-
-      const finalUrl = data.url || data.publicUrl || data.r2_url;
-      if(!finalUrl) throw new Error('R2 respondió OK, pero no devolvió URL pública.');
-
-      log('R2 móvil OK: '+finalUrl);
-      return finalUrl;
-    }catch(err){
-      const msg = err && err.message ? err.message : String(err);
-      log('R2 móvil error real: '+msg);
-
-      if(msg === 'Failed to fetch'){
-        throw new Error('La evidencia llegó o pudo haber llegado a R2, pero Android/Chrome no permitió leer la respuesta del API. Se continuará guardando el reporte.');
-      }
-
-      throw new Error(msg);
+      const url = await postR2Json(file, code, endpoint);
+      log('R2 móvil OK JSON: '+url);
+      return url;
+    }catch(jsonErr){
+      errores.push(jsonErr && jsonErr.message ? jsonErr.message : String(jsonErr));
+      log('R2 móvil JSON falló, intentando FormData: '+errores[errores.length-1]);
     }
+
+    try{
+      const url = await postR2FormData(file, code, endpoint);
+      log('R2 móvil OK FormData: '+url);
+      return url;
+    }catch(formErr){
+      errores.push(formErr && formErr.message ? formErr.message : String(formErr));
+      log('R2 móvil FormData falló: '+errores[errores.length-1]);
+    }
+
+    const finalMessage = errores.filter(Boolean).join(' | ');
+    if(finalMessage.includes('Failed to fetch')){
+      throw new Error('No se pudo leer la respuesta del API de R2. Verifica conexión, dominio de Vercel y CORS del endpoint /api/r2-upload.');
+    }
+
+    throw new Error(finalMessage || 'R2 no devolvió URL de evidencia.');
   }
 
   async function uploadFiles(files, code){
@@ -1845,7 +1972,7 @@ function isProfileActive(profile){
     }
 
     if(errores.length && !urls.length){
-      toast('Evidencia enviada parcialmente', 'La foto puede haber llegado a R2, pero la app no pudo leer la respuesta. El reporte se guardará de todos modos.');
+      toast('Evidencia no confirmada', 'R2 no devolvió una URL pública. Reintenta subir la evidencia antes de completar.');
     }else if(errores.length && urls.length){
       toast('Evidencia parcial', urls.length+' archivo(s) confirmado(s). Algunos no devolvieron respuesta.');
     }
@@ -2507,7 +2634,7 @@ function openDetail(id){
       toast('Subiendo evidencia','Enviando archivo a R2...');
       const urls=await uploadFiles(files,opCode(op)||opId(op));
 
-      if(!urls.length) throw new Error('R2 no devolvió URL de evidencia.');
+      if(!urls.length) throw new Error('R2 no devolvió URL de evidencia. Reintenta con otra foto o verifica el endpoint /api/r2-upload.');
 
       const old=Array.isArray(op.fotos_evidencia)?op.fotos_evidencia:[];
       const hist=Array.isArray(op.historial)?op.historial:[];
@@ -2593,7 +2720,7 @@ function openDetail(id){
       if(hasNewEvidence){
         toast('Subiendo evidencia','Enviando archivo a R2...');
         urls=await uploadFiles(files,opCode(op)||opId(op));
-        if(!urls.length) throw new Error('R2 no devolvió URL de evidencia.');
+        if(!urls.length) throw new Error('R2 no devolvió URL de evidencia. Reintenta con otra foto o verifica el endpoint /api/r2-upload.');
       }
 
       await updateStatus(op,'Completado',{
