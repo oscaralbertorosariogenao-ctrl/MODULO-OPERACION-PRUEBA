@@ -7,7 +7,7 @@
    Versión: 2026-05-22-capa4-v1
 */
 
-const SW_VERSION = "2026-05-22-capa4-v1";
+const SW_VERSION = "2026-05-22-capa4-v2";
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
 const RUNTIME_CACHE = `loteka-runtime-${SW_VERSION}`;
