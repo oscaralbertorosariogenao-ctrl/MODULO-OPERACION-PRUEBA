@@ -1185,6 +1185,130 @@
       50%{transform:scale(1.2);opacity:1}
     }
 
+
+    /* Animación controlada: solo se activa cuando entra un registro nuevo */
+    .activity-item.feed-enter:not(.is-new-live),
+    .activity-item.completed-feed:not(.is-new-live){
+      animation:none!important;
+      border-color:rgba(148,163,184,.12)!important;
+      background:rgba(2,8,23,.28)!important;
+      box-shadow:none!important;
+    }
+
+    .activity-item.is-new-live{
+      animation:feedEnter .7s cubic-bezier(.16,1,.3,1) both!important;
+    }
+
+    .activity-item.is-new-live.completed-feed{
+      border-color:rgba(34,197,94,.36)!important;
+      background:linear-gradient(90deg,rgba(34,197,94,.20),rgba(2,8,23,.28))!important;
+      box-shadow:0 16px 34px rgba(34,197,94,.10)!important;
+    }
+
+    .activity-item.is-new-live:not(.completed-feed){
+      border-color:rgba(56,189,248,.34)!important;
+      background:linear-gradient(90deg,rgba(14,165,198,.20),rgba(2,8,23,.28))!important;
+      box-shadow:0 16px 34px rgba(14,165,198,.10)!important;
+    }
+
+
+    /* FIX FINAL: la actividad no se anima ni se pinta verde en cada refresh */
+    .activity{
+      overflow:hidden;
+    }
+
+    .activity-item{
+      display:grid;
+      grid-template-columns:72px 1fr;
+      align-items:center;
+      gap:12px;
+      min-height:50px;
+      padding:12px 14px!important;
+      border-radius:16px!important;
+      background:rgba(2,8,23,.32)!important;
+      border:1px solid rgba(148,163,184,.14)!important;
+      box-shadow:none!important;
+      animation:none!important;
+    }
+
+    .activity-time{
+      min-width:60px;
+      white-space:nowrap;
+      color:#bae6fd;
+      font-weight:950;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .activity-text{
+      min-width:0;
+      color:#dbeafe;
+      line-height:1.35;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
+
+    .activity-item.completed-feed{
+      background:rgba(2,8,23,.32)!important;
+      border-color:rgba(148,163,184,.14)!important;
+      box-shadow:none!important;
+    }
+
+    .activity-item.feed-enter,
+    .activity-item.feed-enter.completed-feed{
+      animation:none!important;
+    }
+
+    .activity-item.live-new{
+      animation:feedEnter .72s cubic-bezier(.16,1,.3,1) both!important;
+      border-color:rgba(56,189,248,.34)!important;
+      background:linear-gradient(90deg,rgba(14,165,198,.20),rgba(2,8,23,.34))!important;
+      box-shadow:0 16px 34px rgba(14,165,198,.10)!important;
+    }
+
+    .activity-item.live-new.completed-feed{
+      border-color:rgba(34,197,94,.42)!important;
+      background:linear-gradient(90deg,rgba(34,197,94,.22),rgba(2,8,23,.34))!important;
+      box-shadow:0 16px 34px rgba(34,197,94,.12)!important;
+    }
+
+    .activity-item.live-new::after{
+      content:"Nuevo";
+      justify-self:end;
+      grid-column:2;
+      margin-top:4px;
+      width:max-content;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#dcfce7;
+      background:rgba(34,197,94,.16);
+      border:1px solid rgba(34,197,94,.28);
+    }
+
+    .activity-item.feed-bump{
+      animation:none!important;
+    }
+
+    @keyframes feedEnter{
+      0%{
+        transform:translateX(24px) scale(.985);
+        opacity:0;
+      }
+      65%{
+        transform:translateX(-3px) scale(1);
+        opacity:1;
+      }
+      100%{
+        transform:translateX(0) scale(1);
+        opacity:1;
+      }
+    }
+
     .fullscreen-btn{
       border:1px solid rgba(56,189,248,.32);
       background:linear-gradient(135deg,rgba(14,165,198,.28),rgba(37,99,235,.18));
@@ -1316,7 +1440,7 @@
         <div class="system-meta">
           <span>Datos reales · Supabase</span>
           <span>Modo solo lectura</span>
-          <span>Sin edición</span>
+          <span>Sin edición</span><span>Solo datos de hoy</span>
         </div>
       </div>
     </header>
@@ -1343,7 +1467,7 @@
       <article class="kpi green">
         <div class="label">Completadas hoy</div>
         <div class="value" data-kpi-value>—</div>
-        <div class="hint">Averías y trabajos cerrados</div>
+        <div class="hint">Cerradas durante el día</div>
       </article>
 
       <article class="kpi violet">
@@ -1393,7 +1517,7 @@
           <div class="panel-header">
             <div>
               <h2 class="panel-title">Averías completadas</h2>
-              <p class="panel-subtitle">Averías cerradas que salen del monitoreo activo.</p>
+              <p class="panel-subtitle">Averías cerradas hoy que salen del monitoreo activo.</p>
             </div>
             <span class="panel-badge">Hoy</span>
           </div>
@@ -1407,7 +1531,7 @@
           <div class="panel-header">
             <div>
               <h2 class="panel-title">Actividad reciente</h2>
-              <p class="panel-subtitle">Movimientos recientes de operaciones, inventario, taller y servicios.</p>
+              <p class="panel-subtitle">Movimientos recientes de hoy: operaciones, inventario, taller y servicios.</p>
             </div>
             <span class="panel-badge">En vivo</span>
           </div>
@@ -1429,7 +1553,7 @@
         <strong>Modo pantalla:</strong>
         <span class="tv-controls-note">Conectado a Supabase · Actualización automática cada 30 segundos · Solo lectura.</span>
       </div>
-      <div class="view-chip">Vista general · Supabase</div>
+      <div class="view-chip">Vista general · Supabase v5</div>
     </footer>
   </main>
 
@@ -1453,6 +1577,7 @@
     let lastAveriaIds = new Set();
     let lastTrabajoIds = new Set();
     let supabaseClient = null;
+    let perfilesLoadedOnce = false;
 
     function syncFullscreenButton(){
       const isFull = Boolean(document.fullscreenElement);
@@ -1655,9 +1780,9 @@
     }
 
     function animateCounters(){
-      const counters = document.querySelectorAll(".value[data-target]");
+      const counters = document.querySelectorAll(".value[data-kpi-value]");
       counters.forEach(counter => {
-        const target = Number(counter.dataset.target || 0);
+        const target = Number(counter.dataset.kpiValue || 0);
         const current = Number(counter.textContent.replace(/[^\d.-]/g, "")) || 0;
         const duration = 900;
         const start = performance.now();
@@ -1683,15 +1808,15 @@
         kpis.taller_pendiente || 0,
         kpis.inventario_bajo || 0
       ];
-      document.querySelectorAll(".value[data-target]").forEach((el, i) => {
-        el.dataset.target = values[i] || 0;
+      document.querySelectorAll(".value[data-kpi-value]").forEach((el, i) => {
+        el.dataset.kpiValue = values[i] || 0;
       });
       animateCounters();
     }
 
     function createRow({id, agency, title, meta, tag, tagClass}){
       const row = document.createElement("div");
-      row.className = "row is-entering";
+      row.className = "row";
       row.dataset.realId = id;
       row.innerHTML = `
         <div class="row-agency">${esc(agency)}</div>
@@ -1701,8 +1826,7 @@
         </div>
         <span class="tag ${tagClass || ""}">${esc(tag)}</span>
       `;
-      setTimeout(() => row.classList.remove("is-entering"), 700);
-      return row;
+return row;
     }
 
     function clearAndFillRows(panelId, rows){
@@ -1712,7 +1836,7 @@
       box.innerHTML = "";
       if(!rows.length){
         const empty = document.createElement("div");
-        empty.className = "row is-entering";
+        empty.className = "row";
         empty.innerHTML = `
           <div class="row-agency">—</div>
           <div class="row-main">
@@ -1727,51 +1851,110 @@
       rows.forEach(item => box.appendChild(createRow(item)));
     }
 
-    function createFeedItem(text, completed, time){
+    const feedRenderedOnce = {
+      averiasCompletadasFeed: false,
+      actividadRecienteFeed: false
+    };
+
+    const feedKnownIds = {
+      averiasCompletadasFeed: new Set(),
+      actividadRecienteFeed: new Set()
+    };
+
+    function stableFeedId(item, feedId){
+      return clean(
+        item.id ||
+        item.codigo ||
+        item.operacion_id ||
+        item.reporte_id ||
+        item.movimiento_id ||
+        item.fecha_completado ||
+        item.fechaCompletado ||
+        item.created_at ||
+        item.creado_en ||
+        item.time ||
+        `${feedId}-${item.text || ""}`
+      );
+    }
+
+    function createFeedItem(text, completed, time, animateNew, stableId){
       const item = document.createElement("div");
-      item.className = "activity-item feed-enter" + (completed ? " completed-feed" : "");
+      item.className = "activity-item";
+      if(completed) item.classList.add("completed-feed");
+      if(animateNew) item.classList.add("live-new");
+      if(stableId) item.dataset.feedId = stableId;
+
       item.innerHTML = `
         <div class="activity-time">${esc(time || getCurrentTime())}</div>
         <div class="activity-text">${esc(text)}</div>
       `;
-      setTimeout(() => item.classList.remove("feed-enter", "completed-feed"), 900);
+
+      if(animateNew){
+        setTimeout(() => item.classList.remove("live-new"), 1800);
+      }
+
       return item;
     }
 
-    function pushAnimatedFeed(feedId, panelId, text, completed, time){
+    function pushAnimatedFeed(feedId, panelId, text, completed, time, stableId){
       const feed = document.getElementById(feedId);
       const panel = document.getElementById(panelId);
       if(!feed) return;
 
-      Array.from(feed.children).forEach(item => {
-        item.classList.remove("feed-bump");
-        void item.offsetWidth;
-        item.classList.add("feed-bump");
-      });
+      const id = stableId || clean(`${feedId}-${time || ""}-${text || ""}`);
+      const known = feedKnownIds[feedId] || new Set();
+      feedKnownIds[feedId] = known;
 
-      feed.prepend(createFeedItem(text, completed, time));
+      const shouldAnimate = feedRenderedOnce[feedId] === true && !known.has(id);
+      known.add(id);
+
+      feed.prepend(createFeedItem(text, completed, time, shouldAnimate, id));
 
       while(feed.children.length > MAX_FEED){
         feed.lastElementChild.remove();
       }
 
-      if(panel){
+      if(panel && shouldAnimate){
         panel.classList.add("is-refreshing");
         setTimeout(() => panel.classList.remove("is-refreshing"), 950);
       }
+
+      feedRenderedOnce[feedId] = true;
     }
 
     function renderFeed(feedId, items, completed){
       const feed = document.getElementById(feedId);
       if(!feed) return;
+
+      const previousKnown = feedKnownIds[feedId] || new Set();
+      const hasRendered = feedRenderedOnce[feedId] === true;
+      const nextKnown = new Set();
+
+      const cleanItems = (items || []).slice(0, MAX_FEED);
+
       feed.innerHTML = "";
-      if(!items.length){
-        feed.appendChild(createFeedItem("Sin movimientos recientes para mostrar.", completed, "--:--"));
+
+      if(!cleanItems.length){
+        feed.appendChild(createFeedItem("Sin movimientos recientes para mostrar.", false, "--:--", false, `${feedId}-empty`));
+        feedKnownIds[feedId] = nextKnown;
+        feedRenderedOnce[feedId] = true;
         return;
       }
-      items.slice(0, MAX_FEED).forEach(item => {
-        feed.appendChild(createFeedItem(item.text, completed, item.time));
+
+      cleanItems.forEach(item => {
+        const id = stableFeedId(item, feedId);
+        nextKnown.add(id);
+
+        // Primera carga: no anima nada.
+        // Refresh normal: no anima los registros existentes.
+        // Solo anima si es un ID nuevo que no estaba en el feed anterior.
+        const animateNew = hasRendered && !previousKnown.has(id);
+
+        feed.appendChild(createFeedItem(item.text, completed, item.time, animateNew, id));
       });
+
+      feedKnownIds[feedId] = nextKnown;
+      feedRenderedOnce[feedId] = true;
     }
 
     function showCompletionToast(message){
@@ -1824,46 +2007,106 @@
     }
 
     async function fetchDashboardDirect(sb){
-      const fields = "id,codigo,tipo,titulo,descripcion,estado,agencia,agencia_label,tecnico,encargado,responsable,suplidor,categoria_visible,problema_reportado,trabajo_a_realizar,fecha_creacion,fecha_asignacion,fecha_inicio,fecha_completado";
+      const opFields = [
+        "id","codigo","tipo","titulo","descripcion","estado","prioridad",
+        "agencia","agencia_label","grupo","tecnico","encargado",
+        "categoria_visible","problema_reportado","estado_agencia_reportado","trabajo_a_realizar",
+        "fecha_creacion","fecha_asignacion","fecha_inicio","fecha_completado","tiempo_respuesta",
+        "creado_por","reportado_por_nombre","historial",
+        "asignacion_trabajo_usuario","asignacion_trabajo_comentario"
+      ];
 
       const startIso = localStartOfDay().toISOString();
       const endIso = localEndOfDay().toISOString();
 
-      const [
-        countTodayCreated,
-        countActive,
-        countCompletedToday,
-        averias,
-        trabajos,
-        completadas,
-        movimientos,
-        tallerRows
-      ] = await Promise.all([
-        countQuery(sb.from(OPS_TABLE).select("id", { count:"exact", head:true }).gte("fecha_creacion", startIso).lte("fecha_creacion", endIso)),
-        countQuery(sb.from(OPS_TABLE).select("id", { count:"exact", head:true }).in("estado", ["Pendiente", "Asignada", "En proceso"])),
-        countQuery(sb.from(OPS_TABLE).select("id", { count:"exact", head:true }).ilike("estado", "%complet%").gte("fecha_completado", startIso).lte("fecha_completado", endIso)),
-        listQuery(sb.from(OPS_TABLE).select(fields).ilike("tipo", "%aver%").ilike("estado", "%proceso%").order("fecha_inicio", { ascending:false }).limit(MAX_ROWS)),
-        listQuery(sb.from(OPS_TABLE).select(fields).ilike("tipo", "%trabaj%").or("estado.eq.Asignada,estado.eq.En proceso,estado.ilike.%proceso%").order("fecha_asignacion", { ascending:false }).limit(MAX_ROWS)),
-        listQuery(sb.from(OPS_TABLE).select(fields).ilike("tipo", "%aver%").ilike("estado", "%complet%").order("fecha_completado", { ascending:false }).limit(MAX_FEED)),
-        listQuery(sb.from("movimientos_inventario").select("id,tipo_movimiento,destino_tipo,destino_nombre,cantidad,motivo,observaciones,usuario_nombre,creado_en").order("creado_en", { ascending:false }).limit(MAX_FEED)),
-        listQuery(sb.from("taller_ordenes").select("id,estado,creado_en").order("creado_en", { ascending:false }).limit(120))
-      ]);
+      async function safeSelect(table, fields, buildQuery){
+        let current = fields.slice();
+        for(let attempt = 0; attempt < 8; attempt++){
+          let query = sb.from(table).select(current.join(","));
+          if(typeof buildQuery === "function") query = buildQuery(query);
+          const res = await query;
+          if(!res.error) return Array.isArray(res.data) ? res.data : [];
 
-      const tallerPendiente = tallerRows.filter(row => !lower(row.estado).includes("complet") && !lower(row.estado).includes("entreg")).length;
+          const msg = clean(res.error.message || res.error.details || res.error.hint || "");
+          const missing =
+            (msg.match(/Could not find the '([^']+)' column/i) || [])[1] ||
+            (msg.match(/'([^']+)'\s+column/i) || [])[1] ||
+            (msg.match(/column\s+"([^"]+)"/i) || [])[1];
+
+          if(missing && current.includes(missing)){
+            current = current.filter(col => col !== missing);
+            continue;
+          }
+
+          console.warn(`[Pantalla] ${table} no cargó:`, msg);
+          return [];
+        }
+        return [];
+      }
+
+      const opsRows = await safeSelect(OPS_TABLE, opFields, q =>
+        q.order("fecha_creacion", { ascending:false }).limit(300)
+      );
+
+      const movimientos = await safeSelect(
+        "movimientos_inventario",
+        ["id","tipo_movimiento","destino_tipo","destino_nombre","cantidad","motivo","observaciones","usuario_nombre","creado_en"],
+        q => q.order("creado_en", { ascending:false }).limit(12)
+      );
+
+      const tallerRows = await safeSelect(
+        "taller_ordenes",
+        ["id","estado","creado_en"],
+        q => q.order("creado_en", { ascending:false }).limit(120)
+      );
+
+      const activeOps = opsRows.filter(op =>
+        isPending(op) || isAssigned(op) || isInProcess(op)
+      );
+
+      try{
+        console.info(`[Pantalla] Operaciones leídas: ${opsRows.length} · Activas: ${activeOps.length} · Pendientes: ${opsRows.filter(isPending).length} · Asignadas: ${opsRows.filter(isAssigned).length} · En proceso: ${opsRows.filter(isInProcess).length}`);
+      }catch(_e){}
+
+      const averias = activeOps
+        .filter(op => isIssue(op) && isInProcess(op))
+        .sort((a,b) => (parseDate(opStarted(b))?.getTime() || 0) - (parseDate(opStarted(a))?.getTime() || 0))
+        .slice(0, MAX_ROWS);
+
+      const trabajos = activeOps
+        .filter(op => isWork(op) && (isAssigned(op) || isInProcess(op)))
+        .sort((a,b) => (parseDate(opAssigned(b) || opCreated(b))?.getTime() || 0) - (parseDate(opAssigned(a) || opCreated(a))?.getTime() || 0))
+        .slice(0, MAX_ROWS);
+
+      const completadasHoy = opsRows.filter(op => {
+        if(!isCompleted(op)) return false;
+        const d = parseDate(opCompleted(op) || opCreated(op));
+        return d && d >= localStartOfDay() && d <= localEndOfDay();
+      });
+
+      const completadas = opsRows
+        .filter(op => isIssue(op) && isCompleted(op))
+        .sort((a,b) => (parseDate(opCompleted(b) || opCreated(b))?.getTime() || 0) - (parseDate(opCompleted(a) || opCreated(a))?.getTime() || 0))
+        .slice(0, MAX_FEED);
+
+      const tallerPendiente = tallerRows.filter(row =>
+        !lower(row.estado).includes("complet") &&
+        !lower(row.estado).includes("entreg")
+      ).length;
 
       return {
         kpis: {
-          operaciones_activas: countActive,
+          operaciones_activas: activeOps.length,
           averias_en_proceso: averias.length,
           trabajos_en_ejecucion: trabajos.length,
-          completadas_hoy: countCompletedToday,
+          completadas_hoy: completadasHoy.length,
           taller_pendiente: tallerPendiente,
           inventario_bajo: 0
         },
         averias_en_proceso: averias,
         trabajos_en_ejecucion: trabajos,
         averias_completadas: completadas,
-        actividad_reciente: movimientos,
+        actividad_reciente: buildRecentActivity(opsRows, movimientos),
         actualizado_en: new Date().toISOString()
       };
     }
@@ -1879,6 +2122,95 @@
         actividad_reciente: data.actividad_reciente || data.actividad || [],
         actualizado_en: data.actualizado_en || new Date().toISOString()
       };
+    }
+
+    function opHistory(op){
+      const raw = op.historial || op.history || [];
+      if(Array.isArray(raw)) return raw;
+      try{
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch(_e){
+        return [];
+      }
+    }
+
+    function opReporter(op){
+      return clean(op.reportado_por_nombre || op.creado_por || op.created_by || op.nombre_encargado || op.encargado || "Encargado");
+    }
+
+    function historyEntry(op, actionName){
+      const target = lower(actionName);
+      return opHistory(op).find(item => lower(item && item.action).includes(target)) || null;
+    }
+
+    function activityActorFromHistory(op, actionName, fallback){
+      const h = historyEntry(op, actionName);
+      return clean(h && h.user) || fallback || "Sistema";
+    }
+
+    function buildRecentActivity(opsRows, movimientos){
+      const events = [];
+
+      (opsRows || []).forEach(op => {
+        const agency = opAgency(op);
+        const code = opCode(op) || "Operación";
+        const type = opType(op);
+        const title = isWork(op) ? opWork(op) : opIssue(op);
+        const reporter = opReporter(op);
+
+        const created = opCreated(op);
+        if(created){
+          events.push({
+            id: `op-created-${opId(op)}`,
+            time: created,
+            text: `${reporter} hizo un reporte de ${type.toLowerCase()} en ${agency}: ${title}.`
+          });
+        }
+
+        const assigned = opAssigned(op);
+        if(assigned && opResponsible(op) !== "Sin asignar"){
+          const actor = activityActorFromHistory(op, "Asignación", "Operaciones");
+          events.push({
+            id: `op-assigned-${opId(op)}`,
+            time: assigned,
+            text: `${actor} asignó ${code} a ${opResponsible(op)} para ${agency}.`
+          });
+        }
+
+        const started = opStarted(op);
+        if(started){
+          const actor = activityActorFromHistory(op, "Inicio", opResponsible(op));
+          events.push({
+            id: `op-started-${opId(op)}`,
+            time: started,
+            text: `${actor} inició ${code} en ${agency}.`
+          });
+        }
+
+        const completed = opCompleted(op);
+        if(completed || isCompleted(op)){
+          const actor = activityActorFromHistory(op, "Finalización", opResponsible(op));
+          events.push({
+            id: `op-completed-${opId(op)}`,
+            time: completed || opCreated(op),
+            text: `${actor} completó ${code} en ${agency}.`
+          });
+        }
+      });
+
+      (movimientos || []).forEach(m => {
+        events.push({
+          id: `mov-${clean(m.id || m.creado_en || Math.random())}`,
+          time: m.creado_en,
+          text: movementText(m)
+        });
+      });
+
+      return events
+        .filter(e => e.time)
+        .sort((a,b) => (parseDate(b.time)?.getTime() || 0) - (parseDate(a.time)?.getTime() || 0))
+        .slice(0, MAX_FEED);
     }
 
     function movementText(m){
@@ -1919,6 +2251,7 @@
     function renderDashboard(payload){
       const data = normalizeDashboardPayload(payload);
       if(!data) return;
+      try{ clearLoadingState(); }catch(_e){}
 
       const kpis = data.kpis || {};
       updateKpis({
@@ -1930,8 +2263,8 @@
         inventario_bajo: Number(kpis.inventario_bajo || 0)
       });
 
-      const averias = (data.averias_en_proceso || []).slice(0, MAX_ROWS);
-      const trabajos = (data.trabajos_en_ejecucion || []).slice(0, MAX_ROWS);
+      const averias = filterTodayRecords((data.averias_en_proceso || []).slice(0, MAX_ROWS));
+      const trabajos = filterTodayRecords((data.trabajos_en_ejecucion || []).slice(0, MAX_ROWS));
       const completed = (data.averias_completadas || []).slice(0, MAX_FEED);
       const activity = (data.actividad_reciente || []).slice(0, MAX_FEED);
 
@@ -1983,7 +2316,11 @@
         })));
 
         renderFeed("averiasCompletadasFeed", completed.map(feedFromCompleted), true);
-        renderFeed("actividadRecienteFeed", activity.map(feedFromMovement), false);
+        renderFeed("actividadRecienteFeed", activity.map(item => ({
+          id: item.id || clean(item.time || Math.random()),
+          time: item.time ? fmtTime(item.time) : getCurrentTime(),
+          text: item.text || movementText(item)
+        })), false);
 
         lastAveriaIds = newAveriaIds;
         lastTrabajoIds = newTrabajoIds;
@@ -1993,7 +2330,7 @@
       const updated = parseDate(data.actualizado_en) || new Date();
       const footer = document.querySelector(".tv-controls-note");
       if(footer){
-        footer.textContent = `Conectado a Supabase · Última lectura: ${updated.toLocaleTimeString("es-DO", {hour:"2-digit", minute:"2-digit", second:"2-digit"})} · Próxima actualización en 30 segundos.`;
+        footer.textContent = `Conectado a Supabase · Última lectura: ${updated.toLocaleTimeString("es-DO", {hour:"2-digit", minute:"2-digit", second:"2-digit"})} · Próxima actualización en 30 segundos · Animaciones solo cuando entra un registro nuevo.`;
       }
     }
 
@@ -2002,10 +2339,7 @@
       isRefreshing = true;
       try{
         const sb = await getSupabase();
-        let payload = await tryRpcDashboard(sb);
-        if(!payload){
-          payload = await fetchDashboardDirect(sb);
-        }
+        const payload = await fetchDashboardDirect(sb);
         renderDashboard(payload);
         elapsed = 0;
         setConnectionState(true, "Supabase conectado");
@@ -2069,6 +2403,327 @@
       }
     }, 8000);
 
+
+    function cleanActorName(value){
+      const raw = String(value || "").trim();
+      if(!raw) return "Usuario del sistema";
+
+      const invalids = [
+        "admin@empresa.com",
+        "admin@empresa",
+        "usuario@empresa.com",
+        "usuario@empresa",
+        "undefined",
+        "null",
+        "sin usuario",
+        "n/a"
+      ];
+
+      if(invalids.includes(raw.toLowerCase())) return "Usuario del sistema";
+
+      if(raw.includes("@")){
+        const local = raw.split("@")[0].replace(/[._-]+/g, " ").trim();
+        if(!local || local.toLowerCase() === "admin") return "Usuario del sistema";
+        return local
+          .split(/\s+/)
+          .filter(Boolean)
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+          .join(" ");
+      }
+
+      return raw
+        .replace(/\s+/g, " ")
+        .replace(/\b([a-záéíóúñ])/g, m => m.toUpperCase());
+    }
+
+
+    
+    let perfilesCache = [];
+    let perfilesMap = new Map();
+
+    function normalizeKey(value){
+      return String(value || "")
+        .trim()
+        .toLowerCase();
+    }
+
+    function addProfileKey(map, key, profile){
+      const cleanKey = normalizeKey(key);
+      if(!cleanKey) return;
+      if(!map.has(cleanKey)) map.set(cleanKey, profile);
+    }
+
+    function buildPerfilesMap(perfiles){
+      const map = new Map();
+
+      (perfiles || []).forEach(profile => {
+        const nombre = (
+          profile.nombre_completo ||
+          profile.nombre ||
+          profile.name ||
+          profile.display_name ||
+          profile.usuario_nombre ||
+          ""
+        );
+
+        const normalizedProfile = {
+          ...profile,
+          _displayName: cleanActorName(nombre || profile.correo || profile.email || profile.usuario || "")
+        };
+
+        addProfileKey(map, profile.id, normalizedProfile);
+        addProfileKey(map, profile.user_id, normalizedProfile);
+        addProfileKey(map, profile.auth_id, normalizedProfile);
+        addProfileKey(map, profile.uid, normalizedProfile);
+        addProfileKey(map, profile.correo, normalizedProfile);
+        addProfileKey(map, profile.email, normalizedProfile);
+        addProfileKey(map, profile.usuario, normalizedProfile);
+        addProfileKey(map, profile.username, normalizedProfile);
+        addProfileKey(map, profile.nombre_completo, normalizedProfile);
+        addProfileKey(map, profile.nombre, normalizedProfile);
+        addProfileKey(map, profile.name, normalizedProfile);
+      });
+
+      perfilesMap = map;
+      return map;
+    }
+
+    async function loadPerfilesReales(){
+      try{
+        if(!window.supabaseClient && !window.supabase) return [];
+
+        const client = window.supabaseClient || window.supabase;
+
+        const { data, error } = await client
+          .from("perfiles")
+          .select("id,user_id,auth_id,uid,nombre_completo,nombre,name,correo,email,usuario,username,roles,puesto,puestos")
+          .limit(500);
+
+        if(error){
+          console.warn("No se pudieron cargar perfiles reales:", error.message || error);
+          perfilesCache = [];
+          perfilesMap = new Map();
+          return [];
+        }
+
+        perfilesCache = data || [];
+        buildPerfilesMap(perfilesCache);
+        console.info("Perfiles reales cargados:", perfilesCache.length);
+        return perfilesCache;
+      }catch(error){
+        console.warn("Error cargando perfiles reales:", error);
+        perfilesCache = [];
+        perfilesMap = new Map();
+        return [];
+      }
+    }
+
+    function resolveProfileName(value){
+      const key = normalizeKey(value);
+      if(!key) return "";
+
+      const profile = perfilesMap.get(key);
+      if(profile && profile._displayName && profile._displayName !== "Usuario del sistema"){
+        return profile._displayName;
+      }
+
+      return "";
+    }
+
+    function pickRealNameFromRecord(record, fields){
+      const sourceFields = Array.isArray(fields) ? fields : [];
+
+      for(const field of sourceFields){
+        const direct = record?.[field];
+        const fromProfile = resolveProfileName(direct);
+        if(fromProfile) return fromProfile;
+
+        const cleaned = cleanActorName(direct);
+        if(cleaned && cleaned !== "Usuario del sistema") return cleaned;
+      }
+
+      return "";
+    }
+
+    function pickActorName(record){
+      if(!record) return "Operaciones";
+
+      const specificName = pickRealNameFromRecord(record, [
+        "actor_nombre",
+        "usuario_nombre",
+        "creado_por_nombre",
+        "created_by_name",
+        "responsable_nombre",
+        "encargado_nombre",
+        "tecnico_nombre",
+        "nombre_usuario",
+        "nombre_completo",
+        "nombre",
+        "display_name"
+      ]);
+      if(specificName) return specificName;
+
+      const profileName = pickRealNameFromRecord(record, [
+        "actor_id",
+        "usuario_id",
+        "user_id",
+        "created_by",
+        "creado_por",
+        "responsable_id",
+        "encargado_id",
+        "tecnico_id",
+        "auth_id",
+        "uid",
+        "email",
+        "correo",
+        "user_email",
+        "usuario",
+        "actor"
+      ]);
+      if(profileName) return profileName;
+
+      if(record?.tecnico || record?.responsable) {
+        const technicianName = pickRealNameFromRecord(record, ["tecnico", "responsable"]);
+        if(technicianName) return technicianName;
+      }
+
+      if(record?.modulo){
+        const modulo = String(record.modulo).toLowerCase();
+        if(modulo.includes("inventario") || modulo.includes("almacen")) return "Almacén";
+        if(modulo.includes("taller")) return "Taller";
+        if(modulo.includes("rrhh") || modulo.includes("recursos")) return "Recursos Humanos";
+        if(modulo.includes("operacion")) return "Operaciones";
+      }
+
+      return "Operaciones";
+    }
+
+    function pickTechnicianName(record){
+      const name = pickRealNameFromRecord(record, [
+        "tecnico_nombre",
+        "responsable_nombre",
+        "tecnico",
+        "responsable",
+        "tecnico_id",
+        "responsable_id",
+        "asignado_a",
+        "asignado_id"
+      ]);
+
+      return name || "Técnico asignado";
+    }
+
+    function pickAssignerName(record){
+      const name = pickRealNameFromRecord(record, [
+        "asignado_por_nombre",
+        "asignador_nombre",
+        "usuario_nombre",
+        "actor_nombre",
+        "created_by_name",
+        "asignado_por",
+        "asignador_id",
+        "usuario_id",
+        "actor_id",
+        "created_by",
+        "creado_por",
+        "email",
+        "correo"
+      ]);
+
+      return name || "Operaciones";
+    }
+
+    function pickCreatorName(record){
+      const name = pickRealNameFromRecord(record, [
+        "creado_por_nombre",
+        "created_by_name",
+        "encargado_nombre",
+        "usuario_nombre",
+        "actor_nombre",
+        "creado_por",
+        "created_by",
+        "encargado_id",
+        "usuario_id",
+        "actor_id",
+        "email",
+        "correo"
+      ]);
+
+      return name || "Encargado";
+    }
+
+function sanitizeVisibleActorNames(){
+      const badNames = ["admin@empresa.com", "admin@empresa", "usuario@empresa.com", "usuario@empresa"];
+      document.querySelectorAll(".activity-text, .row-meta, .row-name").forEach(el => {
+        let text = el.textContent || "";
+        badNames.forEach(bad => {
+          const rx = new RegExp(bad.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
+          text = text.replace(rx, "Operaciones");
+        });
+        el.textContent = text;
+      });
+    }
+
+    setInterval(sanitizeVisibleActorNames, 1000);
+    document.addEventListener("DOMContentLoaded", sanitizeVisibleActorNames);
+
+
+    function getTodayRangeLocal(){
+      const start = new Date();
+      start.setHours(0,0,0,0);
+
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+
+      return {
+        start,
+        end,
+        startIso: start.toISOString(),
+        endIso: end.toISOString()
+      };
+    }
+
+    function isTodayValue(value){
+      if(!value) return false;
+      const d = new Date(value);
+      if(Number.isNaN(d.getTime())) return false;
+      const { start, end } = getTodayRangeLocal();
+      return d >= start && d < end;
+    }
+
+    function getRecordDate(record){
+      return (
+        record?.fecha ||
+        record?.fecha_creacion ||
+        record?.fechaCreacion ||
+        record?.created_at ||
+        record?.createdAt ||
+        record?.fecha_reporte ||
+        record?.fechaReporte ||
+        record?.fecha_asignacion ||
+        record?.fechaAsignacion ||
+        record?.fecha_inicio ||
+        record?.fechaInicio ||
+        record?.fecha_completado ||
+        record?.fechaCompletado ||
+        record?.updated_at ||
+        record?.updatedAt
+      );
+    }
+
+    function filterTodayRecords(records, preferredFields){
+      const fields = Array.isArray(preferredFields) ? preferredFields : [];
+      return (records || []).filter(record => {
+        if(!record) return false;
+
+        for(const field of fields){
+          if(record[field] && isTodayValue(record[field])) return true;
+        }
+
+        return isTodayValue(getRecordDate(record));
+      });
+    }
+    // Los perfiles se cargan dentro del ciclo principal para evitar bloqueos de inicio.
 </script>
 </body>
 </html>
