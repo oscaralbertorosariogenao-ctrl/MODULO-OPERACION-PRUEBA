@@ -9343,13 +9343,14 @@ function getFixedAgencyType(numero){
 
 const AGENCY_SPECIAL_CLOSED_GROUP = 'DESACTIVADAS/CERRADAS';
 const AGENCY_STATUS_DEFAULT = 'ACTIVA';
-const AGENCY_STATUS_OPTIONS = ['ACTIVA','EN PROCESO','REMODELACIÓN','DESACTIVADA/CERRADA'];
+const AGENCY_STATUS_OPTIONS = ['ACTIVA','EN CONSTRUCCIÓN','EN PROCESO','REMODELACIÓN','DESACTIVADA/CERRADA'];
 
 function normalizarEstadoAgencia(estado){
   const raw = String(estado ?? '').trim();
   const clean = raw.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/\s+/g,' ');
+  if(clean.includes('constru')) return 'EN CONSTRUCCIÓN';
   if(clean.includes('proceso') || clean.includes('revision') || clean.includes('pendiente') || clean.includes('instalacion')) return 'EN PROCESO';
   if(clean.includes('remodel')) return 'REMODELACIÓN';
   if(clean.includes('desactiv') || clean.includes('cerrad') || clean.includes('inactiv') || clean.includes('clausur') || clean.includes('cancel')) return 'DESACTIVADA/CERRADA';
@@ -9371,7 +9372,7 @@ function getAgencyEstadoOperativo(agencia){
 
 function agencyStatusClass(estado){
   const clean = normalizarEstadoAgencia(estado);
-  if(clean === 'EN PROCESO') return 'status-en-proceso';
+  if(clean === 'EN CONSTRUCCIÓN' || clean === 'EN PROCESO') return 'status-en-proceso';
   if(clean === 'REMODELACIÓN') return 'status-remodelacion';
   if(clean === 'DESACTIVADA/CERRADA') return 'status-cerrada';
   return 'status-activa';
@@ -12946,6 +12947,35 @@ window.BackendCero = window.BackendCero || {
     let agenciasMapGroupsExplicitNone = false;
     let agenciasMapTypesExplicitNone = false;
     let agenciasMapStatesExplicitNone = false;
+    let agenciasMapRenderTimer = null;
+    let agenciasMapLastRenderKey = '';
+    let agenciasMapLastDebugAt = 0;
+    let agenciasMapSyncInFlight = false;
+    let agenciasMapSyncPending = false;
+    let agenciasMapRealtimeStarted = false;
+    let agenciasMapRealtimeUnsubscribe = null;
+    let agenciasMapBootStarted = false;
+    const AGENCIAS_MAP_DEBUG = false;
+
+    function agencyMapDebug(){
+      if(!AGENCIAS_MAP_DEBUG) return;
+      const now = Date.now();
+      if(now - agenciasMapLastDebugAt < 1500) return;
+      agenciasMapLastDebugAt = now;
+      try{ console.debug.apply(console, arguments); }catch(_e){}
+    }
+
+    function agencyMapActiveSource(){
+      return agenciasMapLastSource.length ? agenciasMapLastSource : (typeof agencias !== 'undefined' ? agencias : []);
+    }
+
+    function agencyMapScheduleRefresh(options = {}){
+      clearTimeout(agenciasMapRenderTimer);
+      agenciasMapRenderTimer = setTimeout(() => {
+        agenciasMapRenderTimer = null;
+        agencyMapRefresh(agencyMapActiveSource(), options);
+      }, Number(options.delay ?? 80));
+    }
 
     const AGENCIAS_MAP_TYPE_OPTIONS = [
       ['agencia_normal', 'Agencia normal'],
@@ -13361,7 +13391,7 @@ window.BackendCero = window.BackendCero || {
       if(input){
         input.addEventListener('input', () => {
           agenciasMapSearchText = input.value || '';
-          agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+          agencyMapScheduleRefresh({ fit:false });
         });
       }
     }
@@ -13452,7 +13482,7 @@ window.BackendCero = window.BackendCero || {
           agenciasMapTypesExplicitNone = agenciasMapSelectedTypes.size === 0;
           const row = input.closest('.map-filter-chip');
           if(row) row.classList.toggle('is-off', !input.checked);
-          agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+          agencyMapScheduleRefresh({ fit:false });
         });
       });
     }
@@ -13489,7 +13519,7 @@ window.BackendCero = window.BackendCero || {
           agenciasMapStatesExplicitNone = agenciasMapSelectedStates.size === 0;
           const row = input.closest('.map-filter-chip');
           if(row) row.classList.toggle('is-off', !input.checked);
-          agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+          agencyMapScheduleRefresh({ fit:false });
         });
       });
     }
@@ -13531,7 +13561,7 @@ window.BackendCero = window.BackendCero || {
           agenciasMapGroupsExplicitNone = agenciasMapSelectedGroups.size === 0;
           const row = input.closest('.map-filter-row');
           if(row) row.classList.toggle('is-off', !input.checked);
-          agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+          agencyMapScheduleRefresh({ fit:false });
         });
       });
     }
@@ -13549,7 +13579,7 @@ window.BackendCero = window.BackendCero || {
       agenciasMapSelectedTypes = new Set(AGENCIAS_MAP_TYPE_OPTIONS.map(([value]) => value));
       agenciasMapTypeFiltersInitialized = true;
       agenciasMapTypesExplicitNone = false;
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapSelectNoTypes(){
@@ -13558,14 +13588,14 @@ window.BackendCero = window.BackendCero || {
       agenciasMapTypesExplicitNone = true;
       const list = document.getElementById('agencyTypeFilterList');
       if(list) list.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapSelectAllStates(){
       agenciasMapSelectedStates = new Set(AGENCIAS_MAP_STATE_OPTIONS.map(([value]) => value));
       agenciasMapStateFiltersInitialized = true;
       agenciasMapStatesExplicitNone = false;
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapSelectNoStates(){
@@ -13574,7 +13604,7 @@ window.BackendCero = window.BackendCero || {
       agenciasMapStatesExplicitNone = true;
       const list = document.getElementById('agencyStateFilterList');
       if(list) list.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapToggleGroup(group, checked){
@@ -13583,13 +13613,13 @@ window.BackendCero = window.BackendCero || {
       if(checked) agenciasMapSelectedGroups.add(clean);
       else agenciasMapSelectedGroups.delete(clean);
       agenciasMapGroupsExplicitNone = agenciasMapSelectedGroups.size === 0;
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapSelectAllGroups(){
       agenciasMapGroupsExplicitNone = false;
       agenciaMapCurrentGroups(agenciasMapLastSource.length ? agenciasMapLastSource : agencias).forEach(([g]) => agenciasMapSelectedGroups.add(g));
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapSelectNoGroups(){
@@ -13598,7 +13628,7 @@ window.BackendCero = window.BackendCero || {
       agenciasMapGroupsExplicitNone = true;
       const list = document.getElementById('agencyGroupFilterList');
       if(list) list.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
-      agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : agencias, { fit:false });
+      agencyMapScheduleRefresh({ fit:false });
     }
 
     function agencyMapStyle(){
@@ -13859,36 +13889,9 @@ window.BackendCero = window.BackendCero || {
       const fit = options.fit !== false;
       agenciasMapPendingFit = fit;
 
-      console.log('Agencias desde Supabase:', source.length);
-      console.log('Primera agencia completa:', source[0]);
-      console.log('Keys agencia:', Object.keys(source[0] || {}));
-
       const filteredSource = source.filter(a => agencyHasCoords(a) && agencyMapMatchesFilter(a));
       const geojson = convertirAgenciasAGeoJSON(filteredSource);
-      console.log('Filtros aplicados:', {
-        grupos: [...agenciasMapSelectedGroups],
-        tipos: [...agenciasMapSelectedTypes],
-        estados: [...agenciasMapSelectedStates],
-        busqueda: agenciasMapSearchText,
-        visibles: filteredSource.length,
-        total: source.filter(agencyHasCoords).length
-      });
-      console.log('Agencias válidas para mapa:', geojson.features.length);
-      console.log('Tipos detectados:', [...new Set(geojson.features.map(f => f.properties.tipo))]);
-      console.log('Estados detectados:', [...new Set(geojson.features.map(f => f.properties.estado))]);
-      console.log('Estados originales detectados:', [...new Set(source.map(a => a?.estado || a?.status || a?.estado_agencia || a?.estadoOperativo || a?.detalle?.estadoOperativo))]);
-      console.log('Estados normalizados:', source.map(a => ({
-        numero: a?.numero || a?.codigo || a?.agencia || a?.numero_agencia || a?.num_agencia,
-        original: a?.estado || a?.status || a?.estado_agencia || a?.estadoOperativo || a?.detalle?.estadoOperativo,
-        normalizado: normalizarEstadoAgencia(a?.estado || a?.status || a?.estado_agencia || a?.estadoOperativo || a?.detalle?.estadoOperativo)
-      })).slice(0, 50));
-      console.log('Total activas normalizadas:', source.filter(a => normalizarEstadoAgencia(a?.estado || a?.status || a?.estado_agencia || a?.estadoOperativo || a?.detalle?.estadoOperativo) === 'activa').length);
-      console.log('Muestra números agencias:', geojson.features.slice(0, 20).map(f => ({
-        numero: f.properties.numero,
-        grupo: f.properties.grupo,
-        tipo: f.properties.tipo,
-        estado: f.properties.estado
-      })));
+      agencyMapDebug('Mapa agencias', { total: source.length, visibles: geojson.features.length });
       updateAgencyMapDashboard(source, geojson.features.length);
 
       const status = document.getElementById('agenciasMapStatus');
@@ -13897,6 +13900,18 @@ window.BackendCero = window.BackendCero || {
       if(quickPanel) quickPanel.innerHTML = `<b>${geojson.features.length}</b><span>agencias visibles</span>`;
 
       if(!map || !agenciasMapLoaded || !map.getSource('agencias')) return;
+      const renderKey = JSON.stringify({
+        fit,
+        search: agenciasMapSearchText,
+        grupos: [...agenciasMapSelectedGroups].sort(),
+        tipos: [...agenciasMapSelectedTypes].sort(),
+        estados: [...agenciasMapSelectedStates].sort(),
+        features: geojson.features.map(f => [f.properties.numero, f.properties.grupo, f.properties.tipo, f.properties.estado, f.geometry.coordinates[0], f.geometry.coordinates[1]])
+      });
+      if(renderKey === agenciasMapLastRenderKey && !fit){
+        return;
+      }
+      agenciasMapLastRenderKey = renderKey;
       asegurarIconosAgencias(map, geojson);
       map.getSource('agencias').setData(geojson);
       agencyMapApplyLayerFilters();
@@ -13925,12 +13940,15 @@ window.BackendCero = window.BackendCero || {
       setTimeout(() => { if(agenciasMapInstance) agenciasMapInstance.resize(); }, 180);
       setTimeout(() => { if(agenciasMapInstance) agencyMapFitAll(); }, 420);
     }
-    document.addEventListener('fullscreenchange', () => {
-      setTimeout(() => { if(agenciasMapInstance) agenciasMapInstance.resize(); }, 120);
-      setTimeout(() => { if(agenciasMapInstance) agencyMapFitAll(); }, 300);
-    });
+    if(!window.__lotekaAgencyFullscreenListener){
+      window.__lotekaAgencyFullscreenListener = true;
+      document.addEventListener('fullscreenchange', () => {
+        setTimeout(() => { if(agenciasMapInstance) agenciasMapInstance.resize(); }, 120);
+        setTimeout(() => { if(agenciasMapInstance) agencyMapFitAll(); }, 300);
+      });
+    }
 
-    function agencyMapFitAll(){ agencyMapRefresh(agenciasMapLastSource.length ? agenciasMapLastSource : (typeof agencias !== 'undefined' ? agencias : []), { fit:true }); }
+    function agencyMapFitAll(){ agencyMapRefresh(agencyMapActiveSource(), { fit:true }); }
 
     function normalizeBackendCeroAgencyDoc(doc){
       if(!doc) return null;
@@ -13960,6 +13978,11 @@ window.BackendCero = window.BackendCero || {
     }
 
     async function syncAgenciesFromBackendCero(){
+      if(agenciasMapSyncInFlight){
+        agenciasMapSyncPending = true;
+        return;
+      }
+      agenciasMapSyncInFlight = true;
       try{
         const data = await backendCeroDatabases.listDocuments(
           BACKEND_CERO_DATABASE_ID,
@@ -13967,16 +13990,35 @@ window.BackendCero = window.BackendCero || {
           [backendCeroQuery.limit(500)]
         );
         const docs = (data.documents || []).map(normalizeBackendCeroAgencyDoc).filter(Boolean).filter(a => a.numero);
+        let changed = false;
         docs.forEach(remote => {
           const idx = agencias.findIndex(a => String(Number(a.numero)) === String(Number(remote.numero)));
-          if(idx >= 0) agencias[idx] = {...agencias[idx], ...remote, equipos: agencias[idx].equipos || remote.equipos || []};
-          else agencias.push(remote);
+          if(idx >= 0){
+            const merged = {...agencias[idx], ...remote, equipos: agencias[idx].equipos || remote.equipos || []};
+            const before = JSON.stringify({n:agencias[idx].numero,g:agencias[idx].grupo,e:agencias[idx].encargado,lat:agencias[idx].latitud,lng:agencias[idx].longitud,estado:agencias[idx].estado,tipo:agencias[idx].tipoAgencia || agencias[idx].tipo});
+            const after = JSON.stringify({n:merged.numero,g:merged.grupo,e:merged.encargado,lat:merged.latitud,lng:merged.longitud,estado:merged.estado,tipo:merged.tipoAgencia || merged.tipo});
+            agencias[idx] = merged;
+            if(before !== after) changed = true;
+          }else{
+            agencias.push(remote);
+            changed = true;
+          }
         });
-        agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
-        renderAgencias();
+        if(changed){
+          agencias.sort((a,b) => Number(a.numero) - Number(b.numero));
+          renderAgencias();
+        }else{
+          agencyMapScheduleRefresh({ fit:false });
+        }
       }catch(error){
         console.warn('Agencias BackendCero no sincronizadas:', error);
-        agencyMapRefresh();
+        agencyMapScheduleRefresh({ fit:false });
+      }finally{
+        agenciasMapSyncInFlight = false;
+        if(agenciasMapSyncPending){
+          agenciasMapSyncPending = false;
+          setTimeout(syncAgenciesFromBackendCero, 350);
+        }
       }
     }
 
@@ -14004,15 +14046,23 @@ window.BackendCero = window.BackendCero || {
 
     function initAgenciesRealtime(){
       try{
+        if(agenciasMapRealtimeStarted) return;
+        agenciasMapRealtimeStarted = true;
         const channel = `databases.${BACKEND_CERO_DATABASE_ID}.collections.${BACKEND_CERO_AGENCIAS_COLLECTION_ID}.documents`;
-        backendCeroClient.subscribe(channel, () => syncAgenciesFromBackendCero());
-        console.info('Realtime BackendCero activo para agencias');
+        agenciasMapRealtimeUnsubscribe = backendCeroClient.subscribe(channel, () => {
+          clearTimeout(window.__lotekaAgencyRealtimeTimer);
+          window.__lotekaAgencyRealtimeTimer = setTimeout(syncAgenciesFromBackendCero, 450);
+        });
+        agencyMapDebug('Realtime BackendCero activo para agencias');
       }catch(error){
+        agenciasMapRealtimeStarted = false;
         console.warn('No se pudo activar realtime de agencias:', error);
       }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      if(agenciasMapBootStarted) return;
+      agenciasMapBootStarted = true;
       setTimeout(() => { agencyMapRefresh(); syncAgenciesFromBackendCero(); initAgenciesRealtime(); }, 500);
     });
 </script>
@@ -14864,7 +14914,7 @@ window.BackendCero = window.BackendCero || {
       if (fromStatus === toStatus) return true;
       const allowedTransitions = {
         'Pendiente': ['Asignada'],
-        'Asignada': ['En proceso', 'Completado'],
+        'Asignada': ['En proceso'],
         'En proceso': ['Completado'],
         'Completado': []
       };
@@ -14880,6 +14930,9 @@ window.BackendCero = window.BackendCero || {
       }
       if (fromStatus === 'Asignada' && toStatus === 'Pendiente') {
         return 'Una operación asignada no puede volver a Pendiente.';
+      }
+      if (fromStatus === 'Asignada' && toStatus === 'Completado') {
+        return 'No puedes completar una operación desde Asignada. Primero debe pasar a En proceso para registrar fecha de inicio.';
       }
       if (fromStatus === 'En proceso' && ['Pendiente', 'Asignada'].includes(toStatus)) {
         return 'Una operación en proceso no puede retroceder de estado.';
@@ -19389,6 +19442,11 @@ function openEditModal(id) {
 
       if (newStatus === 'Completado' && !currentEvidence.length && !resultImageFiles.length) {
         alert('Debes subir al menos una evidencia (imagen o video) para completar la operación.');
+        return;
+      }
+
+      if (newStatus === 'Completado' && !getStartTimestamp(operations[index])) {
+        alert('No puedes completar la operación sin fecha de inicio. Primero debe estar en proceso.');
         return;
       }
 
@@ -33560,7 +33618,9 @@ function lotekaRequiereSerialPorTipo(tipoProducto){
 <script id="loteka-v168-notificaciones-filtros-pro-js">
 (function(){
   'use strict';
-  var state = { client:null, ready:false, items:[], filter:'todas', moduleFilter:'todas', statusFilter:'todas', panelOpen:false, channels:[], subscribed:false, creatingKeys:new Set(), lastToastIds:new Set(), soundEnabled:localStorage.getItem('loteka_notif_sound_enabled')==='true', soundUnlocked:false, soundAudio:null, lastSoundAt:0 };
+  if(window.__lotekaNotifV168Installed) return;
+  window.__lotekaNotifV168Installed = true;
+  var state = { client:null, ready:false, items:[], filter:'todas', moduleFilter:'todas', statusFilter:'todas', panelOpen:false, channels:[], subscribed:false, creatingKeys:new Set(), lastToastIds:new Set(), processedEventKeys:new Set(), soundEnabled:localStorage.getItem('loteka_notif_sound_enabled')==='true', soundUnlocked:false, soundAudio:null, lastSoundAt:0, bootedAt:Date.now(), realtimeReadyAt:0, initialLoaded:false };
 
   function qs(s){ return document.querySelector(s); }
   function qsa(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
@@ -33675,11 +33735,39 @@ function lotekaRequiereSerialPorTipo(tipoProducto){
     var ref = m ? clean(m[1] || m[0]).replace(/\s+/g,'').toUpperCase().replace(/^ENTRADADEINVENTARIO/i,'') : '';
     return ref ? ('entrada:' + ref) : '';
   }
+  function notificationFingerprint(n){
+    if(!n) return '';
+    var entry = entryNotificationKey(n);
+    if(entry) return entry;
+    var ref = clean(n.referencia_id || n.referencia_codigo || '');
+    var tipo = clean(n.tipo || '').toUpperCase();
+    var modulo = clean(n.modulo || '').toUpperCase();
+    var refTipo = clean(n.referencia_tipo || '').toLowerCase();
+    if(ref && tipo && modulo) return ['ref',modulo,tipo,refTipo,ref].join(':');
+    var msg = normNotifText(clean(n.titulo)+'|'+clean(n.mensaje));
+    if(msg) return ['txt',modulo,tipo,msg.slice(0,180)].join(':');
+    return clean(n.id || '');
+  }
+  function rememberEventKey(key, ttl){
+    if(!key) return false;
+    if(state.processedEventKeys.has(key)) return true;
+    state.processedEventKeys.add(key);
+    setTimeout(function(){ try{ state.processedEventKeys.delete(key); }catch(e){} }, ttl || 90000);
+    return false;
+  }
+  function isRecentRealtimeNotification(n){
+    try{
+      if(!state.initialLoaded) return false;
+      var t = n && n.creado_en ? new Date(n.creado_en).getTime() : Date.now();
+      if(!isFinite(t)) return false;
+      return t >= (state.bootedAt - 15000);
+    }catch(e){ return false; }
+  }
   function dedupeNotificationItems(items){
     var seen = Object.create(null);
     return (items || []).filter(function(n){
       if(isNoiseNotification(n)) return false;
-      var k = entryNotificationKey(n);
+      var k = notificationFingerprint(n);
       if(k){ if(seen[k]) return false; seen[k] = true; }
       return true;
     });
@@ -33870,7 +33958,7 @@ function lotekaRequiereSerialPorTipo(tipoProducto){
     }, true);
   });
 
-  function showToast(n){ ensureDOM(); if(!n || !n.id) return; if(isOwnNotification(n)) return; if(isNoiseNotification(n)) return; var ek=entryNotificationKey(n); if(ek && state.lastToastIds.has(ek)) return; if(state.lastToastIds.has(n.id)) return; state.lastToastIds.add(n.id); if(ek) state.lastToastIds.add(ek); setTimeout(function(){ state.lastToastIds.delete(n.id); if(ek) state.lastToastIds.delete(ek); }, 30000); var stack=qs('#ltkToastStack'); if(!stack) return; var toast=document.createElement('div'); toast.className='ltk-toast'; toast.dataset.id=n.id; toast.innerHTML='<div class="ltk-toast-icon"><i class="fas '+esc(moduloIcon(n.modulo,n.tipo))+'"></i></div><div><div class="ltk-toast-title">'+esc(n.titulo||'Nueva notificación')+'</div><div class="ltk-toast-msg">'+esc(n.mensaje||'')+'</div><div class="ltk-toast-meta">'+esc(readableModule(n.modulo))+' · '+esc(shortUserName(notifActorName(n)))+' · '+esc(timeAgo(n.creado_en))+'</div></div><button type="button" class="ltk-toast-close"><i class="fas fa-xmark"></i></button>'; stack.prepend(toast); toast.addEventListener('click', function(ev){ if(ev.target.closest('.ltk-toast-close')) return; markRead(n.id); openNotification(n); }); toast.querySelector('.ltk-toast-close').addEventListener('click', function(ev){ ev.stopPropagation(); hideToast(toast); }); setTimeout(function(){ hideToast(toast); },7200); playNotificationSound(false); notifyBrowser(n); }
+  function showToast(n, play){ ensureDOM(); if(!n || !n.id) return; if(isOwnNotification(n)) return; if(isNoiseNotification(n)) return; var ek=notificationFingerprint(n) || clean(n.id); if(ek && state.lastToastIds.has(ek)) return; if(state.lastToastIds.has(n.id)) return; state.lastToastIds.add(n.id); if(ek) state.lastToastIds.add(ek); setTimeout(function(){ state.lastToastIds.delete(n.id); if(ek) state.lastToastIds.delete(ek); }, 30000); var stack=qs('#ltkToastStack'); if(!stack) return; var toast=document.createElement('div'); toast.className='ltk-toast'; toast.dataset.id=n.id; toast.innerHTML='<div class="ltk-toast-icon"><i class="fas '+esc(moduloIcon(n.modulo,n.tipo))+'"></i></div><div><div class="ltk-toast-title">'+esc(n.titulo||'Nueva notificación')+'</div><div class="ltk-toast-msg">'+esc(n.mensaje||'')+'</div><div class="ltk-toast-meta">'+esc(readableModule(n.modulo))+' · '+esc(shortUserName(notifActorName(n)))+' · '+esc(timeAgo(n.creado_en))+'</div></div><button type="button" class="ltk-toast-close"><i class="fas fa-xmark"></i></button>'; stack.prepend(toast); toast.addEventListener('click', function(ev){ if(ev.target.closest('.ltk-toast-close')) return; markRead(n.id); openNotification(n); }); toast.querySelector('.ltk-toast-close').addEventListener('click', function(ev){ ev.stopPropagation(); hideToast(toast); }); setTimeout(function(){ hideToast(toast); },7200); if(play !== false){ playNotificationSound(false); notifyBrowser(n); } }
   function hideToast(toast){ if(!toast || toast.classList.contains('hide')) return; toast.classList.add('hide'); setTimeout(function(){ try{toast.remove();}catch(e){} },260); }
   function requestBrowserPermission(){ if(!('Notification' in window)){ alert('Este navegador no soporta notificaciones nativas.'); return; } Notification.requestPermission().then(function(p){ alert(p==='granted'?'Notificaciones del navegador activadas.':'Permiso de notificación no concedido.'); }); }
   function notifyBrowser(n){ try{ if(!('Notification' in window)) return; if(Notification.permission!=='granted') return; var isBackground = document.hidden || !document.hasFocus(); if(!isBackground) return; var notif=new Notification('LOTEKA · '+(n.titulo||'Nueva notificación'),{body:(n.mensaje||''),icon:'icon-192.svg',tag:n.id||undefined,renotify:true,requireInteraction:false}); notif.onclick=function(){ try{window.focus();}catch(e){} openNotification(n); markRead(n.id); notif.close(); }; }catch(e){} }
@@ -33878,20 +33966,27 @@ function lotekaRequiereSerialPorTipo(tipoProducto){
   async function loadNotifications(){ if(!state.client) return; try{ var resp=await state.client.from('notificaciones').select('*').order('creado_en',{ascending:false}).limit(100); if(resp.error) throw resp.error; state.items=(Array.isArray(resp.data)?resp.data:[]).map(function(n){ try{ var a=notifActorName(n); if(a && a!=='Sistema' && /^sistema\b/i.test(clean(n.usuario_nombre||''))) n.usuario_nombre=a; }catch(e){} return n; }).filter(function(n){ return !isOwnNotification(n); }); renderPanel(); }catch(err){ console.warn('[Notificaciones] No se pudo cargar:',err&&err.message?err.message:err); var list=qs('#ltkNotifList'); if(list) list.innerHTML='<div class="ltk-notif-empty">No se pudieron cargar las notificaciones. Revisa Supabase/RLS.</div>'; } }
   async function markRead(id){ if(!id || !state.client) return; var item=state.items.find(function(n){return String(n.id)===String(id);}); if(item) item.leida=true; renderPanel(); try{ await state.client.from('notificaciones').update({leida:true,visto_en_panel:true}).eq('id',id); }catch(e){} }
   async function markAllRead(){ if(!state.client) return; var ids=dedupeNotificationItems(state.items).filter(function(n){ return !isOwnNotification(n) && !n.leida && n.id; }).map(function(n){ return n.id; }); state.items.forEach(function(n){ if(ids.indexOf(n.id)>=0) n.leida=true; }); renderPanel(); try{ if(ids.length) await state.client.from('notificaciones').update({leida:true,visto_en_panel:true}).in('id',ids); }catch(e){} }
-  async function createNotification(payload, showNow){ if(!state.client||!payload) return null; var data={modulo:clean(payload.modulo||'SISTEMA').toUpperCase(),tipo:clean(payload.tipo||'EVENTO').toUpperCase(),titulo:clean(payload.titulo||'Movimiento registrado'),mensaje:clean(payload.mensaje||'Se registró un movimiento importante en el sistema.'),importancia:clean(payload.importancia||'normal').toLowerCase(),referencia_tipo:clean(payload.referencia_tipo||payload.ref_tipo||'')||null,referencia_id:isUuid(payload.referencia_id)?payload.referencia_id:null,referencia_codigo:clean(payload.referencia_codigo||payload.codigo||'')||null,usuario_id:isUuid(payload.usuario_id)?payload.usuario_id:userId(),usuario_nombre:shortUserName(payload.usuario_nombre||userName()),leida:false,visto_en_panel:false,creado_en:payload.creado_en||nowISO()}; if(['baja','normal','alta','critica'].indexOf(data.importancia)<0) data.importancia='normal'; try{ var resp=await state.client.from('notificaciones').insert(data).select('*').single(); if(resp.error) throw resp.error; if(showNow!==false&&resp.data) addNotification(resp.data,true); return resp.data; }catch(err){ console.warn('[Notificaciones] No se pudo crear:',err&&err.message?err.message:err,data); return null; } }
+  async function createNotification(payload, showNow){ if(!state.client||!payload) return null; var data={modulo:clean(payload.modulo||'SISTEMA').toUpperCase(),tipo:clean(payload.tipo||'EVENTO').toUpperCase(),titulo:clean(payload.titulo||'Movimiento registrado'),mensaje:clean(payload.mensaje||'Se registró un movimiento importante en el sistema.'),importancia:clean(payload.importancia||'normal').toLowerCase(),referencia_tipo:clean(payload.referencia_tipo||payload.ref_tipo||'')||null,referencia_id:isUuid(payload.referencia_id)?payload.referencia_id:null,referencia_codigo:clean(payload.referencia_codigo||payload.codigo||'')||null,usuario_id:isUuid(payload.usuario_id)?payload.usuario_id:userId(),usuario_nombre:shortUserName(payload.usuario_nombre||userName()),leida:false,visto_en_panel:false,creado_en:payload.creado_en||nowISO()}; if(['baja','normal','alta','critica'].indexOf(data.importancia)<0) data.importancia='normal'; var eventKey=notificationFingerprint(data); if(rememberEventKey('create:'+eventKey, 12000)) return null; try{ var resp=await state.client.from('notificaciones').insert(data).select('*').single(); if(resp.error) throw resp.error; if(showNow!==false&&resp.data) addNotification(resp.data,true); return resp.data; }catch(err){ console.warn('[Notificaciones] No se pudo crear:',err&&err.message?err.message:err,data); return null; } }
   async function createNotificationOnce(payload){ if(!payload||!state.client) return null; var key=[payload.modulo,payload.tipo,payload.referencia_tipo,payload.referencia_id,payload.referencia_codigo].map(clean).join('|'); if(state.creatingKeys.has(key)) return null; state.creatingKeys.add(key); setTimeout(function(){state.creatingKeys.delete(key);},6000); try{ if(payload.referencia_tipo&&payload.referencia_id&&isUuid(payload.referencia_id)){ var check=await state.client.from('notificaciones').select('id').eq('referencia_tipo',payload.referencia_tipo).eq('referencia_id',payload.referencia_id).eq('tipo',clean(payload.tipo||'').toUpperCase()).limit(1); if(!check.error&&check.data&&check.data.length) return null; } }catch(e){} return createNotification(payload,false); }
   function addNotification(n, toast){
     if(!n||!n.id) return;
     if(isOwnNotification(n)) return;
     if(isNoiseNotification(n)) return;
     n.usuario_nombre=shortUserName(n.usuario_nombre||'Sistema');
-    var entryKey = entryNotificationKey(n);
-    var duplicateEntry = entryKey && state.items.some(function(x){ return String(x.id)!==String(n.id) && entryNotificationKey(x)===entryKey; });
-    var exists=state.items.some(function(x){return String(x.id)===String(n.id);});
-    if(!exists){ state.items.unshift(n); state.items=state.items.slice(0,100); }
+    var fp = notificationFingerprint(n);
+    var idx = state.items.findIndex(function(x){ return String(x.id)===String(n.id) || (fp && notificationFingerprint(x)===fp); });
+    var exists = idx >= 0;
+    if(exists){
+      state.items[idx] = Object.assign({}, state.items[idx], n);
+      setBadge();
+      if(state.panelOpen) renderPanel();
+      return;
+    }
+    state.items.unshift(n);
+    state.items=dedupeNotificationItems(state.items).slice(0,80);
     setBadge();
     if(state.panelOpen) renderPanel();
-    if(toast && !duplicateEntry) showToast(n);
+    if(toast && isRecentRealtimeNotification(n)) showToast(n, true);
   }
 
   async function openNotificationById(id){ var n=state.items.find(function(x){return String(x.id)===String(id);}); if(n && !isOwnNotification(n)) return openNotification(n); if(!state.client) return; try{ var r=await state.client.from('notificaciones').select('*').eq('id',id).single(); if(!r.error && r.data && !isOwnNotification(r.data)) openNotification(r.data); }catch(e){} }
@@ -33968,8 +34063,8 @@ function lotekaRequiereSerialPorTipo(tipoProducto){
     }catch(e){ console.warn('[Notificaciones] No se pudo abrir referencia:', e); }
   }
 
-  function subscribeRealtime(){ if(!state.client||state.subscribed) return; state.subscribed=true; try{ var ch=state.client.channel('loteka-notificaciones-v165').on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones'},function(payload){ addNotification(payload.new,true); }).subscribe(); state.channels.push(ch); }catch(e){ console.warn('[Notificaciones] Realtime no disponible:',e); } }
-  function bootWhenReady(){ ensureDOM(); var tries=0; var timer=setInterval(function(){ tries++; if(window.lotekaSupabase){ clearInterval(timer); state.client=window.lotekaSupabase; window.crearNotificacionLoteka=createNotification; window.lotekaCrearNotificacion=createNotification; window.lotekaMostrarToastNotificacion=showToast; window.lotekaAbrirNotificacion=openNotification; window.lotekaActivarSonidoNotificaciones=toggleNotificationSound; window.lotekaProbarSonidoNotificaciones=function(){ return playNotificationSound(true); }; loadNotifications(); subscribeRealtime(); }else if(tries>80){ clearInterval(timer); console.warn('[Notificaciones] Supabase no disponible todavía.'); } },250); }
+  function subscribeRealtime(){ if(!state.client||state.subscribed) return; state.subscribed=true; try{ if(window.__lotekaNotifRealtimeChannel){ state.channels=[window.__lotekaNotifRealtimeChannel]; state.realtimeReadyAt=Date.now(); return; } var ch=state.client.channel('loteka-notificaciones-v168-single').on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones'},function(payload){ var n=payload && payload.new; if(!n) return; var key='rt:'+notificationFingerprint(n)+':'+clean(n.id); if(rememberEventKey(key, 90000)) return; addNotification(n,true); }).subscribe(function(status){ if(status==='SUBSCRIBED') state.realtimeReadyAt=Date.now(); }); window.__lotekaNotifRealtimeChannel=ch; state.channels.push(ch); }catch(e){ console.warn('[Notificaciones] Realtime no disponible:',e); } }
+  function bootWhenReady(){ ensureDOM(); if(window.__lotekaNotifBootTimer) return; var tries=0; window.__lotekaNotifBootTimer=setInterval(function(){ tries++; if(window.lotekaSupabase){ clearInterval(window.__lotekaNotifBootTimer); window.__lotekaNotifBootTimer=null; state.client=window.lotekaSupabase; window.crearNotificacionLoteka=createNotification; window.lotekaCrearNotificacion=createNotification; window.lotekaMostrarToastNotificacion=showToast; window.lotekaAbrirNotificacion=openNotification; window.lotekaActivarSonidoNotificaciones=toggleNotificationSound; window.lotekaProbarSonidoNotificaciones=function(){ return playNotificationSound(true); }; loadNotifications().then(function(){ subscribeRealtime(); }); }else if(tries>80){ clearInterval(window.__lotekaNotifBootTimer); window.__lotekaNotifBootTimer=null; console.warn('[Notificaciones] Supabase no disponible todavía.'); } },250); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bootWhenReady); else bootWhenReady();
 })();
 </script>
@@ -35409,6 +35504,14 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
 
 
 <!-- LOTEKA v163: Supabase agencias/grupos carga hasta 5000 filas para evitar límite default de 1000 -->
+
+
+
+
+
+<!-- LOTEKA CAPA 3.3 · Taller hardening sobre base CAPA 3.2
+     Alcance: Taller + conexión directa con ALM-TALLER / Inventario Técnico.
+     No cambia endpoints, tablas, diseño general, Operaciones, app móvil ni service worker. -->
 
 
 
@@ -37749,7 +37852,8 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     if(errors.length) alert('Despacho realizado, pero revisa movimientos:\n- ' + errors.join('\n- '));
   }
   var oldConfirm = window.dispatchConfirmDespacho;
-  if(typeof oldConfirm === 'function'){
+  // CAPA 3.2: fallback legacy de movimientos desactivado. El registro canónico queda en loteka-v21-asignaciones-notificaciones-movimientos-ok.
+  if(false && typeof oldConfirm === 'function'){
     window.dispatchConfirmDespacho = async function(){
       var selection = lastDespachoSelection;
       var result = oldConfirm.apply(this, arguments);
@@ -37770,6 +37874,9 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
   'use strict';
   if(window.__lotekaV19AsignacionesMovNotifReal) return;
   window.__lotekaV19AsignacionesMovNotifReal = true;
+  // CAPA 3.2: bloque legacy desactivado para evitar doble insert/update/notificación.
+  // El flujo canónico queda en loteka-v21-asignaciones-notificaciones-movimientos-ok.
+  return;
 
   var STORAGE_KEY = 'loteka_despachos_asignaciones_v4';
   var activeSelection = null;
@@ -38165,8 +38272,8 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
       });
     }catch(e){}
   }
-  var guardTimer = setInterval(function(){ installNotificationGuard(); hideNoisyCards(); }, 600);
-  setTimeout(function(){ clearInterval(guardTimer); installNotificationGuard(); hideNoisyCards(); }, 30000);
+  var guardTimer = setInterval(function(){ installNotificationGuard(); hideNoisyCards(); }, 3000);
+  setTimeout(function(){ clearInterval(guardTimer); installNotificationGuard(); hideNoisyCards(); }, 12000);
 })();
 </script>
 
@@ -38197,6 +38304,8 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
   function getMarks(key){ try{ return JSON.parse(localStorage.getItem(key) || '{}') || {}; }catch(e){ return {}; } }
   function setMark(key, id){ var m=getMarks(key); m[id]=true; localStorage.setItem(key, JSON.stringify(m)); }
   function hasMark(key,id){ return !!getMarks(key)[id]; }
+  function movementMarkId(item,dest){ return 'mov:'+txt(item && item.id)+':'+txt(dest && (dest.destinoId || dest.agencia || 'dest')); }
+  function dispatchedNotifMarkId(item,dest){ return 'dispatched:'+txt(item && item.id)+':'+txt(dest && (dest.destinoId || dest.agencia || 'dest')); }
   function stripQtyPrefix(v){
     return txt(v).replace(/^\s*\d+\s*(?:x|×|-)?\s+(?=[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/,'').trim();
   }
@@ -38238,6 +38347,56 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     return groups.map(function(g){ return g.label + ' x' + g.qty; }).join(' / ');
   }
   function productUnits(productos){ return productGroups(productos).reduce(function(t,g){ return t + (Number(g.qty)||0); }, 0); }
+  function productMovementRows(productos){
+    var map = {}, order = [];
+    arr(productos).forEach(function(p){
+      p = p || {};
+      var seriales = arr(p.seriales).map(upper).filter(Boolean);
+      var serialKey = seriales.length ? seriales.join(',') : '';
+      var key = [seriales.length ? 'SERIAL' : 'QTY', productLabel(p), p.productoId || p.producto_id || p.supabaseId || p.id, p.almacenOrigenIndex || p.almacenIndex, p.almacenOrigenId || p.almacen_id || p.almacenId, p.almacenOrigen || p.almacenNombre || p.almacen, serialKey].map(norm).join('|');
+      if(!map[key]){
+        var copy = Object.assign({}, p);
+        copy.cantidad = 0;
+        copy.seriales = [];
+        map[key] = copy;
+        order.push(key);
+      }
+      if(seriales.length){
+        map[key].seriales = map[key].seriales.concat(seriales);
+        map[key].cantidad += seriales.length;
+      }else{
+        map[key].cantidad += productQty(p);
+      }
+    });
+    return order.map(function(k){ return map[k]; });
+  }
+  function updateFichaAgenciaLocal(item,dest){
+    if(!isInventoryType(item && item.tipo)) return;
+    try{
+      var key = 'loteka_ficha_agencia_despachos_v1';
+      var ficha = JSON.parse(localStorage.getItem(key) || '{}') || {};
+      var ag = txt(dest && dest.agencia) || 'SIN_AGENCIA';
+      if(!ficha[ag]) ficha[ag] = {activos:[], historial:[]};
+      var productos = productMovementRows(dest.productos);
+      var exists = arr(ficha[ag].historial).some(function(h){ return txt(h && h.id) === txt(item.id) && txt(h && h.destinoId) === txt(dest.destinoId || dest.agencia); });
+      if(!exists){ ficha[ag].historial.unshift({id:item.id,destinoId:txt(dest.destinoId||dest.agencia),tipo:item.tipo,grupo:dest.grupo,productos:productos,fecha:dest.despacho&&dest.despacho.fecha,comentario:dest.despacho&&dest.despacho.comentario}); }
+      productos.forEach(function(p){
+        var seriales = arr(p.seriales).map(txt).filter(Boolean);
+        if(seriales.length){
+          seriales.forEach(function(serial){
+            var dup = arr(ficha[ag].activos).some(function(a){ return txt(a && a.despachoId)===txt(item.id) && txt(a && a.serial)===txt(serial); });
+            if(!dup) ficha[ag].activos.unshift({despachoId:item.id,producto:p.producto||p.nombre,marca:p.marca,modelo:p.modelo,categoria:p.categoria,cantidad:1,seriales:[serial],serial:serial,fecha:dest.despacho&&dest.despacho.fecha});
+          });
+        }else{
+          var label = productLabel(p);
+          var row = arr(ficha[ag].activos).find(function(a){ return txt(a && a.despachoId)===txt(item.id) && !txt(a && a.serial) && norm(productLabel(a))===norm(label); });
+          if(row) row.cantidad = (Number(row.cantidad)||0) + (Number(p.cantidad)||1);
+          else ficha[ag].activos.unshift({despachoId:item.id,producto:p.producto||p.nombre,marca:p.marca,modelo:p.modelo,categoria:p.categoria,cantidad:Number(p.cantidad)||1,seriales:[],serial:'',fecha:dest.despacho&&dest.despacho.fecha});
+        }
+      });
+      localStorage.setItem(key, JSON.stringify(ficha));
+    }catch(e){ console.warn('[Asignaciones CAPA 3.2] Ficha local no actualizada:', e && e.message ? e.message : e); }
+  }
   function mergedDestinoSummaries(item){
     var map = {}, order = [];
     destinoList(item).forEach(function(d){
@@ -38356,10 +38515,12 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     setMark(NOTIF_MARK_KEY,key);
   }
   async function notifyDestinationDispatched(c,item,dest,movementId){
-    var key='dispatched:'+txt(item.id)+':'+txt(dest.destinoId||dest.agencia); if(hasMark(NOTIF_MARK_KEY,key)) return;
+    var key=dispatchedNotifMarkId(item,dest); if(hasMark(NOTIF_MARK_KEY,key)) return;
     var inv=isInventoryType(item.tipo);
-    var msg='Agencia '+txt(dest.agencia||'-')+', Grupo '+txt(dest.grupo||'-')+'\n'+productSummary(dest.productos);
-    await createNotificationDirect(c,{modulo:'INVENTARIO',tipo:inv?'ASIGNACION_INVENTARIO_DESPACHADA':'ASIGNACION_OPERATIVA_DESPACHADA',titulo:inv?'Asignación de inventario despachada':'Asignación operativa consumida/despachada',mensaje:msg,importancia:'alta',referencia_tipo:movementId?'movimientos_inventario':'asignaciones',referencia_id:movementId||null,referencia_codigo:item.id,usuario_nombre:txt(dest.despacho&&dest.despacho.entregadoPor)||userName(),creado_en:nowISO()});
+    var msg = inv
+      ? 'Asignación de inventario registrada para Agencia '+txt(dest.agencia||'-')+': '+productSummary(dest.productos)
+      : 'Asignación operativa registrada: '+productSummary(dest.productos);
+    await createNotificationDirect(c,{modulo:'INVENTARIO',tipo:inv?'ASIGNACION_INVENTARIO_DESPACHADA':'ASIGNACION_OPERATIVA_DESPACHADA',titulo:inv?'Asignación de inventario registrada':'Asignación operativa registrada',mensaje:msg,importancia:'alta',referencia_tipo:movementId?'movimientos_inventario':'asignaciones',referencia_id:movementId||null,referencia_codigo:item.id,usuario_nombre:txt(dest.despacho&&dest.despacho.entregadoPor)||userName(),creado_en:nowISO()});
     setMark(NOTIF_MARK_KEY,key);
   }
 
@@ -38387,34 +38548,38 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     try{ await c.from('equipos_seriales').update({ubicacion_tipo:'AGENCIA',almacen_id:null,agencia_id:agenciaId||null,responsable:'Agencia '+txt(agenciaNumero),observaciones:'Despachado por asignación '+txt(itemId),activo:true,actualizado_por:userId()}).eq('id',sr.id); }catch(e){}
   }
   async function registerMovementsForDestination(c,item,dest){
-    var key='mov:'+txt(item.id)+':'+txt(dest.destinoId||dest.agencia); if(hasMark(MOV_MARK_KEY,key)) return null;
-    var agId=await resolveAgenciaId(c,dest.agencia);
+    var key=movementMarkId(item,dest); if(hasMark(MOV_MARK_KEY,key)) return null;
+    var inv=isInventoryType(item && item.tipo);
+    var agId=inv ? await resolveAgenciaId(c,dest.agencia) : null;
     var firstMovementId=null;
     var errors=[];
-    for(var i=0;i<arr(dest.productos).length;i++){
-      var p=dest.productos[i]||{};
+    var productos = productMovementRows(dest.productos);
+    for(var i=0;i<arr(productos).length;i++){
+      var p=productos[i]||{};
       var name=productLabel(p);
       var wh=await resolveWarehouse(c,p);
       var seriales=arr(p.seriales).map(upper).filter(Boolean);
-      var base={tipo_movimiento:'Despacho',origen_tipo:'ALMACEN',origen_id:wh.id||null,origen_nombre:wh.nombre||'Almacén',destino_tipo:'AGENCIA',destino_id:agId||null,destino_nombre:'Agencia '+txt(dest.agencia||'-'),motivo:'Despacho de asignación '+txt(item.id),usuario_nombre:txt(dest.despacho&&dest.despacho.entregadoPor)||userName(),creado_por:userId(),creado_en:nowISO()};
+      var destinoNombre = inv ? ('Agencia '+txt(dest.agencia||'-')) : ('Asignación operativa '+txt(item.id));
+      var base={tipo_movimiento:'Despacho',origen_tipo:'ALMACEN',origen_id:wh.id||null,origen_nombre:wh.nombre||'Almacén',destino_tipo:inv?'AGENCIA':'OPERATIVO',destino_id:inv?(agId||null):null,destino_nombre:destinoNombre,motivo:'Despacho de asignación '+txt(item.id),usuario_nombre:txt(dest.despacho&&dest.despacho.entregadoPor)||userName(),creado_por:userId(),creado_en:nowISO()};
       try{
         if(seriales.length){
           for(var s=0;s<seriales.length;s++){
             var sr=await resolveSerial(c,seriales[s]);
             var pid=await resolveProductId(c,p,sr);
-            var payload=Object.assign({},base,{serial_id:sr&&sr.id?sr.id:null,producto_id:pid||null,cantidad:1,observaciones:name+' · Serial '+seriales[s]+' · Grupo '+txt(dest.grupo||'-')+(txt(dest.despacho&&dest.despacho.comentario)?' · '+txt(dest.despacho.comentario):'')});
+            var payload=Object.assign({},base,{serial_id:sr&&sr.id?sr.id:null,producto_id:pid||null,cantidad:1,observaciones:name+' · Serial '+seriales[s]+(inv?' · Grupo '+txt(dest.grupo||'-'):'')+(txt(dest.despacho&&dest.despacho.comentario)?' · '+txt(dest.despacho.comentario):'')});
             var mv=await insertMovement(c,payload); if(mv&&mv.id&&!firstMovementId) firstMovementId=mv.id;
-            if(sr&&sr.id) await updateSerial(c,sr,agId,dest.agencia,item.id);
+            if(inv && sr&&sr.id) await updateSerial(c,sr,agId,dest.agencia,item.id);
           }
         }else{
           var pidNo=await resolveProductId(c,p,null);
-          var payloadNo=Object.assign({},base,{serial_id:null,producto_id:pidNo||null,cantidad:Number(p.cantidad||1)||1,observaciones:name+' · Grupo '+txt(dest.grupo||'-')+(txt(dest.despacho&&dest.despacho.comentario)?' · '+txt(dest.despacho.comentario):'')});
+          var qtyNo = Number(p.cantidad || 1) || 1;
+          var payloadNo=Object.assign({},base,{serial_id:null,producto_id:pidNo||null,cantidad:qtyNo,observaciones:name+' x'+qtyNo+(inv?' · Grupo '+txt(dest.grupo||'-'):'')+(txt(dest.despacho&&dest.despacho.comentario)?' · '+txt(dest.despacho.comentario):'')});
           var mvNo=await insertMovement(c,payloadNo); if(mvNo&&mvNo.id&&!firstMovementId) firstMovementId=mvNo.id;
         }
       }catch(err){ errors.push(name+': '+(err&&err.message?err.message:err)); }
     }
-    if(!errors.length) setMark(MOV_MARK_KEY,key);
-    else console.warn('[Asignaciones v20] Movimientos no registrados completamente:',errors);
+    if(!errors.length){ setMark(MOV_MARK_KEY,key); if(inv) updateFichaAgenciaLocal(item,dest); }
+    else console.warn('[Asignaciones CAPA 3.2] Movimientos no registrados completamente:',errors);
     return firstMovementId;
   }
   async function updateRemoteStatus(c,item,dest){
@@ -38426,7 +38591,7 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     }catch(e){ console.warn('[Asignaciones v20] Estado remoto no actualizado:',e&&e.message?e.message:e); }
   }
   async function refreshViews(c){
-    try{ var mv=await c.from('movimientos_inventario').select('*').order('creado_en',{ascending:false}).limit(5000); if(!mv.error) window.lotekaMovimientosInventarioSupabase=mv.data||[]; }catch(e){}
+    try{ var mv=await c.from('movimientos_inventario').select('*').order('creado_en',{ascending:false}).limit(1200); if(!mv.error) window.lotekaMovimientosInventarioSupabase=mv.data||[]; }catch(e){}
     try{ if(typeof window.renderAlmacenes==='function') window.renderAlmacenes(); }catch(e){}
     try{ if(typeof window.actualizarDashboardAlmacenes==='function') window.actualizarDashboardAlmacenes(); }catch(e){}
     try{ if(typeof window.lotekaRenderControlDespachos==='function') window.lotekaRenderControlDespachos(); }catch(e){}
@@ -38444,10 +38609,15 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
         for(var j=0;j<ds.length;j++){
           var d=ds[j];
           if(d&&d.despachado){
+            var movKey = movementMarkId(item,d);
+            var notifKey = dispatchedNotifMarkId(item,d);
+            var alreadyMov = hasMark(MOV_MARK_KEY, movKey);
+            var alreadyNotif = hasMark(NOTIF_MARK_KEY, notifKey);
+            if(alreadyMov && alreadyNotif) continue;
             var mvId=await registerMovementsForDestination(c,item,d);
             await updateRemoteStatus(c,item,d);
             await notifyDestinationDispatched(c,item,d,mvId);
-            changed = true;
+            if(mvId || !alreadyMov) changed = true;
           }
         }
       }
@@ -38494,6 +38664,15 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
   'use strict';
   if(window.__lotekaV23DespachoMovimientosRealFix) return;
   window.__lotekaV23DespachoMovimientosRealFix = true;
+  // CAPA 3.2: bloque legacy desactivado para evitar doble registro de despachos.
+  // Mantiene compatibilidad con el botón manual apuntando al procesador canónico.
+  window.lotekaForzarMovimientosDespachos = function(){
+    if(typeof window.lotekaProcesarAsignacionesPendientes === 'function'){
+      return window.lotekaProcesarAsignacionesPendientes(true);
+    }
+    return Promise.resolve();
+  };
+  return;
 
   var STORAGE_KEY = 'loteka_despachos_asignaciones_v4';
   var MARK_KEY = 'loteka_v23_despachos_movimientos_registrados';
@@ -40344,7 +40523,7 @@ body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,21
     if(!operationType.includes('trab')) return '';
     if(operationStatus === 'Completado') return '';
     const hay = works.map(opStateNormText).join(' | ');
-    if(hay.includes('trabajo a agencia nueva')) return 'EN PROCESO';
+    if(hay.includes('trabajo a agencia nueva')) return 'EN CONSTRUCCIÓN';
     if(hay.includes('remodelacion a agencia')) return 'REMODELACIÓN';
     return '';
   }
@@ -40527,7 +40706,8 @@ body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,21
 
   function normalizeOperationalStateForAgency(value){
     const v = opStateNormText(value);
-    if(v.includes('constru') || v.includes('proceso') || v.includes('creacion') || v.includes('apertura')) return 'EN PROCESO';
+    if(v.includes('constru') || v.includes('creacion') || v.includes('apertura')) return 'EN CONSTRUCCIÓN';
+    if(v.includes('proceso')) return 'EN PROCESO';
     if(v.includes('remodel')) return 'REMODELACIÓN';
     if(v.includes('cerrad') || v.includes('desactiv') || v.includes('inactiv')) return 'DESACTIVADA/CERRADA';
     return 'ACTIVA';
@@ -40560,12 +40740,15 @@ body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,21
       fotos_reportadas: reported,
       fotos_evidencia: evidence,
       fecha_creacion: normalized.createdAt || normalized.fecha_creacion || normalized.fecha_reporte || nowIso(),
-      fecha_asignacion: normalized.assignedAt || null,
-      fecha_inicio: normalized.startedAt || null,
-      fecha_completado: normalized.completedAt || normalized.closedAt || null,
+      fecha_asignacion: normalized.assignedAt || normalized.fecha_asignacion || null,
+      fecha_inicio: normalized.startedAt || normalized.fecha_inicio || null,
+      fecha_completado: normalized.completedAt || normalized.closedAt || normalized.fecha_completado || null,
+      tiempo_asignacion: Number.isFinite(getAssignmentMinutes(normalized)) ? Math.round(getAssignmentMinutes(normalized)) : null,
+      tiempo_asignacion_label: Number.isFinite(getAssignmentMinutes(normalized)) ? formatMinutesHuman(getAssignmentMinutes(normalized)) : null,
       tiempo_respuesta: Number.isFinite(getResponseMinutes(normalized)) ? Math.round(getResponseMinutes(normalized)) : null,
       tiempo_respuesta_label: Number.isFinite(getResponseMinutes(normalized)) ? formatMinutesHuman(getResponseMinutes(normalized)) : null,
-      tiempo_resolucion: txt(normalized.resolutionTime || '').slice(0, 255),
+      tiempo_resolucion: Number.isFinite(getResolutionMinutes(normalized)) ? formatMinutesHuman(getResolutionMinutes(normalized)) : txt(normalized.resolutionTime || '').slice(0, 255),
+      tiempo_resolucion_minutos: Number.isFinite(getResolutionMinutes(normalized)) ? Math.round(getResolutionMinutes(normalized)) : null,
       historial: Array.isArray(normalized.history) ? normalized.history : [],
       source: txt(normalized.source || 'web_operacional').slice(0, 80),
       trabajos_seleccionados: selectedWorks,
@@ -40663,6 +40846,45 @@ body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,21
     }
     return all;
   }
+  function applyRealtimeOperationRowV300(payload){
+    try{
+      payload = payload || {};
+      const eventType = String(payload.eventType || '').toUpperCase();
+      const row = payload.new || payload.old || {};
+      const rowId = txt(row.id || row.$id || row.codigo || '');
+      if(!rowId || typeof loadOperations !== 'function' || typeof saveOperations !== 'function') return false;
+
+      const current = loadOperations() || [];
+      const existingIndex = current.findIndex(function(op){
+        return txt(op.id) === rowId || txt(op.backendCero_id) === rowId || txt(op.$id) === rowId || txt(op.code) === rowId || txt(op.codigo) === rowId;
+      });
+
+      if(eventType === 'DELETE'){
+        const nextDelete = current.filter(function(op, idx){
+          return idx !== existingIndex && txt(op.id) !== rowId && txt(op.backendCero_id) !== rowId && txt(op.$id) !== rowId;
+        });
+        saveOperations(nextDelete);
+        refreshOpsUI();
+        return true;
+      }
+
+      if(!payload.new) return false;
+      const existing = existingIndex >= 0 ? current[existingIndex] : null;
+      const mapped = rowToOp(payload.new, existingIndex >= 0 ? existingIndex : 0, existing);
+      const next = current.slice();
+      if(existingIndex >= 0) next[existingIndex] = mapped;
+      else next.unshift(mapped);
+
+      saveOperations(next);
+      try{ if(typeof evaluateOperationNotifications === 'function') evaluateOperationNotifications(next); }catch(e){}
+      refreshOpsUI();
+      return true;
+    }catch(error){
+      console.warn('[LOTEKA] No se pudo aplicar realtime incremental de operaciones:', error);
+      return false;
+    }
+  }
+
   function missingColumnFromSupabaseErrorV303(error){
     const msg = txt(error && (error.message || error.details || error.hint || ''));
     const m =
@@ -40760,9 +40982,10 @@ body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,21
           if(payload.eventType === 'INSERT') toast('Nueva operación recibida', (row.codigo || row.id || 'Operación') + ' · ' + (row.agencia || 'Sin agencia'), 'success');
           if(payload.eventType === 'UPDATE') toast('Operación actualizada', (row.codigo || row.id || 'Operación') + ' · ' + (row.estado || ''), row.estado === 'Completado' ? 'success' : 'info');
           if(payload.eventType === 'DELETE') toast('Operación eliminada', row.codigo || row.id || 'Registro removido', 'warning');
-          if(!opsRefreshBusy){
+          const appliedIncrementally = applyRealtimeOperationRowV300(payload);
+          if(!appliedIncrementally && !opsRefreshBusy){
             opsRefreshBusy = true;
-            setTimeout(function(){ opsRefreshBusy = false; window.syncOperationsFromBackendCero({ silent:true, skipSuccessToast:true }); }, 450);
+            setTimeout(function(){ opsRefreshBusy = false; window.syncOperationsFromBackendCero({ silent:true, skipSuccessToast:true }); }, 1200);
           }
         })
         .subscribe(function(status){ console.info('[LOTEKA] Realtime Operaciones Supabase:', status); });
@@ -42737,5 +42960,162 @@ body.go-light-mode .go-estado-alert{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
+
+
+<!-- LOTEKA CAPA 3.3 · Taller hardening sobre base CAPA 3.2
+     Alcance: Taller + conexión directa con ALM-TALLER / Inventario Técnico.
+     No cambia endpoints, tablas, diseño general, Operaciones, app móvil ni service worker. -->
+<script id="loteka-capa3-3-taller-hardening">
+(function(){
+  'use strict';
+  if(window.__lotekaCapa33TallerHardening) return;
+  window.__lotekaCapa33TallerHardening = true;
+
+  var renderProcesoRunning = false;
+  var renderProcesoPending = false;
+  var lastProcesoRenderAt = 0;
+  var saveProcesoRunning = false;
+
+  function norm(v){
+    return String(v == null ? '' : v)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .trim().toUpperCase();
+  }
+
+  function isVisibleWorkshopProcess(){
+    var node = document.getElementById('vista-ops-taller-proceso') || document.getElementById('workshopProcessView');
+    return !!(node && !node.classList.contains('hidden') && node.offsetParent !== null);
+  }
+
+  function safeCall(name){
+    try{
+      if(typeof window[name] === 'function') return window[name]();
+    }catch(err){
+      console.warn('[CAPA 3.3 Taller] No se pudo ejecutar '+name, err);
+    }
+    return null;
+  }
+
+  function refreshTallerViews(reason){
+    // Refresco fino y directo del Taller. No toca HOME, mapa, app móvil ni service worker.
+    setTimeout(function(){
+      try{
+        if(isVisibleWorkshopProcess() && typeof window.lotekaRenderProcesoTecnico === 'function'){
+          window.lotekaRenderProcesoTecnico();
+        }
+      }catch(err){ console.warn('[CAPA 3.3 Taller] Proceso no refrescado:', err); }
+      safeCall('lotekaRenderInventarioTecnico');
+      safeCall('lotekaRenderHistorialTecnico');
+      safeCall('lotekaRenderHistorialTecnicoV154');
+    }, 180);
+  }
+
+  function installProcesoRenderGuard(){
+    var original = window.lotekaRenderProcesoTecnico;
+    if(typeof original !== 'function' || original.__capa33Guard) return;
+    var guarded = async function(){
+      var now = Date.now();
+      if(renderProcesoRunning){
+        renderProcesoPending = true;
+        return;
+      }
+      if(now - lastProcesoRenderAt < 650){
+        renderProcesoPending = true;
+        clearTimeout(guarded.__timer);
+        guarded.__timer = setTimeout(function(){
+          try{ window.lotekaRenderProcesoTecnico(); }catch(e){}
+        }, 700);
+        return;
+      }
+      renderProcesoRunning = true;
+      lastProcesoRenderAt = now;
+      try{
+        return await original.apply(this, arguments);
+      }finally{
+        renderProcesoRunning = false;
+        if(renderProcesoPending){
+          renderProcesoPending = false;
+          setTimeout(function(){
+            try{ window.lotekaRenderProcesoTecnico(); }catch(e){}
+          }, 750);
+        }
+      }
+    };
+    guarded.__capa33Guard = true;
+    guarded.__original = original;
+    window.lotekaRenderProcesoTecnico = guarded;
+  }
+
+  function installGuardarProcesoGuard(){
+    var original = window.lotekaGuardarProcesoTecnico;
+    if(typeof original !== 'function' || original.__capa33Guard) return;
+    var guarded = async function(){
+      if(saveProcesoRunning){
+        try{ alert('Ya se está guardando el proceso técnico. Espera un momento.'); }catch(e){}
+        return;
+      }
+      saveProcesoRunning = true;
+      try{
+        return await original.apply(this, arguments);
+      }finally{
+        saveProcesoRunning = false;
+        refreshTallerViews('proceso-guardado');
+      }
+    };
+    guarded.__capa33Guard = true;
+    guarded.__original = original;
+    window.lotekaGuardarProcesoTecnico = guarded;
+  }
+
+  function installRecepcionRefreshGuard(){
+    var original = window.lotekaTallerConfirmarRecepcionV130;
+    if(typeof original !== 'function' || original.__capa33Guard) return;
+    var guarded = async function(){
+      var result = await original.apply(this, arguments);
+      // La recepción original ya registra transferencia, mueve el serial a ALM-TALLER,
+      // crea orden técnica y limpia el modal. Aquí solo refrescamos vistas de Taller.
+      refreshTallerViews('recepcion-guardada');
+      return result;
+    };
+    guarded.__capa33Guard = true;
+    guarded.__original = original;
+    window.lotekaTallerConfirmarRecepcionV130 = guarded;
+  }
+
+  function installAbrirProcesoValidation(){
+    var original = window.lotekaAbrirProcesoTecnico;
+    if(typeof original !== 'function' || original.__capa33Guard) return;
+    var guarded = function(serial){
+      // Mantiene la función original, pero evita doble apertura accidental por clic rápido.
+      var modal = document.getElementById('modalProcesoTecnicoTaller');
+      if(modal && modal.style.display === 'flex') return;
+      return original.apply(this, arguments);
+    };
+    guarded.__capa33Guard = true;
+    guarded.__original = original;
+    window.lotekaAbrirProcesoTecnico = guarded;
+  }
+
+  function installWhenReady(){
+    installProcesoRenderGuard();
+    installGuardarProcesoGuard();
+    installRecepcionRefreshGuard();
+    installAbrirProcesoValidation();
+  }
+
+  installWhenReady();
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(installWhenReady, 700); });
+  window.addEventListener('load', function(){ setTimeout(installWhenReady, 1200); });
+
+  // Algunas capas antiguas redefinen funciones de Taller al entrar al módulo. Reinstalamos una sola vez por ventana.
+  var retries = 0;
+  var timer = setInterval(function(){
+    installWhenReady();
+    retries += 1;
+    if(retries >= 8) clearInterval(timer);
+  }, 900);
+})();
+</script>
+
 </body>
 </html>
