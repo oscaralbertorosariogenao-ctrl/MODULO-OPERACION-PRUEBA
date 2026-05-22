@@ -1419,6 +1419,161 @@
       opacity:.06!important;
     }
 
+
+    /* CAPA 6.2 · Monitoreo: panel derecho con más espacio útil */
+    .main-grid{
+      min-height:0!important;
+      align-items:stretch!important;
+    }
+
+    .right-stack{
+      grid-template-rows:minmax(260px,1fr) minmax(285px,1fr)!important;
+      gap:14px!important;
+      min-height:0!important;
+      height:100%!important;
+    }
+
+    #averiasCompletadasPanel,
+    #actividadRecientePanel{
+      display:flex!important;
+      flex-direction:column!important;
+      min-height:0!important;
+    }
+
+    #averiasCompletadasPanel .panel-header,
+    #actividadRecientePanel .panel-header{
+      flex:0 0 auto!important;
+      padding:13px 15px!important;
+      align-items:center!important;
+    }
+
+    #averiasCompletadasPanel .panel-title,
+    #actividadRecientePanel .panel-title{
+      font-size:17px!important;
+      line-height:1.08!important;
+    }
+
+    #averiasCompletadasPanel .panel-subtitle,
+    #actividadRecientePanel .panel-subtitle{
+      margin-top:4px!important;
+      font-size:11.5px!important;
+      line-height:1.28!important;
+      max-width:26vw!important;
+    }
+
+    #averiasCompletadasPanel .panel-badge,
+    #actividadRecientePanel .panel-badge{
+      padding:6px 9px!important;
+      font-size:11px!important;
+    }
+
+    #averiasCompletadasFeed,
+    #actividadRecienteFeed{
+      flex:1 1 auto!important;
+      min-height:0!important;
+      overflow-y:auto!important;
+      overflow-x:hidden!important;
+      padding:9px!important;
+      gap:7px!important;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(56,189,248,.32) rgba(2,8,23,.22);
+    }
+
+    #averiasCompletadasFeed::-webkit-scrollbar,
+    #actividadRecienteFeed::-webkit-scrollbar{
+      width:6px;
+    }
+
+    #averiasCompletadasFeed::-webkit-scrollbar-track,
+    #actividadRecienteFeed::-webkit-scrollbar-track{
+      background:rgba(2,8,23,.22);
+      border-radius:999px;
+    }
+
+    #averiasCompletadasFeed::-webkit-scrollbar-thumb,
+    #actividadRecienteFeed::-webkit-scrollbar-thumb{
+      background:rgba(56,189,248,.32);
+      border-radius:999px;
+    }
+
+    #averiasCompletadasFeed .activity-item,
+    #actividadRecienteFeed .activity-item{
+      grid-template-columns:58px 1fr!important;
+      gap:9px!important;
+      min-height:52px!important;
+      padding:9px 10px!important;
+      border-radius:14px!important;
+      align-items:center!important;
+    }
+
+    #averiasCompletadasFeed .activity-time,
+    #actividadRecienteFeed .activity-time{
+      min-width:50px!important;
+      font-size:11px!important;
+      line-height:1.1!important;
+    }
+
+    #averiasCompletadasFeed .activity-text,
+    #actividadRecienteFeed .activity-text{
+      font-size:12.4px!important;
+      line-height:1.24!important;
+      -webkit-line-clamp:2!important;
+      line-clamp:2!important;
+    }
+
+    @media (min-width:1600px){
+      #averiasCompletadasPanel .panel-header,
+      #actividadRecientePanel .panel-header{
+        padding:14px 16px!important;
+      }
+
+      #averiasCompletadasFeed .activity-item,
+      #actividadRecienteFeed .activity-item{
+        min-height:56px!important;
+        padding:10px 11px!important;
+      }
+
+      #averiasCompletadasFeed .activity-text,
+      #actividadRecienteFeed .activity-text{
+        font-size:12.8px!important;
+      }
+    }
+
+    @media (max-height:820px){
+      .app{
+        gap:14px!important;
+        padding-top:20px!important;
+        padding-bottom:20px!important;
+      }
+
+      .right-stack{
+        grid-template-rows:minmax(230px,1fr) minmax(245px,1fr)!important;
+        gap:12px!important;
+      }
+
+      #averiasCompletadasPanel .panel-header,
+      #actividadRecientePanel .panel-header{
+        padding:11px 13px!important;
+      }
+
+      #averiasCompletadasPanel .panel-subtitle,
+      #actividadRecientePanel .panel-subtitle{
+        display:none!important;
+      }
+
+      #averiasCompletadasFeed,
+      #actividadRecienteFeed{
+        padding:8px!important;
+        gap:6px!important;
+      }
+
+      #averiasCompletadasFeed .activity-item,
+      #actividadRecienteFeed .activity-item{
+        min-height:48px!important;
+        padding:8px 9px!important;
+      }
+    }
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
