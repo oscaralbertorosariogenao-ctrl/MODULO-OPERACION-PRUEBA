@@ -1,0 +1,10 @@
+{
+  "version": "2026-05-23-01-capa7-safe",
+  "name": "CAPA 7 - Actualización segura",
+  "released_at": "2026-05-23",
+  "html": {
+    "index": "index.html",
+    "app": "app.html",
+    "pantalla": "pantalla.html"
+  }
+}
