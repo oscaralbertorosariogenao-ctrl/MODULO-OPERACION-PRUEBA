@@ -2963,5 +2963,187 @@ function openDetail(id){
 })();
 </script>
 
+
+<script id="loteka-capa7-version-safe-update">
+(function(){
+  'use strict';
+
+  var VERSION_URL = '/version.json';
+  var STORAGE_KEY = 'loteka-safe-version';
+  var CHECK_INTERVAL_MS = 120000;
+  var isChecking = false;
+  var bannerId = 'lotekaSafeUpdateBanner';
+  var currentVersion = null;
+  var pendingVersion = null;
+
+  function isLocalDev(){
+    var h = (location.hostname || '').toLowerCase();
+    return h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || location.protocol === 'file:';
+  }
+
+  function safeText(value){
+    return String(value == null ? '' : value).replace(/[<>&"']/g, function(ch){
+      return ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#039;'})[ch];
+    });
+  }
+
+  function ensureStyles(){
+    if(document.getElementById('lotekaSafeUpdateStyles')) return;
+    var style = document.createElement('style');
+    style.id = 'lotekaSafeUpdateStyles';
+    style.textContent = [
+      '#'+bannerId+'{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:12px;max-width:min(620px,calc(100vw - 28px));padding:13px 14px;border-radius:18px;background:linear-gradient(135deg,rgba(7,29,50,.97),rgba(8,74,110,.97));border:1px solid rgba(125,211,252,.35);box-shadow:0 24px 70px rgba(0,0,0,.40);color:#eaf6ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}',
+      '#'+bannerId+' .ltk-safe-dot{width:11px;height:11px;border-radius:999px;background:#22c55e;box-shadow:0 0 0 6px rgba(34,197,94,.14);flex:0 0 auto}',
+      '#'+bannerId+' .ltk-safe-copy{min-width:0;line-height:1.25}',
+      '#'+bannerId+' .ltk-safe-title{font-weight:900;font-size:14px;letter-spacing:.01em}',
+      '#'+bannerId+' .ltk-safe-sub{font-size:12px;color:#b8d7ee;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '#'+bannerId+' .ltk-safe-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex:0 0 auto}',
+      '#'+bannerId+' button{border:0;border-radius:12px;padding:9px 12px;font-weight:900;cursor:pointer}',
+      '#'+bannerId+' .ltk-safe-update{background:#0ea5c6;color:#fff}',
+      '#'+bannerId+' .ltk-safe-close{background:rgba(255,255,255,.10);color:#eaf6ff}',
+      '@media(max-width:640px){#'+bannerId+'{left:12px;right:12px;bottom:14px;transform:none;align-items:flex-start}#'+bannerId+' .ltk-safe-actions{margin-left:0}#'+bannerId+' .ltk-safe-sub{white-space:normal}}'
+    ].join('\n');
+    document.head.appendChild(style);
+  }
+
+  function showBanner(info){
+    if(document.getElementById(bannerId)) return;
+    ensureStyles();
+    pendingVersion = info && info.version ? String(info.version) : 'nueva';
+
+    var div = document.createElement('div');
+    div.id = bannerId;
+    div.setAttribute('role', 'status');
+    div.innerHTML = ''+
+      '<span class="ltk-safe-dot" aria-hidden="true"></span>'+
+      '<div class="ltk-safe-copy">'+
+        '<div class="ltk-safe-title">Nueva versión disponible</div>'+
+        '<div class="ltk-safe-sub">Guarda lo que estés haciendo y actualiza cuando estés listo. Versión: '+safeText(pendingVersion)+'</div>'+
+      '</div>'+
+      '<div class="ltk-safe-actions">'+
+        '<button type="button" class="ltk-safe-update">Actualizar ahora</button>'+
+        '<button type="button" class="ltk-safe-close" title="Ocultar">Luego</button>'+
+      '</div>';
+
+    document.body.appendChild(div);
+
+    div.querySelector('.ltk-safe-close').addEventListener('click', function(){
+      div.remove();
+    });
+
+    div.querySelector('.ltk-safe-update').addEventListener('click', activateNewVersion);
+  }
+
+  async function clearHtmlRuntimeCaches(){
+    try{
+      if(!('caches' in window)) return;
+      var keys = await caches.keys();
+      await Promise.all(keys.filter(function(k){ return /^loteka-(html|runtime)-/i.test(k); }).map(function(k){ return caches.delete(k); }));
+    }catch(e){}
+  }
+
+  async function activateNewVersion(){
+    try{
+      localStorage.setItem(STORAGE_KEY, pendingVersion || currentVersion || 'updated');
+    }catch(e){}
+
+    await clearHtmlRuntimeCaches();
+
+    try{
+      if('serviceWorker' in navigator){
+        var reg = await navigator.serviceWorker.getRegistration('/');
+        if(reg){
+          await reg.update();
+          if(reg.waiting){
+            var refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', function(){
+              if(refreshing) return;
+              refreshing = true;
+              window.location.reload();
+            });
+            reg.waiting.postMessage({ type:'LOTEKA_ACTIVATE_NEW_VERSION' });
+            setTimeout(function(){ window.location.reload(); }, 1200);
+            return;
+          }
+        }
+      }
+    }catch(e){}
+
+    window.location.reload();
+  }
+
+  async function readVersion(){
+    var res = await fetch(VERSION_URL + '?t=' + Date.now(), {
+      cache:'no-store',
+      credentials:'same-origin',
+      headers:{ 'Cache-Control':'no-cache' }
+    });
+    if(!res.ok) throw new Error('version.json no disponible');
+    return res.json();
+  }
+
+  async function checkVersion(){
+    if(isChecking || document.hidden) return;
+    isChecking = true;
+    try{
+      var info = await readVersion();
+      if(!info || !info.version) return;
+
+      var serverVersion = String(info.version);
+      var storedVersion = null;
+      try{ storedVersion = localStorage.getItem(STORAGE_KEY); }catch(e){}
+
+      if(!storedVersion){
+        try{ localStorage.setItem(STORAGE_KEY, serverVersion); }catch(e){}
+        currentVersion = serverVersion;
+        return;
+      }
+
+      currentVersion = storedVersion;
+
+      if(serverVersion !== storedVersion){
+        showBanner(info);
+      }
+    }catch(e){
+      // Silencioso: si Vercel está en transición, no tumbamos la pantalla.
+    }finally{
+      isChecking = false;
+    }
+  }
+
+  function registerSafeServiceWorker(){
+    if(isLocalDev()) return;
+    if(!('serviceWorker' in navigator)) return;
+
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('/service-worker.js', { scope:'/' })
+        .then(function(reg){
+          try{ reg.update(); }catch(e){}
+          if(reg.waiting) checkVersion();
+          reg.addEventListener('updatefound', function(){
+            var worker = reg.installing;
+            if(!worker) return;
+            worker.addEventListener('statechange', function(){
+              if(worker.state === 'installed' && navigator.serviceWorker.controller){
+                checkVersion();
+              }
+            });
+          });
+        })
+        .catch(function(err){ console.warn('[LOTEKA] No se pudo registrar el Service Worker seguro:', err); });
+    });
+  }
+
+  function boot(){
+    registerSafeServiceWorker();
+    window.addEventListener('load', function(){ setTimeout(checkVersion, 2500); });
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(checkVersion, 800); });
+    setInterval(checkVersion, CHECK_INTERVAL_MS);
+  }
+
+  boot();
+})();
+</script>
+
 </body>
 </html>
