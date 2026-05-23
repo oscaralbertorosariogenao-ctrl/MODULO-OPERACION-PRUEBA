@@ -1,7 +1,7 @@
 {
-  "version": "2026-05-23-02-test",
-  "name": "Prueba de actualización segura",
-  "released_at": "2026-05-23"
+  "version": "2026-05-23-03-index-safe",
+  "name": "CAPA 7 - Index seguro con aviso de actualización",
+  "released_at": "2026-05-23",
   "html": {
     "index": "index.html",
     "app": "app.html",
