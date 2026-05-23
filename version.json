@@ -1,7 +1,8 @@
 {
-  "version": "2026-05-23-01-capa7-safe",
-  "name": "CAPA 7 - Actualización segura",
-  "released_at": "2026-05-23",
+  "version": "2026-05-23-02-test",
+  "name": "Prueba de actualización segura",
+  "released_at": "2026-05-23"
+}
   "html": {
     "index": "index.html",
     "app": "app.html",
