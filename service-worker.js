@@ -1,6 +1,7 @@
 /* ==========================================================================
    LOTEKA / Grupo Ortiz
    CAPA 7 · Service Worker seguro / anti-caídas / control de versiones
+
    Objetivo:
    - Evitar caídas durante deploy en Vercel.
    - No mezclar index.html, app.html y pantalla.html.
@@ -261,9 +262,13 @@ async function staleWhileRevalidate(request) {
 }
 
 self.addEventListener("install", (event) => {
-  // IMPORTANTE:
-  // No usamos self.skipWaiting() automático.
-  // Así evitamos que el SW nuevo tome control mientras Vercel está en medio del deploy.
+  /*
+    IMPORTANTE:
+    No usamos self.skipWaiting() automático.
+
+    Así evitamos que el service worker nuevo tome control mientras Vercel
+    está en medio del deploy y todavía puede estar sirviendo archivos en transición.
+  */
 
   event.waitUntil(
     caches.open(STATIC_CACHE).then(async (cache) => {
@@ -305,16 +310,25 @@ self.addEventListener("activate", (event) => {
     })
   );
 
-  // IMPORTANTE:
-  // No usamos clients.claim() automático.
-  // La nueva versión tomará control en la próxima carga normal.
+  /*
+    IMPORTANTE:
+    No usamos clients.claim() automático.
+
+    La nueva versión tomará control en la próxima carga normal,
+    o cuando el usuario acepte actualizar desde el aviso del sistema.
+  */
 });
 
 self.addEventListener("message", (event) => {
   const data = event.data || {};
 
-  // Esto permite que en una próxima capa mostremos:
-  // "Nueva versión disponible" y solo al aceptar activar el SW nuevo.
+  /*
+    Esto permite que index.html / app.html / pantalla.html muestren:
+    “Nueva versión disponible”.
+
+    Solo si el usuario toca “Actualizar ahora”, se manda:
+    { type: "LOTEKA_ACTIVATE_NEW_VERSION" }
+  */
   if (data && data.type === "LOTEKA_ACTIVATE_NEW_VERSION") {
     self.skipWaiting();
   }
@@ -333,26 +347,31 @@ self.addEventListener("fetch", (event) => {
   // Nunca interceptar Supabase, Appwrite, R2, APIs internas o externos.
   if (!sameOrigin(url) || isDynamicOrExternalApi(url)) return;
 
+  // El service worker siempre debe buscarse directo de red.
   if (isServiceWorkerFile(url)) {
     event.respondWith(fetch(request, { cache: "no-store" }));
     return;
   }
 
+  // HTML principales: red primero, cache exacto solo como respaldo.
   if (isHtmlRequest(request, url)) {
     event.respondWith(networkFirstHtml(request, url));
     return;
   }
 
+  // Manifest: red primero para evitar instalaciones viejas.
   if (isManifest(url)) {
     event.respondWith(networkFirstManifest(request));
     return;
   }
 
+  // Assets: cache first, porque son pesados y cambian menos.
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirstStatic(request));
     return;
   }
 
+  // Otros recursos internos: rápido, con actualización de fondo.
   event.respondWith(staleWhileRevalidate(request));
 });
 
