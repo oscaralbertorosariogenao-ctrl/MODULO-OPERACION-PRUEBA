@@ -38423,6 +38423,24 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
   }
   function userId(){ try{ var st=window.lotekaAuthState||{}; return st.user && st.user.id ? st.user.id : null; }catch(e){ return null; } }
   function isUuid(v){ return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(txt(v)); }
+  function digits(v){ return txt(v).replace(/\D+/g,''); }
+  function agencyNumberLabel(v){ var d=digits(v); return d ? d.padStart(4,'0') : txt(v); }
+  function agencyCandidates(v){
+    var d = digits(v);
+    var raw = txt(v);
+    var list = [];
+    if(raw) list.push(raw);
+    if(d){
+      list.push(d);
+      list.push(d.padStart(4,'0'));
+      list.push(String(Number(d)));
+      list.push('Agencia ' + d.padStart(4,'0'));
+      list.push('Agencia ' + String(Number(d)));
+      list.push('LTk-' + d.padStart(4,'0'));
+      list.push('LTK-' + d.padStart(4,'0'));
+    }
+    return Array.from(new Set(list.filter(Boolean)));
+  }
 
   function getLocalWarehouses(){ try{ if(Array.isArray(window.almacenes)) return window.almacenes; }catch(e){} try{ if(typeof almacenes !== 'undefined' && Array.isArray(almacenes)) return almacenes; }catch(e){} return []; }
   function getLocalProducts(){ try{ if(Array.isArray(window.productos)) return window.productos; }catch(e){} try{ if(typeof productos !== 'undefined' && Array.isArray(productos)) return productos; }catch(e){} return []; }
@@ -38447,9 +38465,57 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
   }
 
   async function resolveAgenciaId(c, numero){
-    numero=txt(numero); if(!numero) return null;
-    try{ var r=await c.from('agencias').select('id,numero,codigo').or('numero.eq.'+numero+',codigo.eq.'+numero).limit(1).maybeSingle(); if(!r.error && r.data) return r.data.id; }catch(e){}
-    try{ var r2=await c.from('agencias').select('id').eq('numero',numero).limit(1).maybeSingle(); if(!r2.error && r2.data) return r2.data.id; }catch(e){}
+    var candidates = agencyCandidates(numero);
+    if(!candidates.length) return null;
+
+    var fields = ['numero','codigo','no_agencia','nombre'];
+    for(var i=0;i<candidates.length;i++){
+      var value = candidates[i];
+      for(var f=0; f<fields.length; f++){
+        try{
+          var r = await c.from('agencias')
+            .select('id,numero,codigo,nombre')
+            .eq(fields[f], value)
+            .limit(1)
+            .maybeSingle();
+          if(!r.error && r.data && r.data.id) return r.data.id;
+        }catch(e){}
+      }
+      try{
+        var r2 = await c.from('agencias')
+          .select('id,numero,codigo,nombre')
+          .or('numero.eq.'+value+',codigo.eq.'+value)
+          .limit(1)
+          .maybeSingle();
+        if(!r2.error && r2.data && r2.data.id) return r2.data.id;
+      }catch(e){}
+    }
+
+    try{
+      var all = await c.from('agencias')
+        .select('id,numero,codigo,no_agencia,nombre')
+        .limit(50000);
+      if(all.error){
+        all = await c.from('agencias')
+          .select('id,numero,codigo,nombre')
+          .limit(50000);
+      }
+      if(!all.error && Array.isArray(all.data)){
+        var wantedDigits = digits(numero);
+        var wantedPad = wantedDigits ? wantedDigits.padStart(4,'0') : '';
+        var wantedNumber = wantedDigits ? String(Number(wantedDigits)) : '';
+        var found = all.data.find(function(a){
+          var values = [a.numero, a.codigo, a.no_agencia, a.nombre];
+          return values.some(function(v){
+            var n = digits(v);
+            if(!n || !wantedDigits) return false;
+            return n === wantedDigits || n === wantedPad || n === wantedNumber || n.padStart(4,'0') === wantedPad;
+          });
+        });
+        if(found && found.id) return found.id;
+      }
+    }catch(e){}
+
     return null;
   }
   async function resolveWarehouse(c,p){
@@ -38546,13 +38612,31 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     return r.data;
   }
   async function updateSerial(c,sr,agenciaId,agenciaNumero,itemId){
-    if(!sr||!sr.id) return;
-    try{ await c.from('equipos_seriales').update({ubicacion_tipo:'AGENCIA',almacen_id:null,agencia_id:agenciaId||null,responsable:'Agencia '+txt(agenciaNumero),observaciones:'Despachado por asignación '+txt(itemId),activo:true,actualizado_por:userId()}).eq('id',sr.id); }catch(e){}
+    if(!sr || !sr.id) return;
+    if(!agenciaId){
+      throw new Error('No se puede mover el serial ' + txt(sr.serial || sr.codigo || sr.id) + ' porque agencia_id está vacío.');
+    }
+    var payload = {
+      ubicacion_tipo:'AGENCIA',
+      almacen_id:null,
+      agencia_id:agenciaId,
+      grupo_id:null,
+      estado:'En uso',
+      responsable:'Agencia ' + agencyNumberLabel(agenciaNumero),
+      observaciones:'Despachado por asignación ' + txt(itemId),
+      activo:true,
+      actualizado_por:userId()
+    };
+    var r = await c.from('equipos_seriales').update(payload).eq('id',sr.id);
+    if(r.error) throw r.error;
   }
   async function registerMovementsForDestination(c,item,dest){
     var key=movementMarkId(item,dest); if(hasMark(MOV_MARK_KEY,key)) return null;
     var inv=isInventoryType(item && item.tipo);
     var agId=inv ? await resolveAgenciaId(c,dest.agencia) : null;
+    if(inv && !agId){
+      throw new Error('No se pudo resolver la agencia destino ' + txt(dest && dest.agencia) + '. No se moverán seriales sin agencia_id.');
+    }
     var firstMovementId=null;
     var errors=[];
     var productos = productMovementRows(dest.productos);
@@ -38584,6 +38668,66 @@ body.go-dark .go-v212-chart-head h4,.dark .go-v212-chart-head h4,body.go-dark .g
     else console.warn('[Asignaciones CAPA 3.2] Movimientos no registrados completamente:',errors);
     return firstMovementId;
   }
+  window.lotekaRepararSerialesAsignacionesAgencia = async function(){
+    var c = sb();
+    if(!c) throw new Error('Supabase no está inicializado.');
+    var list = load();
+    var total = 0, fixed = 0, skipped = 0;
+    var errors = [];
+
+    for(var i=0;i<arr(list).length;i++){
+      var item = list[i];
+      if(!item || !isInventoryType(item.tipo)) continue;
+      var ds = destinoList(item);
+      for(var j=0;j<arr(ds).length;j++){
+        var dest = ds[j];
+        if(!dest || !dest.despachado) continue;
+        var agId = await resolveAgenciaId(c, dest.agencia);
+        if(!agId){
+          errors.push('Asignación ' + txt(item.id) + ': no se pudo resolver Agencia ' + txt(dest.agencia));
+          skipped++;
+          continue;
+        }
+        var productos = productMovementRows(dest.productos);
+        for(var pIndex=0;pIndex<arr(productos).length;pIndex++){
+          var prod = productos[pIndex] || {};
+          var seriales = arr(prod.seriales).map(upper).filter(Boolean);
+          for(var sIndex=0;sIndex<seriales.length;sIndex++){
+            total++;
+            try{
+              var sr = await resolveSerial(c, seriales[sIndex]);
+              if(!sr || !sr.id){
+                errors.push('Serial no encontrado: ' + seriales[sIndex] + ' · Asignación ' + txt(item.id));
+                skipped++;
+                continue;
+              }
+              await updateSerial(c, sr, agId, dest.agencia, item.id);
+              fixed++;
+            }catch(err){
+              skipped++;
+              errors.push(seriales[sIndex] + ': ' + (err && err.message ? err.message : err));
+            }
+          }
+        }
+      }
+    }
+
+    try{ if(typeof window.lotekaCargarTodoInventarioReal==='function') await window.lotekaCargarTodoInventarioReal(); }catch(e){}
+    try{ if(typeof window.renderAlmacenes==='function') window.renderAlmacenes(); }catch(e){}
+    try{ if(typeof window.actualizarDashboardAlmacenes==='function') window.actualizarDashboardAlmacenes(); }catch(e){}
+    try{ if(typeof window.lotekaRenderAgenciaInventarioRealV141==='function') window.lotekaRenderAgenciaInventarioRealV141(); }catch(e){}
+    try{ if(typeof window.lotekaRenderControlDespachos==='function') window.lotekaRenderControlDespachos(); }catch(e){}
+    try{ if(typeof window.dispatchRender==='function') window.dispatchRender(); }catch(e){}
+    try{ await refreshViews(c); }catch(e){}
+
+    var result = {revisados: total, corregidos: fixed, omitidos: skipped, errores: errors};
+    console.log('[LOTEKA] Reparación de seriales asignados a agencia:', result);
+    if(typeof window.toast === 'function'){
+      try{ window.toast('Reparación finalizada: ' + fixed + ' serial(es) corregido(s).', errors.length ? 'warning' : 'success'); }catch(e){}
+    }
+    return result;
+  };
+
   async function updateRemoteStatus(c,item,dest){
     try{
       var a=await c.from('asignaciones').select('id').eq('codigo',item.id).maybeSingle(); if(a.error||!a.data) return;
@@ -43135,7 +43279,7 @@ body.go-light-mode .go-estado-alert{
     - Nunca recarga solo. El usuario decide cuándo actualizar.
   */
 
-  var LOTEKA_HTML_VERSION = '2026-05-23-03-index-safe';
+  var LOTEKA_HTML_VERSION = '2026-05-25-01-ficha-tecnica-asignaciones';
   var VERSION_URL = '/version.json';
   var DISMISSED_KEY = 'loteka_update_dismissed_session_version';
   var CHECK_INTERVAL_MS = 120000;
@@ -43171,8 +43315,7 @@ body.go-light-mode .go-estado-alert{
       '#'+bannerId+' .ltk-safe-update{background:#67e8f9;color:#06233d}',
       '#'+bannerId+' .ltk-safe-close{background:rgba(255,255,255,.10);color:#eaf6ff}',
       '@media(max-width:640px){#'+bannerId+'{left:12px;right:12px;bottom:14px;transform:none;align-items:flex-start;flex-wrap:wrap}#'+bannerId+' .ltk-safe-actions{width:100%;margin-left:0;justify-content:flex-end}#'+bannerId+' .ltk-safe-sub{white-space:normal}}'
-    ].join('
-');
+    ].join('\n');
     document.head.appendChild(style);
   }
 
