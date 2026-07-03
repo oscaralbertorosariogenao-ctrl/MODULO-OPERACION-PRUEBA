@@ -7072,6 +7072,7 @@ body.go-dark-mode .dispatch-clickable-card:hover,body.go-dark-mode .dispatch-cli
 <a class="sidebar-link ops-subitem" id="navReportsAgency" onclick="abrirVistaOperaciones('reportsAgency','ops-reportes-agencia', this)"><i class="fas fa-building"></i><span>Reportes por agencia</span></a>
 <a class="sidebar-link ops-subitem" id="navReportsOwner" onclick="abrirVistaOperaciones('reportsOwner','ops-reportes-responsable', this)"><i class="fas fa-user-gear"></i><span>Reportes por responsable</span></a>
 <a class="sidebar-link ops-subitem" id="navReportsSpecific" onclick="abrirVistaOperaciones('reportsSpecific','ops-reportes-tipos', this)"><i class="fas fa-layer-group"></i><span>Reportes por tipos</span></a>
+<a class="sidebar-link ops-subitem" id="navLevantamientoGruposPdf" onclick="lotekaOpenGroupLiftReports(this); return false;" href="javascript:void(0)"><i class="fas fa-file-image"></i><span>Levantamiento de grupos</span></a>
 </div>
 </div>
 <div class="sidebar-group" data-section="catalogos">
@@ -8454,6 +8455,56 @@ body.go-dark-mode .dispatch-clickable-card:hover,body.go-dark-mode .dispatch-cli
 </div>
 </div>
 </div></div></div>
+
+<div class="hidden" id="vista-ops-levantamiento-grupos-pdf"><div class="ops-scope"><div class="view hidden" id="levantamientoGruposPdfView">
+<div class="topbar lgrp-topbar">
+  <div>
+    <h2>Levantamiento de Grupos</h2>
+    <p>Generador temporal de PDF fotográfico por grupo y agencias visitadas. No altera casos, inventario, taller ni operaciones.</p>
+  </div>
+  <div class="actions">
+    <button class="btn btn-secondary" id="lgrpClearBtn" type="button"><i class="fas fa-broom"></i> Limpiar</button>
+    <button class="btn btn-primary" id="lgrpGenerateBtn" type="button"><i class="fas fa-file-pdf"></i> Generar PDF</button>
+  </div>
+</div>
+<div class="lgrp-shell">
+  <div class="panel lgrp-panel">
+    <div class="panel-header"><h3>Datos del levantamiento</h3><span class="lgrp-badge">Temporal · descarga directa</span></div>
+    <div class="lgrp-grid">
+      <label class="lgrp-field"><span>Grupo principal</span><input class="input" id="lgrpMainGroup" placeholder="Ejemplo: 48" autocomplete="off"></label>
+      <label class="lgrp-field span-2"><span>Título / tema</span><input class="input" id="lgrpTitle" placeholder="Ejemplo: Agencias con publicidad en mal estado" autocomplete="off"></label>
+      <label class="lgrp-field"><span>Fecha</span><input class="input" id="lgrpDate" type="date"></label>
+      <label class="lgrp-field"><span>Responsable</span><input class="input" id="lgrpResponsible" placeholder="Oscar R." autocomplete="off"></label>
+      <label class="lgrp-field"><span>Orden del PDF</span><select class="select" id="lgrpOrder"><option value="agency">Agencia menor a mayor</option><option value="load">Orden de carga</option></select></label>
+      <label class="lgrp-field"><span>Modo PDF</span><select class="select" id="lgrpMode"><option value="compact">Automático compacto</option><option value="presentation">Presentación</option></select></label>
+      <label class="lgrp-field span-3"><span>Observación general</span><textarea class="input" id="lgrpGeneralNote" placeholder="Observación opcional para la portada/resumen."></textarea></label>
+    </div>
+  </div>
+  <div class="panel lgrp-panel">
+    <div class="panel-header lgrp-agency-head">
+      <div><h3>Agencias del levantamiento</h3><p>El grupo de cada agencia toma el grupo principal por defecto, pero puedes cambiarlo si visitaste otra zona.</p></div>
+      <button class="btn btn-primary btn-sm" id="lgrpAddAgencyBtn" type="button"><i class="fas fa-plus"></i> Agregar agencia</button>
+    </div>
+    <div class="lgrp-quick-box">
+      <label class="lgrp-field"><span>Carga rápida opcional</span><textarea class="input" id="lgrpQuickText" placeholder="432: Toldo descolorido / Pecho roto
+817 G-14: Cámara PTZ pendiente"></textarea></label>
+      <button class="btn btn-secondary btn-sm" id="lgrpQuickBtn" type="button"><i class="fas fa-wand-magic-sparkles"></i> Crear agencias desde texto</button>
+    </div>
+    <div class="lgrp-empty" id="lgrpEmpty">Todavía no hay agencias. Agrega la primera agencia para subir fotos y comentarios.</div>
+    <div class="lgrp-agency-list" id="lgrpAgencyList"></div>
+  </div>
+  <div class="panel lgrp-panel lgrp-help">
+    <h3>Reglas de generación</h3>
+    <div class="lgrp-help-grid">
+      <div><strong>Ahorro de hojas</strong><span>El PDF acomoda varias agencias en la misma página cuando caben bien.</span></div>
+      <div><strong>Sin cortes feos</strong><span>Una foto y su comentario viajan juntos; no se separan entre páginas.</span></div>
+      <div><strong>Imágenes correctas</strong><span>Se mantienen proporciones, se centran y se comprimen para no generar archivos pesados.</span></div>
+      <div><strong>Módulo aislado</strong><span>No guarda casos ni modifica estados, inventario, taller, rendimiento o auditoría.</span></div>
+    </div>
+  </div>
+</div>
+</div></div></div>
+
 <div class="hidden" id="vista-ops-usuarios"><div class="ops-scope"><div class="view hidden" id="usersView">
 <div class="catalog-topbar"><div><h2>Administración de Usuarios</h2><p>Gestión de técnicos disponibles para averías.</p></div><button class="btn btn-primary" id="addUserBtn">+ Crear Usuario</button></div>
 <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="userSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
@@ -21156,7 +21207,7 @@ function sidebarSectionForView(vista){
   if(['dashboard-rrhh','operadoras','solicitudes','historial-rrhh'].includes(vista)) return 'rrhh';
   if(['anuncios'].includes(vista)) return 'comunicacion';
   if(['ops-dashboard','ops-operaciones','ops-levantamientos','ops-historial','ops-rendimiento'].includes(vista)) return 'operaciones';
-  if(['ops-reportes','ops-reportes-agencia','ops-reportes-responsable','ops-reportes-tipos'].includes(vista)) return 'reportes';
+  if(['ops-reportes','ops-reportes-agencia','ops-reportes-responsable','ops-reportes-tipos','ops-levantamiento-grupos-pdf'].includes(vista)) return 'reportes';
   if(['ops-usuarios','ops-suplidores','ops-trabajos','ops-averias'].includes(vista)) return 'catalogos';
   return 'inventario';
 }
@@ -21184,7 +21235,7 @@ function cambiarVista(vista, el){
   const ids = [
     'vista-home','vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-control-despachos','vista-agencias','vista-grupos',
     'vista-dashboard-rrhh','vista-operadoras','vista-solicitudes','vista-historial-rrhh','vista-anuncios','vista-taller-v2',
-    'vista-ops-dashboard','vista-ops-operaciones','vista-ops-levantamientos','vista-ops-historial','vista-ops-rendimiento','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
+    'vista-ops-dashboard','vista-ops-operaciones','vista-ops-levantamientos','vista-ops-historial','vista-ops-rendimiento','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-levantamiento-grupos-pdf','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
   ];
   ids.forEach(id => {
     const node = document.getElementById(id);
@@ -42020,5 +42071,88 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     color:#0b3554!important;
   }
 </style>
+
+<style id="loteka-levantamiento-grupos-pdf-css">
+#vista-ops-levantamiento-grupos-pdf .lgrp-topbar p{margin-top:6px;color:#668099;font-weight:700;}
+.lgrp-shell{display:grid;gap:18px;}
+.lgrp-panel{border-radius:22px;overflow:hidden;}
+.lgrp-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;background:#eaf8ff;color:#086487;font-size:12px;font-weight:950;border:1px solid #c8eefd;}
+.lgrp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:18px;}
+.lgrp-field{display:grid;gap:7px;font-weight:900;color:#0b3554;}
+.lgrp-field span{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#557083;}
+.lgrp-field textarea{min-height:84px;resize:vertical;font-family:inherit;line-height:1.35;}
+.lgrp-field.span-2{grid-column:span 2;}.lgrp-field.span-3{grid-column:span 3;}
+.lgrp-agency-head{align-items:flex-start!important;}.lgrp-agency-head p{margin:5px 0 0;color:#6b8193;font-weight:700;font-size:13px;}
+.lgrp-quick-box{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;padding:0 18px 18px;border-bottom:1px solid #dceaf3;}
+.lgrp-quick-box textarea{min-height:74px;}
+.lgrp-empty{margin:18px;padding:24px;border:1px dashed #c5d9e6;border-radius:18px;background:#f8fcff;color:#60798d;text-align:center;font-weight:850;}
+.lgrp-agency-list{display:grid;gap:16px;padding:18px;}
+.lgrp-agency-card{border:1px solid #d8e7f1;border-radius:22px;background:#fbfdff;box-shadow:0 10px 28px rgba(8,43,68,.08);overflow:hidden;scroll-margin-top:90px;}
+.lgrp-agency-card.is-collapsed{background:#f8fcff;}
+.lgrp-agency-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(135deg,#f5fbff,#eef8fd);border-bottom:1px solid #d8e7f1;}
+.lgrp-agency-title{font-weight:1000;color:#073a5c;font-size:16px;}.lgrp-agency-sub{font-size:12px;color:#6b8193;font-weight:850;margin-top:3px;}
+.lgrp-agency-mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.lgrp-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #d5e8f2;background:#fff;border-radius:999px;padding:5px 9px;color:#557083;font-size:12px;font-weight:900;}
+.lgrp-agency-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.lgrp-agency-body{padding:16px;display:grid;gap:14px;}
+.lgrp-agency-card.is-collapsed .lgrp-agency-body{display:none;}
+.lgrp-agency-card.is-collapsed .lgrp-agency-card-head{border-bottom:0;}
+.lgrp-agency-fields{display:grid;grid-template-columns:160px 130px 1fr;gap:12px;}
+.lgrp-file-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px;border-radius:16px;background:#f1f8fc;border:1px solid #d5e8f2;}
+.lgrp-file-row input[type=file]{max-width:360px;}
+.lgrp-photo-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.lgrp-photo-card{border:1px solid #d8e7f1;border-radius:18px;background:#fff;overflow:hidden;display:grid;grid-template-rows:auto 1fr;}
+.lgrp-photo-card img{width:100%;height:170px;object-fit:contain;background:#edf5fa;border-bottom:1px solid #d8e7f1;}
+.lgrp-photo-body{padding:10px;display:grid;gap:8px;}.lgrp-photo-body textarea{min-height:58px;resize:vertical;font-family:inherit;line-height:1.3;}
+.lgrp-photo-tools{display:flex;gap:6px;justify-content:space-between;align-items:center;}.lgrp-photo-tools small{color:#71889a;font-weight:850;}
+.lgrp-help{padding:18px;}.lgrp-help h3{margin:0 0 14px;color:#073a5c;}.lgrp-help-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}.lgrp-help-grid div{border:1px solid #d7e8f2;background:#f8fcff;border-radius:16px;padding:13px;display:grid;gap:6px;}.lgrp-help-grid strong{color:#074b72;}.lgrp-help-grid span{color:#60798d;font-weight:700;font-size:13px;line-height:1.35;}
+@media(max-width:900px){.lgrp-grid,.lgrp-agency-fields,.lgrp-help-grid{grid-template-columns:1fr;}.lgrp-field.span-2,.lgrp-field.span-3{grid-column:auto;}.lgrp-quick-box{grid-template-columns:1fr;}.lgrp-photo-list{grid-template-columns:1fr;}}
+</style>
+<script id="loteka-levantamiento-grupos-pdf-js">
+(function(){
+  'use strict';
+  var state={agencies:[],seq:0};
+  function $(id){return document.getElementById(id);} 
+  function todayISO(){var d=new Date(); return d.toISOString().slice(0,10);} 
+  function cleanGroup(v){return String(v||'').replace(/grupo/ig,'').replace(/g[-\s]*/ig,'').trim();}
+  function normalizeGroup(v){var x=cleanGroup(v); return x ? ('G-' + x.replace(/^0+(?=\d)/,'')) : '';}
+  function normalizeAgency(v){return String(v||'').replace(/agencia/ig,'').trim();}
+  function escapeHtml(v){return String(v||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function getResponsible(){try{var p=(window.lotekaAuthState&&window.lotekaAuthState.perfil)||{};return p.nombre||p.name||p.display_name||'Oscar R.';}catch(e){return 'Oscar R.';}}
+  function initDefaults(){if($('lgrpDate')&&!$('lgrpDate').value)$('lgrpDate').value=todayISO(); if($('lgrpResponsible')&&!$('lgrpResponsible').value)$('lgrpResponsible').value=getResponsible();}
+  function renumber(){state.agencies.forEach(function(a,i){a.order=i;});}
+  function render(){var list=$('lgrpAgencyList'), empty=$('lgrpEmpty'); if(!list)return; list.innerHTML=''; if(empty)empty.style.display=state.agencies.length?'none':'block'; state.agencies.forEach(function(a,idx){var card=document.createElement('div'); card.className='lgrp-agency-card'+(a.collapsed?' is-collapsed':''); card.dataset.id=a.id; var btnLabel=a.collapsed?'Editar':'Minimizar'; var btnIcon=a.collapsed?'fa-pen-to-square':'fa-compress'; var noteTxt=(a.note||'').trim(); var mini='<div class="lgrp-agency-mini"><span class="lgrp-chip"><i class="fas fa-image"></i> '+a.photos.length+' foto(s)</span><span class="lgrp-chip"><i class="fas fa-layer-group"></i> bloque '+(idx+1)+'</span>'+(noteTxt?'<span class="lgrp-chip"><i class="fas fa-comment"></i> '+escapeHtml(noteTxt.slice(0,42))+(noteTxt.length>42?'...':'')+'</span>':'')+'</div>'; card.innerHTML='<div class="lgrp-agency-card-head"><div><div class="lgrp-agency-title">AGENCIA '+escapeHtml(a.agency||'sin número')+' '+(a.group?'<span style="color:#1485ad">· '+escapeHtml(normalizeGroup(a.group))+'</span>':'')+'</div><div class="lgrp-agency-sub">'+(a.collapsed?'Minimizada · ':'')+a.photos.length+' foto(s) · bloque '+(idx+1)+'</div>'+mini+'</div><div class="lgrp-agency-actions"><button class="btn btn-secondary btn-sm" data-act="toggle" type="button"><i class="fas '+btnIcon+'"></i> '+btnLabel+'</button><button class="btn btn-secondary btn-sm" data-act="up" type="button">↑</button><button class="btn btn-secondary btn-sm" data-act="down" type="button">↓</button><button class="btn btn-danger btn-sm" data-act="del" type="button"><i class="fas fa-trash"></i></button></div></div><div class="lgrp-agency-body"><div class="lgrp-agency-fields"><label class="lgrp-field"><span>Agencia</span><input class="input" data-field="agency" value="'+escapeHtml(a.agency)+'" placeholder="432"></label><label class="lgrp-field"><span>Grupo</span><input class="input" data-field="group" value="'+escapeHtml(a.group)+'" placeholder="48"></label><label class="lgrp-field"><span>Comentario general</span><input class="input" data-field="note" value="'+escapeHtml(a.note)+'" placeholder="Opcional"></label></div><div class="lgrp-file-row"><strong>Fotos de esta agencia:</strong><input type="file" accept="image/*" multiple data-act="files"><span style="color:#668099;font-weight:800;font-size:13px;">Puedes subir varias fotos juntas. Al terminar, pulsa Minimizar para seguir más cómodo.</span></div><div class="lgrp-photo-list"></div></div>'; list.appendChild(card); var photoList=card.querySelector('.lgrp-photo-list'); a.photos.forEach(function(ph,pidx){var item=document.createElement('div'); item.className='lgrp-photo-card'; item.innerHTML='<img src="'+ph.dataUrl+'" alt="Foto agencia '+escapeHtml(a.agency)+'"><div class="lgrp-photo-body"><textarea class="input" data-photo-comment="'+pidx+'" placeholder="Comentario de esta foto">'+escapeHtml(ph.comment||'')+'</textarea><div class="lgrp-photo-tools"><small>Foto '+(pidx+1)+'</small><span><button class="btn btn-secondary btn-sm" data-photo-up="'+pidx+'" type="button">↑</button> <button class="btn btn-secondary btn-sm" data-photo-down="'+pidx+'" type="button">↓</button> <button class="btn btn-danger btn-sm" data-photo-del="'+pidx+'" type="button">Eliminar</button></span></div></div>'; photoList.appendChild(item);});});}
+  function addAgency(data){var main=cleanGroup(($('lgrpMainGroup')||{}).value); state.agencies.forEach(function(a){a.collapsed=true;}); var id='ag'+(++state.seq)+'_'+Date.now(); var item={id:id,order:state.agencies.length,agency:normalizeAgency(data&&data.agency)||'',group:cleanGroup((data&&data.group)||main),note:(data&&data.note)||'',photos:[],collapsed:false}; state.agencies.unshift(item); render(); setTimeout(function(){var card=document.querySelector('.lgrp-agency-card[data-id="'+id+'"]'); if(card&&card.scrollIntoView)card.scrollIntoView({behavior:'smooth',block:'start'});},40); return item;}
+  function compressImage(file){return new Promise(function(resolve,reject){var reader=new FileReader(); reader.onerror=reject; reader.onload=function(){var img=new Image(); img.onload=function(){var max=1400,w=img.naturalWidth,h=img.naturalHeight,scale=Math.min(1,max/Math.max(w,h)); var cw=Math.max(1,Math.round(w*scale)), ch=Math.max(1,Math.round(h*scale)); var canvas=document.createElement('canvas'); canvas.width=cw; canvas.height=ch; var ctx=canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cw,ch); ctx.drawImage(img,0,0,cw,ch); resolve({dataUrl:canvas.toDataURL('image/jpeg',0.78),w:cw,h:ch,name:file.name||'foto'});}; img.onerror=reject; img.src=reader.result;}; reader.readAsDataURL(file);});}
+  function findAgency(id){return state.agencies.find(function(a){return a.id===id;});}
+  async function handleFiles(agency, files){for(var i=0;i<files.length;i++){try{var img=await compressImage(files[i]); agency.photos.push({dataUrl:img.dataUrl,w:img.w,h:img.h,comment:'',name:img.name});}catch(e){console.warn('No se pudo procesar imagen',e); alert('No se pudo cargar una imagen: '+(files[i]&&files[i].name||''));}} render();}
+  function parseQuick(){var txt=($('lgrpQuickText')||{}).value||''; var lines=txt.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean); if(!lines.length){alert('Pega al menos una línea con agencia.');return;} lines.slice().reverse().forEach(function(line){var m=line.match(/(?:agencia\s*)?(\d{2,5})(?:\s*(?:g|grupo)\s*-?\s*(\d{1,3}))?\s*:?\s*(.*)$/i); if(!m)return; var ag=addAgency({agency:m[1],group:m[2]||cleanGroup(($('lgrpMainGroup')||{}).value),note:(m[3]||'').trim()}); if(ag.note && ag.note.indexOf('/')>-1){ag.note=ag.note.split('/').map(function(x){return x.trim();}).filter(Boolean).join(' / ');} }); if($('lgrpQuickText'))$('lgrpQuickText').value=''; render();}
+  function sortedAgencies(){var arr=state.agencies.slice(); var order=($('lgrpOrder')||{}).value||'agency'; if(order==='agency'){arr.sort(function(a,b){var na=parseInt(a.agency,10)||999999, nb=parseInt(b.agency,10)||999999; return na-nb || String(a.group).localeCompare(String(b.group));});}else{arr.sort(function(a,b){return (Number(a.order)||0)-(Number(b.order)||0);});} return arr;}
+  function safeFileName(s){return String(s||'reporte').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/ig,'_').replace(/^_+|_+$/g,'').slice(0,80)||'reporte';}
+  function ensureJsPdf(){return new Promise(function(resolve,reject){if(window.jspdf&&window.jspdf.jsPDF)return resolve(window.jspdf.jsPDF); var old=document.getElementById('lgrpJsPdfCdn'); if(old){old.addEventListener('load',function(){resolve(window.jspdf.jsPDF);}); old.addEventListener('error',reject); return;} var sc=document.createElement('script'); sc.id='lgrpJsPdfCdn'; sc.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.onload=function(){window.jspdf&&window.jspdf.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('jsPDF no disponible'));}; sc.onerror=reject; document.head.appendChild(sc);});}
+  function wrapText(doc,text,maxWidth,size){doc.setFontSize(size||10); return doc.splitTextToSize(String(text||'Sin comentario'),maxWidth);}
+  function addPageHeader(doc,pageW,margin,mainGroup,title,date){doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(7,58,92);doc.text('LEVANTAMIENTO DE GRUPO '+(mainGroup||''),margin,24);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90,110,125);doc.text((title||'Reporte fotográfico')+' · '+(date||''),pageW-margin,24,{align:'right'});doc.setDrawColor(205,222,233);doc.line(margin,32,pageW-margin,32);}
+  function addNewPage(doc,ctx){doc.addPage();ctx.y=44;addPageHeader(doc,ctx.pageW,ctx.margin,ctx.mainGroup,ctx.title,ctx.date);}
+  function drawTextBox(doc,x,y,w,lines){doc.setFillColor(247,251,254);doc.setDrawColor(214,230,240);doc.roundedRect(x,y,w,Math.max(24,lines.length*11+10),6,6,'FD');doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(24,54,74);doc.text(lines,x+8,y+14);return Math.max(24,lines.length*11+10);}
+  function imageFit(img,maxW,maxH){var r=(img.w||1)/(img.h||1), w=maxW, h=w/r; if(h>maxH){h=maxH; w=h*r;} return {w:w,h:h};}
+  function estimatePhotoHeight(doc,ph,mode,colW){var lines=wrapText(doc,ph.comment||'Sin comentario',colW,9); var imgH=mode==='presentation'?160:126; return imgH + Math.min(48,lines.length*10+12) + 12;}
+  function drawAgency(doc,ctx,agency,continued){var mode=ctx.mode; var margin=ctx.margin, pageH=ctx.pageH, pageW=ctx.pageW, usableW=pageW-margin*2; var footer=34; function need(h){if(ctx.y+h>pageH-footer)addNewPage(doc,ctx);} var headerH=24; var firstRowH=agency.photos.length? (agency.photos.length===1? (mode==='presentation'?178:142) : (mode==='presentation'?216:174)) : 44; need(headerH+Math.min(firstRowH,170)); doc.setFillColor(9,82,124);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.roundedRect(margin,ctx.y,usableW,20,5,5,'F'); var group=normalizeGroup(agency.group||ctx.mainGroup); doc.text('AGENCIA '+(agency.agency||'SIN NÚMERO')+(group?' · '+group:''),margin+9,ctx.y+14); if(continued){doc.setFontSize(8);doc.text('CONTINUACIÓN',pageW-margin-9,ctx.y+14,{align:'right'});} ctx.y+=27; if(agency.note){var noteLines=wrapText(doc,'Observación: '+agency.note,usableW-16,9); var nh=drawTextBox(doc,margin,ctx.y,usableW,noteLines); ctx.y+=nh+8;}
+    if(!agency.photos.length){need(38); var lines=wrapText(doc,'Sin fotos cargadas para esta agencia.',usableW-16,9); ctx.y+=drawTextBox(doc,margin,ctx.y,usableW,lines)+12; return;}
+    if(agency.photos.length===1){var ph=agency.photos[0]; var maxImgW=mode==='presentation'?260:230, maxImgH=mode==='presentation'?185:150; var dim=imageFit(ph,maxImgW,maxImgH); var lines=wrapText(doc,ph.comment||'Sin comentario',usableW-dim.w-28,10); var textH=Math.max(50,lines.length*12+14); var rowH=Math.max(dim.h,textH)+12; need(rowH); doc.setDrawColor(218,231,240);doc.roundedRect(margin,ctx.y,usableW,rowH,7,7,'S'); var ix=margin+10, iy=ctx.y+(rowH-dim.h)/2; doc.addImage(ph.dataUrl,'JPEG',ix,iy,dim.w,dim.h,undefined,'FAST'); drawTextBox(doc,ix+dim.w+12,ctx.y+8,usableW-dim.w-34,lines); ctx.y+=rowH+12; return;}
+    var colGap=12, colW=(usableW-colGap)/2, imgMaxH=mode==='presentation'?145:116, imgMaxW=colW-14; for(var i=0;i<agency.photos.length;i+=2){var ph1=agency.photos[i], ph2=agency.photos[i+1]; var h1=estimatePhotoHeight(doc,ph1,mode,colW-14), h2=ph2?estimatePhotoHeight(doc,ph2,mode,colW-14):0; var rowH=Math.max(h1,h2,mode==='presentation'?198:158); need(rowH+4); [ph1,ph2].forEach(function(ph,j){if(!ph)return; var x=margin+j*(colW+colGap); doc.setDrawColor(218,231,240);doc.roundedRect(x,ctx.y,colW,rowH,7,7,'S'); var dim=imageFit(ph,imgMaxW,imgMaxH); var ix=x+(colW-dim.w)/2, iy=ctx.y+8; doc.addImage(ph.dataUrl,'JPEG',ix,iy,dim.w,dim.h,undefined,'FAST'); var lines=wrapText(doc,ph.comment||'Sin comentario',colW-16,8.7); doc.setFont('helvetica','normal');doc.setFontSize(8.7);doc.setTextColor(24,54,74); doc.text(lines,x+8,iy+dim.h+13);}); ctx.y+=rowH+12; }
+  }
+  async function generatePdf(){var title=(($('lgrpTitle')||{}).value||'Levantamiento fotográfico').trim(); var main=cleanGroup(($('lgrpMainGroup')||{}).value); if(!main){alert('Primero indica el grupo principal.');return;} if(!title){alert('Primero indica el título o tema del levantamiento.');return;} if(!state.agencies.length){alert('Agrega al menos una agencia.');return;} var empty=state.agencies.filter(function(a){return !String(a.agency||'').trim();}); if(empty.length){alert('Hay una agencia sin número. Completa el número antes de generar.');return;} var btn=$('lgrpGenerateBtn'); if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Generando...';}
+    try{var jsPDF=await ensureJsPdf(); var doc=new jsPDF({orientation:'p',unit:'pt',format:'letter',compress:true}); var pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight(), margin=36; var date=(($('lgrpDate')||{}).value||todayISO()); var responsible=(($('lgrpResponsible')||{}).value||getResponsible()); var note=(($('lgrpGeneralNote')||{}).value||'').trim(); var agencies=sortedAgencies(); var other=agencies.filter(function(a){return cleanGroup(a.group)!==main;}).length; doc.setTextColor(7,58,92);doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('GRUPO '+main, pageW/2, 42, {align:'center'});doc.setFontSize(13);doc.text(title.toUpperCase(), pageW/2, 62, {align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(85,105,120);doc.text('Fecha: '+date+'   ·   Responsable: '+responsible+'   ·   Agencias: '+agencies.length+'   ·   Fuera del grupo: '+other, pageW/2, 80, {align:'center'}); if(note){var nl=wrapText(doc,note,pageW-margin*2,9);doc.text(nl,margin,100);}
+      var ctx={y:note?124:104,pageW:pageW,pageH:pageH,margin:margin,mainGroup:main,title:title,date:date,mode:(($('lgrpMode')||{}).value||'compact')}; doc.setDrawColor(205,222,233);doc.line(margin,ctx.y-10,pageW-margin,ctx.y-10); agencies.forEach(function(a){drawAgency(doc,ctx,a,false);}); var total=doc.internal.getNumberOfPages(); for(var p=1;p<=total;p++){doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(115,132,145);doc.text('Grupo Ortiz · Reporte fotográfico generado temporalmente',margin,pageH-18);doc.text('Página '+p+' de '+total,pageW-margin,pageH-18,{align:'right'});} var name=safeFileName('GRUPO_'+main+'_'+title)+'_'+date+'.pdf'; doc.save(name);
+    }catch(e){console.error(e); alert('No se pudo generar el PDF automáticamente. Revisa la conexión para cargar jsPDF. Como respaldo, puedes usar imprimir/guardar PDF desde el navegador.');}
+    finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-file-pdf"></i> Generar PDF';}}
+  }
+  function clearAll(){if(!state.agencies.length || confirm('¿Limpiar este levantamiento temporal?')){state.agencies=[];state.seq=0; ['lgrpTitle','lgrpGeneralNote','lgrpQuickText'].forEach(function(id){if($(id))$(id).value='';}); render();}}
+  function bind(){initDefaults(); var add=$('lgrpAddAgencyBtn'); if(add&&!add.dataset.bound){add.dataset.bound='1';add.addEventListener('click',function(){addAgency();});} var gen=$('lgrpGenerateBtn'); if(gen&&!gen.dataset.bound){gen.dataset.bound='1';gen.addEventListener('click',generatePdf);} var clear=$('lgrpClearBtn'); if(clear&&!clear.dataset.bound){clear.dataset.bound='1';clear.addEventListener('click',clearAll);} var quick=$('lgrpQuickBtn'); if(quick&&!quick.dataset.bound){quick.dataset.bound='1';quick.addEventListener('click',parseQuick);} var main=$('lgrpMainGroup'); if(main&&!main.dataset.bound){main.dataset.bound='1';main.addEventListener('input',function(){state.agencies.forEach(function(a){if(!a.group)a.group=cleanGroup(main.value);});render();});} var list=$('lgrpAgencyList'); if(list&&!list.dataset.bound){list.dataset.bound='1';list.addEventListener('input',function(ev){var card=ev.target.closest('.lgrp-agency-card'); if(!card)return; var ag=findAgency(card.dataset.id); if(!ag)return; if(ev.target.dataset.field){ag[ev.target.dataset.field]=ev.target.value;} if(ev.target.dataset.photoComment!==undefined){var ph=ag.photos[+ev.target.dataset.photoComment]; if(ph)ph.comment=ev.target.value;}}); list.addEventListener('change',function(ev){var card=ev.target.closest('.lgrp-agency-card'); if(!card)return; var ag=findAgency(card.dataset.id); if(!ag)return; if(ev.target.dataset.act==='files'&&ev.target.files&&ev.target.files.length){handleFiles(ag,ev.target.files); ev.target.value='';}}); list.addEventListener('click',function(ev){var btn=ev.target.closest('button'); if(!btn)return; var card=btn.closest('.lgrp-agency-card'); if(!card)return; var ag=findAgency(card.dataset.id), idx=state.agencies.indexOf(ag); if(!ag)return; var act=btn.dataset.act; if(act==='toggle'){ag.collapsed=!ag.collapsed;render();return;} if(act==='del'){if(confirm('¿Eliminar esta agencia del levantamiento?')){state.agencies.splice(idx,1);renumber();render();}} if(act==='up'&&idx>0){state.agencies.splice(idx,1);state.agencies.splice(idx-1,0,ag);renumber();render();} if(act==='down'&&idx<state.agencies.length-1){state.agencies.splice(idx,1);state.agencies.splice(idx+1,0,ag);renumber();render();} if(btn.dataset.photoDel!==undefined){ag.photos.splice(+btn.dataset.photoDel,1);render();} if(btn.dataset.photoUp!==undefined){var pi=+btn.dataset.photoUp;if(pi>0){var ph=ag.photos.splice(pi,1)[0];ag.photos.splice(pi-1,0,ph);render();}} if(btn.dataset.photoDown!==undefined){var pd=+btn.dataset.photoDown;if(pd<ag.photos.length-1){var ph2=ag.photos.splice(pd,1)[0];ag.photos.splice(pd+1,0,ph2);render();}} });} render();}
+  window.lotekaOpenGroupLiftReports=function(el){try{document.querySelectorAll('[id^="vista-"]').forEach(function(n){n.classList.add('hidden');});document.querySelectorAll('.view').forEach(function(n){n.classList.add('hidden');});var wrap=$('vista-ops-levantamiento-grupos-pdf'), inner=$('levantamientoGruposPdfView');if(wrap)wrap.classList.remove('hidden');if(inner)inner.classList.remove('hidden');document.querySelectorAll('.sidebar-link').forEach(function(n){n.classList.remove('active');}); if(el&&el.classList)el.classList.add('active'); if(typeof setSidebarSectionOpen==='function')setSidebarSectionOpen('reportes',true); bind(); setTimeout(function(){try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){window.scrollTo(0,0);}},30);}catch(e){console.error(e);alert('No se pudo abrir Levantamiento de Grupos.');}return false;};
+  document.addEventListener('DOMContentLoaded',function(){initDefaults();bind();});
+})();
+</script>
+
 </body>
 </html>
