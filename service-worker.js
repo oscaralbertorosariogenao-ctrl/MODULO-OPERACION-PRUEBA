@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-07-24-v803-despachos-multiples-integracion-real";
+const SW_VERSION = "2026-07-24-v804-seguridad-sesion-api-pwa";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -19,9 +19,7 @@ const RUNTIME_CACHE = `loteka-runtime-${SW_VERSION}`;
 
 const INDEX_HTML = "/index.html";
 const APP_HTML = "/app.html";
-const APP_REPORTES_HTML = "/app-reportes.html";
 const PANTALLA_HTML = "/pantalla.html";
-const MONITOREO_HTML = "/monitoreo-operaciones.html";
 
 const IS_DEV_HOST =
   self.location.hostname === "localhost" ||
@@ -32,9 +30,7 @@ const HTML_ROUTES = new Set([
   "/",
   INDEX_HTML,
   APP_HTML,
-  APP_REPORTES_HTML,
-  PANTALLA_HTML,
-  MONITOREO_HTML
+  PANTALLA_HTML
 ]);
 
 const STATIC_ASSETS = [
