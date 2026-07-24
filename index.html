@@ -2,6 +2,7 @@
 
 <html class="ltk-auth-preboot" lang="es">
 <head>
+  <meta name="grupo-ortiz-build" content="2026-07-24-v803-despachos-multiples-integracion-real">
 <style id="loteka-v59-auth-critical-no-flash">
   /* Bloqueo crítico de primer pintado: evita que se vea el sistema antes de validar sesión. */
   html.ltk-auth-preboot,
@@ -100,7 +101,7 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/>
-<meta content="2026-07-23-v701-premium-ui-real" name="loteka-build"/>
+<meta content="2026-07-24-v802-despachos-multiples-real" name="loteka-build"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Grupo Ortiz</title>
@@ -7083,6 +7084,29 @@ body.dspx-modal-open{overflow:hidden!important;}
 .dspx-warehouse-source i{color:#0d9ecf}
 #vista-almacenes .go-alm-readonly{display:inline-flex;align-items:center;gap:6px;color:#64748b;font-size:11px;font-weight:900;padding:7px 9px;border:1px solid #dce8ef;border-radius:999px;background:#f8fbfd;}
 @media(max-width:760px){#dspxModal{padding:10px!important}#dspxModal .dspx-modal-panel{width:calc(100vw - 18px)!important;max-height:calc(100vh - 20px)!important;border-radius:20px!important}.dspx-item-row{grid-template-columns:1fr 90px}.dspx-item-row .dspx-item-observation,.dspx-item-row .dspx-serial-policy{grid-column:1/-1}}
+
+.dspx-mode-switch{display:grid!important;visibility:visible!important;opacity:1!important;position:relative;z-index:5;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 16px;padding:6px;border:1px solid #cfe4ef;border-radius:18px;background:#eef8fd;}
+.dspx-mode-option{border:1px solid transparent;border-radius:13px;padding:12px 14px;background:transparent;color:#416984;font-weight:1000;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:.16s ease;}
+.dspx-mode-option.active{background:#fff;color:#073b63;border-color:#bfe0ee;box-shadow:0 8px 20px rgba(7,59,99,.10);}
+.dspx-batch-section{margin-top:16px;border:1px solid #d8eaf3;border-radius:20px;background:#fff;padding:16px;box-shadow:0 10px 24px rgba(10,60,95,.04);}
+.dspx-batch-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:13px;}
+.dspx-batch-section-head h4{margin:0;color:#123f63;font-size:17px;}.dspx-batch-section-head p{margin:4px 0 0;color:#72899d;font-size:12px;font-weight:800;}
+.dspx-batch-count{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#eaf8fd;border:1px solid #c8e8f4;color:#0b638c;font-size:11px;font-weight:1000;white-space:nowrap;}
+.dspx-batch-agency-search{display:grid;grid-template-columns:minmax(220px,1fr);gap:8px;}.dspx-batch-agency-results{display:grid;gap:7px;max-height:250px;overflow:auto;}
+.dspx-batch-agency-result{width:100%;border:1px solid #dcebf4;background:#f8fcff;border-radius:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;cursor:pointer;color:#123f63;}
+.dspx-batch-agency-result:hover{border-color:#65bddd;background:#eef9fe;}.dspx-batch-agency-result span{min-width:0}.dspx-batch-agency-result b,.dspx-batch-agency-result small{display:block}.dspx-batch-agency-result small{margin-top:3px;color:#72899d;font-weight:800;}
+.dspx-batch-search-empty{padding:14px;border:1px dashed #cfe4ef;border-radius:14px;background:#f8fcff;color:#6d8498;font-size:12px;font-weight:850;text-align:center;}
+.dspx-batch-selected{display:grid;gap:9px;margin-top:12px;}.dspx-batch-agency-chip{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #dcebf4;border-radius:15px;background:#fbfdff;}
+.dspx-batch-agency-chip b,.dspx-batch-agency-chip small{display:block}.dspx-batch-agency-chip b{color:#123f63}.dspx-batch-agency-chip small{margin-top:3px;color:#72899d;font-weight:800;}
+.dspx-batch-products{display:grid;gap:10px;}.dspx-batch-product-row{display:grid;grid-template-columns:minmax(230px,1.4fr) 110px minmax(170px,1fr) 42px;gap:10px;align-items:end;border:1px solid #e0eef6;border-radius:16px;padding:12px;background:#fbfdff;}
+.dspx-batch-agency-card{border:1px solid #dcebf4;border-radius:18px;background:#fbfdff;overflow:hidden;margin-top:10px;}.dspx-batch-agency-card summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;padding:13px 14px;background:#f4fbff;color:#123f63;font-weight:1000;}.dspx-batch-agency-card summary::-webkit-details-marker{display:none}.dspx-batch-agency-card-body{padding:13px;}
+.dspx-batch-stock{display:grid;gap:8px;}.dspx-batch-stock-row{display:grid;grid-template-columns:minmax(200px,1fr) repeat(2,110px) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid #dcebf4;border-radius:14px;background:#fbfdff;}.dspx-batch-stock-row b{color:#123f63}.dspx-batch-stock-row span{color:#61798d;font-size:12px;font-weight:850;}.dspx-batch-stock-row.ok i{color:#15803d}.dspx-batch-stock-row.error{border-color:#fecdd3;background:#fff7f8}.dspx-batch-stock-row.error i{color:#be123c}
+.dspx-lot-ref{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:4px 7px;border-radius:999px;background:#eef8fd;border:1px solid #cfe4ef;color:#0b638c;font-size:10px;font-weight:1000;cursor:pointer;}
+.dspx-batch-result-hero{text-align:center;padding:20px;border-radius:20px;background:linear-gradient(135deg,#073b63,#0d9ecf);color:#fff;margin-bottom:14px;}.dspx-batch-result-hero i{font-size:32px;margin-bottom:10px}.dspx-batch-result-hero h3{margin:0;font-size:24px}.dspx-batch-result-hero p{margin:7px 0 0;font-weight:800;opacity:.9}.dspx-batch-result-list{display:grid;gap:8px;}.dspx-batch-result-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 12px;border:1px solid #dcebf4;border-radius:14px;background:#fbfdff;}.dspx-batch-result-item b{color:#123f63}.dspx-batch-result-item span{color:#61798d;font-size:12px;font-weight:850;}
+body.go-dark-mode .dspx-mode-switch,body.go-dark-mode .dspx-batch-section,body.go-dark-mode .dspx-batch-agency-chip,body.go-dark-mode .dspx-batch-product-row,body.go-dark-mode .dspx-batch-agency-card,body.go-dark-mode .dspx-batch-stock-row,body.go-dark-mode .dspx-batch-result-item{background:#0f2436!important;border-color:rgba(119,203,238,.18)!important;color:#e8f7ff!important;}
+@media(max-width:900px){.dspx-batch-product-row{grid-template-columns:1fr 100px}.dspx-batch-product-row .dspx-batch-observation{grid-column:1/-1}.dspx-batch-stock-row{grid-template-columns:1fr repeat(2,90px) auto}}
+@media(max-width:640px){.dspx-mode-switch{grid-template-columns:1fr}.dspx-batch-product-row,.dspx-batch-stock-row{grid-template-columns:1fr}.dspx-batch-agency-chip,.dspx-batch-result-item{align-items:flex-start}.dspx-batch-section-head{flex-direction:column}.dspx-batch-count{align-self:flex-start}}
+
 </style>
 <style id="loteka-premium-ui-v701-real-css">
 /* ==========================================================================\n   GRUPO ORTIZ · PREMIUM UI V701 REAL\n   Capa exclusivamente visual. No modifica RPC, datos, IDs ni flujos.\n   ========================================================================== */
@@ -39679,7 +39703,11 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(window.__lotekaDespachosRpcV410) return;
   window.__lotekaDespachosRpcV410 = true;
 
-  const VERSION = 'v410';
+  const VERSION = 'v803-despachos-multiples-integracion-real';
+  const BUILD = '2026-07-24-v803-despachos-multiples-integracion-real';
+  window.__GRUPO_ORTIZ_BUILD__ = BUILD;
+  document.documentElement.dataset.grupoOrtizBuild = BUILD;
+  console.info('[Grupo Ortiz] Build ' + BUILD);
   const TABLE_LIMITS = {
     despachos: 1000,
     despacho_items: 4000,
@@ -39687,7 +39715,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     despacho_eventos: 7000,
     despacho_incidencias: 4000,
     movimientos_inventario: 7000,
-    equipos_seriales: 12000
+    equipos_seriales: 12000,
+    despacho_lotes: 1000
   };
 
   const state = {
@@ -39699,6 +39728,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     channel: null,
     realtimeTimer: null,
     draft: null,
+    creationMode: 'individual',
+    batchDraft: null,
+    lastBatchResult: null,
     modal: null,
     modalBusy: false,
     stock: { serials:new Map(), nonSerial:new Map(), prepared:new Map() },
@@ -39714,7 +39746,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       productos: [],
       agencias: [],
       grupos: [],
-      perfiles: []
+      perfiles: [],
+      lotes: []
     },
     maps: {}
   };
@@ -39891,6 +39924,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       agencias: makeMap(state.data.agencias),
       grupos: makeMap(state.data.grupos),
       perfiles: makeMap(state.data.perfiles),
+      lotes: makeMap(state.data.lotes),
+      dispatchesByLot: indexBy(state.data.despachos,'lote_id'),
       itemsByDispatch: indexBy(state.data.items,'despacho_id'),
       serialsByItem: indexBy(state.data.serialRows,'despacho_item_id'),
       eventosByDispatch: indexBy(state.data.eventos,'despacho_id'),
@@ -40018,6 +40053,165 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function resetDraft(){
     state.draft = null;
     ensureDraft();
+  }
+
+
+  function newBatchItem(){
+    return {key:nowKey(),productId:'',quantity:1,observations:''};
+  }
+
+  function ensureBatchDraft(){
+    if(state.batchDraft) return state.batchDraft;
+    state.batchDraft = {
+      warehouseId:'',
+      distribution:'IGUAL',
+      reason:'',
+      documentReference:'',
+      observations:'',
+      description:'',
+      agencySearch:'',
+      selectedAgencyIds:[],
+      sharedItems:[newBatchItem()],
+      agencyItems:{}
+    };
+    return state.batchDraft;
+  }
+
+  function resetBatchDraft(){
+    state.batchDraft = null;
+    ensureBatchDraft();
+  }
+
+  function ensureBatchAgencyItems(agencyId){
+    const draft = ensureBatchDraft();
+    const id = txt(agencyId);
+    if(!Array.isArray(draft.agencyItems[id]) || !draft.agencyItems[id].length){
+      draft.agencyItems[id] = [newBatchItem()];
+    }
+    return draft.agencyItems[id];
+  }
+
+  function batchAgencyGroupLabel(agency){
+    if(!agency) return 'Sin grupo';
+    const groupId = txt(first(agency,['grupo_id','grupo_uuid']));
+    if(groupId && state.maps.grupos.has(groupId)) return groupLabel(groupId);
+    return txt(first(agency,['grupo','grupo_numero','grupo_nombre'],'Sin grupo')) || 'Sin grupo';
+  }
+
+  function lotCode(loteId){
+    const lot = state.maps.lotes && state.maps.lotes.get(txt(loteId));
+    return lot ? txt(lot.codigo) : '';
+  }
+
+  function lotStatus(rows){
+    const dispatches = arr(rows);
+    if(!dispatches.length) return 'SIN DESPACHOS';
+    const states = dispatches.map((row)=>txt(row.estado).toUpperCase());
+    if(states.some((value)=>['CON_INCIDENCIA','RECIBIDO_PARCIAL'].includes(value))) return 'CON INCIDENCIA';
+    if(states.every((value)=>value==='RECIBIDO')) return 'FINALIZADO';
+    if(states.every((value)=>value==='PENDIENTE_PREPARACION')) return 'PENDIENTE';
+    if(states.some((value)=>value==='RECIBIDO')) return 'PARCIAL';
+    return 'EN PROCESO';
+  }
+
+  function batchScopeItems(scope){
+    const draft = ensureBatchDraft();
+    return scope === 'shared' ? draft.sharedItems : ensureBatchAgencyItems(scope);
+  }
+
+  function cleanBatchItems(items){
+    return arr(items).map((row)=>({
+      producto_id:txt(row.productId),
+      cantidad:Math.max(0,Math.floor(num(row.quantity))),
+      observaciones:txt(row.observations)||null
+    }));
+  }
+
+  function buildBatchDestinations(draft){
+    const shared = cleanBatchItems(draft.sharedItems);
+    return draft.selectedAgencyIds.map((agencyId)=>({
+      agencia_id:txt(agencyId),
+      items:draft.distribution==='IGUAL' ? shared.map((row)=>Object.assign({},row)) : cleanBatchItems(ensureBatchAgencyItems(agencyId))
+    }));
+  }
+
+  function batchTotals(draft){
+    const totals = new Map();
+    buildBatchDestinations(draft).forEach((destination)=>{
+      destination.items.forEach((item)=>{
+        if(!item.producto_id || item.cantidad<=0) return;
+        totals.set(item.producto_id,(totals.get(item.producto_id)||0)+item.cantidad);
+      });
+    });
+    return totals;
+  }
+
+  function filteredBatchAgencies(){
+    const draft = ensureBatchDraft();
+    const search = norm(draft.agencySearch);
+    if(!search) return [];
+    const selected = new Set(draft.selectedAgencyIds.map(txt));
+    return state.data.agencias.filter((agency)=>{
+      if(selected.has(txt(agency.id))) return false;
+      const haystack = norm([
+        first(agency,['numero','codigo']),
+        first(agency,['nombre']),
+        batchAgencyGroupLabel(agency)
+      ].filter(Boolean).join(' '));
+      return haystack.includes(search);
+    }).slice(0,8);
+  }
+
+  function batchAgencyResultsHtml(){
+    const draft = ensureBatchDraft();
+    if(!txt(draft.agencySearch)) return '<div class="dspx-batch-search-empty"><i class="fas fa-magnifying-glass"></i> Escribe el número o nombre de una agencia.</div>';
+    const rows = filteredBatchAgencies();
+    if(!rows.length) return '<div class="dspx-batch-search-empty"><i class="fas fa-circle-info"></i> No hay agencias disponibles con esa búsqueda.</div>';
+    return rows.map((agency)=>'<button class="dspx-batch-agency-result" data-action="batch-add-agency" data-agency-id="'+esc(agency.id)+'" type="button"><span><b>'+esc(agencyLabel(agency.id))+'</b><small>'+esc(batchAgencyGroupLabel(agency))+'</small></span><i class="fas fa-plus"></i></button>').join('');
+  }
+
+  function renderBatchAgencyResults(){
+    const box = document.querySelector('#dspxModal [data-role="batch-agency-results"]');
+    if(box) box.innerHTML = batchAgencyResultsHtml();
+  }
+
+  function validateBatchDraft(draft){
+    if(!draft.warehouseId) throw {message:'Selecciona el almacén de origen.'};
+    if(!['IGUAL','PERSONALIZADA'].includes(txt(draft.distribution).toUpperCase())) throw {message:'Selecciona un tipo de distribución válido.'};
+    if(draft.selectedAgencyIds.length < 2) throw {message:'Agrega al menos dos agencias al lote.'};
+    if(new Set(draft.selectedAgencyIds.map(txt)).size !== draft.selectedAgencyIds.length) throw {message:'Una agencia está repetida dentro del lote.'};
+    if(!txt(draft.reason)) throw {message:'Escribe el motivo del lote.'};
+
+    const destinations = buildBatchDestinations(draft);
+    destinations.forEach((destination)=>{
+      const agency = state.maps.agencias.get(txt(destination.agencia_id));
+      if(!agency) throw {message:'Una de las agencias seleccionadas ya no está disponible.'};
+      if(!destination.items.length) throw {message:agencyLabel(destination.agencia_id)+' debe tener al menos un producto.'};
+      if(destination.items.some((item)=>!uuid(item.producto_id) || item.cantidad<=0 || !Number.isInteger(item.cantidad))){
+        throw {message:'Completa todos los productos de '+agencyLabel(destination.agencia_id)+' con cantidades enteras mayores que cero.'};
+      }
+      const unique = new Set(destination.items.map((item)=>item.producto_id));
+      if(unique.size !== destination.items.length) throw {message:'No repitas productos dentro del despacho de '+agencyLabel(destination.agencia_id)+'.'};
+    });
+
+    const totals = batchTotals(draft);
+    totals.forEach((requested,productId)=>{
+      const product = state.maps.productos.get(txt(productId));
+      const stock = availableStock(draft.warehouseId,productId);
+      if(!product || stock<=0) throw {message:'El producto '+productLabel(productId)+' ya no tiene existencia disponible.'};
+      if(requested>stock) throw {message:'Stock insuficiente para '+productLabel(productId)+'. Disponible: '+stock+'. Total solicitado en el lote: '+requested+'.'};
+    });
+    return destinations;
+  }
+
+  function batchDraftIsDirty(){
+    const draft = ensureBatchDraft();
+    return Boolean(
+      draft.warehouseId || draft.selectedAgencyIds.length || txt(draft.reason) || txt(draft.documentReference) ||
+      txt(draft.observations) || txt(draft.description) || txt(draft.agencySearch) ||
+      draft.sharedItems.some((row)=>row.productId || txt(row.observations) || num(row.quantity)!==1) ||
+      Object.values(draft.agencyItems).some((items)=>arr(items).some((row)=>row.productId || txt(row.observations) || num(row.quantity)!==1))
+    );
   }
 
   function option(value,label,selected,disabled){
@@ -40253,7 +40447,21 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       '</div></section>';
   }
 
-  function newDispatchFormHtml(){
+  function dispatchModeSwitcherHtml(){
+    const mode = txt(state.creationMode).toLowerCase();
+    return '<div class="dspx-mode-switch" id="dspxDispatchCreationMode" role="tablist" aria-label="Modalidad del despacho">'+
+      '<button class="dspx-mode-option '+(mode==='individual'?'active':'')+'" data-action="set-dispatch-creation-mode" data-mode="individual" type="button" role="tab" aria-selected="'+(mode==='individual'?'true':'false')+'"><i class="fas fa-box"></i> Despacho individual</button>'+
+      '<button class="dspx-mode-option '+(mode==='multiple'?'active':'')+'" data-action="set-dispatch-creation-mode" data-mode="multiple" type="button" role="tab" aria-selected="'+(mode==='multiple'?'true':'false')+'"><i class="fas fa-layer-group"></i> Múltiple a agencias</button>'+
+    '</div>';
+  }
+
+  function ensureDispatchCreationModeMounted(){
+    const body = $('dspxModalBody');
+    if(!body || body.querySelector('#dspxDispatchCreationMode')) return;
+    body.insertAdjacentHTML('afterbegin',dispatchModeSwitcherHtml());
+  }
+
+  function individualDispatchFormHtml(){
     const draft = ensureDraft();
     const type = txt(draft.type).toUpperCase();
     const group = state.maps.grupos.get(txt(draft.groupId));
@@ -40283,7 +40491,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
           ? '<div class="dspx-stock-note '+(stock>0?'ok':'empty')+'"><i class="fas '+(stock>0?'fa-circle-check':'fa-triangle-exclamation')+'"></i> Disponible en '+esc(warehouseLabel(draft.warehouseId))+': '+esc(stock)+'</div>'
           : '<div class="dspx-stock-note"><i class="fas fa-boxes-stacked"></i> '+esc(catalog.length)+' producto(s) con existencia.</div>';
       const serialPolicy = serialized
-        ? '<div class="dspx-serial-policy"><b>Seriales:</b> el encargado de almacén los escaneará durante Preparación usando <code>rpc_agregar_serial_despacho</code>.<br><span class="disabled-choice"><i class="fas fa-lock"></i> Seleccionar seriales al crear: pendiente de una RPC transaccional verificada</span></div>'
+        ? '<div class="dspx-serial-policy"><b>Seriales:</b> el encargado de almacén los escaneará durante Preparación usando <code>rpc_agregar_serial_despacho</code>.</div>'
         : '';
       return '<div class="dspx-item-row" data-draft-item="'+esc(item.key)+'">'+
         '<div class="dspx-field"><label>Producto '+(index+1)+'</label><select data-draft-item-field="productId" '+(!hasWarehouse?'disabled':'')+' required>'+productOptions(item.productId,draft.warehouseId)+'</select>'+stockNote+serialPolicy+'</div>'+
@@ -40307,9 +40515,80 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     '</form>';
   }
 
+  function batchItemRowsHtml(items,scope){
+    const draft = ensureBatchDraft();
+    const hasWarehouse = Boolean(draft.warehouseId);
+    return arr(items).map((item,index)=>{
+      const stock = item.productId ? availableStock(draft.warehouseId,item.productId) : 0;
+      const qty = Math.max(1,Math.floor(num(item.quantity)||1));
+      const required = item.productId ? (draft.distribution==='IGUAL' && scope==='shared' ? qty*draft.selectedAgencyIds.length : batchTotals(draft).get(txt(item.productId))||qty) : 0;
+      const note = !hasWarehouse
+        ? '<div class="dspx-stock-note empty"><i class="fas fa-circle-info"></i> Selecciona primero el almacén.</div>'
+        : item.productId
+          ? '<div class="dspx-stock-note '+(required<=stock?'ok':'empty')+'"><i class="fas '+(required<=stock?'fa-circle-check':'fa-triangle-exclamation')+'"></i> Disponible: '+esc(stock)+' · Total lote: '+esc(required)+'</div>'
+          : '<div class="dspx-stock-note"><i class="fas fa-boxes-stacked"></i> Selecciona un producto con existencia.</div>';
+      return '<div class="dspx-batch-product-row" data-batch-item-row="'+esc(item.key)+'" data-scope="'+esc(scope)+'">'+
+        '<div class="dspx-field"><label>Producto '+(index+1)+'</label><select data-batch-item-field="productId" data-scope="'+esc(scope)+'" data-key="'+esc(item.key)+'" '+(!hasWarehouse?'disabled':'')+' required>'+productOptions(item.productId,draft.warehouseId)+'</select>'+note+'</div>'+
+        '<div class="dspx-field"><label>Cantidad</label><input data-batch-item-field="quantity" data-scope="'+esc(scope)+'" data-key="'+esc(item.key)+'" type="number" min="1" step="1" value="'+esc(qty)+'" '+(!item.productId?'disabled':'')+' required></div>'+
+        '<div class="dspx-field dspx-batch-observation"><label>Observación</label><input data-batch-item-field="observations" data-scope="'+esc(scope)+'" data-key="'+esc(item.key)+'" value="'+esc(item.observations)+'" placeholder="Opcional"></div>'+
+        '<button class="dspx-btn danger icon" data-action="batch-remove-item" data-scope="'+esc(scope)+'" data-key="'+esc(item.key)+'" type="button" title="Quitar producto"><i class="fas fa-trash"></i></button>'+
+      '</div>';
+    }).join('');
+  }
+
+  function batchStockSummaryHtml(){
+    const draft = ensureBatchDraft();
+    const totals = batchTotals(draft);
+    if(!draft.warehouseId || !totals.size) return '<div class="dspx-batch-search-empty"><i class="fas fa-boxes-stacked"></i> El resumen aparecerá cuando selecciones almacén, agencias y productos.</div>';
+    return '<div class="dspx-batch-stock">'+Array.from(totals.entries()).map(([productId,requested])=>{
+      const available = availableStock(draft.warehouseId,productId);
+      const ok = requested<=available;
+      return '<div class="dspx-batch-stock-row '+(ok?'ok':'error')+'"><b>'+esc(productLabel(productId))+'</b><span>Disponible: '+esc(available)+'</span><span>Solicitado: '+esc(requested)+'</span><i class="fas '+(ok?'fa-circle-check':'fa-circle-exclamation')+'"></i></div>';
+    }).join('')+'</div>';
+  }
+
+  function multipleDispatchFormHtml(){
+    const draft = ensureBatchDraft();
+    const selectedHtml = draft.selectedAgencyIds.length ? draft.selectedAgencyIds.map((agencyId)=>{
+      const agency = state.maps.agencias.get(txt(agencyId));
+      return '<div class="dspx-batch-agency-chip"><span><b>'+esc(agencyLabel(agencyId))+'</b><small>'+esc(batchAgencyGroupLabel(agency))+'</small></span><button class="dspx-btn danger icon" data-action="batch-remove-agency" data-agency-id="'+esc(agencyId)+'" type="button" title="Quitar agencia"><i class="fas fa-xmark"></i></button></div>';
+    }).join('') : '<div class="dspx-batch-search-empty"><i class="fas fa-building-circle-xmark"></i> Todavía no has agregado agencias.</div>';
+
+    const distributionHtml = draft.distribution==='IGUAL'
+      ? '<div class="dspx-batch-section"><div class="dspx-batch-section-head"><div><h4>Productos para todas las agencias</h4><p>Esta misma distribución se copiará en cada despacho individual.</p></div><button class="dspx-btn secondary" data-action="batch-add-item" data-scope="shared" type="button" '+(!draft.warehouseId?'disabled':'')+'><i class="fas fa-plus"></i> Agregar producto</button></div><div class="dspx-batch-products">'+batchItemRowsHtml(draft.sharedItems,'shared')+'</div></div>'
+      : '<div class="dspx-batch-section"><div class="dspx-batch-section-head"><div><h4>Distribución personalizada por agencia</h4><p>Cada agencia tendrá su propia lista de productos y cantidades.</p></div></div>'+(
+          draft.selectedAgencyIds.length ? draft.selectedAgencyIds.map((agencyId)=>'<details class="dspx-batch-agency-card" open><summary><span>'+esc(agencyLabel(agencyId))+'</span><span>'+esc(ensureBatchAgencyItems(agencyId).length)+' producto(s)</span></summary><div class="dspx-batch-agency-card-body"><div class="dspx-batch-products">'+batchItemRowsHtml(ensureBatchAgencyItems(agencyId),agencyId)+'</div><div class="dspx-actions"><button class="dspx-btn secondary" data-action="batch-add-item" data-scope="'+esc(agencyId)+'" type="button" '+(!draft.warehouseId?'disabled':'')+'><i class="fas fa-plus"></i> Agregar producto</button></div></div></details>').join('') : '<div class="dspx-batch-search-empty"><i class="fas fa-building"></i> Agrega las agencias para configurar sus productos.</div>'
+        )+'</div>';
+
+    return '<div class="dspx-banner"><i class="fas fa-layer-group"></i><div><b>Una operación, varios despachos independientes.</b><br>Cada agencia recibirá su propio código DSP y continuará por Preparación, Salida y Finalización de forma individual.</div></div>'+
+      '<form id="dspxBatchDispatchForm" style="margin-top:14px">'+
+        '<div class="dspx-form-grid">'+
+          '<div class="dspx-field"><label>Almacén de origen</label><select data-batch-field="warehouseId" required>'+warehouseOptions(draft.warehouseId)+'</select></div>'+
+          '<div class="dspx-field"><label>Tipo de distribución</label><select data-batch-field="distribution"><option value="IGUAL"'+(draft.distribution==='IGUAL'?' selected':'')+'>Misma para todas</option><option value="PERSONALIZADA"'+(draft.distribution==='PERSONALIZADA'?' selected':'')+'>Personalizada por agencia</option></select></div>'+
+          '<div class="dspx-field"><label>Descripción del lote</label><input data-batch-field="description" value="'+esc(draft.description)+'" placeholder="Ej.: Distribución de routers"></div>'+
+          '<div class="dspx-field span-2"><label>Motivo</label><input data-batch-field="reason" value="'+esc(draft.reason)+'" placeholder="Motivo general del lote" required></div>'+
+          '<div class="dspx-field"><label>Documento de referencia</label><input data-batch-field="documentReference" value="'+esc(draft.documentReference)+'" placeholder="Factura, solicitud o referencia"></div>'+
+          '<div class="dspx-field full"><label>Observaciones generales</label><textarea data-batch-field="observations" placeholder="Información que se aplicará a todos los despachos">'+esc(draft.observations)+'</textarea></div>'+
+        '</div>'+
+        '<section class="dspx-batch-section"><div class="dspx-batch-section-head"><div><h4>Agencias destino</h4><p>Busca por número, nombre o grupo y agrégalas una por una.</p></div><span class="dspx-batch-count"><i class="fas fa-building"></i> '+esc(draft.selectedAgencyIds.length)+' seleccionada(s)</span></div><div class="dspx-batch-agency-search"><div class="dspx-field"><label>Buscar agencia</label><input data-batch-field="agencySearch" value="'+esc(draft.agencySearch)+'" autocomplete="off" placeholder="Ej.: 0003, Los Mina o Grupo 03"></div><div class="dspx-batch-agency-results" data-role="batch-agency-results">'+batchAgencyResultsHtml()+'</div></div><div class="dspx-batch-selected">'+selectedHtml+'</div></section>'+
+        distributionHtml+
+        '<section class="dspx-batch-section"><div class="dspx-batch-section-head"><div><h4>Validación global del lote</h4><p>Compara la suma de todos los despachos contra la existencia disponible.</p></div></div>'+batchStockSummaryHtml()+'</section>'+
+        '<div class="dspx-actions"><button class="dspx-btn secondary" data-action="reset-batch" type="button"><i class="fas fa-rotate-left"></i> Limpiar lote</button><button class="dspx-btn primary" type="submit"><i class="fas fa-layer-group"></i> Crear lote de despachos</button></div>'+
+      '</form>';
+  }
+
+  function newDispatchFormHtml(){
+    return dispatchModeSwitcherHtml() + (txt(state.creationMode).toLowerCase()==='multiple' ? multipleDispatchFormHtml() : individualDispatchFormHtml());
+  }
+
   function openNewDispatchModal(){
-    openModal('Nuevo despacho','Solicitud formal conectada a rpc_crear_despacho.',newDispatchFormHtml(),{type:'new-dispatch',id:null,busy:false});
+    ensureBatchDraft();
+    if(!['individual','multiple'].includes(txt(state.creationMode).toLowerCase())) state.creationMode='individual';
+    const subtitle = txt(state.creationMode).toLowerCase()==='multiple' ? 'Creación transaccional de un lote con varios despachos a agencias.' : 'Solicitud formal conectada a rpc_crear_despacho.';
+    openModal('Nuevo despacho',subtitle,newDispatchFormHtml(),{type:'new-dispatch',id:null,busy:false});
+    ensureDispatchCreationModeMounted();
     setTimeout(()=>{
+      ensureDispatchCreationModeMounted();
       const firstField = $('dspxModalBody') && $('dspxModalBody').querySelector('select,input,textarea');
       if(firstField) firstField.focus();
     },30);
@@ -40319,6 +40598,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(!state.modal || state.modal.type!=='new-dispatch') return;
     const body = $('dspxModalBody');
     if(body) body.innerHTML = newDispatchFormHtml();
+    ensureDispatchCreationModeMounted();
+    const subtitle = $('dspxModalSubtitle');
+    if(subtitle) subtitle.textContent = txt(state.creationMode).toLowerCase()==='multiple' ? 'Creación transaccional de un lote con varios despachos a agencias.' : 'Solicitud formal conectada a rpc_crear_despacho.';
   }
 
   function renderStateAction(dispatch, compact){
@@ -40394,7 +40676,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function renderHistory(){
     const body = state.data.despachos.map((dispatch) => {
       const progress = dispatchProgress(dispatch);
-      return '<tr><td class="dspx-history-code-cell"><span class="dspx-code">'+esc(dispatch.codigo || dispatch.id)+'</span><span class="dspx-sub">'+esc(fmtDate(dispatch.creado_en || dispatch.fecha_solicitud))+'</span></td><td class="dspx-history-type-cell">'+esc(dispatch.tipo_destino || '-')+'</td><td class="dspx-history-destination-cell">'+esc(destinationLabel(dispatch))+'</td><td class="dspx-history-status-cell">'+statusBadge(dispatch.estado)+'</td><td class="dspx-number-cell"><span class="dspx-count">'+esc(progress.requested)+'</span></td><td class="dspx-number-cell"><span class="dspx-count">'+esc(progress.prepared)+'</span></td><td class="dspx-number-cell"><span class="dspx-count dspx-count-success">'+esc(progress.received)+'</span></td><td class="dspx-history-action-cell"><button class="dspx-btn secondary dspx-open-file-btn" data-action="view-history" data-id="'+esc(dispatch.id)+'" type="button"><i class="fas fa-eye"></i><span>Abrir expediente</span></button></td></tr>';
+      return '<tr><td class="dspx-history-code-cell"><span class="dspx-code">'+esc(dispatch.codigo || dispatch.id)+'</span><span class="dspx-sub">'+esc(fmtDate(dispatch.creado_en || dispatch.fecha_solicitud))+'</span>'+(dispatch.lote_id?'<button class="dspx-lot-ref" data-action="view-batch" data-id="'+esc(dispatch.lote_id)+'" type="button"><i class="fas fa-layer-group"></i> '+esc(lotCode(dispatch.lote_id)||'Ver lote')+'</button>':'')+'</td><td class="dspx-history-type-cell">'+esc(dispatch.tipo_destino || '-')+'</td><td class="dspx-history-destination-cell">'+esc(destinationLabel(dispatch))+'</td><td class="dspx-history-status-cell">'+statusBadge(dispatch.estado)+'</td><td class="dspx-number-cell"><span class="dspx-count">'+esc(progress.requested)+'</span></td><td class="dspx-number-cell"><span class="dspx-count">'+esc(progress.prepared)+'</span></td><td class="dspx-number-cell"><span class="dspx-count dspx-count-success">'+esc(progress.received)+'</span></td><td class="dspx-history-action-cell"><button class="dspx-btn secondary dspx-open-file-btn" data-action="view-history" data-id="'+esc(dispatch.id)+'" type="button"><i class="fas fa-eye"></i><span>Abrir expediente</span></button></td></tr>';
     }).join('');
     return tabPanel('Historial de despachos','Expedientes con artículos, seriales, eventos, movimientos e incidencias.', state.data.despachos.length ? '<div class="dspx-table-wrap dspx-history-wrap"><table class="dspx-table dspx-history-table"><thead><tr><th>Código</th><th>Tipo</th><th>Destino</th><th>Estado</th><th class="dspx-number-heading">Solicitado</th><th class="dspx-number-heading">Preparado</th><th class="dspx-number-heading">Finalizado</th><th class="dspx-action-heading">Acción</th></tr></thead><tbody>'+body+'</tbody></table></div>' : emptyHtml('Todavía no existe historial de despachos.'));
   }
@@ -40461,7 +40743,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         fetchTable('productos',(q)=>q.eq('activo',true).order('nombre',{ascending:true}).limit(5000),true),
         fetchTable('agencias',(q)=>q.eq('activo',true).order('numero',{ascending:true}).limit(3000),true),
         fetchTable('grupos',(q)=>q.eq('activo',true).order('nombre',{ascending:true}).limit(1000),true),
-        fetchTable('perfiles',(q)=>q.eq('activo',true).limit(2500),false)
+        fetchTable('perfiles',(q)=>q.eq('activo',true).limit(2500),false),
+        fetchTable('despacho_lotes',(q)=>q.order('creado_en',{ascending:false}).limit(TABLE_LIMITS.despacho_lotes),false)
       ]);
 
       state.data.despachos = results[0];
@@ -40476,10 +40759,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       state.data.agencias = results[9];
       state.data.grupos = results[10];
       state.data.perfiles = results[11];
+      state.data.lotes = results[12];
 
       rebuildMaps();
       rebuildStockMaps();
       ensureDraft();
+      ensureBatchDraft();
       publishWarehouseState();
       renderWarehouseScreen();
       renderAll();
@@ -40506,6 +40791,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         .on('postgres_changes',{event:'*',schema:'public',table:'despachos'},scheduleRealtimeReload)
         .on('postgres_changes',{event:'*',schema:'public',table:'despacho_eventos'},scheduleRealtimeReload)
         .on('postgres_changes',{event:'*',schema:'public',table:'despacho_incidencias'},scheduleRealtimeReload)
+        .on('postgres_changes',{event:'*',schema:'public',table:'despacho_lotes'},scheduleRealtimeReload)
         .subscribe((status)=>console.info('[LOTEKA Despachos ' + VERSION + '] Realtime:',status));
     }catch(error){
       console.warn('[LOTEKA Despachos ' + VERSION + '] Realtime no disponible:',error);
@@ -40545,6 +40831,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
 
   function draftIsDirty(){
+    if(txt(state.creationMode).toLowerCase()==='multiple') return batchDraftIsDirty();
     const draft = ensureDraft();
     return Boolean(draft.warehouseId || draft.agencyId || draft.groupId || txt(draft.reason) || txt(draft.documentReference) || txt(draft.observations) || draft.items.some((row)=>row.productId || txt(row.observations) || num(row.quantity)!==1));
   }
@@ -40624,6 +40911,27 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     openModal(title,dispatch ? txt(dispatch.codigo) : txt(incident.despacho_id),html,{type:'incident',id:incidentId});
   }
 
+  function renderBatchResultModal(rows){
+    const results = arr(rows);
+    if(!results.length) return;
+    state.lastBatchResult = results;
+    const firstResult = results[0];
+    const list = results.map((row)=>'<div class="dspx-batch-result-item"><span><b>'+esc(row.despacho_codigo||row.despacho_id)+'</b><small class="dspx-sub">'+esc(agencyLabel(row.agencia_id))+'</small></span>'+statusBadge(row.estado)+'</div>').join('');
+    const html = '<div class="dspx-batch-result-hero"><i class="fas fa-circle-check"></i><h3>'+esc(firstResult.lote_codigo||'Lote creado')+'</h3><p>'+esc(results.length)+' despachos independientes creados correctamente</p></div><div class="dspx-batch-result-list">'+list+'</div><div class="dspx-actions"><button class="dspx-btn secondary" data-action="view-batch" data-id="'+esc(firstResult.lote_id)+'" type="button"><i class="fas fa-layer-group"></i> Ver lote</button><button class="dspx-btn primary" data-action="batch-go-preparation" type="button"><i class="fas fa-box-open"></i> Ir a Preparación</button><button class="dspx-btn secondary" data-action="close-modal" type="button">Cerrar</button></div>';
+    openModal('Lote creado correctamente','Todos los despachos quedaron pendientes de preparación.',html,{type:'batch-result',id:firstResult.lote_id,busy:false});
+  }
+
+  function renderBatchLotModal(loteId){
+    const lot = state.maps.lotes && state.maps.lotes.get(txt(loteId));
+    const children = (state.maps.dispatchesByLot && state.maps.dispatchesByLot.get(txt(loteId)) || []).slice().sort((a,b)=>txt(a.codigo).localeCompare(txt(b.codigo)));
+    if(!lot && !children.length){ toast('Lote no disponible','No se encontró información del lote seleccionado.','warning'); return; }
+    const code = txt(lot && lot.codigo) || lotCode(loteId) || 'Lote de despachos';
+    const totalUnits = children.reduce((sum,row)=>sum+dispatchProgress(row).requested,0);
+    const rows = children.map((dispatch)=>'<tr><td><span class="dspx-code">'+esc(dispatch.codigo||dispatch.id)+'</span><span class="dspx-sub">'+esc(fmtDate(dispatch.creado_en||dispatch.fecha_solicitud))+'</span></td><td>'+esc(destinationLabel(dispatch))+'</td><td>'+statusBadge(dispatch.estado)+'</td><td class="dspx-number-cell"><span class="dspx-count">'+esc(dispatchProgress(dispatch).requested)+'</span></td><td><button class="dspx-btn secondary" data-action="view-history" data-id="'+esc(dispatch.id)+'" type="button"><i class="fas fa-eye"></i> Expediente</button></td></tr>').join('');
+    const html = '<div class="dspx-meta-grid"><div class="dspx-meta"><span>Código</span><b>'+esc(code)+'</b></div><div class="dspx-meta"><span>Estado general</span><b>'+esc(lotStatus(children))+'</b></div><div class="dspx-meta"><span>Agencias</span><b>'+esc(children.length || first(lot,['cantidad_destinos'],0))+'</b></div><div class="dspx-meta"><span>Unidades solicitadas</span><b>'+esc(totalUnits)+'</b></div><div class="dspx-meta"><span>Almacén</span><b>'+esc(warehouseLabel(first(lot,['almacen_origen_id'],children[0]&&children[0].almacen_origen_id)))+'</b></div><div class="dspx-meta"><span>Distribución</span><b>'+esc(first(lot,['tipo_distribucion'],'-'))+'</b></div><div class="dspx-meta"><span>Creado por</span><b>'+esc(first(lot,['creado_por_nombre'],'-'))+'</b></div><div class="dspx-meta"><span>Fecha</span><b>'+esc(fmtDate(first(lot,['creado_en'])))+'</b></div></div><section class="dspx-modal-section" style="margin-top:14px"><div class="dspx-modal-section-head"><div><h4>Despachos del lote</h4><span class="dspx-sub">Cada agencia avanza de manera independiente.</span></div></div><div class="dspx-modal-section-body">'+(children.length?'<div class="dspx-table-wrap"><table class="dspx-table"><thead><tr><th>Despacho</th><th>Agencia</th><th>Estado</th><th>Unidades</th><th>Acción</th></tr></thead><tbody>'+rows+'</tbody></table></div>':emptyHtml('Este lote todavía no tiene despachos visibles.'))+'</div></section><div class="dspx-actions"><button class="dspx-btn primary" data-action="batch-go-preparation" type="button"><i class="fas fa-box-open"></i> Ir a Preparación</button><button class="dspx-btn secondary" data-action="close-modal" type="button">Cerrar</button></div>';
+    openModal('Lote · '+code,txt(first(lot,['descripcion','motivo'],'Seguimiento de despachos múltiples')),html,{type:'batch',id:loteId,busy:false});
+  }
+
   function renderHistoryModal(dispatchId){
     const dispatch = state.maps.despachos.get(txt(dispatchId));
     if(!dispatch) return;
@@ -40639,7 +40947,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const movementRows = movements.map((movement)=>'<tr><td>'+esc(movement.tipo_movimiento||movement.tipo||'-')+'</td><td>'+esc(productLabel(movement.producto_id))+'</td><td>'+esc(movement.serial_id ? first(state.maps.equipos.get(txt(movement.serial_id)),['serial','codigo'],movement.serial_id) : '-')+'</td><td>'+esc(first(movement,['origen_nombre','origen_tipo'],'-'))+'</td><td>'+esc(first(movement,['destino_nombre','destino_tipo'],'-'))+'</td><td>'+esc(movement.estado_anterior||'-')+' → '+esc(movement.estado_nuevo||'-')+'</td><td>'+esc(movement.usuario_nombre||movement.creado_por_nombre||'-')+'</td><td>'+esc(fmtDate(movement.creado_en))+'</td></tr>').join('');
     const incidentRows = incidents.map((incident)=>'<tr><td>'+esc(incident.tipo||'-')+'</td><td>'+esc(incident.descripcion||'-')+'</td><td>'+statusBadge(incident.estado)+'</td><td>'+esc(incident.reportado_por_nombre||'-')+'</td><td>'+esc(first(incident,['resolucion'],'-'))+'</td><td>'+esc(incident.resuelto_por_nombre||'-')+'</td></tr>').join('');
 
-    const html = '<div class="dspx-meta-grid"><div class="dspx-meta"><span>Estado</span><b>'+esc(dispatch.estado)+'</b></div><div class="dspx-meta"><span>Origen</span><b>'+esc(warehouseLabel(dispatch.almacen_origen_id))+'</b></div><div class="dspx-meta"><span>Destino</span><b>'+esc(destinationLabel(dispatch))+'</b></div><div class="dspx-meta"><span>Documento</span><b>'+esc(dispatch.documento_referencia||'-')+'</b></div><div class="dspx-meta"><span>Solicitado por</span><b>'+esc(dispatch.solicitado_por_nombre||'-')+'</b></div><div class="dspx-meta"><span>Preparado por</span><b>'+esc(dispatch.preparado_por_nombre||'-')+'</b></div><div class="dspx-meta"><span>Confirmado por</span><b>'+esc(dispatch.confirmado_por_nombre||'-')+'</b></div><div class="dspx-meta"><span>Recibido por</span><b>'+esc(dispatch.recibido_por_nombre||'-')+'</b></div></div>'+
+    const lotReference = dispatch.lote_id ? '<div class="dspx-banner" style="margin-bottom:14px"><i class="fas fa-layer-group"></i><div>Este despacho pertenece al lote <button class="dspx-lot-ref" data-action="view-batch" data-id="'+esc(dispatch.lote_id)+'" type="button">'+esc(lotCode(dispatch.lote_id)||'Ver lote')+'</button>.</div></div>' : '';
+    const html = lotReference + '<div class="dspx-meta-grid"><div class="dspx-meta"><span>Estado</span><b>'+esc(dispatch.estado)+'</b></div><div class="dspx-meta"><span>Origen</span><b>'+esc(warehouseLabel(dispatch.almacen_origen_id))+'</b></div><div class="dspx-meta"><span>Destino</span><b>'+esc(destinationLabel(dispatch))+'</b></div><div class="dspx-meta"><span>Documento</span><b>'+esc(dispatch.documento_referencia||'-')+'</b></div><div class="dspx-meta"><span>Solicitado por</span><b>'+esc(dispatch.solicitado_por_nombre||'-')+'</b></div><div class="dspx-meta"><span>Preparado por</span><b>'+esc(dispatch.preparado_por_nombre||'-')+'</b></div><div class="dspx-meta"><span>Confirmado por</span><b>'+esc(dispatch.confirmado_por_nombre||'-')+'</b></div><div class="dspx-meta"><span>Recibido por</span><b>'+esc(dispatch.recibido_por_nombre||'-')+'</b></div></div>'+
       '<section class="dspx-modal-section" style="margin-top:14px"><div class="dspx-modal-section-head"><h4>Artículos</h4></div><div class="dspx-modal-section-body"><div class="dspx-table-wrap"><table class="dspx-table"><thead><tr><th>Producto</th><th>Solicitado</th><th>Preparado</th><th>Entregado</th><th>Serial</th><th>Observación</th></tr></thead><tbody>'+itemRows+'</tbody></table></div></div></section>'+
       '<section class="dspx-modal-section"><div class="dspx-modal-section-head"><h4>Seriales</h4></div><div class="dspx-modal-section-body">'+(serialRows.length?'<div class="dspx-table-wrap"><table class="dspx-table"><thead><tr><th>Serial</th><th>Estado</th><th>Preparado por</th><th>Recibido por</th><th>Reserva</th><th>Recepción</th></tr></thead><tbody>'+serialBody+'</tbody></table></div>':emptyHtml('Este despacho no tiene seriales asociados.'))+'</div></section>'+
       '<section class="dspx-modal-section"><div class="dspx-modal-section-head"><h4>Eventos</h4></div><div class="dspx-modal-section-body">'+eventHtml+'</div></section>'+
@@ -40661,6 +40970,62 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     try{
       if(action === 'reload'){
         await withBusy(button,'Actualizando',()=>loadAll({silent:false}));
+        return;
+      }
+      if(action === 'set-dispatch-creation-mode'){
+        const mode = txt(button.dataset.mode).toLowerCase();
+        if(!['individual','multiple'].includes(mode)) return;
+        state.creationMode = mode;
+        refreshNewDispatchModal();
+        return;
+      }
+      if(action === 'batch-add-agency'){
+        const draft = ensureBatchDraft();
+        const agencyId = txt(button.dataset.agencyId);
+        if(!uuid(agencyId) || !state.maps.agencias.has(agencyId)){ toast('Agencia inválida','La agencia ya no está disponible.','warning'); return; }
+        if(draft.selectedAgencyIds.includes(agencyId)){ toast('Agencia repetida','Esa agencia ya está dentro del lote.','warning'); return; }
+        draft.selectedAgencyIds.push(agencyId);
+        ensureBatchAgencyItems(agencyId);
+        draft.agencySearch='';
+        refreshNewDispatchModal();
+        return;
+      }
+      if(action === 'batch-remove-agency'){
+        const draft = ensureBatchDraft();
+        const agencyId = txt(button.dataset.agencyId);
+        draft.selectedAgencyIds = draft.selectedAgencyIds.filter((id)=>txt(id)!==agencyId);
+        delete draft.agencyItems[agencyId];
+        refreshNewDispatchModal();
+        return;
+      }
+      if(action === 'batch-add-item'){
+        const scope = txt(button.dataset.scope) || 'shared';
+        batchScopeItems(scope).push(newBatchItem());
+        refreshNewDispatchModal();
+        return;
+      }
+      if(action === 'batch-remove-item'){
+        const scope = txt(button.dataset.scope) || 'shared';
+        const items = batchScopeItems(scope);
+        if(items.length<=1){ toast('Productos','Cada despacho debe conservar al menos un producto.','warning'); return; }
+        const next = items.filter((row)=>row.key!==txt(button.dataset.key));
+        const draft = ensureBatchDraft();
+        if(scope==='shared') draft.sharedItems=next; else draft.agencyItems[scope]=next;
+        refreshNewDispatchModal();
+        return;
+      }
+      if(action === 'reset-batch'){
+        if(confirm('¿Limpiar por completo el lote de despachos?')){ resetBatchDraft(); refreshNewDispatchModal(); }
+        return;
+      }
+      if(action === 'view-batch'){
+        renderBatchLotModal(id);
+        return;
+      }
+      if(action === 'batch-go-preparation'){
+        closeModal(true);
+        state.activeTab='preparacion';
+        renderAll();
         return;
       }
       if(action === 'add-draft-item'){
@@ -40811,6 +41176,29 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     });
   }
 
+  async function submitBatchDispatch(form, submitButton){
+    const draft = ensureBatchDraft();
+    const destinations = validateBatchDraft(draft);
+    await withBusy(submitButton,'Creando lote',async()=>{
+      const data = await callRpc('rpc_crear_lote_despachos_agencias',{
+        p_almacen_origen_id:draft.warehouseId,
+        p_tipo_distribucion:txt(draft.distribution).toUpperCase(),
+        p_motivo:txt(draft.reason),
+        p_observaciones:txt(draft.observations)||null,
+        p_documento_referencia:txt(draft.documentReference)||null,
+        p_descripcion:txt(draft.description)||null,
+        p_destinos:destinations
+      },'CREAR_LOTE_DESPACHOS');
+      const rows = arr(data);
+      if(!rows.length) throw {message:'La RPC no devolvió los despachos creados.'};
+      closeModal(true);
+      resetBatchDraft();
+      await loadAll({silent:true});
+      renderBatchResultModal(rows);
+      toast('Lote creado',(rows[0].lote_codigo||'El lote')+' creó '+rows.length+' despachos independientes.','success');
+    });
+  }
+
   async function submitPartialReception(form, submitButton){
     const dispatchId = txt(form.dataset.dispatchId);
     const dispatch = state.maps.despachos.get(dispatchId);
@@ -40877,6 +41265,45 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     });
   }
 
+  function updateBatchDraftFromElement(element){
+    const draft = ensureBatchDraft();
+    const field = element.dataset.batchField;
+    if(field){
+      const previous = draft[field];
+      draft[field] = element.value;
+      if(field==='agencySearch'){
+        renderBatchAgencyResults();
+        return;
+      }
+      if(field==='warehouseId' && txt(previous)!==txt(draft.warehouseId)){
+        const hadProducts = draft.sharedItems.some((item)=>item.productId) || Object.values(draft.agencyItems).some((items)=>arr(items).some((item)=>item.productId));
+        draft.sharedItems=[newBatchItem()];
+        Object.keys(draft.agencyItems).forEach((agencyId)=>{ draft.agencyItems[agencyId]=[newBatchItem()]; });
+        if(hadProducts) toast('Almacén actualizado','Se limpiaron los productos del lote para evitar inconsistencias.','warning');
+        refreshNewDispatchModal();
+        return;
+      }
+      if(field==='distribution'){
+        draft.distribution=txt(element.value).toUpperCase();
+        refreshNewDispatchModal();
+      }
+      return;
+    }
+    const itemField = element.dataset.batchItemField;
+    if(itemField){
+      const scope = txt(element.dataset.scope)||'shared';
+      const key = txt(element.dataset.key);
+      const item = batchScopeItems(scope).find((row)=>row.key===key);
+      if(!item) return;
+      if(itemField==='quantity') item.quantity=Math.max(1,Math.floor(num(element.value)||1));
+      else item[itemField]=element.value;
+      if(itemField==='productId'){
+        item.quantity=1;
+        refreshNewDispatchModal();
+      }
+    }
+  }
+
   function updateDraftFromElement(element){
     const draft = ensureDraft();
     const field = element.dataset.draftField;
@@ -40917,11 +41344,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   async function handleSubmit(event){
     const form = event.target;
     if(!form || !form.id) return;
-    if(!['dspxNewDispatchForm','dspxPartialReceptionForm','dspxFormalAssignmentForm','dspxIncidentActionForm'].includes(form.id)) return;
+    if(!['dspxNewDispatchForm','dspxBatchDispatchForm','dspxPartialReceptionForm','dspxFormalAssignmentForm','dspxIncidentActionForm'].includes(form.id)) return;
     event.preventDefault();
     const submitButton = form.querySelector('button[type="submit"]');
     try{
       if(form.id==='dspxNewDispatchForm') await submitNewDispatch(form,submitButton);
+      if(form.id==='dspxBatchDispatchForm') await submitBatchDispatch(form,submitButton);
       if(form.id==='dspxPartialReceptionForm') await submitPartialReception(form,submitButton);
       if(form.id==='dspxFormalAssignmentForm') await submitFormalAssignment(form,submitButton);
       if(form.id==='dspxIncidentActionForm') await submitIncidentAction(form,submitButton);
@@ -40946,14 +41374,23 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     });
     root.addEventListener('input',(event)=>{
       const element = event.target;
-      if(element.matches('[data-draft-field],[data-draft-item-field]')) updateDraftFromElement(element);
+      if(element.matches('[data-batch-field],[data-batch-item-field]')) updateBatchDraftFromElement(element);
+      else if(element.matches('[data-draft-field],[data-draft-item-field]')) updateDraftFromElement(element);
     });
     root.addEventListener('change',(event)=>{
       const element = event.target;
-      if(element.matches('[data-draft-field],[data-draft-item-field]')) updateDraftFromElement(element);
+      if(element.matches('[data-batch-field],[data-batch-item-field]')) updateBatchDraftFromElement(element);
+      else if(element.matches('[data-draft-field],[data-draft-item-field]')) updateDraftFromElement(element);
     });
     root.addEventListener('submit',handleSubmit);
     root.addEventListener('keydown',(event)=>{
+      const agencySearch = event.target.closest('[data-batch-field="agencySearch"]');
+      if(agencySearch && event.key === 'Enter'){
+        event.preventDefault();
+        const firstResult = root.querySelector('[data-action="batch-add-agency"]');
+        if(firstResult) firstResult.click();
+        return;
+      }
       const input = event.target.closest('[data-role="serial-input"]');
       if(input && event.key === 'Enter'){
         event.preventDefault();
