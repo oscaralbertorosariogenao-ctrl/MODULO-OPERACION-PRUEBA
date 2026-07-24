@@ -2,6 +2,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import formidable from "formidable";
 import fs from "fs";
 import path from "path";
+import { requireAuthenticatedUser } from "./_auth.js";
 
 export const config = {
   api: {
@@ -71,6 +72,9 @@ function contentTypeToExt(contentType = "") {
   if (ct.includes("webp")) return ".webp";
   if (ct.includes("gif")) return ".gif";
   if (ct.includes("heic")) return ".heic";
+  if (ct.includes("mp4")) return ".mp4";
+  if (ct.includes("webm")) return ".webm";
+  if (ct.includes("quicktime")) return ".mov";
   if (ct.includes("jpeg") || ct.includes("jpg")) return ".jpg";
   return ".jpg";
 }
@@ -117,6 +121,11 @@ export default async function handler(req, res) {
       ok: false,
       message: "Method Not Allowed"
     });
+  }
+
+  const auth = await requireAuthenticatedUser(req);
+  if (!auth.ok) {
+    return sendJson(res, auth.status, { ok: false, message: auth.message });
   }
 
   const missing = [];
@@ -224,8 +233,28 @@ export default async function handler(req, res) {
     if (!buffer || !buffer.length) {
       return sendJson(res, 400, {
         ok: false,
-        message: "No se pudo detectar imagen en el request.",
+        message: "No se pudo detectar archivo en el request.",
         contentType: contentTypeHeader
+      });
+    }
+
+    const maxBytes = 35 * 1024 * 1024;
+    if (buffer.length > maxBytes) {
+      return sendJson(res, 413, {
+        ok: false,
+        message: "El archivo supera el límite de 35 MB."
+      });
+    }
+
+    const allowedTypes = new Set([
+      "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif", "image/heic",
+      "video/mp4", "video/webm", "video/quicktime"
+    ]);
+    const normalizedType = String(fileContentType || "").toLowerCase().split(";")[0].trim();
+    if (!allowedTypes.has(normalizedType)) {
+      return sendJson(res, 415, {
+        ok: false,
+        message: "Tipo de archivo no permitido."
       });
     }
 
