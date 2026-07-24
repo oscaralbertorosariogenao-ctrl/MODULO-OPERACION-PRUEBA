@@ -2,7 +2,7 @@
 
 <html class="ltk-auth-preboot" lang="es">
 <head>
-  <meta name="grupo-ortiz-build" content="2026-07-24-v803-despachos-multiples-integracion-real">
+  <meta name="grupo-ortiz-build" content="2026-07-24-v804-seguridad-sesion-api-pwa">
 <style id="loteka-v59-auth-critical-no-flash">
   /* Bloqueo crítico de primer pintado: evita que se vea el sistema antes de validar sesión. */
   html.ltk-auth-preboot,
@@ -15774,7 +15774,7 @@ window.BackendCero = window.BackendCero || {
       try {
         const response = await fetch('/api/send-push', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await window.lotekaGetApiAuthHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             username: cleanUsername,
             title,
@@ -24451,24 +24451,6 @@ function ltkInitBridge(){
   setTimeout(() => { try { if(typeof ltkHideAutoSyncOverlay === 'function') ltkHideAutoSyncOverlay(); } catch(e){} }, 120);
 }
 window.addEventListener('DOMContentLoaded', ltkInitBridge);
-</script>
-<script id="loteka-v125-pwa-register-safe">
-(function(){
-  'use strict';
-  var host = (location.hostname || '').toLowerCase();
-  var isDev = window.LOTEKA_DEV_MODE || host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || location.protocol === 'file:';
-  if (isDev) {
-    console.log('LOTEKA DEV: Service Worker desactivado en Live Server/local para evitar caché roto.');
-    return;
-  }
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function(){
-      navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
-        .then(function(){ console.log('PWA lista'); })
-        .catch(function(err){ console.error('Error SW', err); });
-    });
-  }
-})();
 </script>
 <div aria-hidden="true" class="ltk-auto-overlay" id="ltkAutoSyncOverlay">
 <div class="ltk-auto-card">
@@ -34377,7 +34359,7 @@ body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,21
     if(!info) return raw;
     const res = await fetch('/api/r2-upload', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await window.lotekaGetApiAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         folder: folder || 'operaciones',
         filename: 'evidencia-' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + info.extension,
@@ -38700,6 +38682,21 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 })();
 </script>
 
+<script id="loteka-v804-api-auth-helper">
+(function(){
+  'use strict';
+  window.lotekaGetApiAuthHeaders = async function(baseHeaders){
+    var client = window.lotekaSupabase || window.supabaseClient || null;
+    if(!client || !client.auth || typeof client.auth.getSession !== 'function'){
+      throw new Error('No hay una sesión autenticada disponible.');
+    }
+    var result = await client.auth.getSession();
+    var token = result && result.data && result.data.session ? result.data.session.access_token : '';
+    if(!token) throw new Error('Tu sesión venció. Inicia sesión nuevamente.');
+    return Object.assign({}, baseHeaders || {}, { Authorization:'Bearer '+token });
+  };
+})();
+</script>
 <script id="loteka-capa7-version-safe-update">
 (function(){
   'use strict';
@@ -38715,7 +38712,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     - Nunca recarga solo. El usuario decide cuándo actualizar.
   */
 
-  var LOTEKA_HTML_VERSION = '2026-07-23-v400-control-despachos-rpc';
+  var LOTEKA_HTML_VERSION = '2026-07-24-v804-seguridad-sesion-api-pwa';
   var VERSION_URL = '/version.json';
   var DISMISSED_KEY = 'loteka_update_dismissed_session_version';
   var CHECK_INTERVAL_MS = 120000;
@@ -39704,7 +39701,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.__lotekaDespachosRpcV410 = true;
 
   const VERSION = 'v803-despachos-multiples-integracion-real';
-  const BUILD = '2026-07-24-v803-despachos-multiples-integracion-real';
+  const BUILD = '2026-07-24-v804-seguridad-sesion-api-pwa';
   window.__GRUPO_ORTIZ_BUILD__ = BUILD;
   document.documentElement.dataset.grupoOrtizBuild = BUILD;
   console.info('[Grupo Ortiz] Build ' + BUILD);
