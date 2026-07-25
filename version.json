@@ -1,10 +1,18 @@
 {
-  "version": "2026-07-24-v804-seguridad-sesion-api-pwa",
-  "name": "v804 · seguridad de sesión, APIs y PWA",
-  "released_at": "2026-07-24",
+  "version": "2026-07-25-v805.1-pwa-scanner",
+  "name": "v805.1 · PWA móvil y escáner de códigos",
+  "released_at": "2026-07-25",
   "html": {
     "index": "index.html",
     "app": "app.html",
     "pantalla": "pantalla.html"
-  }
+  },
+  "changes": [
+    "Manifest móvil dedicado para app.html",
+    "Caché de la arquitectura modular de assets/app",
+    "Instalación guiada para Android e iPhone",
+    "Detección de actualización del service worker",
+    "Corrección de vista negra de cámara",
+    "Lector alternativo ZXing para Safari/iPhone"
+  ]
 }
