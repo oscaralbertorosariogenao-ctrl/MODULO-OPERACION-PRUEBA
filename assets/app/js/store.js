@@ -2,11 +2,11 @@ const initialState = Object.freeze({
   booting: true, session: null, user: null, profile: null, permissions: new Set(), permissionsLoaded: false,
   route: { path: '/login', params: {}, query: new URLSearchParams() },
   connectivity: { online: navigator.onLine, status: navigator.onLine ? 'online' : 'offline', lastSync: null },
-  ui: { loading: false, loadingMessage: '', drawerOpen: false, installPrompt: null },
+  ui: { loading: false, loadingMessage: '', drawerOpen: false, installPrompt: null, pwaSupported: false, pwaStandalone: false, pwaIos: false, pwaInstalled: false, pwaUpdateAvailable: false },
   operations: { items: [], total: 0, page: 0, hasMore: true, loading: false, filters: {}, selected: null, stats: null },
   agencies: { items: [], total: 0, page: 0, hasMore: true, loading: false, filters: {}, selected: null },
   technicians: { items: [], loading: false }, notifications: { items: [], loading: false, real: true },
-  scanner: { active: false, result: null, error: '' }, evidence: { files: [], progress: 0 }, errors: []
+  scanner: { active: false, result: null, error: '', engine: '', cameraLabel: '' }, evidence: { files: [], progress: 0 }, errors: []
 });
 let state = cloneState(initialState);
 const listeners = new Set();
