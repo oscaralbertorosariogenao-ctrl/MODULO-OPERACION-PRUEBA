@@ -4,10 +4,11 @@ import { restoreSession, onAuthChange } from './auth.js';
 import { startRouter, navigate } from './router.js';
 import { startConnectivity } from './connectivity.js';
 import { subscribeTable, clearRealtime } from './realtime.js';
-import { registerPwa, captureInstallPrompt } from './services/pwa-service.js';
+import { setupPwa } from './services/pwa-service.js';
 import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage, ensureAgencyReferenceData, loadAgencyDetail, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
 import { getDraft } from './services/draft-service.js';
 import { renderAgencyMap, destroyMap } from './services/location-service.js';
+import { stopScanner } from './services/scanner-service.js';
 import { can } from './permissions.js';
 import { classifyError, ERROR_TYPES, logError } from './errors.js';
 import { showToast } from './components/toast.js';
@@ -28,9 +29,13 @@ import { attachEventController } from './event-controller.js';
 export class AppController{
   constructor(root){ this.root = root; this.loginState = { error:'', loading:false }; this.operationDraft = {}; this.routeRun = 0; this.cleanup = []; this.realtimeTimers = new Map(); }
   async init(){
-    console.info('[Grupo Ortiz] Build 2026-07-24-v805-app-operaciones-rebuild');
-    this.cleanup.push(startConnectivity(),captureInstallPrompt(),attachEventController(this));
-    registerPwa();
+    console.info('[Grupo Ortiz] Build 2026-07-25-v805.1-pwa-scanner');
+    this.cleanup.push(startConnectivity(),attachEventController(this));
+    const pwaCleanup = await setupPwa({
+      onChange:() => { const state=getState(); if(!(state.route.path === ROUTES.scanner && state.scanner.active)) this.render(); },
+      onUpdateAvailable:() => showToast('Nueva versión disponible','Ve a Perfil y pulsa “Actualizar aplicación”.','info')
+    });
+    this.cleanup.push(pwaCleanup);
     try{
       const restored = await restoreSession();
       if(restored) this.applyAuth(restored);
@@ -48,6 +53,10 @@ export class AppController{
   }
   async handleRoute(route, force = false){
     const run = ++this.routeRun; const state = getState();
+    if(state.route.path === ROUTES.scanner && (route.path !== ROUTES.scanner || force)){
+      await stopScanner();
+      updateSlice('scanner',{active:false,engine:'',cameraLabel:''},'scanner-route-exit');
+    }
     if(!state.session && route.path !== ROUTES.login){ navigate(ROUTES.login,{},null,{replace:true}); return; }
     if(state.session && route.path === ROUTES.login){ navigate(ROUTES.home,{},null,{replace:true}); return; }
     destroyMap(); setState(current => ({...current,route}),`route:${route.path}`); this.render();
@@ -135,5 +144,5 @@ export class AppController{
     if(classified.type === ERROR_TYPES.sessionExpired || classified.type === ERROR_TYPES.sessionInvalid){ this.clearSession(); if(!silent) showToast('Sesión finalizada',classified.message,'warning'); return classified; }
     if(!silent) showToast('No se pudo completar',classified.message,classified.type === ERROR_TYPES.permission ? 'warning' : 'danger'); return classified;
   }
-  destroy(){ this.cleanup.forEach(fn => { try{ fn?.(); }catch{} }); clearRealtime(); destroyMap(); }
+  destroy(){ this.cleanup.forEach(fn => { try{ fn?.(); }catch{} }); stopScanner(); clearRealtime(); destroyMap(); }
 }
