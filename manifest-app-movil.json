@@ -1,25 +1,56 @@
 {
-  "name": "LOTEKA - App Móvil",
-  "short_name": "LOTEKA Móvil",
-  "description": "Aplicación móvil PWA para reportes operacionales LOTEKA / Grupo Ortiz",
-  "start_url": "/app.html",
+  "id": "/app.html",
+  "name": "Grupo Ortiz · Operaciones",
+  "short_name": "GO Operaciones",
+  "description": "Aplicación móvil PWA para la gestión operativa de Grupo Ortiz.",
+  "lang": "es-DO",
+  "dir": "ltr",
+  "start_url": "/app.html#\/home",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0f172a",
-  "theme_color": "#0b5ed7",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#f3f7fb",
+  "theme_color": "#0b3a67",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/assets/app/img/app-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/assets/app/img/app-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/app/img/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Operaciones",
+      "short_name": "Operaciones",
+      "url": "/app.html#\/operations",
+      "icons": [{"src": "/assets/app/img/app-icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "Escanear serial",
+      "short_name": "Escanear",
+      "url": "/app.html#\/scanner",
+      "icons": [{"src": "/assets/app/img/app-icon-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "Agencias",
+      "short_name": "Agencias",
+      "url": "/app.html#\/agencies",
+      "icons": [{"src": "/assets/app/img/app-icon-192.png", "sizes": "192x192", "type": "image/png"}]
     }
   ]
 }
