@@ -8,9 +8,9 @@ import { safeUpdateOperation } from './api/operations-api.js';
 import { findSerial } from './api/equipment-api.js';
 import { markNotificationRead, markAllNotificationsRead, createOperationalNotification } from './api/notifications-api.js';
 import { uploadEvidenceBatch, prepareFiles, revokePreviews } from './services/evidence-service.js';
-import { startScanner, stopScanner, barcodeSupported } from './services/scanner-service.js';
+import { startScanner, stopScanner } from './services/scanner-service.js';
 import { whatsappUrl, getCurrentPosition, centerMap } from './services/location-service.js';
-import { installPwa } from './services/pwa-service.js';
+import { installPwa, activatePwaUpdate } from './services/pwa-service.js';
 import { saveDraft, removeDraft } from './services/draft-service.js';
 import { assignmentDialog, commentDialog, diagnosisDialog, evidenceDialog, finishDialog, whatsappActionsDialog, whatsappCloseDialog, agencyFiltersDialog } from './components/action-dialogs.js';
 import { openOperationFilters } from './components/filter-sheet.js';
@@ -77,7 +77,19 @@ async function handleClick(event,controller){
       case 'open-notification':await openNotification(target.dataset.notificationId);controller.render();break;
       case 'mark-all-notifications-read':await withLoader('Actualizando alertas…',async () => { await markAllNotificationsRead(); await loadNotificationsData(); controller.render(); });break;
       case 'open-alert':openAlert(target.dataset.alertId);break;
-      case 'install-pwa':{const outcome=await installPwa();showToast('Instalación',outcome==='accepted'?'La instalación fue aceptada.':'La instalación no se completó.',outcome==='accepted'?'success':'info');break;}
+      case 'install-pwa':{
+        const result=await installPwa();
+        if(result.outcome === 'accepted') showToast('Aplicación instalada','La instalación fue aceptada.','success');
+        else if(result.outcome === 'installed') showToast('Aplicación instalada','Ya estás usando la versión instalada.','info');
+        else if(result.outcome === 'ios-help') showToast('Instalar en iPhone','Pulsa Compartir en Safari y selecciona “Agregar a pantalla de inicio”.','info');
+        else showToast('Instalación no disponible','Abre la app en Chrome o Safari y vuelve a intentarlo.','info');
+        controller.render();break;
+      }
+      case 'activate-pwa-update':{
+        const activated=await activatePwaUpdate();
+        showToast('Actualización',activated?'Aplicando la versión nueva…':'No hay una actualización pendiente.',activated?'success':'info');
+        break;
+      }
       case 'request-logout':confirmDialog({title:'Cerrar sesión',message:'¿Deseas salir de la aplicación de Operaciones?',confirmLabel:'Cerrar sesión',confirmAction:'confirm-logout',tone:'danger'});break;
       case 'confirm-logout':await withLoader('Cerrando sesión…',async () => { closeModal(); await signOut(); });break;
       case 'create-operation-from-agency':go(ROUTES.createOperation,{}, {agency:target.dataset.agencyId});break;
@@ -195,6 +207,10 @@ async function applyAgencyFilters(data,controller){
 }
 async function searchSerial(serial,controller){
   const value=String(serial || '').trim();if(!value) throw new Error('Escribe un serial.');
+  if(getState().scanner.active){
+    await stopScanner();
+    updateSlice('scanner',{active:false,engine:'',cameraLabel:''},'scanner-search-stop');
+  }
   await withLoader('Consultando serial…',async () => {const result=await findSerial(value);updateSlice('scanner',{result,error:result?'':'No encontramos ese serial.'},'serial-result');controller.render();if(!result) showToast('Serial no encontrado','Verifica el valor e inténtalo otra vez.','warning');});
 }
 async function openAssignment(controller,reassign){
@@ -204,12 +220,34 @@ async function mutateSelected(controller,message,mutation,success){
   requireOnline();const op=selectedOperation();await withLoader(message,async () => {await mutation(op);showToast(success,'','success');await controller.reloadSelectedOperation();});
 }
 async function startCameraScanner(controller){
-  updateSlice('scanner',{active:true,error:'',result:null},'scanner-start');controller.render();
+  updateSlice('scanner',{active:true,error:'',result:null,engine:'',cameraLabel:''},'scanner-start');
+  controller.render();
   const video=document.getElementById('scanner-video');
-  try{const result=await startScanner(video,code => searchSerial(code,controller),error => console.warn('[Grupo Ortiz] Detector de código',error));if(!result.detector) updateSlice('scanner',{error:'La cámara está abierta, pero este navegador no incluye detector de códigos. Usa la entrada manual.'},'scanner-no-detector');controller.render();}
-  catch(error){updateSlice('scanner',{active:false,error:classifyError(error).message},'scanner-error');controller.render();throw error;}
+  try{
+    const result=await startScanner(
+      video,
+      code => searchSerial(code,controller),
+      error => console.warn('[Grupo Ortiz] Detector de código',error)
+    );
+    const message=result.detector
+      ? ''
+      : 'La cámara está activa, pero el detector no pudo cargarse. Puedes escribir el serial manualmente.';
+    updateSlice('scanner',{active:true,error:message,engine:result.engine,cameraLabel:result.cameraLabel},'scanner-ready');
+    const status=document.getElementById('scanner-status');
+    if(status){
+      status.textContent=message || (result.engine === 'zxing' ? `Cámara activa · ${result.cameraLabel}. Lector compatible con iPhone listo.` : `Cámara activa · ${result.cameraLabel}. Detector listo.`);
+    }
+  }catch(error){
+    updateSlice('scanner',{active:false,error:classifyError(error).message,engine:'',cameraLabel:''},'scanner-error');
+    controller.render();
+    throw error;
+  }
 }
-async function stopCameraScanner(controller){await stopScanner();updateSlice('scanner',{active:false},'scanner-stop');controller.render();}
+async function stopCameraScanner(controller){
+  await stopScanner();
+  updateSlice('scanner',{active:false,engine:'',cameraLabel:''},'scanner-stop');
+  controller.render();
+}
 function addEvidenceFiles(fileList,controller,prefix){
   const current=getState().evidence.files; const incoming=prepareFiles(fileList); const map=new Map([...current,...incoming].map(item => [item.id,item]));updateSlice('evidence',{files:[...map.values()]},'evidence-files');
   if(prefix === 'detail') evidenceDialog(selectedOperation(),getState().evidence.files); else controller.render();
