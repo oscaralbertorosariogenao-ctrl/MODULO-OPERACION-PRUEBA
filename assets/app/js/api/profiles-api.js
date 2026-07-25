@@ -1,15 +1,28 @@
 import { TABLES } from '../config.js';
 import { getSupabase } from '../supabase-client.js';
+
+function isActive(profile){
+  const value = profile?.activo;
+  if(value === false || value === 0 || value === '0' || String(value).toLowerCase() === 'false') return false;
+  const status = String(profile?.estado || profile?.estatus || profile?.status || '').toLowerCase();
+  return !/inactiv|bloque|suspend|cancel/.test(status);
+}
+function technicianText(profile){
+  return [
+    profile?.roles?.nombre, profile?.puestos?.nombre, profile?.rol, profile?.rol_nombre,
+    profile?.puesto, profile?.puesto_nombre, profile?.departamento, profile?.cargo,
+    profile?.usuario_login, profile?.nombre_completo, profile?.nombre
+  ].filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
 export async function listTechnicians(){
   const sb = await getSupabase();
-  const fields = 'id,nombre_completo,nombre,correo,email,telefono,telefono_whatsapp,usuario_login,departamento,activo,rol_id,puesto_id,grupo_asignado,roles(nombre),puestos(nombre)';
-  let { data, error } = await sb.from(TABLES.profiles).select(fields).eq('activo',true).limit(1000);
-  if(error){ ({ data, error } = await sb.from(TABLES.profiles).select('*').eq('activo',true).limit(1000)); }
-  if(error) throw error;
-  return (data || []).filter(profile => {
-    const searchable = [profile?.roles?.nombre,profile?.puestos?.nombre,profile?.departamento,profile?.usuario_login,profile?.nombre_completo]
-      .filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    return /tecn/i.test(searchable);
-  });
+  let response = await sb.from(TABLES.profiles).select('*,roles(nombre),puestos(nombre)').limit(2000);
+  if(response.error) response = await sb.from(TABLES.profiles).select('*').limit(2000);
+  if(response.error) throw response.error;
+  const active = (response.data || []).filter(isActive);
+  const technicians = active.filter(profile => /tecn/i.test(technicianText(profile)));
+  return technicians.length ? technicians : active.filter(profile => !/admin|encargado/i.test(technicianText(profile)));
 }
+
 export async function listAssignableProfiles(){ return listTechnicians(); }
