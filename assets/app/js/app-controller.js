@@ -29,7 +29,7 @@ import { attachEventController } from './event-controller.js';
 export class AppController{
   constructor(root){ this.root = root; this.loginState = { error:'', loading:false }; this.operationDraft = {}; this.routeRun = 0; this.cleanup = []; this.realtimeTimers = new Map(); }
   async init(){
-    console.info('[Grupo Ortiz] Build 2026-07-25-v805.1-pwa-scanner');
+    console.info(`[Grupo Ortiz] Build ${APP_BUILD}`);
     this.cleanup.push(startConnectivity(),attachEventController(this));
     const pwaCleanup = await setupPwa({
       onChange:() => { const state=getState(); if(!(state.route.path === ROUTES.scanner && state.scanner.active)) this.render(); },
