@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-27-v805.16-route-permissions",
-  "name": "v805.15 · Protección de rutas y permisos móviles",
+  "version": "2026-07-27-v805.16-recuperacion-carga",
+  "name": "V805.16 · Recuperación de carga y actualización",
   "released_at": "2026-07-27",
   "html": {
     "index": "index.html",
@@ -8,13 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Las rutas móviles validan permisos antes de consultar o renderizar datos",
-    "La app redirige a la primera sección autorizada cuando una ruta está bloqueada",
-    "Los menús, navegación inferior y acciones rápidas ocultan accesos no autorizados",
-    "Las entradas, lotes, transferencias y recepciones usan permisos separados",
-    "Las mutaciones de inventario quedan bloqueadas si la RPC de autorización falta o no confirma acceso",
-    "Los formularios sensibles vuelven a validar el permiso al enviarse",
-    "Las consultas de operaciones e inventario dentro de una agencia solo se ejecutan cuando corresponden",
-    "Realtime solo se suscribe a módulos que el perfil puede consultar"
+    "Corrige el ciclo de actualización causado por versiones desalineadas",
+    "El actualizador ya no elimina el caché activo antes de instalar la versión nueva",
+    "Supabase deja de bloquear el análisis del index y usa cargador con respaldo",
+    "Las dependencias CDN ya no son obligatorias para instalar el Service Worker",
+    "El Service Worker de recuperación toma control automáticamente una sola vez"
   ]
 }
