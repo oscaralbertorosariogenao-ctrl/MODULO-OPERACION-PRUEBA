@@ -2,7 +2,7 @@
 
 <html class="ltk-auth-preboot" lang="es">
 <head>
-  <meta name="grupo-ortiz-build" content="2026-07-27-v805.16-recuperacion-carga">
+  <meta name="grupo-ortiz-build" content="2026-07-27-v805.17-desbloqueo-real">
 <style id="loteka-v59-auth-critical-no-flash">
   /* Bloqueo crítico de primer pintado: evita que se vea el sistema antes de validar sesión. */
   html.ltk-auth-preboot,
@@ -71,6 +71,31 @@
 }
 .agency-date-chip i{color:#0ea5c6;}
 </style>
+<script id="loteka-v80517-boot-watchdog">
+(function(){
+  'use strict';
+  window.__lotekaBootErrors = window.__lotekaBootErrors || [];
+  window.addEventListener('error', function(e){
+    try{ window.__lotekaBootErrors.push(String(e && (e.message || e.error) || 'Error de carga')); }catch(_e){}
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    try{ window.__lotekaBootErrors.push(String(e && e.reason && (e.reason.message || e.reason) || 'Promesa rechazada')); }catch(_e){}
+  });
+  setTimeout(function(){
+    var html = document.documentElement;
+    var body = document.body;
+    var blocked = html.classList.contains('ltk-auth-preboot') || (body && body.classList.contains('ltk-auth-booting'));
+    if(!blocked) return;
+    html.classList.remove('ltk-auth-preboot');
+    if(body) body.classList.remove('ltk-auth-booting');
+    var panel = document.createElement('div');
+    panel.id = 'lotekaEmergencyBoot';
+    panel.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:#071d32;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif';
+    panel.innerHTML = '<div style="width:min(520px,100%);padding:28px;border:1px solid rgba(125,211,252,.28);border-radius:24px;background:#0a3454;box-shadow:0 30px 80px rgba(0,0,0,.35);text-align:center"><div style="width:68px;height:68px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;background:#0ea5c6;font-weight:1000;font-size:22px">GO</div><h2 style="margin:0 0 10px">La carga no terminó correctamente</h2><p style="margin:0;color:#c9e8f7;line-height:1.55">Una dependencia externa o un Service Worker anterior está bloqueando el inicio. Usa la recuperación segura para limpiar únicamente la caché de la aplicación.</p><a href="/recuperar.html?destino=index" style="display:inline-flex;margin-top:20px;padding:12px 18px;border-radius:14px;background:#67e8f9;color:#06233d;text-decoration:none;font-weight:950">Recuperar sistema</a></div>';
+    if(body) body.appendChild(panel);
+  },12000);
+})();
+</script>
 <script id="loteka-v126-hard-dev-clean">
 (function(){
   try{
@@ -101,12 +126,14 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/>
-<meta content="2026-07-24-v802-despachos-multiples-real" name="loteka-build"/>
+<meta content="2026-07-27-v805.17-desbloqueo-real" name="loteka-build"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Grupo Ortiz</title>
-<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" rel="stylesheet"/>
-<link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'"/>
+<noscript><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" rel="stylesheet"/></noscript>
+<link rel="preload" as="style" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" onload="this.onload=null;this.rel='stylesheet'"/>
+<noscript><link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet"/></noscript>
 <style>
 :root{
   --bg:#f3f5f7;
@@ -14376,7 +14403,33 @@ llenarSelectsTransferencia();
 renderEntradas();
 renderTransferencias();
 </script>
-<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script id="loteka-maplibre-nonblocking-loader">
+(function(){
+  'use strict';
+  if(window.maplibregl){ window.__lotekaMapLibreReady = Promise.resolve(window.maplibregl); return; }
+  window.__lotekaMapLibreReady = new Promise(function(resolve){
+    var settled = false;
+    var script = document.createElement('script');
+    var finish = function(value){ if(settled) return; settled = true; resolve(value || null); };
+    script.src = 'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js';
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    script.onload = function(){
+      finish(window.maplibregl || null);
+      try{ window.dispatchEvent(new CustomEvent('loteka:maplibre-ready')); }catch(e){}
+      setTimeout(function(){
+        try{
+          if(typeof window.ensureAgencyMap === 'function') window.ensureAgencyMap();
+          if(typeof window.agencyMapRefresh === 'function' && Array.isArray(window.agencias)) window.agencyMapRefresh(window.agencias,{fit:false});
+        }catch(e){}
+      },80);
+    };
+    script.onerror = function(){ console.warn('[LOTEKA] MapLibre no disponible; el resto del sistema continuará funcionando.'); finish(null); };
+    document.head.appendChild(script);
+    setTimeout(function(){ finish(window.maplibregl || null); },8000);
+  });
+})();
+</script>
 <script>
 /* Motor local temporal: mantiene el flujo del sistema mientras se conecta el backend definitivo. */
 window.BackendCero = window.BackendCero || {
@@ -25535,7 +25588,7 @@ window.addEventListener('DOMContentLoaded', ltkInitBridge);
 </script>
 <script id="loteka-menu-refresh-cache-fix-js">
 (function(){
-  const BUILD = '2026-05-08-v59-grupo01-agencias-tipos-v1';
+  const BUILD = '2026-07-27-v805.17-desbloqueo-real';
 
   function safeInvalidateMap(){
     try { if (window.agenciasMapInstance && typeof window.agenciasMapInstance.invalidateSize === 'function') window.agenciasMapInstance.invalidateSize(true); } catch(e){}
@@ -25594,10 +25647,8 @@ window.addEventListener('DOMContentLoaded', ltkInitBridge);
   async function setupAutoCache(){
     try {
       const previous = localStorage.getItem('loteka-build-version');
-      if(previous && previous !== BUILD && window.caches){
-        const keys = await caches.keys();
-        await Promise.all(keys.filter(k => /loteka|pwa|cache/i.test(k)).map(k => caches.delete(k)));
-      }
+      // V805.17: nunca borrar cachés durante el arranque normal.
+      // La limpieza se realiza únicamente desde /recuperar.html cuando el usuario la solicita.
       localStorage.setItem('loteka-build-version', BUILD);
     } catch(e){}
     try {
@@ -26926,7 +26977,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
 .ltk-access-denied-toast.is-visible{display:block;}
 @media(max-width:980px){.ltk-auth-shell{grid-template-columns:1fr;min-height:auto;max-width:520px;}.ltk-auth-visual{display:none;}.ltk-auth-panel{padding:34px 26px;}.ltk-auth-screen{padding:18px;}.ltk-auth-head h2{font-size:27px;}.loteka-topbar-logout{display:none!important;}}
 </style>
-<script src="./assets/app/js/vendor/supabase-loader.js" defer></script>
+<script src="./assets/app/js/vendor/supabase-loader.js?v=80517" defer></script>
 <script id="loteka-v86-auth-permissions-js">
 (function(){
   'use strict';
@@ -38733,7 +38784,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     - Nunca recarga solo. El usuario decide cuándo actualizar.
   */
 
-  var LOTEKA_HTML_VERSION = '2026-07-27-v805.16-recuperacion-carga';
+  var LOTEKA_HTML_VERSION = '2026-07-27-v805.17-desbloqueo-real';
   var VERSION_URL = '/version.json';
   var DISMISSED_KEY = 'loteka_update_dismissed_session_version';
   var CHECK_INTERVAL_MS = 120000;
@@ -38933,7 +38984,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     if(!('serviceWorker' in navigator)) return;
 
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('/service-worker.js', { scope:'/' })
+      navigator.serviceWorker.register('/service-worker.js', { scope:'/', updateViaCache:'none' })
         .then(function(reg){
           try{ reg.update(); }catch(e){}
 
@@ -39760,7 +39811,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.__lotekaDespachosRpcV410 = true;
 
   const VERSION = 'v803-despachos-multiples-integracion-real';
-  const BUILD = '2026-07-27-v805.16-recuperacion-carga';
+  const BUILD = '2026-07-27-v805.17-desbloqueo-real';
   window.__GRUPO_ORTIZ_BUILD__ = BUILD;
   document.documentElement.dataset.grupoOrtizBuild = BUILD;
   console.info('[Grupo Ortiz] Build ' + BUILD);
