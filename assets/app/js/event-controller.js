@@ -5,10 +5,12 @@ import { signIn, signOut } from './auth.js';
 import { loadOperationsPage, loadAgenciesPage, ensureAgencyReferenceData, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
 import { createOperation, assignOperation, reassignOperation, startOperation, addComment, addDiagnosis, addEvidence, finishOperation, closeByWhatsApp, normalizeOperation } from './services/operations-service.js';
 import { safeUpdateOperation } from './api/operations-api.js';
-import { findSerial } from './api/equipment-api.js';
+import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, registerInventoryEntry, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
 import { markNotificationRead, markAllNotificationsRead, createOperationalNotification } from './api/notifications-api.js';
 import { uploadEvidenceBatch, prepareFiles, revokePreviews } from './services/evidence-service.js';
-import { startScanner, stopScanner } from './services/scanner-service.js';
+import { startScanner, stopScanner, switchScannerCamera, toggleScannerTorch } from './services/scanner-service.js';
+import { validateScannerValue, addRecentScan, createBatchState, addBatchValue, removeBatchValue, signalScannerFeedback } from './services/scanner-inventory-service.js';
+import { openScannerResultSheet, openScannerEntryDialog, openScannerTransferDialog, openScannerReceiveDialog, openScannerIncidentDialog, openScannerHistoryDialog } from './components/scanner-inventory-dialogs.js';
 import { whatsappUrl, getCurrentPosition, centerMap } from './services/location-service.js';
 import { installPwa, activatePwaUpdate } from './services/pwa-service.js';
 import { saveDraft, removeDraft } from './services/draft-service.js';
@@ -73,6 +75,22 @@ async function handleClick(event,controller){
       case 'send-whatsapp-template':openWhatsAppTemplate(target);break;
       case 'start-scanner':await startCameraScanner(controller);break;
       case 'stop-scanner':await stopCameraScanner(controller);break;
+      case 'scanner-toggle-torch':await toggleCameraTorch(controller);break;
+      case 'scanner-switch-camera':await switchCamera(controller);break;
+      case 'scanner-open-result':openCurrentScannerResult(controller);break;
+      case 'scanner-scan-again':await scanAgain(controller);break;
+      case 'scanner-open-entry':await openScannerEntryFlow(controller,false);break;
+      case 'scanner-open-batch-entry':await openScannerEntryFlow(controller,true);break;
+      case 'scanner-open-history':openCurrentScannerHistory();break;
+      case 'scanner-open-transfer':await openScannerTransferFlow(controller);break;
+      case 'scanner-open-receive':openScannerReceiveFlow(controller);break;
+      case 'scanner-open-receipt-incident':openScannerIncidentFlow(controller);break;
+      case 'scanner-pause-batch':await pauseScannerBatch(controller);break;
+      case 'scanner-resume-batch':await resumeScannerBatch(controller);break;
+      case 'scanner-cancel-batch':await cancelScannerBatch(controller);break;
+      case 'scanner-remove-batch-serial':removeScannerBatchSerial(target.dataset.serial,controller);break;
+      case 'scanner-confirm-batch':await confirmScannerBatch(controller);break;
+      case 'scanner-repeat-recent':await processScannerValue(target.dataset.value,controller,{source:'recent'});break;
       case 'remove-evidence-file':removeEvidenceFile(target.dataset.fileId,target.dataset.prefix,controller);break;
       case 'open-notification':await openNotification(target.dataset.notificationId);controller.render();break;
       case 'mark-all-notifications-read':await withLoader('Actualizando alertas…',async () => { await markAllNotificationsRead(); await loadNotificationsData(); controller.render(); });break;
@@ -109,7 +127,12 @@ async function handleSubmit(event,controller){
     switch(name){
       case 'login':await submitLogin(data,controller);break;
       case 'create-operation':await submitCreateOperation(data,controller);break;
-      case 'serial-search':await searchSerial(data.serial,controller);break;
+      case 'serial-search':await processScannerValue(data.serial,controller,{source:'manual'});break;
+      case 'scanner-entry':await submitScannerEntry(data,controller);break;
+      case 'scanner-batch-setup':await submitScannerBatchSetup(data,controller);break;
+      case 'scanner-transfer':await submitScannerTransfer(data,controller);break;
+      case 'scanner-receive':await submitScannerReceive(data,controller);break;
+      case 'scanner-receipt-incident':await submitScannerReceiptIncident(data,controller);break;
       case 'assign-operation':await submitAssignment(data,controller,false);break;
       case 'reassign-operation':await submitAssignment(data,controller,true);break;
       case 'add-comment':await submitComment(data,controller);break;
@@ -131,6 +154,7 @@ function handleInput(event,controller){
       if(action === 'operations-search'){ updateSlice('operations',current => ({filters:{...current.filters,search:event.target.value.trim()}}),'operations-search');await loadOperationsPage({reset:true});controller.render(); }
       if(action === 'agencies-search'){ updateSlice('agencies',current => ({filters:{...current.filters,search:event.target.value.trim()}}),'agencies-search');await loadAgenciesPage({reset:true});controller.render(); }
       if(action === 'technicians-search'){ updateSlice('technicians',{search:event.target.value.trim()},'technicians-search');controller.render(); }
+      if(action === 'scanner-product-filter') filterScannerProducts(event.target);
     }catch(error){ controller.handleError(`Búsqueda ${action}`,error); }
   },420));
 }
@@ -139,6 +163,7 @@ async function handleChange(event,controller){
   if(event.target.dataset.changeAction === 'map-group-filter'){
     const group=event.target.value; const query=new URLSearchParams(); if(group) query.set('group',group); navigate(ROUTES.map,{},query,{replace:true});
   }
+  if(event.target.matches('[data-scanner-destination-type]')) populateScannerDestinations(event.target);
 }
 function handleKeydown(event,controller){
   trapModalFocus(event);
@@ -205,48 +230,291 @@ async function applyOperationFilters(data,controller){
 async function applyAgencyFilters(data,controller){
   closeModal(); updateSlice('agencies',{filters:{...getState().agencies.filters,...data}},'agency-filters');await loadAgenciesPage({reset:true});controller.render();
 }
-async function searchSerial(serial,controller){
-  const value=String(serial || '').trim();if(!value) throw new Error('Escribe un serial.');
-  if(getState().scanner.active){
-    await stopScanner();
-    updateSlice('scanner',{active:false,engine:'',cameraLabel:''},'scanner-search-stop');
+async function processScannerValue(value,controller,{source='manual'} = {}){
+  const validation=validateScannerValue(value);
+  if(!validation.valid) throw Object.assign(new Error(validation.message),{code:'VALIDATION'});
+  const scanner=getState().scanner;
+  if(scanner.batch?.active){
+    if(scanner.batch.paused) throw new Error('El lote está pausado. Pulsa Reanudar para continuar.');
+    updateSlice('scanner',{processing:true,status:'processing',error:''},'scanner-batch-processing');updateScannerStatusDom('Validando serial para el lote…');
+    try{
+      const online=navigator.onLine;
+      const existing=online ? await findSerial(validation.normalizedValue) : null;
+      const outcome=addBatchValue(getState().scanner.batch,validation.normalizedValue,Boolean(existing));
+      const nextBatch=outcome.added && !online ? {...outcome.batch,unverified:[...new Set([...(outcome.batch.unverified || []),validation.normalizedValue])]} : outcome.batch;
+      updateSlice('scanner',{batch:nextBatch,processing:false,status:'batch-entry',rawValue:validation.rawValue,normalizedValue:validation.normalizedValue,recentScans:addRecentScan(getState().scanner.recentScans,{kind:existing?'equipment':'unknown',rawValue:validation.rawValue,normalizedValue:validation.normalizedValue,equipment:existing})},'scanner-batch-value');
+      signalScannerFeedback(outcome.added?'success':'warning');
+      if(!outcome.added) showToast(existing ? 'Serial ya registrado' : 'Serial repetido',outcome.message,'warning');
+      updateScannerBatchDom(nextBatch);updateScannerStatusDom(outcome.added?`${validation.normalizedValue} agregado al lote${online?'':' · pendiente de validar'}.`:outcome.message);saveDraft('scanner-batch-entry',nextBatch).catch(() => null);
+      return;
+    }catch(error){updateSlice('scanner',{processing:false,status:'batch-entry',error:classifyError(error).message},'scanner-batch-error');updateScannerStatusDom(classifyError(error).message);throw error;}
   }
-  await withLoader('Consultando serial…',async () => {const result=await findSerial(value);updateSlice('scanner',{result,error:result?'':'No encontramos ese serial.'},'serial-result');controller.render();if(!result) showToast('Serial no encontrado','Verifica el valor e inténtalo otra vez.','warning');});
+
+  if(scanner.active && source !== 'camera') await stopCameraScanner(controller,{render:false});
+  updateSlice('scanner',{processing:true,status:'processing',error:'',rawValue:validation.rawValue,normalizedValue:validation.normalizedValue},'scanner-lookup-start');controller.render();
+  try{
+    const result=await lookupScannerCode(validation.normalizedValue);
+    updateSlice('scanner',{result,processing:false,status:'result',mode:'lookup',active:false,cameraActive:false,engine:'',cameraLabel:'',torchEnabled:false,torchSupported:false,recentScans:addRecentScan(getState().scanner.recentScans,result)},'scanner-lookup-result');
+    signalScannerFeedback(result.kind === 'invalid' ? 'warning' : result.kind === 'unknown' ? 'warning' : 'success');
+    controller.render();
+    openScannerResultSheet(result,{canMutate:controller.can('scanner.entry')});
+  }catch(error){
+    const classified=classifyError(error);
+    updateSlice('scanner',{processing:false,status:'error',active:false,cameraActive:false,error:classified.message},'scanner-lookup-error');
+    signalScannerFeedback('warning');controller.render();throw error;
+  }
 }
-async function openAssignment(controller,reassign){
-  requireAction(controller,reassign?'operations.reassign':'operations.assign'); if(!getState().technicians.items.length) await loadTechniciansData();assignmentDialog(selectedOperation(),getState().technicians.items,{reassign});
+
+async function loadScannerCatalogs(){
+  const cached=getState().scanner.catalogs || {};
+  if(cached.loadedAt && Date.now() - Number(cached.loadedAt) < 60000 && cached.products?.length && cached.warehouses?.length) return cached;
+  requireOnline();
+  const [products,warehouses,agencies]=await Promise.all([listActiveProducts(),listActiveWarehouses(),listActiveAgencies()]);
+  const catalogs={products,warehouses,agencies,loadedAt:Date.now()};
+  updateSlice('scanner',{catalogs},'scanner-catalogs');
+  return catalogs;
 }
-async function mutateSelected(controller,message,mutation,success){
-  requireOnline();const op=selectedOperation();await withLoader(message,async () => {await mutation(op);showToast(success,'','success');await controller.reloadSelectedOperation();});
+
+function openCurrentScannerResult(controller){
+  const result=getState().scanner.result;
+  if(!result) throw new Error('Primero escanea o escribe un código.');
+  openScannerResultSheet(result,{canMutate:controller.can('scanner.entry')});
 }
+
+async function scanAgain(controller){
+  closeModal();
+  updateSlice('scanner',{result:null,error:'',status:'idle',rawValue:'',normalizedValue:''},'scanner-scan-again');
+  controller.render();
+  await startCameraScanner(controller);
+}
+
+async function openScannerEntryFlow(controller,batch){
+  requireAction(controller,batch?'scanner.batchEntry':'scanner.entry');
+  const result=getState().scanner.result || {kind:'unknown',normalizedValue:''};
+  if(!batch && result.kind === 'equipment') throw new Error('El serial ya existe; no puede registrarse como entrada nueva.');
+  const catalogs=await withLoader('Cargando inventario…',loadScannerCatalogs);
+  updateSlice('scanner',{mode:batch?'batch-entry':'single-entry'},'scanner-entry-open');
+  openScannerEntryDialog({result,products:catalogs.products,warehouses:catalogs.warehouses,batch});
+}
+
+async function submitScannerEntry(data,controller){
+  requireOnline();requireAction(controller,'scanner.entry');
+  if(getState().scanner.processing) return;
+  const validation=validateScannerValue(data.serial);
+  if(!validation.valid) throw Object.assign(new Error(validation.message),{code:'VALIDATION'});
+  updateSlice('scanner',{processing:true},'scanner-entry-submit');
+  try{
+    await withLoader('Registrando entrada…',() => registerInventoryEntry({...data,serials:[validation.normalizedValue]}));
+    closeModal();showToast('Entrada registrada',`${validation.normalizedValue} fue recibido correctamente en inventario.`,'success',7000);
+    await processScannerValue(validation.normalizedValue,controller,{source:'entry'});
+  }finally{updateSlice('scanner',{processing:false},'scanner-entry-finish');}
+}
+
+async function submitScannerBatchSetup(data,controller){
+  requireAction(controller,'scanner.batchEntry');
+  const catalogs=getState().scanner.catalogs || {};
+  const product=(catalogs.products || []).find(row => String(row.id) === String(data.productId));
+  const warehouse=(catalogs.warehouses || []).find(row => String(row.id) === String(data.warehouseId));
+  if(!product || product.activo === false) throw new Error('Selecciona un producto activo.');
+  if(!warehouse || warehouse.activo === false) throw new Error('Selecciona un almacén activo.');
+  const batch=createBatchState({...data,product,warehouse,active:true,paused:false});
+  closeModal();updateSlice('scanner',{mode:'batch-entry',status:'batch-entry',batch,result:null,error:''},'scanner-batch-start');await saveDraft('scanner-batch-entry',batch).catch(() => null);controller.render();
+  try{await startCameraScanner(controller);}catch(error){showToast('Cámara no disponible','El lote quedó preparado. Puedes agregar los seriales manualmente.','warning',7000);}
+}
+
+async function confirmScannerBatch(controller){
+  requireOnline();requireAction(controller,'scanner.batchEntry');
+  const batch=getState().scanner.batch;
+  if(!batch?.active || !batch.serials?.length) throw new Error('Agrega por lo menos un serial al lote.');
+  if(batch.invalid?.length) throw new Error('Elimina los seriales rechazados antes de confirmar.');
+  const duplicates=[];for(const serial of batch.serials){if(await findSerial(serial)) duplicates.push(serial);}
+  if(duplicates.length){const invalid=[...(batch.invalid || []),...duplicates.map(serial=>({serial,reason:'Ya existe en inventario'}))];const revised={...batch,invalid,unverified:[]};updateSlice('scanner',{batch:revised},'scanner-batch-revalidate');updateScannerBatchDom(revised);await saveDraft('scanner-batch-entry',revised).catch(()=>null);throw new Error(`No se puede confirmar: ${duplicates.join(', ')} ya existe en inventario.`);}
+  if(getState().scanner.active) await stopCameraScanner(controller,{render:false});
+  updateSlice('scanner',{processing:true},'scanner-batch-submit');
+  try{
+    await withLoader(`Registrando ${batch.serials.length} seriales…`,() => registerInventoryEntry({
+      warehouseId:batch.warehouseId,productId:batch.productId,supplier:batch.supplier,date:batch.date,reference:batch.reference,physicalCondition:batch.physicalCondition,motive:batch.motive,observations:batch.observations,serials:batch.serials
+    }));
+    const first=batch.serials[0];
+    updateSlice('scanner',{batch:null,mode:'lookup',status:'idle',processing:false},'scanner-batch-success');await removeDraft('scanner-batch-entry').catch(() => null);
+    showToast('Lote registrado',`${batch.serials.length} seriales fueron creados en una sola transacción.`,'success',8000);
+    await processScannerValue(first,controller,{source:'batch'});
+  }finally{updateSlice('scanner',{processing:false},'scanner-batch-finish');}
+}
+
+function removeScannerBatchSerial(serial,controller){
+  const batch=getState().scanner.batch;if(!batch) return;
+  const next=removeBatchValue(batch,serial);updateSlice('scanner',{batch:next},'scanner-batch-remove');updateScannerBatchDom(next);saveDraft('scanner-batch-entry',next).catch(() => null);
+}
+
+async function pauseScannerBatch(controller){
+  const batch=getState().scanner.batch;if(!batch?.active) return;
+  await stopCameraScanner(controller,{render:false});
+  updateSlice('scanner',{batch:{...batch,paused:true},active:false,cameraActive:false,status:'batch-entry'},'scanner-batch-pause');controller.render();
+}
+
+async function resumeScannerBatch(controller){
+  const batch=getState().scanner.batch;if(!batch?.active) return;
+  updateSlice('scanner',{batch:{...batch,paused:false},error:''},'scanner-batch-resume');controller.render();try{await startCameraScanner(controller);}catch(error){showToast('Cámara no disponible','Continúa agregando seriales manualmente.','warning');}
+}
+
+async function cancelScannerBatch(controller){
+  if(getState().scanner.active) await stopCameraScanner(controller,{render:false});
+  updateSlice('scanner',{batch:null,mode:'lookup',status:'idle',result:null,error:'',active:false,cameraActive:false},'scanner-batch-cancel');await removeDraft('scanner-batch-entry').catch(() => null);controller.render();
+}
+
+function openCurrentScannerHistory(){
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment) throw new Error('No hay un serial encontrado para consultar.');
+  openScannerHistoryDialog(equipment);
+}
+
+async function openScannerTransferFlow(controller){
+  requireAction(controller,'scanner.transfer');
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment?.inventoryContext?.canTransfer) throw new Error(equipment?.inventoryContext?.blockedReasons?.[0] || 'Este equipo no puede transferirse ahora.');
+  const catalogs=await withLoader('Cargando destinos…',loadScannerCatalogs);
+  updateSlice('scanner',{mode:'send'},'scanner-transfer-open');
+  openScannerTransferDialog({equipment,warehouses:catalogs.warehouses,agencies:catalogs.agencies});
+}
+
+async function submitScannerTransfer(data,controller){
+  requireOnline();requireAction(controller,'scanner.transfer');
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment) throw new Error('Vuelve a consultar el serial.');
+  await withLoader('Registrando transferencia…',() => transferInventorySerial({equipment,...data}));
+  closeModal();showToast('Transferencia registrada',`${equipment.serial} fue enviado al destino seleccionado.`,'success',7000);
+  await processScannerValue(equipment.serial,controller,{source:'transfer'});
+}
+
+function openScannerReceiveFlow(controller){
+  requireAction(controller,'scanner.receive');
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment?.inventoryContext?.canReceive) throw new Error('Este serial no tiene una recepción pendiente.');
+  updateSlice('scanner',{mode:'receive'},'scanner-receive-open');
+  openScannerReceiveDialog(equipment);
+}
+
+async function submitScannerReceive(data,controller){
+  requireOnline();requireAction(controller,'scanner.receive');
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment) throw new Error('Vuelve a consultar el serial.');
+  await withLoader('Confirmando recepción…',() => receivePendingSerial({equipment,observations:data.observations}));
+  closeModal();showToast('Recepción confirmada',`${equipment.serial} fue recibido correctamente.`,'success',7000);
+  await processScannerValue(equipment.serial,controller,{source:'receive'});
+}
+
+function openScannerIncidentFlow(controller){
+  requireAction(controller,'scanner.receive');
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment?.pendingReceipt) throw new Error('Este serial no tiene una recepción pendiente.');
+  updateSlice('scanner',{mode:'receive'},'scanner-incident-open');
+  closeModal();openScannerIncidentDialog(equipment);
+}
+
+async function submitScannerReceiptIncident(data,controller){
+  requireOnline();requireAction(controller,'scanner.receive');
+  const equipment=getState().scanner.result?.equipment;
+  if(!equipment) throw new Error('Vuelve a consultar el serial.');
+  await withLoader('Registrando incidencia…',() => reportReceiptIncident({equipment,...data}));
+  closeModal();showToast('Incidencia registrada','La ubicación no fue cambiada y el movimiento quedó pendiente de revisión.','warning',8000);
+  await processScannerValue(equipment.serial,controller,{source:'incident'});
+}
+
+function filterScannerProducts(input){
+  const form=input.closest('form');const select=form?.querySelector('[data-scanner-product-select]');if(!select) return;
+  const term=String(input.value || '').trim().toLowerCase();
+  for(const row of [...select.options]){if(!row.value) continue;row.hidden=Boolean(term) && !String(row.textContent || '').toLowerCase().includes(term);}
+}
+
+function populateScannerDestinations(typeSelect){
+  const form=typeSelect.closest('form');const select=form?.querySelector('[data-scanner-destination-select]');if(!select) return;
+  const type=String(typeSelect.value || '').toUpperCase();
+  const selector=type === 'ALMACEN' ? '[data-scanner-warehouses]' : type === 'AGENCIA' ? '[data-scanner-agencies]' : '';
+  let rows=[];
+  if(selector){try{rows=JSON.parse(form.querySelector(selector)?.textContent || '[]');}catch{rows=[];}}
+  select.replaceChildren();
+  const initial=document.createElement('option');initial.value='';initial.textContent=rows.length?'Selecciona un destino':'Sin destinos disponibles';initial.selected=true;select.append(initial);
+  for(const row of rows){const option=document.createElement('option');option.value=row.id;option.textContent=row.label;select.append(option);}
+}
+
 async function startCameraScanner(controller){
-  updateSlice('scanner',{active:true,error:'',result:null,engine:'',cameraLabel:''},'scanner-start');
+  const batch=getState().scanner.batch;
+  updateSlice('scanner',{active:true,cameraActive:true,error:'',result:batch?.active?getState().scanner.result:null,engine:'',cameraLabel:'',processing:false,status:batch?.active?'batch-entry':'scanning'},'scanner-start');
   controller.render();
   const video=document.getElementById('scanner-video');
   try{
     const result=await startScanner(
       video,
-      code => searchSerial(code,controller),
-      error => console.warn('[Grupo Ortiz] Detector de código',error)
+      code => processScannerValue(code,controller,{source:'camera'}),
+      error => console.warn('[Grupo Ortiz] Detector de código',error),
+      {continuous:Boolean(batch?.active),duplicateWindow:1800}
     );
-    const message=result.detector
-      ? ''
-      : 'La cámara está activa, pero el detector no pudo cargarse. Puedes escribir el serial manualmente.';
-    updateSlice('scanner',{active:true,error:message,engine:result.engine,cameraLabel:result.cameraLabel},'scanner-ready');
+    const message=result.detector?'':'La cámara está activa, pero el detector no pudo cargarse. Puedes escribir el serial manualmente.';
+    updateSlice('scanner',{active:true,cameraActive:true,error:message,engine:result.engine,cameraLabel:result.label || result.cameraLabel || '',torchSupported:Boolean(result.torchSupported),torchEnabled:false,cameraCount:Number(result.cameraCount || 1),status:batch?.active?'batch-entry':'scanning'},'scanner-ready');
     const status=document.getElementById('scanner-status');
-    if(status){
-      status.textContent=message || (result.engine === 'zxing' ? `Cámara activa · ${result.cameraLabel}. Lector compatible con iPhone listo.` : `Cámara activa · ${result.cameraLabel}. Detector listo.`);
-    }
+    if(status) status.textContent=message || `Cámara activa · ${result.label || result.cameraLabel || 'Cámara'}. Detector listo.`;
   }catch(error){
-    updateSlice('scanner',{active:false,error:classifyError(error).message,engine:'',cameraLabel:''},'scanner-error');
-    controller.render();
-    throw error;
+    updateSlice('scanner',{active:false,cameraActive:false,error:classifyError(error).message,engine:'',cameraLabel:'',torchEnabled:false,torchSupported:false,status:'error'},'scanner-error');
+    controller.render();throw error;
   }
 }
-async function stopCameraScanner(controller){
+
+async function stopCameraScanner(controller,{render=true} = {}){
   await stopScanner();
-  updateSlice('scanner',{active:false,engine:'',cameraLabel:''},'scanner-stop');
-  controller.render();
+  updateSlice('scanner',{active:false,cameraActive:false,engine:'',cameraLabel:'',torchEnabled:false,torchSupported:false,status:getState().scanner.batch?.active?'batch-entry':'idle'},'scanner-stop');
+  if(render) controller.render();
+}
+
+async function toggleCameraTorch(controller){
+  const enabled=await toggleScannerTorch();
+  updateSlice('scanner',{torchEnabled:enabled},'scanner-torch');updateScannerCameraControlsDom();
+}
+
+async function switchCamera(controller){
+  const video=document.getElementById('scanner-video');if(!video) throw new Error('Abre la cámara antes de cambiarla.');
+  const result=await switchScannerCamera(video);
+  updateSlice('scanner',{active:true,cameraActive:true,engine:result.engine,cameraLabel:result.label || result.cameraLabel || '',torchSupported:Boolean(result.torchSupported),torchEnabled:false,cameraCount:Number(result.cameraCount || getState().scanner.cameraCount || 1)},'scanner-camera-switch');
+  updateScannerCameraControlsDom();updateScannerStatusDom(`Cámara activa · ${result.label || result.cameraLabel || 'Cámara'}. Detector listo.`);
+}
+
+function updateScannerBatchDom(batch){
+  const count=document.querySelector('[data-scanner-batch-count]');if(count) count.textContent=String(batch?.serials?.length || 0);
+  const list=document.querySelector('[data-scanner-batch-list]');
+  if(list){
+    list.replaceChildren();
+    if(batch?.serials?.length){
+      for(const serial of batch.serials){
+        const row=document.createElement('div');row.className='scanner-batch-item';
+        const code=document.createElement('code');code.textContent=serial;
+        const button=document.createElement('button');button.className='icon-btn';button.type='button';button.dataset.action='scanner-remove-batch-serial';button.dataset.serial=serial;button.setAttribute('aria-label',`Quitar ${serial}`);button.textContent='×';
+        row.append(code,button);list.append(row);
+      }
+    }else{
+      const empty=document.createElement('p');empty.className='muted text-center';empty.textContent=batch?.paused?'El escaneo está pausado.':'Escanea el primer serial del lote.';list.append(empty);
+    }
+  }
+  const invalid=document.querySelector('[data-scanner-batch-invalid]');
+  if(invalid){invalid.replaceChildren();for(const item of batch?.invalid || []){const row=document.createElement('p');row.textContent=`${item.serial}: ${item.reason}`;invalid.append(row);}invalid.classList.toggle('hidden',!(batch?.invalid?.length));}
+  const unverified=document.querySelector('[data-scanner-batch-unverified]');if(unverified){const count=batch?.unverified?.length || 0;unverified.textContent=`${count} serial(es) pendientes de validar al recuperar conexión.`;unverified.classList.toggle('hidden',!count);}
+  const confirm=document.querySelector('[data-scanner-batch-confirm]');
+  if(confirm){const online=navigator.onLine;confirm.disabled=!online || !(batch?.serials?.length);confirm.textContent=online?`Confirmar ${batch?.serials?.length || 0} serial(es)`:'Requiere conexión para confirmar';}
+}
+
+function updateScannerCameraControlsDom(){
+  const scanner=getState().scanner;
+  const torch=document.querySelector('[data-action="scanner-toggle-torch"]');
+  if(torch){torch.disabled=!scanner.active || !scanner.torchSupported;torch.textContent=scanner.torchEnabled?'Apagar linterna':'Linterna';torch.classList.toggle('is-active',Boolean(scanner.torchEnabled));torch.setAttribute('aria-pressed',scanner.torchEnabled?'true':'false');}
+  const switchButton=document.querySelector('[data-action="scanner-switch-camera"]');if(switchButton) switchButton.disabled=!scanner.active || Number(scanner.cameraCount || 0)<2;
+}
+
+function updateScannerStatusDom(message){const status=document.getElementById('scanner-status');if(status) status.textContent=String(message || '');}
+
+async function openAssignment(controller,reassign){
+  requireAction(controller,reassign?'operations.reassign':'operations.assign'); if(!getState().technicians.items.length) await loadTechniciansData();assignmentDialog(selectedOperation(),getState().technicians.items,{reassign});
+}
+async function mutateSelected(controller,message,mutation,success){
+  requireOnline();const op=selectedOperation();await withLoader(message,async () => {await mutation(op);showToast(success,'','success');await controller.reloadSelectedOperation();});
 }
 function addEvidenceFiles(fileList,controller,prefix){
   const current=getState().evidence.files; const incoming=prepareFiles(fileList); const map=new Map([...current,...incoming].map(item => [item.id,item]));updateSlice('evidence',{files:[...map.values()]},'evidence-files');
