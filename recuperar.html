@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071d32">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Recuperar Grupo Ortiz</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:22px;background:radial-gradient(circle at 50% 20%,#0b5278,#071d32 50%,#041221);color:#eaf7ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}.card{width:min(580px,100%);padding:28px;border-radius:28px;background:rgba(7,43,70,.94);border:1px solid rgba(125,211,252,.3);box-shadow:0 32px 90px rgba(0,0,0,.42)}.logo{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;margin:0 auto 18px;background:linear-gradient(135deg,#0ea5c6,#0874a7);font-size:24px;font-weight:1000}.card h1{text-align:center;margin:0;font-size:28px}.intro{text-align:center;color:#bedff0;line-height:1.55;margin:10px 0 22px}.steps{display:grid;gap:10px}.step{display:flex;gap:12px;align-items:center;padding:13px 14px;border-radius:16px;background:rgba(255,255,255,.06);color:#dff5ff}.dot{width:12px;height:12px;border-radius:999px;background:#64748b;box-shadow:0 0 0 5px rgba(100,116,139,.13)}.step.ok .dot{background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.13)}.step.error .dot{background:#ef4444}.status{margin-top:16px;padding:13px 14px;border-radius:16px;background:#061a2d;color:#b9dced;word-break:break-word;font-size:13px}.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}.btn{border:0;border-radius:14px;padding:12px 17px;font-weight:950;cursor:pointer;text-decoration:none}.primary{background:#67e8f9;color:#06233d}.secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14)}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="logo">GO</div>
+    <h1>Recuperación segura</h1>
+    <p class="intro">Esta página elimina únicamente los Service Workers y cachés del sistema. No borra tu cuenta, Supabase, datos ni configuraciones del proyecto.</p>
+    <div class="steps">
+      <div class="step" id="stepWorker"><span class="dot"></span><span>Desactivando Service Workers anteriores…</span></div>
+      <div class="step" id="stepCache"><span class="dot"></span><span>Limpiando cachés de la aplicación…</span></div>
+      <div class="step" id="stepVersion"><span class="dot"></span><span>Verificando la versión desplegada…</span></div>
+    </div>
+    <div class="status" id="status">Iniciando recuperación…</div>
+    <div class="actions" id="actions" hidden>
+      <a class="btn primary" id="openTarget" href="/index.html">Abrir sistema</a>
+      <a class="btn secondary" href="/index.html">Sistema web</a>
+      <a class="btn secondary" href="/app.html">App móvil</a>
+    </div>
+  </main>
+<script>
+(function(){
+  'use strict';
+  var params=new URLSearchParams(location.search);
+  var target=params.get('destino')==='app'?'/app.html':'/index.html';
+  function mark(id,ok,text){var el=document.getElementById(id);if(!el)return;el.classList.add(ok?'ok':'error');if(text)el.querySelector('span:last-child').textContent=text;}
+  function status(text){document.getElementById('status').textContent=text;}
+  async function run(){
+    var errors=[];
+    try{
+      if('serviceWorker' in navigator){
+        var regs=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(function(reg){return reg.unregister();}));
+        mark('stepWorker',true,'Service Workers desactivados: '+regs.length+'.');
+      }else mark('stepWorker',true,'El navegador no tenía Service Worker activo.');
+    }catch(e){errors.push('Service Worker: '+e.message);mark('stepWorker',false,'No se pudo desactivar completamente el Service Worker.');}
+    try{
+      var keys=('caches' in window)?await caches.keys():[];
+      await Promise.all(keys.map(function(key){return caches.delete(key);}));
+      mark('stepCache',true,'Cachés eliminados: '+keys.length+'.');
+    }catch(e){errors.push('Caché: '+e.message);mark('stepCache',false,'No se pudieron eliminar todos los cachés.');}
+    try{
+      sessionStorage.removeItem('loteka-update-reload-lock');
+      sessionStorage.removeItem('loteka_update_dismissed_session_version');
+      localStorage.removeItem('loteka-build-version');
+    }catch(e){}
+    try{
+      var res=await fetch('/version.json?_recover='+Date.now(),{cache:'no-store',credentials:'same-origin',headers:{'Cache-Control':'no-cache'}});
+      var info=await res.json();
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      mark('stepVersion',true,'Versión encontrada: '+String(info.version||'sin identificar')+'.');
+      status(errors.length?'La recuperación terminó con observaciones: '+errors.join(' | '):'Recuperación completada. Abre nuevamente el sistema.');
+    }catch(e){errors.push('Versión: '+e.message);mark('stepVersion',false,'No se pudo leer version.json del despliegue.');status('La limpieza terminó, pero Vercel no respondió con la versión nueva.');}
+    var link=document.getElementById('openTarget');
+    link.href=target+'?_recover='+Date.now();
+    link.textContent=target.indexOf('app.html')>=0?'Abrir app móvil':'Abrir sistema web';
+    document.getElementById('actions').hidden=false;
+  }
+  run();
+})();
+</script>
+</body>
+</html>
