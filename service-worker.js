@@ -9,9 +9,9 @@
    - HTML principales network-first + fallback exacto.
    - Assets cacheados por versión.
    - Sin skipWaiting agresivo ni clients.claim automático.
-   ========================================================================= */
+   ========================================================================== */
 
-const SW_VERSION = "2026-07-27-v805.16-recuperacion-carga";
+const SW_VERSION = "2026-07-27-v805.17-desbloqueo-real";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -436,7 +436,7 @@ async function precacheAppShellHtml() {
 
 self.addEventListener("install", (event) => {
   /*
-    HOTFIX V805.16: el núcleo obligatorio contiene únicamente archivos del mismo dominio.
+    HOTFIX V805.17: el núcleo obligatorio contiene únicamente archivos del mismo dominio.
     Las librerías CDN se descargan después y nunca bloquean la instalación.
   */
   const coreInstall = Promise.all([
@@ -488,6 +488,9 @@ self.addEventListener("fetch", (event) => {
 
   // En Live Server/local no cacheamos nada.
   if (IS_DEV_HOST) return;
+
+  // La página de recuperación siempre debe venir directamente de la red.
+  if (url.pathname === "/recuperar.html") return;
 
   // Nunca interceptar Supabase, Appwrite, R2 ni APIs internas.
   if (isDynamicOrExternalApi(url)) return;
