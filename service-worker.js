@@ -9,7 +9,7 @@
    - HTML principales network-first + fallback exacto.
    - Assets cacheados por versión.
    - Sin skipWaiting agresivo ni clients.claim automático.
-   ========================================================================== */
+   ========================================================================= */
 
 const SW_VERSION = "2026-07-27-v805.16-recuperacion-carga";
 
