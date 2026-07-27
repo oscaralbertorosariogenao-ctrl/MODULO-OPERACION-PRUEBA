@@ -7,6 +7,7 @@ import { computeStats, normalizeOperation } from './operations-service.js';
 import { deriveOperationalAlerts } from './notification-service.js';
 import { getState, updateSlice } from '../store.js';
 import { markSync } from '../connectivity.js';
+import { can } from '../permissions.js';
 
 export async function loadOperationsPage({ reset = true } = {}){
   const state = getState(); const page = reset ? 0 : state.operations.page + 1;
@@ -71,9 +72,10 @@ export async function loadAgencyDetail(reference){
   updateSlice('agencies',{loading:true},'agency-detail-loading');
   const agency = await getAgency(reference);
   const agencyKey = String(agency?.numero || '');
+  const state = getState();
   const [ops,equipment] = await Promise.all([
-    listOperations({page:0,pageSize:60,filters:{search:agencyKey}}).then(result => result.data.map(normalizeOperation).filter(op => op.agencyNumber.replace(/^0+/,'') === agencyKey.replace(/^0+/,'') && op.status !== 'Completado')).catch(() => []),
-    agency?.id ? listAgencyEquipment(agency.id).catch(() => []) : []
+    can('operations.view',state) ? listOperations({page:0,pageSize:60,filters:{search:agencyKey}}).then(result => result.data.map(normalizeOperation).filter(op => op.agencyNumber.replace(/^0+/,'') === agencyKey.replace(/^0+/,'') && op.status !== 'Completado')).catch(() => []) : [],
+    can('equipment.view',state) && agency?.id ? listAgencyEquipment(agency.id).catch(() => []) : []
   ]);
   const selected = {...agency,relatedOperations:ops,equipment}; updateSlice('agencies',{selected,loading:false},'agency-detail-loaded'); markSync(); return selected;
 }
