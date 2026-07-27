@@ -329,7 +329,7 @@ async function ensureSerialsDoNotExist(serials){
 
 async function assertInventoryPermission(){
   const permission = await getInventoryPermission();
-  if(permission === false) throw Object.assign(new Error('No tienes permiso para modificar inventario.'), {code:'42501'});
+  if(permission !== true) throw Object.assign(new Error('No se pudo confirmar tu permiso para modificar inventario. Contacta al administrador.'), {code:'42501'});
 }
 
 async function callRpc(name, args){
