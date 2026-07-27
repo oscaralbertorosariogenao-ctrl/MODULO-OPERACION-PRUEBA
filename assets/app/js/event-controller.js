@@ -1,4 +1,5 @@
 import { ROUTES } from './config.js';
+import { firstAllowedRoute } from './permissions.js';
 import { getState, updateSlice, setState } from './store.js';
 import { navigate } from './router.js';
 import { signIn, signOut } from './auth.js';
@@ -38,14 +39,14 @@ async function handleClick(event,controller){
   if(action === 'close-modal' && event.target.closest('[data-modal-panel]') && event.target === event.currentTarget) return;
   try{
     switch(action){
-      case 'go-home':go(ROUTES.home);break; case 'go-operations':go(ROUTES.operations);break; case 'go-scanner':go(ROUTES.scanner);break;
-      case 'go-agencies':go(ROUTES.agencies);break; case 'go-profile':go(ROUTES.profile);break; case 'go-notifications':go(ROUTES.notifications);break;
+      case 'go-home':requireAction(controller,'home.view',() => go(ROUTES.home));break; case 'go-operations':requireAction(controller,'operations.view',() => go(ROUTES.operations));break; case 'go-scanner':requireAction(controller,'scanner.lookup',() => go(ROUTES.scanner));break;
+      case 'go-agencies':requireAction(controller,'agencies.view',() => go(ROUTES.agencies));break; case 'go-profile':go(ROUTES.profile);break; case 'go-notifications':requireAction(controller,'notifications.view',() => go(ROUTES.notifications));break;
       case 'go-create-operation':requireAction(controller,'operations.create',() => go(ROUTES.createOperation));break;
-      case 'go-map':go(ROUTES.map);break; case 'go-technicians':go(ROUTES.technicians);break;
+      case 'go-map':requireAction(controller,'agencies.map',() => go(ROUTES.map));break; case 'go-technicians':requireAction(controller,'technicians.view',() => go(ROUTES.technicians));break;
       case 'go-back':history.length > 1 ? history.back() : go(ROUTES.home);break;
-      case 'go-operations-search':go(ROUTES.operations);setTimeout(() => document.querySelector('[data-input-action="operations-search"]')?.focus(),450);break;
-      case 'go-agencies-search':go(ROUTES.agencies);setTimeout(() => document.querySelector('[data-input-action="agencies-search"]')?.focus(),450);break;
-      case 'go-unassigned-operations':updateSlice('operations',{filters:{status:'Pendiente'}},'unassigned-filter');go(ROUTES.operations);break;
+      case 'go-operations-search':requireAction(controller,'operations.view',() => go(ROUTES.operations));setTimeout(() => document.querySelector('[data-input-action="operations-search"]')?.focus(),450);break;
+      case 'go-agencies-search':requireAction(controller,'agencies.view',() => go(ROUTES.agencies));setTimeout(() => document.querySelector('[data-input-action="agencies-search"]')?.focus(),450);break;
+      case 'go-unassigned-operations':requireAction(controller,'operations.assign');updateSlice('operations',{filters:{status:'Pendiente'}},'unassigned-filter');go(ROUTES.operations);break;
       case 'toggle-drawer':updateSlice('ui',{drawerOpen:!getState().ui.drawerOpen},'drawer');controller.render();break;
       case 'close-drawer':updateSlice('ui',{drawerOpen:false},'drawer');controller.render();break;
       case 'refresh-view':await withLoader('Actualizando datos…',() => controller.refresh());break;
@@ -53,8 +54,8 @@ async function handleClick(event,controller){
       case 'dismiss-toast':dismissToast(target.dataset.toastId);break;
       case 'toggle-password':togglePassword(target);break;
       case 'login-help':showToast('Ayuda de acceso','Usa tu correo autorizado. Si tu usuario no se resuelve, contacta al administrador para confirmar el perfil.','info');break;
-      case 'open-operation':go(ROUTES.operation,{id:target.dataset.operationId});break;
-      case 'open-agency':go(ROUTES.agency,{id:target.dataset.agencyId});break;
+      case 'open-operation':requireAction(controller,'operations.view',() => go(ROUTES.operation,{id:target.dataset.operationId}));break;
+      case 'open-agency':requireAction(controller,'agencies.detail',() => go(ROUTES.agency,{id:target.dataset.agencyId}));break;
       case 'open-operation-filters':await ensureAgencyReferenceData();if(!getState().technicians.items.length) await loadTechniciansData();openOperationFilters(getState().operations.filters,getState().technicians.items,getState().agencies.groups || []);break;
       case 'filter-operation-status':updateSlice('operations',current => ({filters:{...current.filters,status:target.dataset.status}}),'operation-status-filter');await loadOperationsPage({reset:true});controller.render();break;
       case 'clear-operation-filters':closeModal();updateSlice('operations',{filters:{status:'Todos'}},'operation-filters-clear');await loadOperationsPage({reset:true});controller.render();break;
@@ -64,11 +65,11 @@ async function handleClick(event,controller){
       case 'load-more-agencies':await loadAgenciesPage({reset:false});controller.render();break;
       case 'open-assignment':await openAssignment(controller,false);break;
       case 'open-reassignment':await openAssignment(controller,true);break;
-      case 'start-operation':await mutateSelected(controller,'Iniciando operación…',op => startOperation(op.id || op.code,getState().profile),'Operación iniciada');break;
-      case 'open-comment':commentDialog(selectedOperation());break;
-      case 'open-diagnosis':diagnosisDialog(selectedOperation());break;
-      case 'open-evidence':clearEvidenceFiles();evidenceDialog(selectedOperation(),[]);break;
-      case 'finish-operation':finishDialog(selectedOperation());break;
+      case 'start-operation':requireAction(controller,'operations.start');await mutateSelected(controller,'Iniciando operación…',op => startOperation(op.id || op.code,getState().profile),'Operación iniciada');break;
+      case 'open-comment':requireAction(controller,'operations.comment',() => commentDialog(selectedOperation()));break;
+      case 'open-diagnosis':requireAction(controller,'operations.diagnose',() => diagnosisDialog(selectedOperation()));break;
+      case 'open-evidence':requireAction(controller,'operations.evidence');clearEvidenceFiles();evidenceDialog(selectedOperation(),[]);break;
+      case 'finish-operation':requireAction(controller,'operations.finish',() => finishDialog(selectedOperation()));break;
       case 'open-whatsapp-actions':whatsappActionsDialog(selectedOperation());break;
       case 'open-whatsapp-close':requireAction(controller,'operations.closeWhatsapp',() => whatsappCloseDialog(selectedOperation()));break;
       case 'open-operation-agency':openOperationAgency();break;
@@ -110,9 +111,9 @@ async function handleClick(event,controller){
       }
       case 'request-logout':confirmDialog({title:'Cerrar sesión',message:'¿Deseas salir de la aplicación de Operaciones?',confirmLabel:'Cerrar sesión',confirmAction:'confirm-logout',tone:'danger'});break;
       case 'confirm-logout':await withLoader('Cerrando sesión…',async () => { closeModal(); await signOut(); });break;
-      case 'create-operation-from-agency':go(ROUTES.createOperation,{}, {agency:target.dataset.agencyId});break;
-      case 'open-scanned-agency':go(ROUTES.agency,{id:target.dataset.agencyId});break;
-      case 'open-scanned-operation':go(ROUTES.operation,{id:target.dataset.operationId});break;
+      case 'create-operation-from-agency':requireAction(controller,'operations.create',() => go(ROUTES.createOperation,{}, {agency:target.dataset.agencyId}));break;
+      case 'open-scanned-agency':requireAction(controller,'agencies.detail',() => go(ROUTES.agency,{id:target.dataset.agencyId}));break;
+      case 'open-scanned-operation':requireAction(controller,'operations.view',() => go(ROUTES.operation,{id:target.dataset.operationId}));break;
       case 'contact-technician':{const url=whatsappUrl(target.dataset.phone,`Hola ${target.dataset.name || ''}, contacto desde Operaciones Grupo Ortiz.`);if(url) globalThis.open(url,'_blank','noopener');break;}
       case 'center-user-location':await centerUser();break;
       case 'save-operation-draft':await saveCurrentOperationDraft(controller);break;
@@ -175,7 +176,7 @@ function handleKeydown(event,controller){
 }
 async function submitLogin(data,controller){
   controller.setLoginState({loading:true,error:''});
-  try{ const auth=await signIn(data.identity,data.password);controller.applyAuth(auth);navigate(ROUTES.home,{},null,{replace:true});showToast('Bienvenido',`Sesión iniciada como ${auth.profile.nombre_completo || auth.user.email}.`,'success'); }
+  try{ const auth=await signIn(data.identity,data.password);controller.applyAuth(auth);navigate(firstAllowedRoute(getState()),{},null,{replace:true});showToast('Bienvenido',`Sesión iniciada como ${auth.profile.nombre_completo || auth.user.email}.`,'success'); }
   catch(error){ const classified=classifyError(error);controller.setLoginState({loading:false,error:classified.message});return; }
   controller.setLoginState({loading:false,error:''});
 }
@@ -204,20 +205,20 @@ async function submitAssignment(data,controller,reassign){
   await withLoader(reassign?'Reasignando…':'Asignando…',async () => { const updated=await (reassign?reassignOperation:assignOperation)(data.reference,data.technician,data.comment,getState().profile);await notifyBestEffort({type:reassign?'OPERACION_REASIGNADA':'OPERACION_ASIGNADA',title:reassign?'Operación reasignada':'Operación asignada',message:`${normalizeOperation(updated).code || data.reference} · ${data.technician}`,importance:'normal',operation:updated});closeModal();showToast(reassign?'Operación reasignada':'Operación asignada',`Técnico: ${data.technician}`,'success');await controller.reloadSelectedOperation(); });
 }
 async function submitComment(data,controller){
-  requireOnline(); if(!String(data.comment || '').trim()) throw new Error('Escribe un comentario.');
+  requireOnline(); requireAction(controller,'operations.comment'); if(!String(data.comment || '').trim()) throw new Error('Escribe un comentario.');
   await withLoader('Guardando comentario…',async () => {await addComment(data.reference,data.comment,getState().profile);closeModal();showToast('Comentario guardado','','success');await controller.reloadSelectedOperation();});
 }
 async function submitDiagnosis(data,controller){
-  requireOnline(); if(!String(data.diagnosis || '').trim()) throw new Error('Escribe el diagnóstico.');
+  requireOnline(); requireAction(controller,'operations.diagnose'); if(!String(data.diagnosis || '').trim()) throw new Error('Escribe el diagnóstico.');
   await withLoader('Guardando diagnóstico…',async () => {await addDiagnosis(data.reference,data.diagnosis,getState().profile);closeModal();showToast('Diagnóstico guardado','','success');await controller.reloadSelectedOperation();});
 }
 async function submitEvidence(data,controller){
-  requireOnline(); const state=getState(); const files=state.evidence.files.map(item => item.file); if(!files.length) throw new Error('Selecciona al menos un archivo.');
+  requireOnline(); requireAction(controller,'operations.evidence'); const state=getState(); const files=state.evidence.files.map(item => item.file); if(!files.length) throw new Error('Selecciona al menos un archivo.');
   const op=selectedOperation();
   await withLoader('Subiendo evidencia protegida…',async () => {const urls=await uploadEvidenceBatch(files,op.code,data.description,progress => updateProgress(progress));await addEvidence(data.reference,urls,data.description,state.profile);revokePreviews(state.evidence.files);updateSlice('evidence',{files:[],progress:0},'evidence-clear');closeModal();showToast('Evidencia guardada',`${urls.length} archivo(s) confirmado(s).`,'success');await controller.reloadSelectedOperation();});
 }
 async function submitFinish(data,controller){
-  requireOnline(); if(!String(data.comment || '').trim()) throw new Error('Escribe el comentario final.');
+  requireOnline(); requireAction(controller,'operations.finish'); if(!String(data.comment || '').trim()) throw new Error('Escribe el comentario final.');
   await withLoader('Finalizando operación…',async () => {const updated=await finishOperation(data.reference,data.comment,getState().profile);await notifyBestEffort({type:'OPERACION_COMPLETADA',title:'Operación completada',message:`${normalizeOperation(updated).code || data.reference} fue finalizada.`,importance:'normal',operation:updated});closeModal();showToast('Operación finalizada','El cierre quedó registrado en el historial.','success');await controller.reloadSelectedOperation();});
 }
 async function submitWhatsAppClose(data,controller){
@@ -231,6 +232,7 @@ async function applyAgencyFilters(data,controller){
   closeModal(); updateSlice('agencies',{filters:{...getState().agencies.filters,...data}},'agency-filters');await loadAgenciesPage({reset:true});controller.render();
 }
 async function processScannerValue(value,controller,{source='manual'} = {}){
+  requireAction(controller,getState().scanner.batch?.active?'scanner.batchEntry':'scanner.lookup');
   const validation=validateScannerValue(value);
   if(!validation.valid) throw Object.assign(new Error(validation.message),{code:'VALIDATION'});
   const scanner=getState().scanner;
@@ -257,7 +259,7 @@ async function processScannerValue(value,controller,{source='manual'} = {}){
     updateSlice('scanner',{result,processing:false,status:'result',mode:'lookup',active:false,cameraActive:false,engine:'',cameraLabel:'',torchEnabled:false,torchSupported:false,recentScans:addRecentScan(getState().scanner.recentScans,result)},'scanner-lookup-result');
     signalScannerFeedback(result.kind === 'invalid' ? 'warning' : result.kind === 'unknown' ? 'warning' : 'success');
     controller.render();
-    openScannerResultSheet(result,{canMutate:controller.can('scanner.entry')});
+    openScannerResultSheet(result,{permissions:scannerActionPermissions(controller)});
   }catch(error){
     const classified=classifyError(error);
     updateSlice('scanner',{processing:false,status:'error',active:false,cameraActive:false,error:classified.message},'scanner-lookup-error');
@@ -278,7 +280,7 @@ async function loadScannerCatalogs(){
 function openCurrentScannerResult(controller){
   const result=getState().scanner.result;
   if(!result) throw new Error('Primero escanea o escribe un código.');
-  openScannerResultSheet(result,{canMutate:controller.can('scanner.entry')});
+  openScannerResultSheet(result,{permissions:scannerActionPermissions(controller)});
 }
 
 async function scanAgain(controller){
@@ -405,7 +407,7 @@ async function submitScannerReceive(data,controller){
 }
 
 function openScannerIncidentFlow(controller){
-  requireAction(controller,'scanner.receive');
+  requireAction(controller,'scanner.incident');
   const equipment=getState().scanner.result?.equipment;
   if(!equipment?.pendingReceipt) throw new Error('Este serial no tiene una recepción pendiente.');
   updateSlice('scanner',{mode:'receive'},'scanner-incident-open');
@@ -413,7 +415,7 @@ function openScannerIncidentFlow(controller){
 }
 
 async function submitScannerReceiptIncident(data,controller){
-  requireOnline();requireAction(controller,'scanner.receive');
+  requireOnline();requireAction(controller,'scanner.incident');
   const equipment=getState().scanner.result?.equipment;
   if(!equipment) throw new Error('Vuelve a consultar el serial.');
   await withLoader('Registrando incidencia…',() => reportReceiptIncident({equipment,...data}));
@@ -439,6 +441,7 @@ function populateScannerDestinations(typeSelect){
 }
 
 async function startCameraScanner(controller){
+  requireAction(controller,getState().scanner.batch?.active?'scanner.batchEntry':'scanner.lookup');
   const batch=getState().scanner.batch;
   updateSlice('scanner',{active:true,cameraActive:true,error:'',result:batch?.active?getState().scanner.result:null,engine:'',cameraLabel:'',processing:false,status:batch?.active?'batch-entry':'scanning'},'scanner-start');
   controller.render();
@@ -553,6 +556,7 @@ async function notifyBestEffort({type,title,message,importance='normal',operatio
 }
 function isUuid(value){ return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '')); }
 function findAgency(value){const raw=String(value || '').trim().toLowerCase();return (getState().agencies.items || []).find(item => [item.id,item.numero,item.nombre,`${item.numero} · ${item.nombre}`].some(candidate => String(candidate || '').trim().toLowerCase() === raw));}
+function scannerActionPermissions(controller){return {entry:controller.can('scanner.entry'),batchEntry:controller.can('scanner.batchEntry'),transfer:controller.can('scanner.transfer'),receive:controller.can('scanner.receive'),incident:controller.can('scanner.incident'),agencies:controller.can('agencies.detail'),operations:controller.can('operations.view')};}
 function selectedOperation(){return normalizeOperation(getState().operations.selected || {});}
 function requireAction(controller,action,callback){if(!controller.can(action)) throw Object.assign(new Error('No tienes permiso para esta acción.'),{code:'42501'});return callback?.();}
 function requireOnline(){if(!navigator.onLine) throw Object.assign(new Error('Esta acción requiere conexión a internet.'),{code:'NETWORK'});}
