@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-27-v805.16-recuperacion-carga",
-  "name": "V805.16 · Recuperación de carga y actualización",
+  "version": "2026-07-27-v805.17-desbloqueo-real",
+  "name": "V805.17 · Desbloqueo real de carga",
   "released_at": "2026-07-27",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Corrige el ciclo de actualización causado por versiones desalineadas",
-    "El actualizador ya no elimina el caché activo antes de instalar la versión nueva",
-    "Supabase deja de bloquear el análisis del index y usa cargador con respaldo",
-    "Las dependencias CDN ya no son obligatorias para instalar el Service Worker",
-    "El Service Worker de recuperación toma control automáticamente una sola vez"
+    "Elimina MapLibre y hojas CDN del camino crítico de arranque del index",
+    "Evita borrar cachés automáticamente durante la carga normal",
+    "Incluye una página de recuperación independiente del Service Worker",
+    "Añade protección visible si la web o la app móvil no terminan de iniciar",
+    "Fuerza la actualización de los archivos de entrada de la app móvil"
   ]
 }
