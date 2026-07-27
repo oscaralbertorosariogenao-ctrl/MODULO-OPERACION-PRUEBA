@@ -1,10 +1,16 @@
 import { el } from '../components/dom.js';
 import { productLabel, warehouseLabel } from '../services/scanner-inventory-service.js';
+import { can } from '../permissions.js';
 
 export function scannerView(state){
   const scanner = state.scanner || {};
   const result = scanner.result;
-  const canInventory = state.permissions?.has?.('*') || state.permissions?.has?.('ver_inventario');
+  const access = {
+    entry:can('scanner.entry',state),
+    batchEntry:can('scanner.batchEntry',state),
+    transfer:can('scanner.transfer',state),
+    receive:can('scanner.receive',state)
+  };
   const status = scanner.error || scannerStatus(scanner);
   return el('div',{class:'page scanner-page'},
     el('div',{class:'page-header scanner-page-header'},
@@ -16,7 +22,7 @@ export function scannerView(state){
       el('span',{class:`scanner-connectivity ${state.connectivity?.online ? 'online' : 'offline'}`,text:state.connectivity?.online ? 'En línea' : 'Sin conexión'})
     ),
     !state.connectivity?.online ? el('div',{class:'scanner-offline-note',role:'status'},el('strong',{text:'Modo sin conexión'}),el('span',{text:'Puedes usar la cámara y preparar seriales, pero no confirmar entradas, transferencias ni recepciones.'})) : null,
-    scanner.batch?.active ? batchPanel(scanner.batch,state.connectivity?.online) : null,
+    scanner.batch?.active && access.batchEntry ? batchPanel(scanner.batch,state.connectivity?.online) : null,
     el('section',{class:'card scanner-hero'},
       el('div',{class:`scanner-frame ${scanner.active ? 'is-active' : ''} ${scanner.processing ? 'is-processing' : ''}`},
         el('video',{id:'scanner-video',autoplay:'',muted:'',playsinline:'','webkit-playsinline':'','aria-label':'Vista de cámara para escanear'}),
@@ -41,9 +47,9 @@ export function scannerView(state){
           el('button',{class:'btn btn-primary',type:'submit',disabled:scanner.processing},scanner.batch?.active ? 'Agregar' : 'Buscar')
         )
       ),
-      !scanner.batch?.active && canInventory ? el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-batch-entry'},'Configurar entrada por lote') : null
+      !scanner.batch?.active && access.batchEntry ? el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-batch-entry'},'Configurar entrada por lote') : null
     ),
-    result ? resultCard(result,canInventory) : emptyResultCard(),
+    result ? resultCard(result,access) : emptyResultCard(),
     recentScans(scanner.recentScans || [])
   );
 }
@@ -59,7 +65,7 @@ function scannerStatus(scanner){
   return 'Apunta la cámara al código o utiliza la entrada manual.';
 }
 
-function resultCard(result,canInventory){
+function resultCard(result,access){
   if(result.kind === 'equipment'){
     const item = result.equipment || {};
     return el('section',{class:'card scanner-result scanner-result-found'},
@@ -67,8 +73,8 @@ function resultCard(result,canInventory){
       el('div',{class:'scanner-result-serial',text:item.serial || result.normalizedValue}),
       el('h2',{text:item.product?.nombre || 'Producto no identificado'}),
       el('div',{class:'scanner-result-quick'},quickInfo('Estado',item.estado || '-'),quickInfo('Ubicación',locationLabel(item)),quickInfo('Último movimiento',item.latestMovement?.tipo_movimiento || item.latestMovement?.referencia || 'Sin registro')),
-      item.pendingReceipt ? el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo') : null,
-      canInventory && item.inventoryContext?.canTransfer ? el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-transfer'},'Enviar o transferir') : null
+      access.receive && item.pendingReceipt ? el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo') : null,
+      access.transfer && item.inventoryContext?.canTransfer ? el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-transfer'},'Enviar o transferir') : null
     );
   }
   if(result.kind === 'product'){
@@ -77,9 +83,9 @@ function resultCard(result,canInventory){
       el('div',{class:'scanner-result-serial',text:result.normalizedValue}),
       el('h2',{text:result.product?.nombre || 'Producto'}),
       el('p',{class:'muted',text:productLabel(result.product)}),
-      canInventory && result.product?.requiere_serial !== false ? el('div',{class:'grid grid-2'},
-        el('button',{class:'btn btn-primary',type:'button','data-action':'scanner-open-entry'},'Registrar serial'),
-        el('button',{class:'btn btn-outline',type:'button','data-action':'scanner-open-batch-entry'},'Entrada por lote')
+      (access.entry || access.batchEntry) && result.product?.requiere_serial !== false ? el('div',{class:'grid grid-2'},
+        access.entry ? el('button',{class:'btn btn-primary',type:'button','data-action':'scanner-open-entry'},'Registrar serial') : null,
+        access.batchEntry ? el('button',{class:'btn btn-outline',type:'button','data-action':'scanner-open-batch-entry'},'Entrada por lote') : null
       ) : null
     );
   }
@@ -87,8 +93,8 @@ function resultCard(result,canInventory){
     el('span',{class:'scanner-result-kicker warning',text:result.kind === 'unknown' ? 'SERIAL NO REGISTRADO' : 'CÓDIGO NO RECONOCIDO'}),
     el('div',{class:'scanner-result-serial',text:result.normalizedValue || result.rawValue || '-'}),
     el('p',{text:result.message || 'No se encontró información relacionada.'}),
-    canInventory && result.kind === 'unknown' ? el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar entrada') : null,
-    !canInventory ? el('p',{class:'draft-note',text:'Tu perfil puede consultar, pero no tiene habilitada la acción de registro de inventario.'}) : null
+    access.entry && result.kind === 'unknown' ? el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar entrada') : null,
+    !access.entry ? el('p',{class:'draft-note',text:'Tu perfil puede consultar, pero no tiene habilitada la acción de registro de inventario.'}) : null
   );
 }
 
