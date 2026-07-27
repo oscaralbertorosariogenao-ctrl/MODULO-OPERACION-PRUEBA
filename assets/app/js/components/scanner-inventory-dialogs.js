@@ -3,8 +3,8 @@ import { openBottomSheet } from './bottom-sheet.js';
 import { openModal } from './modal.js';
 import { agencyLabel, localDateTimeValue, productLabel, scannerResultTitle, warehouseLabel } from '../services/scanner-inventory-service.js';
 
-export function openScannerResultSheet(result,{canMutate=false} = {}){
-  const body = el('div',{class:'scanner-sheet stack'},resultSummary(result),resultActions(result,canMutate));
+export function openScannerResultSheet(result,{permissions={}} = {}){
+  const body = el('div',{class:'scanner-sheet stack'},resultSummary(result),resultActions(result,permissions));
   return openBottomSheet({id:'scanner-result-sheet',title:scannerResultTitle(result),body});
 }
 
@@ -144,19 +144,19 @@ function resultSummary(result){
   );
 }
 
-function resultActions(result,canMutate){
+function resultActions(result,permissions){
   const actions = [];
   if(result?.kind === 'equipment'){
     const item = result.equipment;
     actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-history'},'Ver historial'));
-    if(item.agencia_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-agency','data-agency-id':item.agencia_id},'Abrir agencia'));
-    if(item.operacion_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-operation','data-operation-id':item.operacion_id},'Abrir operación'));
-    if(canMutate && item.inventoryContext?.canTransfer) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},'Enviar o transferir'));
-    if(canMutate && item.inventoryContext?.canReceive) actions.push(el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo'));
-  }else if(canMutate && result?.kind === 'product' && result.product?.requiere_serial !== false){
-    actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar un serial'));
-    actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-batch-entry'},'Entrada por lote'));
-  }else if(canMutate && result?.kind === 'unknown'){
+    if(permissions.agencies && item.agencia_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-agency','data-agency-id':item.agencia_id},'Abrir agencia'));
+    if(permissions.operations && item.operacion_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-operation','data-operation-id':item.operacion_id},'Abrir operación'));
+    if(permissions.transfer && item.inventoryContext?.canTransfer) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},'Enviar o transferir'));
+    if(permissions.receive && item.inventoryContext?.canReceive) actions.push(el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo'));
+  }else if(result?.kind === 'product' && result.product?.requiere_serial !== false){
+    if(permissions.entry) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar un serial'));
+    if(permissions.batchEntry) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-batch-entry'},'Entrada por lote'));
+  }else if(permissions.entry && result?.kind === 'unknown'){
     actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar entrada'));
   }
   actions.push(el('button',{class:'btn btn-ghost btn-block',type:'button','data-action':'scanner-scan-again'},'Escanear nuevamente'));
