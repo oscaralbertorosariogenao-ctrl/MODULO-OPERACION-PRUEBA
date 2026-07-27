@@ -1,18 +1,19 @@
 {
-  "version": "2026-07-25-v805.13-pwa-scanner",
-  "name": "v805.1 · PWA móvil y escáner de códigos",
-  "released_at": "2026-07-25",
+  "version": "2026-07-27-v805.14-pwa-stability",
+  "name": "v805.14 · Estabilización PWA móvil",
+  "released_at": "2026-07-27",
   "html": {
     "index": "index.html",
     "app": "app.html",
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Manifest móvil dedicado para app.html",
-    "Caché de la arquitectura modular de assets/app",
-    "Instalación guiada para Android e iPhone",
-    "Detección de actualización del service worker",
-    "Corrección de vista negra de cámara",
-    "Lector alternativo ZXing para Safari/iPhone"
+    "Versión unificada entre app.html, JavaScript, Service Worker y version.json",
+    "Supabase se carga mediante un cargador local con dos fuentes redundantes",
+    "La dependencia crítica de Supabase queda precacheada para el arranque posterior sin conexión",
+    "El Service Worker rechaza instalaciones incompletas del núcleo móvil",
+    "Se añadieron al precache los módulos faltantes del inventario y escáner",
+    "Las dependencias externas conocidas se cachean mediante una lista cerrada",
+    "Las notificaciones abiertas actualizan correctamente la ruta/hash de una app ya abierta"
   ]
 }
