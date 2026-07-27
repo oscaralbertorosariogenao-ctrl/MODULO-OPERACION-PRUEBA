@@ -3,6 +3,7 @@
 <html class="ltk-auth-preboot" lang="es">
 <head>
   <meta name="grupo-ortiz-build" content="2026-07-27-v805.17-desbloqueo-real">
+  <meta name="grupo-ortiz-index-hotfix" content="v805.17a-auth-no-bloqueante">
 <style id="loteka-v59-auth-critical-no-flash">
   /* Bloqueo crítico de primer pintado: evita que se vea el sistema antes de validar sesión. */
   html.ltk-auth-preboot,
@@ -27469,17 +27470,37 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     }
   }
   window.lotekaReloadAgenciasGruposSupabase = loadSupabaseAgenciasGrupos;
+  function authStepWithTimeout(promise, timeoutMs, message){
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise(function(_, reject){
+        setTimeout(function(){ reject(new Error(message || 'La validación tardó demasiado.')); }, timeoutMs || 12000);
+      })
+    ]);
+  }
   async function unlockWithSession(session){
     state.session = session;
     state.user = session && session.user ? session.user : null;
     if(!state.user){ setLocked(true); return; }
-    state.perfil = await loadPerfil(state.user);
-    await loadPermissions();
-    await loadSupabaseAgenciasGrupos();
+
+    // Solo el perfil y los permisos son críticos para abrir el sistema.
+    // Las más de mil agencias/grupos se sincronizan después, en segundo plano.
+    state.perfil = await authStepWithTimeout(
+      loadPerfil(state.user),
+      12000,
+      'No se pudo cargar tu perfil a tiempo. Revisa la conexión e inténtalo nuevamente.'
+    );
+    await authStepWithTimeout(
+      loadPermissions(),
+      12000,
+      'No se pudieron validar tus permisos a tiempo. Revisa la conexión e inténtalo nuevamente.'
+    );
+
     renderTopbarUser();
     applyPermissionsToUI();
     installPermissionGuards();
     setLocked(false);
+
     setTimeout(function(){
       try{
         if(typeof window.lotekaRestoreActiveView === 'function') window.lotekaRestoreActiveView('auth');
@@ -27490,6 +27511,18 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
         }
       }catch(e){}
     }, 80);
+
+    // La sincronización pesada ya no puede mantener la pantalla GO bloqueada.
+    setTimeout(function(){
+      authStepWithTimeout(
+        loadSupabaseAgenciasGrupos(),
+        20000,
+        'La sincronización de agencias y grupos excedió el tiempo permitido.'
+      ).catch(function(err){
+        console.warn('[LOTEKA] El sistema abrió con el respaldo local de agencias:', err && err.message ? err.message : err);
+        window.lotekaAgenciasSource = 'local-fallback';
+      });
+    }, 0);
   }
   async function handleLogin(event){
     event.preventDefault();
@@ -27552,7 +27585,13 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     setLocked(true);
     try{
-      const { data, error } = await state.client.auth.getSession();
+      const sessionResult = await authStepWithTimeout(
+        state.client.auth.getSession(),
+        10000,
+        'La validación de sesión tardó demasiado. Vuelve a cargar la página.'
+      );
+      const data = sessionResult && sessionResult.data;
+      const error = sessionResult && sessionResult.error;
       if(error) throw error;
       if(data && data.session){ await unlockWithSession(data.session); }
       else{ setLocked(true); }
