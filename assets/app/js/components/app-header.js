@@ -1,4 +1,5 @@
 import { el } from './dom.js';
+import { can } from '../permissions.js';
 export function appHeader(state){
   const unread = (state.notifications?.items || []).filter(item => item.leida === false).length;
   return el('header',{class:'app-header'},
@@ -8,7 +9,7 @@ export function appHeader(state){
     ),
     el('div',{class:'header-actions'},
       el('button',{class:'icon-btn',type:'button','data-action':'refresh-view','aria-label':'Actualizar vista',title:'Actualizar'},'↻'),
-      el('button',{class:'icon-btn',type:'button','data-action':'go-notifications','aria-label':`Notificaciones${unread ? `, ${unread} sin leer` : ''}`,title:'Notificaciones'}, unread ? `●${unread}` : '◉'),
+      can('notifications.view',state) ? el('button',{class:'icon-btn',type:'button','data-action':'go-notifications','aria-label':`Notificaciones${unread ? `, ${unread} sin leer` : ''}`,title:'Notificaciones'}, unread ? `●${unread}` : '◉') : null,
       el('button',{class:'icon-btn',type:'button','data-action':'toggle-drawer','aria-label':'Abrir menú',title:'Menú'},'☰')
     )
   );
