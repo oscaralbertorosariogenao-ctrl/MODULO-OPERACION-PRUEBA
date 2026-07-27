@@ -2,7 +2,7 @@
 
 <html class="ltk-auth-preboot" lang="es">
 <head>
-  <meta name="grupo-ortiz-build" content="2026-07-24-v804-seguridad-sesion-api-pwa">
+  <meta name="grupo-ortiz-build" content="2026-07-27-v805.16-recuperacion-carga">
 <style id="loteka-v59-auth-critical-no-flash">
   /* Bloqueo crítico de primer pintado: evita que se vea el sistema antes de validar sesión. */
   html.ltk-auth-preboot,
@@ -26926,7 +26926,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
 .ltk-access-denied-toast.is-visible{display:block;}
 @media(max-width:980px){.ltk-auth-shell{grid-template-columns:1fr;min-height:auto;max-width:520px;}.ltk-auth-visual{display:none;}.ltk-auth-panel{padding:34px 26px;}.ltk-auth-screen{padding:18px;}.ltk-auth-head h2{font-size:27px;}.loteka-topbar-logout{display:none!important;}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./assets/app/js/vendor/supabase-loader.js" defer></script>
 <script id="loteka-v86-auth-permissions-js">
 (function(){
   'use strict';
@@ -26960,6 +26960,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     document.documentElement.classList.remove('ltk-auth-preboot');
     document.body.classList.remove('ltk-auth-booting');
     document.body.classList.toggle('ltk-auth-locked', !!locked);
+    if(!locked){ try{ sessionStorage.removeItem('loteka-update-reload-lock'); }catch(e){} }
     const screen = qs('#ltkAuthScreen');
     if(screen) screen.setAttribute('aria-hidden', locked ? 'false' : 'true');
   }
@@ -27465,11 +27466,27 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     setLocked(true);
     clearError();
   }
+  async function waitForSupabaseLibrary(){
+    if(window.supabase && window.supabase.createClient) return true;
+    try{
+      if(window.__goSupabaseLibraryReady){
+        await Promise.race([
+          window.__goSupabaseLibraryReady,
+          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('Tiempo agotado al cargar Supabase.')); }, 16000); })
+        ]);
+      }
+    }catch(err){
+      console.warn('[LOTEKA] No se pudo cargar la librería de Supabase:', err && err.message ? err.message : err);
+    }
+    return !!(window.supabase && window.supabase.createClient);
+  }
   async function bootAuth(){
     buildLogin();
-    if(!window.supabase || !window.supabase.createClient){
+    setLocked(true);
+    var supabaseReady = await waitForSupabaseLibrary();
+    if(!supabaseReady){
       setLocked(true);
-      showError('No se pudo cargar Supabase. Revisa la conexión a internet.');
+      showError('No se pudo cargar Supabase. Revisa la conexión y vuelve a intentarlo.');
       return;
     }
     state.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -38716,7 +38733,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     - Nunca recarga solo. El usuario decide cuándo actualizar.
   */
 
-  var LOTEKA_HTML_VERSION = '2026-07-24-v804-seguridad-sesion-api-pwa';
+  var LOTEKA_HTML_VERSION = '2026-07-27-v805.16-recuperacion-carga';
   var VERSION_URL = '/version.json';
   var DISMISSED_KEY = 'loteka_update_dismissed_session_version';
   var CHECK_INTERVAL_MS = 120000;
@@ -38808,25 +38825,63 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     }
   }
 
+  function reloadAfterUpdate(){
+    try{
+      if(sessionStorage.getItem('loteka-update-reload-lock') === '1') return;
+      sessionStorage.setItem('loteka-update-reload-lock','1');
+    }catch(e){}
+    var url = new URL(window.location.href);
+    url.searchParams.set('_ltk_update', Date.now().toString());
+    window.location.replace(url.toString());
+  }
+
+  function waitForWorkerInstalled(worker, timeoutMs){
+    return new Promise(function(resolve){
+      if(!worker){ resolve(false); return; }
+      if(worker.state === 'installed'){ resolve(true); return; }
+      var done = false;
+      var timer = setTimeout(function(){
+        if(done) return;
+        done = true;
+        resolve(false);
+      }, timeoutMs || 15000);
+      worker.addEventListener('statechange', function(){
+        if(done) return;
+        if(worker.state === 'installed'){
+          done = true;
+          clearTimeout(timer);
+          resolve(true);
+        }else if(worker.state === 'redundant'){
+          done = true;
+          clearTimeout(timer);
+          resolve(false);
+        }
+      });
+    });
+  }
+
   async function activateNewVersion(){
-    await clearLotekaCaches();
+    var updateButton = document.querySelector('#'+bannerId+' .ltk-safe-update');
+    if(updateButton){ updateButton.disabled = true; updateButton.textContent = 'Preparando…'; }
 
     try{
       if('serviceWorker' in navigator){
         var reg = await navigator.serviceWorker.getRegistration('/');
         if(reg){
+          var changed = false;
+          var onControllerChange = function(){
+            if(changed) return;
+            changed = true;
+            reloadAfterUpdate();
+          };
+          navigator.serviceWorker.addEventListener('controllerchange', onControllerChange, { once:true });
+
           await reg.update();
+          if(reg.installing) await waitForWorkerInstalled(reg.installing, 18000);
 
           if(reg.waiting){
-            var refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', function(){
-              if(refreshing) return;
-              refreshing = true;
-              window.location.reload();
-            });
-
             reg.waiting.postMessage({ type:'LOTEKA_ACTIVATE_NEW_VERSION' });
-            setTimeout(function(){ window.location.reload(); }, 1200);
+            setTimeout(function(){ if(!changed) reloadAfterUpdate(); }, 18000);
             return;
           }
         }
@@ -38835,7 +38890,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
       console.warn('[LOTEKA] No se pudo activar Service Worker nuevo:', e);
     }
 
-    window.location.reload();
+    reloadAfterUpdate();
   }
 
   async function readVersion(){
@@ -39705,7 +39760,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.__lotekaDespachosRpcV410 = true;
 
   const VERSION = 'v803-despachos-multiples-integracion-real';
-  const BUILD = '2026-07-24-v804-seguridad-sesion-api-pwa';
+  const BUILD = '2026-07-27-v805.16-recuperacion-carga';
   window.__GRUPO_ORTIZ_BUILD__ = BUILD;
   document.documentElement.dataset.grupoOrtizBuild = BUILD;
   console.info('[Grupo Ortiz] Build ' + BUILD);
