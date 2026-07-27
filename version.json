@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-27-v805.15-pwa-stability",
-  "name": "v805.14 · Estabilización PWA móvil",
+  "version": "2026-07-27-v805.15-route-permissions",
+  "name": "v805.15 · Protección de rutas y permisos móviles",
   "released_at": "2026-07-27",
   "html": {
     "index": "index.html",
@@ -8,12 +8,13 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Versión unificada entre app.html, JavaScript, Service Worker y version.json",
-    "Supabase se carga mediante un cargador local con dos fuentes redundantes",
-    "La dependencia crítica de Supabase queda precacheada para el arranque posterior sin conexión",
-    "El Service Worker rechaza instalaciones incompletas del núcleo móvil",
-    "Se añadieron al precache los módulos faltantes del inventario y escáner",
-    "Las dependencias externas conocidas se cachean mediante una lista cerrada",
-    "Las notificaciones abiertas actualizan correctamente la ruta/hash de una app ya abierta"
+    "Las rutas móviles validan permisos antes de consultar o renderizar datos",
+    "La app redirige a la primera sección autorizada cuando una ruta está bloqueada",
+    "Los menús, navegación inferior y acciones rápidas ocultan accesos no autorizados",
+    "Las entradas, lotes, transferencias y recepciones usan permisos separados",
+    "Las mutaciones de inventario quedan bloqueadas si la RPC de autorización falta o no confirma acceso",
+    "Los formularios sensibles vuelven a validar el permiso al enviarse",
+    "Las consultas de operaciones e inventario dentro de una agencia solo se ejecutan cuando corresponden",
+    "Realtime solo se suscribe a módulos que el perfil puede consultar"
   ]
 }
