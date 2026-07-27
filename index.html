@@ -2,8 +2,7 @@
 
 <html class="ltk-auth-preboot" lang="es">
 <head>
-  <meta name="grupo-ortiz-build" content="2026-07-27-v805.17-desbloqueo-real">
-  <meta name="grupo-ortiz-index-hotfix" content="v805.17a-auth-no-bloqueante">
+  <meta name="grupo-ortiz-build" content="2026-07-24-v804-seguridad-sesion-api-pwa">
 <style id="loteka-v59-auth-critical-no-flash">
   /* Bloqueo crítico de primer pintado: evita que se vea el sistema antes de validar sesión. */
   html.ltk-auth-preboot,
@@ -72,31 +71,6 @@
 }
 .agency-date-chip i{color:#0ea5c6;}
 </style>
-<script id="loteka-v80517-boot-watchdog">
-(function(){
-  'use strict';
-  window.__lotekaBootErrors = window.__lotekaBootErrors || [];
-  window.addEventListener('error', function(e){
-    try{ window.__lotekaBootErrors.push(String(e && (e.message || e.error) || 'Error de carga')); }catch(_e){}
-  });
-  window.addEventListener('unhandledrejection', function(e){
-    try{ window.__lotekaBootErrors.push(String(e && e.reason && (e.reason.message || e.reason) || 'Promesa rechazada')); }catch(_e){}
-  });
-  setTimeout(function(){
-    var html = document.documentElement;
-    var body = document.body;
-    var blocked = html.classList.contains('ltk-auth-preboot') || (body && body.classList.contains('ltk-auth-booting'));
-    if(!blocked) return;
-    html.classList.remove('ltk-auth-preboot');
-    if(body) body.classList.remove('ltk-auth-booting');
-    var panel = document.createElement('div');
-    panel.id = 'lotekaEmergencyBoot';
-    panel.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:#071d32;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif';
-    panel.innerHTML = '<div style="width:min(520px,100%);padding:28px;border:1px solid rgba(125,211,252,.28);border-radius:24px;background:#0a3454;box-shadow:0 30px 80px rgba(0,0,0,.35);text-align:center"><div style="width:68px;height:68px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;background:#0ea5c6;font-weight:1000;font-size:22px">GO</div><h2 style="margin:0 0 10px">La carga no terminó correctamente</h2><p style="margin:0;color:#c9e8f7;line-height:1.55">Una dependencia externa o un Service Worker anterior está bloqueando el inicio. Usa la recuperación segura para limpiar únicamente la caché de la aplicación.</p><a href="/recuperar.html?destino=index" style="display:inline-flex;margin-top:20px;padding:12px 18px;border-radius:14px;background:#67e8f9;color:#06233d;text-decoration:none;font-weight:950">Recuperar sistema</a></div>';
-    if(body) body.appendChild(panel);
-  },12000);
-})();
-</script>
 <script id="loteka-v126-hard-dev-clean">
 (function(){
   try{
@@ -127,14 +101,12 @@
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/>
-<meta content="2026-07-27-v805.17-desbloqueo-real" name="loteka-build"/>
+<meta content="2026-07-24-v802-despachos-multiples-real" name="loteka-build"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Grupo Ortiz</title>
-<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'"/>
-<noscript><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" rel="stylesheet"/></noscript>
-<link rel="preload" as="style" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" onload="this.onload=null;this.rel='stylesheet'"/>
-<noscript><link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet"/></noscript>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet"/>
 <style>
 :root{
   --bg:#f3f5f7;
@@ -14404,33 +14376,7 @@ llenarSelectsTransferencia();
 renderEntradas();
 renderTransferencias();
 </script>
-<script id="loteka-maplibre-nonblocking-loader">
-(function(){
-  'use strict';
-  if(window.maplibregl){ window.__lotekaMapLibreReady = Promise.resolve(window.maplibregl); return; }
-  window.__lotekaMapLibreReady = new Promise(function(resolve){
-    var settled = false;
-    var script = document.createElement('script');
-    var finish = function(value){ if(settled) return; settled = true; resolve(value || null); };
-    script.src = 'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js';
-    script.async = true;
-    script.crossOrigin = 'anonymous';
-    script.onload = function(){
-      finish(window.maplibregl || null);
-      try{ window.dispatchEvent(new CustomEvent('loteka:maplibre-ready')); }catch(e){}
-      setTimeout(function(){
-        try{
-          if(typeof window.ensureAgencyMap === 'function') window.ensureAgencyMap();
-          if(typeof window.agencyMapRefresh === 'function' && Array.isArray(window.agencias)) window.agencyMapRefresh(window.agencias,{fit:false});
-        }catch(e){}
-      },80);
-    };
-    script.onerror = function(){ console.warn('[LOTEKA] MapLibre no disponible; el resto del sistema continuará funcionando.'); finish(null); };
-    document.head.appendChild(script);
-    setTimeout(function(){ finish(window.maplibregl || null); },8000);
-  });
-})();
-</script>
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script>
 /* Motor local temporal: mantiene el flujo del sistema mientras se conecta el backend definitivo. */
 window.BackendCero = window.BackendCero || {
@@ -25589,7 +25535,7 @@ window.addEventListener('DOMContentLoaded', ltkInitBridge);
 </script>
 <script id="loteka-menu-refresh-cache-fix-js">
 (function(){
-  const BUILD = '2026-07-27-v805.17-desbloqueo-real';
+  const BUILD = '2026-05-08-v59-grupo01-agencias-tipos-v1';
 
   function safeInvalidateMap(){
     try { if (window.agenciasMapInstance && typeof window.agenciasMapInstance.invalidateSize === 'function') window.agenciasMapInstance.invalidateSize(true); } catch(e){}
@@ -25648,8 +25594,10 @@ window.addEventListener('DOMContentLoaded', ltkInitBridge);
   async function setupAutoCache(){
     try {
       const previous = localStorage.getItem('loteka-build-version');
-      // V805.17: nunca borrar cachés durante el arranque normal.
-      // La limpieza se realiza únicamente desde /recuperar.html cuando el usuario la solicita.
+      if(previous && previous !== BUILD && window.caches){
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => /loteka|pwa|cache/i.test(k)).map(k => caches.delete(k)));
+      }
       localStorage.setItem('loteka-build-version', BUILD);
     } catch(e){}
     try {
@@ -26978,7 +26926,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
 .ltk-access-denied-toast.is-visible{display:block;}
 @media(max-width:980px){.ltk-auth-shell{grid-template-columns:1fr;min-height:auto;max-width:520px;}.ltk-auth-visual{display:none;}.ltk-auth-panel{padding:34px 26px;}.ltk-auth-screen{padding:18px;}.ltk-auth-head h2{font-size:27px;}.loteka-topbar-logout{display:none!important;}}
 </style>
-<script src="./assets/app/js/vendor/supabase-loader.js?v=80517" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script id="loteka-v86-auth-permissions-js">
 (function(){
   'use strict';
@@ -27012,7 +26960,6 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     document.documentElement.classList.remove('ltk-auth-preboot');
     document.body.classList.remove('ltk-auth-booting');
     document.body.classList.toggle('ltk-auth-locked', !!locked);
-    if(!locked){ try{ sessionStorage.removeItem('loteka-update-reload-lock'); }catch(e){} }
     const screen = qs('#ltkAuthScreen');
     if(screen) screen.setAttribute('aria-hidden', locked ? 'false' : 'true');
   }
@@ -27158,7 +27105,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
       'reportsAgency':'ver_reportes',
       'reportsOwner':'ver_reportes',
       'reportsSpecific':'ver_reportes',
-      'users':['ver_usuarios','gestionar_usuarios','administrar_roles_permisos','ver_catalogos'],
+      'users':'ver_catalogos',
       'suppliers':'ver_catalogos',
       'works':'gestionar_catalogos',
       'issues':'gestionar_catalogos'
@@ -27201,11 +27148,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     setVisibleByPermission('.sidebar-group[data-section="operaciones"]','ver_operaciones');
     setVisibleByPermission('.sidebar-group[data-section="rrhh"]','ver_rrhh');
     setVisibleByPermission('.sidebar-group[data-section="reportes"]','ver_reportes');
-    setVisibleByPermission('.sidebar-group[data-section="catalogos"]',['ver_catalogos','gestionar_catalogos','ver_usuarios','gestionar_usuarios','administrar_roles_permisos']);
-    setVisibleByPermission('#navUsers',['ver_usuarios','gestionar_usuarios','administrar_roles_permisos','ver_catalogos']);
-    setVisibleByPermission('#navSuppliers','ver_catalogos');
-    setVisibleByPermission('#navWorks','gestionar_catalogos');
-    setVisibleByPermission('#navIssues','gestionar_catalogos');
+    setVisibleByPermission('.sidebar-group[data-section="catalogos"]','ver_catalogos');
     setVisibleByOnclickNeedle("cambiarVista('home'", 'ver_home');
     setVisibleByOnclickNeedle("cambiarVista('agencias'", 'ver_agencias');
     setVisibleByOnclickNeedle("cambiarVista('grupos'", 'ver_grupos');
@@ -27470,37 +27413,17 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     }
   }
   window.lotekaReloadAgenciasGruposSupabase = loadSupabaseAgenciasGrupos;
-  function authStepWithTimeout(promise, timeoutMs, message){
-    return Promise.race([
-      Promise.resolve(promise),
-      new Promise(function(_, reject){
-        setTimeout(function(){ reject(new Error(message || 'La validación tardó demasiado.')); }, timeoutMs || 12000);
-      })
-    ]);
-  }
   async function unlockWithSession(session){
     state.session = session;
     state.user = session && session.user ? session.user : null;
     if(!state.user){ setLocked(true); return; }
-
-    // Solo el perfil y los permisos son críticos para abrir el sistema.
-    // Las más de mil agencias/grupos se sincronizan después, en segundo plano.
-    state.perfil = await authStepWithTimeout(
-      loadPerfil(state.user),
-      12000,
-      'No se pudo cargar tu perfil a tiempo. Revisa la conexión e inténtalo nuevamente.'
-    );
-    await authStepWithTimeout(
-      loadPermissions(),
-      12000,
-      'No se pudieron validar tus permisos a tiempo. Revisa la conexión e inténtalo nuevamente.'
-    );
-
+    state.perfil = await loadPerfil(state.user);
+    await loadPermissions();
+    await loadSupabaseAgenciasGrupos();
     renderTopbarUser();
     applyPermissionsToUI();
     installPermissionGuards();
     setLocked(false);
-
     setTimeout(function(){
       try{
         if(typeof window.lotekaRestoreActiveView === 'function') window.lotekaRestoreActiveView('auth');
@@ -27511,18 +27434,6 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
         }
       }catch(e){}
     }, 80);
-
-    // La sincronización pesada ya no puede mantener la pantalla GO bloqueada.
-    setTimeout(function(){
-      authStepWithTimeout(
-        loadSupabaseAgenciasGrupos(),
-        20000,
-        'La sincronización de agencias y grupos excedió el tiempo permitido.'
-      ).catch(function(err){
-        console.warn('[LOTEKA] El sistema abrió con el respaldo local de agencias:', err && err.message ? err.message : err);
-        window.lotekaAgenciasSource = 'local-fallback';
-      });
-    }, 0);
   }
   async function handleLogin(event){
     event.preventDefault();
@@ -27550,27 +27461,11 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     setLocked(true);
     clearError();
   }
-  async function waitForSupabaseLibrary(){
-    if(window.supabase && window.supabase.createClient) return true;
-    try{
-      if(window.__goSupabaseLibraryReady){
-        await Promise.race([
-          window.__goSupabaseLibraryReady,
-          new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('Tiempo agotado al cargar Supabase.')); }, 16000); })
-        ]);
-      }
-    }catch(err){
-      console.warn('[LOTEKA] No se pudo cargar la librería de Supabase:', err && err.message ? err.message : err);
-    }
-    return !!(window.supabase && window.supabase.createClient);
-  }
   async function bootAuth(){
     buildLogin();
-    setLocked(true);
-    var supabaseReady = await waitForSupabaseLibrary();
-    if(!supabaseReady){
+    if(!window.supabase || !window.supabase.createClient){
       setLocked(true);
-      showError('No se pudo cargar Supabase. Revisa la conexión y vuelve a intentarlo.');
+      showError('No se pudo cargar Supabase. Revisa la conexión a internet.');
       return;
     }
     state.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -27585,13 +27480,7 @@ body.ltk-auth-locked .ltk-auth-screen{display:flex;}
     if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     setLocked(true);
     try{
-      const sessionResult = await authStepWithTimeout(
-        state.client.auth.getSession(),
-        10000,
-        'La validación de sesión tardó demasiado. Vuelve a cargar la página.'
-      );
-      const data = sessionResult && sessionResult.data;
-      const error = sessionResult && sessionResult.error;
+      const { data, error } = await state.client.auth.getSession();
       if(error) throw error;
       if(data && data.session){ await unlockWithSession(data.session); }
       else{ setLocked(true); }
@@ -38915,63 +38804,25 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     }
   }
 
-  function reloadAfterUpdate(){
-    try{
-      if(sessionStorage.getItem('loteka-update-reload-lock') === '1') return;
-      sessionStorage.setItem('loteka-update-reload-lock','1');
-    }catch(e){}
-    var url = new URL(window.location.href);
-    url.searchParams.set('_ltk_update', Date.now().toString());
-    window.location.replace(url.toString());
-  }
-
-  function waitForWorkerInstalled(worker, timeoutMs){
-    return new Promise(function(resolve){
-      if(!worker){ resolve(false); return; }
-      if(worker.state === 'installed'){ resolve(true); return; }
-      var done = false;
-      var timer = setTimeout(function(){
-        if(done) return;
-        done = true;
-        resolve(false);
-      }, timeoutMs || 15000);
-      worker.addEventListener('statechange', function(){
-        if(done) return;
-        if(worker.state === 'installed'){
-          done = true;
-          clearTimeout(timer);
-          resolve(true);
-        }else if(worker.state === 'redundant'){
-          done = true;
-          clearTimeout(timer);
-          resolve(false);
-        }
-      });
-    });
-  }
-
   async function activateNewVersion(){
-    var updateButton = document.querySelector('#'+bannerId+' .ltk-safe-update');
-    if(updateButton){ updateButton.disabled = true; updateButton.textContent = 'Preparando…'; }
+    await clearLotekaCaches();
 
     try{
       if('serviceWorker' in navigator){
         var reg = await navigator.serviceWorker.getRegistration('/');
         if(reg){
-          var changed = false;
-          var onControllerChange = function(){
-            if(changed) return;
-            changed = true;
-            reloadAfterUpdate();
-          };
-          navigator.serviceWorker.addEventListener('controllerchange', onControllerChange, { once:true });
-
           await reg.update();
-          if(reg.installing) await waitForWorkerInstalled(reg.installing, 18000);
 
           if(reg.waiting){
+            var refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', function(){
+              if(refreshing) return;
+              refreshing = true;
+              window.location.reload();
+            });
+
             reg.waiting.postMessage({ type:'LOTEKA_ACTIVATE_NEW_VERSION' });
-            setTimeout(function(){ if(!changed) reloadAfterUpdate(); }, 18000);
+            setTimeout(function(){ window.location.reload(); }, 1200);
             return;
           }
         }
@@ -38980,7 +38831,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
       console.warn('[LOTEKA] No se pudo activar Service Worker nuevo:', e);
     }
 
-    reloadAfterUpdate();
+    window.location.reload();
   }
 
   async function readVersion(){
@@ -39023,7 +38874,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
     if(!('serviceWorker' in navigator)) return;
 
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('/service-worker.js', { scope:'/', updateViaCache:'none' })
+      navigator.serviceWorker.register('/service-worker.js', { scope:'/' })
         .then(function(reg){
           try{ reg.update(); }catch(e){}
 
@@ -39850,7 +39701,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.__lotekaDespachosRpcV410 = true;
 
   const VERSION = 'v803-despachos-multiples-integracion-real';
-  const BUILD = '2026-07-27-v805.17-desbloqueo-real';
+  const BUILD = '2026-07-24-v804-seguridad-sesion-api-pwa';
   window.__GRUPO_ORTIZ_BUILD__ = BUILD;
   document.documentElement.dataset.grupoOrtizBuild = BUILD;
   console.info('[Grupo Ortiz] Build ' + BUILD);
@@ -42401,367 +42252,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   window.addEventListener('load',()=>setTimeout(boot,600));
   console.info('[LOTEKA]',VERSION,'Entrega directa e inventarios de destino instalados.');
-})();
-</script>
-
-<!-- ======================================================================
-     LOTEKA / GRUPO ORTIZ · PARCHE 03A
-     Administración de perfiles de acceso, puestos y matriz de permisos
-     ====================================================================== -->
-<style id="loteka-v306-access-manager-css">
-  .ltk-access-tabs{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:8px;border:1px solid #d8e8f2;background:rgba(255,255,255,.78);border-radius:18px;box-shadow:0 12px 28px rgba(12,61,94,.06)}
-  .ltk-access-tab{border:0;border-radius:13px;padding:11px 16px;background:transparent;color:#527087;font-size:13px;font-weight:950;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.16s ease}
-  .ltk-access-tab:hover{background:#eef7fb;color:#164d72}.ltk-access-tab.active{background:linear-gradient(135deg,#1a567f,#16a8d4);color:#fff;box-shadow:0 10px 22px rgba(22,168,212,.22)}
-  .ltk-access-tab[hidden]{display:none!important}.ltk-access-panel[hidden]{display:none!important}
-  .ltk-access-shell{display:grid;grid-template-columns:minmax(245px,310px) minmax(0,1fr);gap:16px;min-height:650px}
-  .ltk-access-sidebar,.ltk-access-editor{border:1px solid #d9e8f1;background:#fff;border-radius:22px;box-shadow:0 16px 36px rgba(11,66,102,.07);overflow:hidden}
-  .ltk-access-side-head{padding:18px;border-bottom:1px solid #e1edf4;background:linear-gradient(180deg,#f9fdff,#f4f9fc)}
-  .ltk-access-side-head h3,.ltk-access-editor-head h3{margin:0;color:#123f63;font-size:19px;font-weight:1000;letter-spacing:-.02em}.ltk-access-side-head p,.ltk-access-editor-head p{margin:6px 0 0;color:#6a8497;font-size:12px;font-weight:750;line-height:1.4}
-  .ltk-access-side-actions{display:flex;gap:8px;margin-top:14px}.ltk-access-side-actions button{flex:1;border:0;border-radius:13px;min-height:40px;padding:0 12px;font-weight:950;cursor:pointer}
-  .ltk-access-new{background:linear-gradient(135deg,#1b5b85,#16a8d4);color:#fff}.ltk-access-positions{background:#eaf5fa;color:#285c79;border:1px solid #d4e7f1!important}
-  .ltk-access-search{width:100%;height:42px;margin-top:12px;border:1px solid #cfdfeb;border-radius:13px;background:#fff;padding:0 13px;color:#163f5c;font-weight:800;outline:none}.ltk-access-search:focus{border-color:#16a8d4;box-shadow:0 0 0 4px rgba(22,168,212,.12)}
-  .ltk-access-role-list{padding:10px;display:grid;gap:8px;max-height:540px;overflow:auto}.ltk-access-role{width:100%;border:1px solid #dfebf2;border-radius:16px;background:#fff;padding:13px 14px;text-align:left;cursor:pointer;transition:.16s ease;color:#153f5c}.ltk-access-role:hover{border-color:#9ed8ea;transform:translateY(-1px)}.ltk-access-role.active{border-color:#17a5d1;background:linear-gradient(180deg,#effbff,#f7fdff);box-shadow:0 10px 24px rgba(23,165,209,.12)}
-  .ltk-access-role-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.ltk-access-role strong{font-size:14px;font-weight:1000}.ltk-access-role small{display:block;margin-top:5px;color:#718a9d;font-size:11px;font-weight:800;line-height:1.35}.ltk-access-role-count{flex:0 0 auto;border-radius:999px;padding:5px 8px;background:#eaf5fa;color:#1c6d91;font-size:10px;font-weight:1000}.ltk-access-role-system{display:inline-flex;margin-top:8px;border-radius:999px;padding:4px 7px;background:#edfdf5;color:#15805b;font-size:9px;font-weight:1000;text-transform:uppercase;letter-spacing:.04em}
-  .ltk-access-editor-head{padding:20px 22px;border-bottom:1px solid #e0edf4;background:linear-gradient(135deg,#f8fdff,#eff8fc);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.ltk-access-editor-badge{border-radius:999px;padding:7px 10px;background:#e8f6fb;color:#19749a;font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-  .ltk-access-editor-body{padding:20px 22px}.ltk-access-form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px}.ltk-access-field{display:grid;gap:7px}.ltk-access-field.full{grid-column:1/-1}.ltk-access-field label{color:#315d79;font-size:11px;font-weight:1000;text-transform:uppercase;letter-spacing:.05em}.ltk-access-field input,.ltk-access-field textarea,.ltk-access-field select{width:100%;border:1px solid #cfe0eb;border-radius:14px;background:#fff;color:#153f5c;padding:12px 13px;font-weight:800;outline:none}.ltk-access-field textarea{min-height:82px;resize:vertical;line-height:1.45}.ltk-access-field input:focus,.ltk-access-field textarea:focus,.ltk-access-field select:focus{border-color:#17a5d1;box-shadow:0 0 0 4px rgba(23,165,209,.11)}
-  .ltk-access-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.ltk-access-stat{border:1px solid #dfebf2;border-radius:15px;background:#f9fcfe;padding:12px}.ltk-access-stat span{display:block;color:#738b9c;font-size:9px;font-weight:1000;text-transform:uppercase;letter-spacing:.05em}.ltk-access-stat b{display:block;margin-top:5px;color:#123f63;font-size:18px;font-weight:1000}
-  .ltk-perm-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 12px}.ltk-perm-toolbar h4{margin:0;color:#123f63;font-size:16px;font-weight:1000}.ltk-perm-toolbar p{margin:4px 0 0;color:#72899b;font-size:11px;font-weight:750}.ltk-perm-actions{display:flex;gap:8px}.ltk-perm-actions button{border:1px solid #d4e5ef;border-radius:11px;background:#f5fafc;color:#315d79;padding:8px 10px;font-size:11px;font-weight:950;cursor:pointer}
-  .ltk-perm-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ltk-perm-group{border:1px solid #dce9f1;border-radius:18px;background:#fff;overflow:hidden}.ltk-perm-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#f5fafc;border-bottom:1px solid #e2edf3}.ltk-perm-group-head strong{color:#174a6c;font-size:12px;font-weight:1000}.ltk-perm-group-head button{border:0;border-radius:9px;background:#e5f3f8;color:#237397;padding:5px 8px;font-size:9px;font-weight:1000;cursor:pointer}.ltk-perm-list{padding:8px 10px;display:grid;gap:5px}.ltk-perm-item{display:grid;grid-template-columns:20px minmax(0,1fr);gap:9px;align-items:flex-start;padding:9px;border-radius:12px;cursor:pointer}.ltk-perm-item:hover{background:#f6fbfd}.ltk-perm-item input{width:17px;height:17px;margin-top:1px;accent-color:#139cc9}.ltk-perm-item b{display:block;color:#173f5b;font-size:12px;font-weight:950}.ltk-perm-item small{display:block;margin-top:3px;color:#7a8f9e;font-size:10px;line-height:1.35;font-weight:700}.ltk-perm-code{display:inline-block;margin-top:4px;color:#4791ab;font:700 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace}
-  .ltk-access-assign{margin-top:18px;border:1px solid #cfe9dc;background:linear-gradient(180deg,#f2fdf8,#f9fffc);border-radius:18px;padding:15px}.ltk-access-assign h4{margin:0;color:#176848;font-size:14px;font-weight:1000}.ltk-access-assign p{margin:5px 0 12px;color:#59806e;font-size:11px;font-weight:750}.ltk-access-assign-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:10px}.ltk-access-assign select{border:1px solid #c8e4d7;border-radius:13px;background:#fff;color:#174c37;padding:11px 12px;font-weight:850}.ltk-access-assign button{border:0;border-radius:13px;background:#169b69;color:#fff;padding:0 16px;font-weight:1000;cursor:pointer}
-  .ltk-access-editor-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 22px;border-top:1px solid #dfebf2;background:#fafcfd;position:sticky;bottom:0}.ltk-access-editor-foot .left,.ltk-access-editor-foot .right{display:flex;gap:9px}.ltk-access-btn{border:0;border-radius:13px;min-height:43px;padding:0 15px;font-weight:1000;cursor:pointer}.ltk-access-btn.primary{background:linear-gradient(135deg,#1b5b85,#16a8d4);color:#fff;box-shadow:0 12px 24px rgba(22,168,212,.2)}.ltk-access-btn.secondary{background:#edf5f9;color:#355d78;border:1px solid #d5e5ee}.ltk-access-btn.danger{background:#fff0f1;color:#b42336;border:1px solid #ffd2d7}.ltk-access-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
-  .ltk-access-empty{display:grid;place-items:center;min-height:500px;padding:30px;text-align:center}.ltk-access-empty i{font-size:46px;color:#8bcce2}.ltk-access-empty h3{margin:15px 0 6px;color:#174a6c}.ltk-access-empty p{margin:0;color:#7890a1;font-weight:750;max-width:430px}.ltk-access-loading{padding:30px;text-align:center;color:#54778e;font-weight:900}
-  .ltk-position-modal{position:fixed;inset:0;z-index:2147483500;background:rgba(5,24,40,.66);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:20px}.ltk-position-modal.open{display:flex}.ltk-position-card{width:min(760px,96vw);max-height:90vh;overflow:auto;border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.32)}.ltk-position-head{display:flex;justify-content:space-between;gap:12px;padding:20px 22px;background:linear-gradient(135deg,#123f63,#18a7d8);color:#fff}.ltk-position-head h3{margin:0;font-size:22px}.ltk-position-head p{margin:6px 0 0;color:rgba(255,255,255,.82);font-size:12px;font-weight:750}.ltk-position-head button{width:38px;height:38px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font-size:20px;cursor:pointer}.ltk-position-body{padding:20px 22px}.ltk-position-form{display:grid;grid-template-columns:1fr 1.5fr auto;gap:10px;margin-bottom:16px}.ltk-position-form input{border:1px solid #cee0eb;border-radius:13px;padding:11px 12px;font-weight:800}.ltk-position-form button{border:0;border-radius:13px;background:#159ac7;color:#fff;padding:0 16px;font-weight:1000;cursor:pointer}.ltk-position-list{display:grid;gap:8px}.ltk-position-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid #dfebf2;border-radius:15px;padding:12px 13px}.ltk-position-row b{color:#174a6c}.ltk-position-row small{display:block;margin-top:4px;color:#788e9d;font-weight:750}.ltk-position-row-actions{display:flex;gap:7px}.ltk-position-row-actions button{border:1px solid #d7e6ee;border-radius:10px;background:#f5fafc;color:#315d79;padding:7px 9px;font-size:10px;font-weight:950;cursor:pointer}.ltk-position-row-actions button.danger{background:#fff2f3;color:#b42336;border-color:#ffd5da}
-  .ltk-access-readonly-note{margin:14px 0;border:1px solid #f3d7a4;background:#fff9eb;color:#8a5b13;border-radius:14px;padding:11px 13px;font-size:11px;font-weight:850;line-height:1.4}
-  @media(max-width:980px){.ltk-access-shell{grid-template-columns:1fr}.ltk-access-role-list{max-height:270px}.ltk-perm-groups{grid-template-columns:1fr}.ltk-access-assign-grid{grid-template-columns:1fr}.ltk-access-assign button{min-height:44px}}
-  @media(max-width:680px){.ltk-access-tabs{overflow:auto}.ltk-access-tab{white-space:nowrap}.ltk-access-form-grid,.ltk-access-summary,.ltk-position-form{grid-template-columns:1fr}.ltk-access-editor-head,.ltk-access-editor-foot{flex-direction:column;align-items:stretch}.ltk-access-editor-foot .left,.ltk-access-editor-foot .right{width:100%}.ltk-access-editor-foot button{flex:1}.ltk-position-row{grid-template-columns:1fr}}
-</style>
-<script id="loteka-v306-access-manager-js">
-(function(){
-  'use strict';
-  if(window.__lotekaAccessManagerV306) return;
-  window.__lotekaAccessManagerV306 = true;
-
-  var state = {
-    catalog:null,
-    selectedRoleId:null,
-    newRole:false,
-    loading:false,
-    installed:false
-  };
-
-  function qs(s,root){ return (root||document).querySelector(s); }
-  function qsa(s,root){ return Array.prototype.slice.call((root||document).querySelectorAll(s)); }
-  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-  function client(){ return window.lotekaSupabase || window.supabaseClient || null; }
-  function authState(){ return window.lotekaAuthState || {}; }
-  function roleName(){ var p=authState().perfil||authState().profile||{}; return String((p.roles&&p.roles.nombre)||p.rol||''); }
-  function isAdmin(){ return /administrador|admin/i.test(roleName()); }
-  function has(code){
-    if(isAdmin()) return true;
-    try{ return typeof window.lotekaHasPermission==='function' && window.lotekaHasPermission(code); }catch(e){ return false; }
-  }
-  function canViewUsers(){ return has('ver_usuarios') || has('gestionar_usuarios') || has('administrar_roles_permisos') || has('ver_catalogos'); }
-  function canManageUsers(){ return has('gestionar_usuarios'); }
-  function canManageAccess(){ return has('administrar_roles_permisos'); }
-  function toast(title,text,type){
-    try{ if(typeof window.showToastNotification==='function') return window.showToastNotification(title||'Accesos',text||'',type||'info'); }catch(e){}
-    try{ if(typeof window.notify==='function') return window.notify((title?title+': ':'')+(text||''),type||'info'); }catch(e){}
-    if(text) alert((title?title+'\n':'')+text);
-  }
-  function deny(text){ toast('Acceso restringido',text||'No tienes permiso para administrar perfiles y permisos.','warning'); }
-  function friendly(error){
-    var msg=String(error&&error.message?error.message:error||'Error desconocido');
-    if(/rpc_admin_catalogo_accesos|function.*does not exist|PGRST202/i.test(msg)) return 'Primero ejecuta el SQL PARCHE_03A_PERFILES_PERMISOS.sql en Supabase.';
-    if(/permission|permiso|42501|row-level|policy/i.test(msg)) return 'Tu usuario no tiene autorización para administrar perfiles y permisos.';
-    return msg;
-  }
-  function formatCode(code){ return String(code||'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();}); }
-  function normalizeCatalog(raw){
-    raw=raw||{};
-    var roles=Array.isArray(raw.roles)?raw.roles:[];
-    var permisos=Array.isArray(raw.permisos)?raw.permisos:[];
-    var puestos=Array.isArray(raw.puestos)?raw.puestos:[];
-    var usuarios=Array.isArray(raw.usuarios)?raw.usuarios:[];
-    roles=roles.map(function(r){
-      var codes=Array.isArray(r.permisos)?r.permisos:[];
-      return Object.assign({},r,{id:String(r.id||''),permisos:codes.map(String),usuarios_asignados:Number(r.usuarios_asignados||0)});
-    });
-    permisos=permisos.map(function(p){return Object.assign({},p,{id:String(p.id||''),codigo:String(p.codigo||''),nombre:p.nombre||formatCode(p.codigo),categoria:p.categoria||'Otros',orden:Number(p.orden||0)});});
-    puestos=puestos.map(function(p){return Object.assign({},p,{id:String(p.id||''),usuarios_asignados:Number(p.usuarios_asignados||0)});});
-    usuarios=usuarios.map(function(u){return Object.assign({},u,{id:String(u.id||''),rol_id:u.rol_id?String(u.rol_id):'',puesto_id:u.puesto_id?String(u.puesto_id):''});});
-    return {roles:roles,permisos:permisos,puestos:puestos,usuarios:usuarios};
-  }
-
-  async function safeSelect(table,preferred){
-    var c=client();
-    var r=await c.from(table).select(preferred);
-    if(!r.error) return r.data||[];
-    var f=await c.from(table).select('*');
-    if(f.error) throw f.error;
-    return f.data||[];
-  }
-  async function loadFallbackCatalog(){
-    var c=client();
-    var values=await Promise.all([
-      safeSelect('roles','id,nombre,descripcion,activo,es_sistema'),
-      safeSelect('permisos','id,codigo,nombre,descripcion,categoria,orden,activo'),
-      safeSelect('roles_permisos','rol_id,permiso_id,permisos(codigo)'),
-      safeSelect('puestos','id,nombre,descripcion,activo,es_sistema'),
-      safeSelect('perfiles','id,nombre_completo,correo,activo,rol_id,puesto_id')
-    ]);
-    var roles=values[0],perms=values[1],links=values[2],positions=values[3],users=values[4];
-    var byRole={};
-    links.forEach(function(x){
-      var role=String(x.rol_id||''),code=String((x.permisos&&x.permisos.codigo)||'');
-      if(role&&code){ if(!byRole[role]) byRole[role]=[]; byRole[role].push(code); }
-    });
-    roles=roles.map(function(r){
-      var id=String(r.id||'');
-      return Object.assign({},r,{permisos:byRole[id]||[],usuarios_asignados:users.filter(function(u){return String(u.rol_id||'')===id;}).length});
-    });
-    positions=positions.map(function(p){var id=String(p.id||'');return Object.assign({},p,{usuarios_asignados:users.filter(function(u){return String(u.puesto_id||'')===id;}).length});});
-    return normalizeCatalog({roles:roles,permisos:perms,puestos:positions,usuarios:users});
-  }
-  async function loadCatalog(force){
-    if(state.loading) return;
-    if(state.catalog && !force){ renderAll(); return; }
-    if(!canManageAccess()){ deny(); return; }
-    var c=client(); if(!c){ toast('Supabase no disponible','No se encontró el cliente de Supabase.','error'); return; }
-    state.loading=true;
-    renderLoading();
-    try{
-      var response=await c.rpc('rpc_admin_catalogo_accesos');
-      if(response.error){
-        console.warn('[Accesos v306] RPC no disponible, intentando lectura directa:',response.error);
-        state.catalog=await loadFallbackCatalog();
-      }else state.catalog=normalizeCatalog(response.data);
-      if(!state.selectedRoleId && state.catalog.roles.length) state.selectedRoleId=String(state.catalog.roles[0].id);
-      if(state.selectedRoleId && !state.catalog.roles.some(function(r){return String(r.id)===String(state.selectedRoleId);})) state.selectedRoleId=state.catalog.roles.length?String(state.catalog.roles[0].id):null;
-      renderAll();
-    }catch(error){
-      console.error('[Accesos v306]',error);
-      renderError(friendly(error));
-      toast('No se pudo cargar',friendly(error),'error');
-    }finally{ state.loading=false; }
-  }
-
-  function ensureUI(){
-    var view=qs('#usersView'); if(!view) return false;
-    if(!qs('#ltkUsersAccessTabs')){
-      var tabs=document.createElement('div');
-      tabs.id='ltkUsersAccessTabs'; tabs.className='ltk-access-tabs';
-      tabs.innerHTML='<button type="button" class="ltk-access-tab active" data-access-tab="users"><i class="fas fa-users"></i> Usuarios</button>'+ 
-        '<button type="button" class="ltk-access-tab" data-access-tab="permissions"><i class="fas fa-user-shield"></i> Perfiles y permisos</button>';
-      var top=qs('.catalog-topbar',view); if(top) top.insertAdjacentElement('afterend',tabs); else view.insertBefore(tabs,view.firstChild);
-      var listPanel=qs(':scope > .panel',view) || qs('.panel',view);
-      if(listPanel){ listPanel.id='ltkUsersListPanel'; listPanel.classList.add('ltk-access-panel'); listPanel.dataset.accessPanel='users'; }
-      var access=document.createElement('div');
-      access.id='ltkUsersPermissionsPanel'; access.className='ltk-access-panel'; access.dataset.accessPanel='permissions'; access.hidden=true;
-      access.innerHTML='<div class="ltk-access-shell"><aside class="ltk-access-sidebar"><div class="ltk-access-side-head"><h3>Perfiles de acceso</h3><p>Cada perfil reúne los permisos que recibirán sus usuarios.</p><div class="ltk-access-side-actions"><button class="ltk-access-new" id="ltkAccessNewRole" type="button"><i class="fas fa-plus"></i> Nuevo perfil</button><button class="ltk-access-positions" id="ltkAccessPositions" type="button"><i class="fas fa-briefcase"></i> Puestos</button></div><input class="ltk-access-search" id="ltkAccessRoleSearch" placeholder="Buscar perfil..."></div><div class="ltk-access-role-list" id="ltkAccessRoleList"></div></aside><section class="ltk-access-editor" id="ltkAccessEditor"><div class="ltk-access-loading">Selecciona un perfil de acceso.</div></section></div>';
-      view.appendChild(access);
-      installEvents();
-    }
-    patchUserModalLabels();
-    applyUserPermissionControls();
-    return true;
-  }
-
-  function patchUserModalLabels(){
-    var role=qs('#uCatRole'),position=qs('#uCatPuesto');
-    if(role){ var label=role.closest('.ltk-user-field')&&role.closest('.ltk-user-field').querySelector('label'); if(label) label.textContent='Perfil de acceso'; role.disabled=!canManageAccess(); }
-    if(position){ var plabel=position.closest('.ltk-user-field')&&position.closest('.ltk-user-field').querySelector('label'); if(plabel) plabel.textContent='Puesto laboral'; }
-    var note=qs('#lotekaUserCatalogModal .ltk-user-note');
-    if(note) note.textContent='El puesto laboral describe el cargo. El perfil de acceso define exactamente qué módulos y acciones puede utilizar el usuario.';
-  }
-  function applyUserPermissionControls(){
-    var view=qs('#usersView'); if(!view) return;
-    var add=qs('#addUserBtn'); if(add) add.style.display=canManageUsers()?'':'none';
-    var permissionsTab=qs('[data-access-tab="permissions"]'); if(permissionsTab) permissionsTab.hidden=!canManageAccess();
-    qsa('#usersCatalogTableBody button').forEach(function(btn){ btn.style.display=canManageUsers()?'':'none'; });
-    var headers=qsa('#usersView table thead th'); if(headers[2]) headers[2].textContent='PERFIL DE ACCESO / PUESTO';
-    patchUserModalLabels();
-  }
-
-  function installEvents(){
-    var tabs=qs('#ltkUsersAccessTabs');
-    if(tabs && !tabs.dataset.bound){
-      tabs.dataset.bound='1';
-      tabs.addEventListener('click',function(e){ var b=e.target.closest('[data-access-tab]'); if(b) switchTab(b.dataset.accessTab); });
-    }
-    var panel=qs('#ltkUsersPermissionsPanel');
-    if(panel && !panel.dataset.bound){
-      panel.dataset.bound='1';
-      panel.addEventListener('click',function(e){
-        var roleBtn=e.target.closest('[data-role-id]');
-        if(roleBtn){ state.newRole=false; state.selectedRoleId=roleBtn.dataset.roleId; renderAll(); return; }
-        if(e.target.closest('#ltkAccessNewRole')){ startNewRole(); return; }
-        if(e.target.closest('#ltkAccessPositions')){ openPositionsModal(); return; }
-        var groupBtn=e.target.closest('[data-toggle-category]');
-        if(groupBtn){ toggleCategory(groupBtn.dataset.toggleCategory); return; }
-        if(e.target.closest('#ltkPermAll')){ qsa('#ltkAccessEditor input[data-permission]').forEach(function(x){x.checked=true;}); updateSelectedCounter(); return; }
-        if(e.target.closest('#ltkPermNone')){ qsa('#ltkAccessEditor input[data-permission]').forEach(function(x){x.checked=false;}); updateSelectedCounter(); return; }
-        if(e.target.closest('#ltkAccessSaveRole')){ saveRole(); return; }
-        if(e.target.closest('#ltkAccessDeleteRole')){ deleteRole(); return; }
-        if(e.target.closest('#ltkAccessCancelNew')){ state.newRole=false; state.selectedRoleId=state.catalog&&state.catalog.roles[0]?String(state.catalog.roles[0].id):null; renderAll(); return; }
-        if(e.target.closest('#ltkAccessAssignUser')){ assignRoleToUser(); return; }
-      });
-      panel.addEventListener('input',function(e){
-        if(e.target.id==='ltkAccessRoleSearch'){ renderRoleList(); }
-        if(e.target.matches('input[data-permission]')) updateSelectedCounter();
-      });
-      panel.addEventListener('change',function(e){ if(e.target.id==='ltkAccessAssignUserSelect') syncAssignmentPosition(); });
-    }
-    var body=qs('#usersCatalogTableBody');
-    if(body && !body.__ltkAccessObserver){
-      body.__ltkAccessObserver=new MutationObserver(function(){applyUserPermissionControls();});
-      body.__ltkAccessObserver.observe(body,{childList:true,subtree:true});
-    }
-    if(!window.__ltkAccessModalObserver){
-      window.__ltkAccessModalObserver=new MutationObserver(function(){patchUserModalLabels();});
-      window.__ltkAccessModalObserver.observe(document.body,{childList:true,subtree:true});
-    }
-  }
-
-  function switchTab(tab){
-    ensureUI();
-    if(tab==='permissions'&&!canManageAccess()){ deny(); return; }
-    qsa('#ltkUsersAccessTabs [data-access-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.accessTab===tab);});
-    qsa('#usersView [data-access-panel]').forEach(function(p){p.hidden=p.dataset.accessPanel!==tab;});
-    if(tab==='permissions') loadCatalog(false);
-    else if(typeof window.lotekaLoadUsersCatalogSupabase==='function') window.lotekaLoadUsersCatalogSupabase();
-  }
-
-  function renderLoading(){ var list=qs('#ltkAccessRoleList'),editor=qs('#ltkAccessEditor'); if(list)list.innerHTML='<div class="ltk-access-loading"><i class="fas fa-spinner fa-spin"></i> Cargando perfiles...</div>'; if(editor)editor.innerHTML='<div class="ltk-access-loading"><i class="fas fa-spinner fa-spin"></i> Cargando matriz...</div>'; }
-  function renderError(message){ var editor=qs('#ltkAccessEditor'); if(editor)editor.innerHTML='<div class="ltk-access-empty"><div><i class="fas fa-triangle-exclamation"></i><h3>No se pudo abrir el administrador</h3><p>'+esc(message)+'</p></div></div>'; }
-  function renderAll(){ if(!state.catalog)return; renderRoleList(); renderEditor(); }
-  function renderRoleList(){
-    var box=qs('#ltkAccessRoleList'); if(!box||!state.catalog)return;
-    var q=String(qs('#ltkAccessRoleSearch')&&qs('#ltkAccessRoleSearch').value||'').toLowerCase().trim();
-    var roles=state.catalog.roles.filter(function(r){return !q||String(r.nombre||'').toLowerCase().includes(q)||String(r.descripcion||'').toLowerCase().includes(q);});
-    box.innerHTML=roles.length?roles.map(function(r){
-      var active=!state.newRole&&String(r.id)===String(state.selectedRoleId);
-      return '<button type="button" class="ltk-access-role '+(active?'active':'')+'" data-role-id="'+esc(r.id)+'"><div class="ltk-access-role-top"><strong>'+esc(r.nombre||'Sin nombre')+'</strong><span class="ltk-access-role-count">'+esc(r.usuarios_asignados||0)+' usuario(s)</span></div><small>'+esc(r.descripcion||'Sin descripción')+'</small>'+(r.es_sistema?'<span class="ltk-access-role-system">Perfil del sistema</span>':'')+'</button>';
-    }).join(''):'<div class="ltk-access-loading">No hay perfiles que coincidan.</div>';
-  }
-  function selectedRole(){ if(state.newRole)return {id:null,nombre:'',descripcion:'',permisos:[],usuarios_asignados:0,es_sistema:false}; return state.catalog&&state.catalog.roles.find(function(r){return String(r.id)===String(state.selectedRoleId);}); }
-  function groupedPermissions(){
-    var groups={};
-    (state.catalog&&state.catalog.permisos||[]).filter(function(p){return p.activo!==false;}).sort(function(a,b){return String(a.categoria).localeCompare(String(b.categoria),'es')||(a.orden-b.orden);}).forEach(function(p){var cat=p.categoria||'Otros';if(!groups[cat])groups[cat]=[];groups[cat].push(p);});
-    return groups;
-  }
-  function renderEditor(){
-    var editor=qs('#ltkAccessEditor'); if(!editor||!state.catalog)return;
-    var role=selectedRole();
-    if(!role){editor.innerHTML='<div class="ltk-access-empty"><div><i class="fas fa-user-shield"></i><h3>Selecciona un perfil</h3><p>Abre un perfil de acceso para consultar o modificar su matriz de permisos.</p></div></div>';return;}
-    var isProtected=/^administrador$/i.test(String(role.nombre||'').trim());
-    var selected=new Set((role.permisos||[]).map(String));
-    var groups=groupedPermissions();
-    var groupHtml=Object.keys(groups).map(function(cat){
-      var items=groups[cat];
-      return '<section class="ltk-perm-group"><div class="ltk-perm-group-head"><strong>'+esc(cat)+'</strong><button type="button" data-toggle-category="'+esc(cat)+'">Marcar grupo</button></div><div class="ltk-perm-list">'+items.map(function(p){
-        return '<label class="ltk-perm-item"><input type="checkbox" data-permission="'+esc(p.codigo)+'" '+(selected.has(p.codigo)||isProtected?'checked':'')+' '+(isProtected?'disabled':'')+'><span><b>'+esc(p.nombre||formatCode(p.codigo))+'</b><small>'+esc(p.descripcion||'')+'</small><span class="ltk-perm-code">'+esc(p.codigo)+'</span></span></label>';
-      }).join('')+'</div></section>';
-    }).join('');
-    var users=(state.catalog.usuarios||[]).filter(function(u){return u.activo!==false;});
-    var positions=state.catalog.puestos||[];
-    var userOptions='<option value="">Selecciona un usuario</option>'+users.map(function(u){return '<option value="'+esc(u.id)+'">'+esc(u.nombre||u.correo||'Usuario')+'</option>';}).join('');
-    var positionOptions='<option value="">Sin puesto laboral</option>'+positions.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(p.nombre)+'</option>';}).join('');
-    editor.innerHTML='<div class="ltk-access-editor-head"><div><h3>'+(state.newRole?'Nuevo perfil de acceso':esc(role.nombre))+'</h3><p>Define exactamente qué puede consultar o modificar este perfil.</p></div><span class="ltk-access-editor-badge">'+(isProtected?'Protegido':'Configurable')+'</span></div><div class="ltk-access-editor-body">'+
-      '<div class="ltk-access-form-grid"><div class="ltk-access-field"><label>Nombre del perfil</label><input id="ltkAccessRoleName" value="'+esc(role.nombre||'')+'" placeholder="Ej.: Auxiliar de Operaciones" '+(isProtected?'readonly':'')+'></div><div class="ltk-access-field"><label>Descripción</label><input id="ltkAccessRoleDescription" value="'+esc(role.descripcion||'')+'" placeholder="Describe para quién se utilizará"></div></div>'+
-      '<div class="ltk-access-summary"><div class="ltk-access-stat"><span>Permisos seleccionados</span><b id="ltkAccessSelectedCount">'+esc(isProtected?state.catalog.permisos.length:selected.size)+'</b></div><div class="ltk-access-stat"><span>Permisos disponibles</span><b>'+esc(state.catalog.permisos.length)+'</b></div><div class="ltk-access-stat"><span>Usuarios asignados</span><b>'+esc(role.usuarios_asignados||0)+'</b></div></div>'+
-      (isProtected?'<div class="ltk-access-readonly-note"><i class="fas fa-shield-halved"></i> El perfil Administrador conserva todos los permisos para evitar que el sistema quede sin administración.</div>':'')+
-      '<div class="ltk-perm-toolbar"><div><h4>Matriz de permisos</h4><p>Marca únicamente las acciones necesarias para este perfil.</p></div><div class="ltk-perm-actions"><button type="button" id="ltkPermAll" '+(isProtected?'disabled':'')+'>Marcar todos</button><button type="button" id="ltkPermNone" '+(isProtected?'disabled':'')+'>Desmarcar</button></div></div><div class="ltk-perm-groups">'+groupHtml+'</div>'+
-      (!state.newRole?'<div class="ltk-access-assign"><h4>Asignar este perfil a un usuario</h4><p>El perfil de acceso controla los permisos; el puesto laboral describe el cargo del empleado.</p><div class="ltk-access-assign-grid"><select id="ltkAccessAssignUserSelect">'+userOptions+'</select><select id="ltkAccessAssignPositionSelect">'+positionOptions+'</select><button type="button" id="ltkAccessAssignUser">Asignar perfil</button></div></div>':'')+
-      '</div><div class="ltk-access-editor-foot"><div class="left">'+(state.newRole?'<button type="button" class="ltk-access-btn secondary" id="ltkAccessCancelNew">Cancelar</button>':(!isProtected?'<button type="button" class="ltk-access-btn danger" id="ltkAccessDeleteRole">Eliminar perfil</button>':''))+'</div><div class="right"><button type="button" class="ltk-access-btn primary" id="ltkAccessSaveRole"><i class="fas fa-floppy-disk"></i> Guardar perfil y permisos</button></div></div>';
-  }
-
-  function updateSelectedCounter(){ var el=qs('#ltkAccessSelectedCount'); if(el) el.textContent=String(qsa('#ltkAccessEditor input[data-permission]:checked').length); }
-  function toggleCategory(category){
-    var inputs=qsa('#ltkAccessEditor input[data-permission]').filter(function(input){var p=state.catalog.permisos.find(function(x){return x.codigo===input.dataset.permission;});return p&&p.categoria===category&&!input.disabled;});
-    var shouldCheck=inputs.some(function(x){return !x.checked;});inputs.forEach(function(x){x.checked=shouldCheck;});updateSelectedCounter();
-  }
-  function startNewRole(){ if(!canManageAccess()){deny();return;} state.newRole=true;state.selectedRoleId=null;renderAll();setTimeout(function(){var n=qs('#ltkAccessRoleName');if(n)n.focus();},40); }
-
-  async function saveRole(){
-    if(!canManageAccess()){deny();return;}
-    var role=selectedRole();if(!role)return;
-    var name=String(qs('#ltkAccessRoleName')&&qs('#ltkAccessRoleName').value||'').trim();
-    var description=String(qs('#ltkAccessRoleDescription')&&qs('#ltkAccessRoleDescription').value||'').trim();
-    var codes=qsa('#ltkAccessEditor input[data-permission]:checked').map(function(x){return x.dataset.permission;});
-    if(!name){toast('Falta el nombre','Escribe el nombre del perfil de acceso.','warning');return;}
-    var btn=qs('#ltkAccessSaveRole');if(btn){btn.disabled=true;btn.textContent='Guardando...';}
-    try{
-      var res=await client().rpc('rpc_admin_guardar_rol',{p_rol_id:state.newRole?null:role.id,p_nombre:name,p_descripcion:description,p_permiso_codigos:codes});
-      if(res.error)throw res.error;
-      state.newRole=false;state.selectedRoleId=String(res.data&&res.data.rol_id||role.id||'');state.catalog=null;
-      await loadCatalog(true);
-      if(typeof window.lotekaLoadUsersCatalogSupabase==='function') window.lotekaLoadUsersCatalogSupabase();
-      toast('Perfil guardado','La matriz de permisos fue actualizada correctamente.','success');
-    }catch(error){toast('No se pudo guardar',friendly(error),'error');}
-    finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Guardar perfil y permisos';}}
-  }
-  async function deleteRole(){
-    if(!canManageAccess()){deny();return;}var role=selectedRole();if(!role||!role.id)return;
-    if(!confirm('¿Eliminar el perfil de acceso "'+role.nombre+'"? Solo puede eliminarse si no tiene usuarios asignados.'))return;
-    try{var res=await client().rpc('rpc_admin_eliminar_rol',{p_rol_id:role.id});if(res.error)throw res.error;state.selectedRoleId=null;state.catalog=null;await loadCatalog(true);if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Perfil eliminado','El perfil fue eliminado correctamente.','success');}catch(error){toast('No se pudo eliminar',friendly(error),'error');}
-  }
-  function syncAssignmentPosition(){
-    var uid=String(qs('#ltkAccessAssignUserSelect')&&qs('#ltkAccessAssignUserSelect').value||'');
-    var user=state.catalog&&state.catalog.usuarios.find(function(u){return String(u.id)===uid;});
-    var select=qs('#ltkAccessAssignPositionSelect');if(select)select.value=user&&user.puesto_id?String(user.puesto_id):'';
-  }
-  async function assignRoleToUser(){
-    if(!canManageAccess()){deny();return;}var role=selectedRole();if(!role||!role.id)return;
-    var userId=String(qs('#ltkAccessAssignUserSelect')&&qs('#ltkAccessAssignUserSelect').value||'');
-    var positionId=String(qs('#ltkAccessAssignPositionSelect')&&qs('#ltkAccessAssignPositionSelect').value||'')||null;
-    if(!userId){toast('Selecciona un usuario','Elige a quién deseas asignar este perfil.','warning');return;}
-    try{
-      var res=await client().rpc('rpc_admin_asignar_acceso_usuario',{p_usuario_id:userId,p_rol_id:role.id,p_puesto_id:positionId});if(res.error)throw res.error;
-      state.catalog=null;await loadCatalog(true);if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Acceso asignado','El usuario recibirá este perfil al actualizar o volver a iniciar sesión.','success');
-    }catch(error){toast('No se pudo asignar',friendly(error),'error');}
-  }
-
-  function ensurePositionsModal(){
-    if(qs('#ltkPositionsModal'))return;
-    document.body.insertAdjacentHTML('beforeend','<div class="ltk-position-modal" id="ltkPositionsModal"><div class="ltk-position-card"><div class="ltk-position-head"><div><h3>Puestos laborales</h3><p>Los puestos describen el cargo. Los permisos se administran por perfil de acceso.</p></div><button type="button" id="ltkPositionsClose">×</button></div><div class="ltk-position-body"><div class="ltk-position-form"><input id="ltkPositionName" placeholder="Nombre del puesto"><input id="ltkPositionDescription" placeholder="Descripción opcional"><button type="button" id="ltkPositionSave">Crear puesto</button></div><div class="ltk-position-list" id="ltkPositionList"></div></div></div></div>');
-    qs('#ltkPositionsClose').addEventListener('click',closePositionsModal);qs('#ltkPositionsModal').addEventListener('click',function(e){if(e.target.id==='ltkPositionsModal')closePositionsModal();});qs('#ltkPositionSave').addEventListener('click',function(){savePosition(null);});qs('#ltkPositionList').addEventListener('click',function(e){var edit=e.target.closest('[data-position-edit]'),del=e.target.closest('[data-position-delete]');if(edit)editPosition(edit.dataset.positionEdit);if(del)deletePosition(del.dataset.positionDelete);});
-  }
-  function renderPositions(){
-    var list=qs('#ltkPositionList');if(!list||!state.catalog)return;
-    list.innerHTML=(state.catalog.puestos||[]).map(function(p){return '<div class="ltk-position-row"><div><b>'+esc(p.nombre)+'</b><small>'+esc(p.descripcion||'Sin descripción')+' · '+esc(p.usuarios_asignados||0)+' usuario(s)</small></div><div class="ltk-position-row-actions"><button type="button" data-position-edit="'+esc(p.id)+'">Editar</button><button type="button" class="danger" data-position-delete="'+esc(p.id)+'">Eliminar</button></div></div>';}).join('')||'<div class="ltk-access-loading">No hay puestos registrados.</div>';
-  }
-  function openPositionsModal(){if(!canManageAccess()){deny();return;}ensurePositionsModal();renderPositions();qs('#ltkPositionsModal').classList.add('open');}
-  function closePositionsModal(){var m=qs('#ltkPositionsModal');if(m)m.classList.remove('open');}
-  async function savePosition(id,name,description){
-    name=name==null?String(qs('#ltkPositionName').value||'').trim():String(name||'').trim();description=description==null?String(qs('#ltkPositionDescription').value||'').trim():String(description||'').trim();if(!name){toast('Falta el nombre','Escribe el nombre del puesto laboral.','warning');return;}
-    try{var res=await client().rpc('rpc_admin_guardar_puesto',{p_puesto_id:id||null,p_nombre:name,p_descripcion:description});if(res.error)throw res.error;state.catalog=null;await loadCatalog(true);renderPositions();if(qs('#ltkPositionName'))qs('#ltkPositionName').value='';if(qs('#ltkPositionDescription'))qs('#ltkPositionDescription').value='';if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Puesto guardado','El puesto laboral fue actualizado.','success');}catch(error){toast('No se pudo guardar',friendly(error),'error');}
-  }
-  function editPosition(id){var p=state.catalog&&state.catalog.puestos.find(function(x){return String(x.id)===String(id);});if(!p)return;var name=prompt('Nombre del puesto laboral:',p.nombre||'');if(name===null)return;var description=prompt('Descripción del puesto:',p.descripcion||'');if(description===null)return;savePosition(p.id,name,description);}
-  async function deletePosition(id){var p=state.catalog&&state.catalog.puestos.find(function(x){return String(x.id)===String(id);});if(!p)return;if(!confirm('¿Eliminar el puesto "'+p.nombre+'"? Solo puede eliminarse si no tiene usuarios asignados.'))return;try{var res=await client().rpc('rpc_admin_eliminar_puesto',{p_puesto_id:p.id});if(res.error)throw res.error;state.catalog=null;await loadCatalog(true);renderPositions();if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Puesto eliminado','El puesto laboral fue eliminado.','success');}catch(error){toast('No se pudo eliminar',friendly(error),'error');}}
-
-  function wrapUsersNavigation(){
-    if(window.__lotekaAccessUsersNavWrapped)return;window.__lotekaAccessUsersNavWrapped=true;
-    var original=window.abrirVistaOperaciones;
-    if(typeof original==='function'){
-      window.abrirVistaOperaciones=function(view){
-        if(view==='users'&&!canViewUsers()){deny('No tienes permiso para consultar usuarios.');return false;}
-        var result=original.apply(this,arguments);if(view==='users')setTimeout(function(){ensureUI();applyUserPermissionControls();},80);return result;
-      };
-      try{abrirVistaOperaciones=window.abrirVistaOperaciones;}catch(e){}
-    }
-  }
-
-  function boot(){
-    if(!ensureUI())return;
-    wrapUsersNavigation();
-    applyUserPermissionControls();
-    [300,900,1800].forEach(function(delay){setTimeout(function(){ensureUI();applyUserPermissionControls();},delay);});
-    var nav=qs('#navUsers');if(nav&&!nav.dataset.accessV306){nav.dataset.accessV306='1';nav.addEventListener('click',function(){setTimeout(function(){ensureUI();applyUserPermissionControls();},180);},true);}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  window.addEventListener('load',function(){setTimeout(boot,500);});
-  window.lotekaOpenAccessManager=function(){switchTab('permissions');};
-  console.info('[LOTEKA] Parche 03A · Administrador de perfiles y permisos instalado.');
 })();
 </script>
 
