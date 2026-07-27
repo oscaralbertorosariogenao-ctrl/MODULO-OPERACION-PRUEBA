@@ -6,7 +6,7 @@ const ACTION_PERMISSION = Object.freeze({
   'operations.diagnose':PERMISSIONS.operations,'operations.evidence':PERMISSIONS.operations,'operations.finish':PERMISSIONS.operations,
   'operations.close':PERMISSIONS.operations,'operations.closeWhatsapp':PERMISSIONS.operations,
   'agencies.view':PERMISSIONS.agencies,'agencies.detail':PERMISSIONS.agencies,'agencies.map':PERMISSIONS.agencies,
-  'equipment.view':PERMISSIONS.equipment,'technicians.view':PERMISSIONS.operations,'notifications.view':PERMISSIONS.operations,'profile.view':null
+  'equipment.view':PERMISSIONS.equipment,'scanner.lookup':PERMISSIONS.equipment,'scanner.entry':PERMISSIONS.equipment,'scanner.batchEntry':PERMISSIONS.equipment,'scanner.transfer':PERMISSIONS.equipment,'scanner.receive':PERMISSIONS.equipment,'technicians.view':PERMISSIONS.operations,'notifications.view':PERMISSIONS.operations,'profile.view':null
 });
 export function normalizeRole(profile){ return String(profile?.roles?.nombre || profile?.rol || profile?.role || '').trim(); }
 export function isAdministrator(profile){ return /administrador|admin/i.test(normalizeRole(profile)); }
