@@ -1,7 +1,25 @@
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { AppError, ERROR_TYPES } from './errors.js';
 let client = null;
-async function waitForLibrary(timeoutMs = 12000){
+async function waitForLibrary(timeoutMs = 17000){
+  if(globalThis.supabase?.createClient) return globalThis.supabase;
+  const loader = globalThis.__goSupabaseLibraryReady;
+  if(loader){
+    try{
+      const library = await Promise.race([
+        loader,
+        new Promise((_,reject) => setTimeout(() => reject(new Error('Tiempo agotado.')),timeoutMs))
+      ]);
+      if(library?.createClient) return library;
+    }catch(error){
+      throw new AppError(
+        navigator.onLine
+          ? 'No se pudo cargar el cliente seguro de Supabase. Actualiza la aplicación e inténtalo otra vez.'
+          : 'La aplicación no terminó de instalar sus archivos para trabajar sin conexión. Conéctate una vez y actualízala.',
+        { type:ERROR_TYPES.network, recoverable:false, cause:error }
+      );
+    }
+  }
   const started = Date.now();
   while(!globalThis.supabase?.createClient){
     if(Date.now() - started > timeoutMs) throw new AppError('No se pudo cargar el cliente seguro de Supabase.', { type:ERROR_TYPES.network, recoverable:false });
