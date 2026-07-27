@@ -9,7 +9,7 @@ import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage
 import { getDraft } from './services/draft-service.js';
 import { renderAgencyMap, destroyMap } from './services/location-service.js';
 import { stopScanner } from './services/scanner-service.js';
-import { can } from './permissions.js';
+import { can, canAccessRoute, firstAllowedRoute } from './permissions.js';
 import { classifyError, ERROR_TYPES, logError } from './errors.js';
 import { showToast } from './components/toast.js';
 import { loginView } from './views/login-view.js';
@@ -58,7 +58,13 @@ export class AppController{
       updateSlice('scanner',{active:false,cameraActive:false,engine:'',cameraLabel:'',torchEnabled:false,torchSupported:false,processing:false,status:getState().scanner.batch?.active?'batch-entry':'idle'},'scanner-route-exit');
     }
     if(!state.session && route.path !== ROUTES.login){ navigate(ROUTES.login,{},null,{replace:true}); return; }
-    if(state.session && route.path === ROUTES.login){ navigate(ROUTES.home,{},null,{replace:true}); return; }
+    if(state.session && route.path === ROUTES.login){ navigate(firstAllowedRoute(state),{},null,{replace:true}); return; }
+    if(state.session && !canAccessRoute(route,state)){
+      const fallback = firstAllowedRoute(state);
+      showToast('Acceso restringido','Tu perfil no tiene permiso para abrir esa sección.','warning');
+      navigate(fallback,{},null,{replace:true});
+      return;
+    }
     destroyMap(); setState(current => ({...current,route}),`route:${route.path}`); this.render();
     if(!state.session) return;
     try{
@@ -122,8 +128,9 @@ export class AppController{
   async reloadSelectedOperation(){ const ref=getState().route.params.id; if(ref){ await loadOperationDetail(ref); this.render(); } }
   async setupRealtime(){
     await clearRealtime();
-    await subscribeTable(TABLES.operations,payload => this.scheduleRealtime(TABLES.operations,payload));
-    await subscribeTable(TABLES.notifications,payload => this.scheduleRealtime(TABLES.notifications,payload));
+    const state=getState();
+    if(can('operations.view',state)) await subscribeTable(TABLES.operations,payload => this.scheduleRealtime(TABLES.operations,payload));
+    if(can('notifications.view',state)) await subscribeTable(TABLES.notifications,payload => this.scheduleRealtime(TABLES.notifications,payload));
   }
   scheduleRealtime(table,payload){
     clearTimeout(this.realtimeTimers.get(table));
