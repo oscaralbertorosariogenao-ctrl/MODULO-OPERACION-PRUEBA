@@ -1,5 +1,5 @@
-export const APP_BUILD = '2026-07-27-v805.14-pwa-stability';
-export const APP_VERSION = 'V805.14';
+export const APP_BUILD = '2026-07-27-v805.15-route-permissions';
+export const APP_VERSION = 'V805.15';
 export const SUPABASE_URL = 'https://tnymrjxdhzdmpcbilftj.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRueW1yanhkaHpkbXBjYmlsZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjEwOTksImV4cCI6MjA5MzgzNzA5OX0.YXG9juChbJUUdsdy01Qkoh9X0-MijewD5aQbKnG9Itk';
 export const R2_UPLOAD_ENDPOINT = '/api/r2-upload';
@@ -25,7 +25,13 @@ export const ROUTES = Object.freeze({
   agencies: '/agencies', agency: '/agency', scanner: '/scanner', technicians: '/technicians', notifications: '/notifications', profile: '/profile', map: '/map'
 });
 export const PERMISSIONS = Object.freeze({
-  home: 'ver_home', operations: 'ver_operaciones', agencies: 'ver_agencias', equipment: 'ver_inventario', reports: 'ver_reportes'
+  home: 'ver_home',
+  operations: 'ver_operaciones',
+  agencies: 'ver_agencias',
+  equipment: 'ver_inventario',
+  inventoryManage: 'gestionar_inventario',
+  inventoryMove: 'mover_serial',
+  reports: 'ver_reportes'
 });
 export const REALTIME_TABLES = Object.freeze([TABLES.operations, TABLES.notifications]);
 export const INITIAL_SYNC_TABLES = Object.freeze([TABLES.operations, TABLES.agencies, TABLES.notifications]);
