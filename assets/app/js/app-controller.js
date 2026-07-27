@@ -55,7 +55,7 @@ export class AppController{
     const run = ++this.routeRun; const state = getState();
     if(state.route.path === ROUTES.scanner && (route.path !== ROUTES.scanner || force)){
       await stopScanner();
-      updateSlice('scanner',{active:false,engine:'',cameraLabel:''},'scanner-route-exit');
+      updateSlice('scanner',{active:false,cameraActive:false,engine:'',cameraLabel:'',torchEnabled:false,torchSupported:false,processing:false,status:getState().scanner.batch?.active?'batch-entry':'idle'},'scanner-route-exit');
     }
     if(!state.session && route.path !== ROUTES.login){ navigate(ROUTES.login,{},null,{replace:true}); return; }
     if(state.session && route.path === ROUTES.login){ navigate(ROUTES.home,{},null,{replace:true}); return; }
@@ -82,7 +82,8 @@ export class AppController{
       case ROUTES.technicians: await loadTechniciansData(); break;
       case ROUTES.notifications: await loadNotificationsData(); break;
       case ROUTES.map: await loadMapData(route.query.get('group') || ''); break;
-      case ROUTES.scanner: case ROUTES.profile: default: if(force) this.render();
+      case ROUTES.scanner:{ const scannerDraft=await getDraft('scanner-batch-entry').catch(() => null); if(scannerDraft?.active) updateSlice('scanner',{batch:scannerDraft,mode:'batch-entry',status:'batch-entry'},'scanner-draft-restore'); break; }
+      case ROUTES.profile: default: if(force) this.render();
     }
   }
   async afterRender(route){
