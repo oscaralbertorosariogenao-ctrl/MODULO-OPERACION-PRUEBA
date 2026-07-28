@@ -14,7 +14,8 @@ export function homeView(state){
     quickIf(state,'operations.assign','♟','Asignar','go-unassigned-operations'),
     quickIf(state,'agencies.view','⌂','Buscar agencia','go-agencies-search'),
     quickIf(state,'scanner.lookup','⌗','Escanear serial','go-scanner'),
-    quickIf(state,'agencies.map','⌖','Abrir mapa','go-map')
+    quickIf(state,'agencies.map','⌖','Abrir mapa','go-map'),
+    quickIf(state,'groupInventory.view','▣','Mi inventario','go-group-inventory')
   ];
   const metrics = groupManager
     ? [metric(stats.pending,'Pendientes'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),metric(stats.overdue,'Atrasadas')]
