@@ -123,7 +123,10 @@ async function handleClick(event,controller){
 }
 async function handleSubmit(event,controller){
   const form = event.target.closest('[data-form]'); if(!form) return; event.preventDefault();
-  const data = Object.fromEntries(new FormData(form).entries()); const name = form.dataset.form;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  data.selectedTypes = formData.getAll('selectedTypes');
+  const name = form.dataset.form;
   try{
     switch(name){
       case 'login':await submitLogin(data,controller);break;
@@ -155,12 +158,27 @@ function handleInput(event,controller){
       if(action === 'operations-search'){ updateSlice('operations',current => ({filters:{...current.filters,search:event.target.value.trim()}}),'operations-search');await loadOperationsPage({reset:true});controller.render(); }
       if(action === 'agencies-search'){ updateSlice('agencies',current => ({filters:{...current.filters,search:event.target.value.trim()}}),'agencies-search');await loadAgenciesPage({reset:true});controller.render(); }
       if(action === 'technicians-search'){ updateSlice('technicians',{search:event.target.value.trim()},'technicians-search');controller.render(); }
+      if(action === 'operation-catalog-search') filterOperationCatalog(event.target.value);
       if(action === 'scanner-product-filter') filterScannerProducts(event.target);
     }catch(error){ controller.handleError(`Búsqueda ${action}`,error); }
   },420));
 }
 async function handleChange(event,controller){
   if(event.target.matches('[data-file-input]')){ addEvidenceFiles(event.target.files,controller,event.target.dataset.fileInput?.startsWith('detail')?'detail':'create'); event.target.value=''; return; }
+  if(event.target.dataset.changeAction === 'operation-type'){
+    const form=event.target.closest('[data-form="create-operation"]');
+    const fd=form ? new FormData(form) : new FormData();
+    const values=Object.fromEntries(fd.entries());
+    values.type=event.target.value;
+    values.selectedTypes=[];
+    controller.setOperationDraft(values);
+    controller.render();
+    return;
+  }
+  if(event.target.dataset.changeAction === 'operation-catalog-selection'){
+    updateOperationCatalogSelectionDom();
+    return;
+  }
   if(event.target.dataset.changeAction === 'map-group-filter'){
     const group=event.target.value; const query=new URLSearchParams(); if(group) query.set('group',group); navigate(ROUTES.map,{},query,{replace:true});
   }
@@ -183,13 +201,19 @@ async function submitLogin(data,controller){
 async function submitCreateOperation(data,controller){
   requireOnline(); requireAction(controller,'operations.create');
   const agency=findAgency(data.agency); if(!agency) throw new Error('Selecciona una agencia real del sistema.');
-  if(!String(data.title || '').trim() || !String(data.description || '').trim()) throw new Error('Completa el título y la descripción.');
+  const selectedTypes=[...new Set((Array.isArray(data.selectedTypes) ? data.selectedTypes : [data.selectedTypes]).map(item => String(item || '').trim()).filter(Boolean))];
+  if(!selectedTypes.length) throw new Error('Selecciona por lo menos una avería o un trabajo del catálogo.');
+  const type=data.type === 'Trabajo' ? 'Trabajo' : 'Avería';
+  const title=selectedTypes.length === 1 ? selectedTypes[0] : `${selectedTypes[0]} + ${selectedTypes.length - 1} más`;
+  const description=String(data.description || '').trim() || selectedTypes.join(', ');
+  const allowAssign=controller.can('operations.assign');
+  const technician=allowAssign ? String(data.technician || '').trim() : '';
   await withLoader('Creando operación…',async () => {
-    const state=getState(); const created=await createOperation({...data,agency},{profile:state.profile,user:state.user});
+    const state=getState(); const created=await createOperation({...data,type,title,description,selectedTypes,technician,agency},{profile:state.profile,user:state.user,allowAssign});
     const files=state.evidence.files.map(item => item.file);
     if(files.length){
       try{
-        const urls=await uploadEvidenceBatch(files,created.codigo || created.code,data.description,progress => updateProgress(progress));
+        const urls=await uploadEvidenceBatch(files,created.codigo || created.code,description,progress => updateProgress(progress));
         const op=normalizeOperation(created); const history=[...op.history,{fecha:new Date().toISOString(),accion:'Evidencia inicial cargada',usuario:state.profile.usuario_login || state.user.email,nombre:state.profile.nombre_completo || state.user.email,detalle:`${urls.length} archivo(s)`,tipo:'evidencia_inicial',urls}];
         await safeUpdateOperation(created.id || created.codigo,{fotos_reportadas:urls,foto_url:urls[0] || '',evidencia_estado:'confirmada',evidencia_archivos_seleccionados:urls.length,historial:history,actualizado_en:new Date().toISOString()});
       }catch(error){ showToast('Operación creada','La operación se guardó, pero la evidencia inicial no pudo confirmarse. Puedes reintentar desde el detalle.','warning',8000); }
@@ -540,7 +564,22 @@ function openWhatsAppTemplate(target){
 }
 async function centerUser(){const position=await getCurrentPosition();centerMap(position.coords.latitude,position.coords.longitude,16);showToast('Ubicación encontrada','El mapa se centró en tu posición.','success');}
 async function saveCurrentOperationDraft(controller){
-  const form=document.querySelector('[data-form="create-operation"]');if(!form) return;const values=Object.fromEntries(new FormData(form).entries());await saveDraft('create-operation',values);controller.setOperationDraft(values);showToast('Borrador guardado','Se guardó únicamente texto y selecciones, no fotografías.','success');
+  const form=document.querySelector('[data-form="create-operation"]');if(!form) return;
+  const fd=new FormData(form);const values=Object.fromEntries(fd.entries());values.selectedTypes=fd.getAll('selectedTypes');
+  await saveDraft('create-operation',values);controller.setOperationDraft(values);showToast('Borrador guardado','Se guardó únicamente texto y selecciones, no fotografías.','success');
+}
+function filterOperationCatalog(value){
+  const term=String(value || '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+  document.querySelectorAll('[data-catalog-card]').forEach(card => {
+    const haystack=String(card.dataset.catalogSearch || card.textContent || '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+    card.hidden=Boolean(term && !haystack.includes(term));
+  });
+}
+function updateOperationCatalogSelectionDom(){
+  const cards=[...document.querySelectorAll('[data-catalog-card]')];
+  let count=0;
+  cards.forEach(card => {const checked=Boolean(card.querySelector('input[type="checkbox"]')?.checked);card.classList.toggle('is-selected',checked);if(checked) count += 1;});
+  const label=document.querySelector('[data-catalog-count]');if(label) label.textContent=`${count} seleccionada${count === 1 ? '' : 's'}`;
 }
 
 async function notifyBestEffort({type,title,message,importance='normal',operation}){
