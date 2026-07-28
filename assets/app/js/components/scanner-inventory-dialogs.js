@@ -1,25 +1,57 @@
 import { el, option } from './dom.js';
 import { openBottomSheet } from './bottom-sheet.js';
 import { openModal } from './modal.js';
-import { agencyLabel, localDateTimeValue, productLabel, scannerResultTitle, warehouseLabel } from '../services/scanner-inventory-service.js';
+import { agencyLabel, groupLabel, localDateTimeValue, productLabel, scannerResultTitle, warehouseLabel } from '../services/scanner-inventory-service.js';
 
 export function openScannerResultSheet(result,{permissions={}} = {}){
   const body = el('div',{class:'scanner-sheet stack'},resultSummary(result),resultActions(result,permissions));
   return openBottomSheet({id:'scanner-result-sheet',title:scannerResultTitle(result),body});
 }
 
-export function openScannerEntryDialog({result,products,warehouses,batch=false}){
+export function openScannerEntryDialog({result,products,warehouses,batch=false,groupEntryContext=null}){
   const proposedSerial = result?.kind === 'equipment' ? result.equipment?.serial : result?.normalizedValue || '';
   const preselectedProduct = result?.kind === 'product' ? result.product?.id : result?.product?.id || '';
   const formName = batch ? 'scanner-batch-setup' : 'scanner-entry';
-  const form = el('form',{class:'stack scanner-inventory-form','data-form':formName},
-    batch ? el('div',{class:'scanner-form-banner'},el('strong',{text:'Entrada por lote'}),el('span',{text:'Configura el producto y almacén. Después podrás escanear varios seriales de forma continua.'})) : null,
+  const groups = Array.isArray(groupEntryContext?.groups) ? groupEntryContext.groups : [];
+  const groupEntry = Boolean(groupEntryContext?.isGroupManager);
+  const defaultGroupId = String(groupEntryContext?.defaultGroupId || groups[0]?.id || '');
+  const selectedGroup = groups.find(group => String(group.id) === defaultGroupId) || groups[0] || null;
+
+  const commonFields = [
     !batch ? field('Serial escaneado',el('input',{class:'input',name:'serial',value:proposedSerial,required:'',maxlength:'120',autocomplete:'off',autocapitalize:'characters'})) : null,
     field('Buscar producto',el('input',{class:'input',type:'search',placeholder:'Nombre, código, categoría o tipo','data-input-action':'scanner-product-filter',autocomplete:'off'})),
     field('Producto',el('select',{class:'select',name:'productId',required:'','data-scanner-product-select':'true'},
       option('','Selecciona un producto activo',!preselectedProduct),
       products.map(product => option(product.id,productLabel(product),String(product.id) === String(preselectedProduct)))
+    ))
+  ];
+
+  const groupFields = [
+    el('input',{type:'hidden',name:'entryMode',value:'group'}),
+    el('div',{class:'scanner-form-banner success'},
+      el('strong',{text:batch ? 'Entrada rápida por lote' : 'Entrada rápida de campo'}),
+      el('span',{text:groups.length > 1 ? 'Selecciona uno de tus grupos. El destino, la referencia y los datos administrativos se completan automáticamente.' : `Destino automático: ${selectedGroup ? groupLabel(selectedGroup) : 'tu almacén de grupo'}.`})
+    ),
+    groups.length > 1
+      ? field('Grupo receptor',el('select',{class:'select',name:'groupId',required:''},
+          option('','Selecciona uno de tus grupos',!defaultGroupId),
+          groups.map(group => option(group.id,groupLabel(group),String(group.id) === defaultGroupId))
+        ))
+      : el('input',{type:'hidden',name:'groupId',value:defaultGroupId}),
+    ...commonFields,
+    field('Estado físico',el('select',{class:'select',name:'physicalCondition',required:''},
+      option('USADO_FUNCIONAL','Usado funcional',true),
+      option('USADO_CON_DETALLES','Usado con detalles'),
+      option('AVERIADO','Averiado'),
+      option('NO_VERIFICADO','No verificado')
     )),
+    el('p',{class:'draft-note',text:'El equipo quedará inmediatamente en Mi inventario del grupo. La fecha, referencia, origen y auditoría se generan automáticamente.'}),
+    el('button',{class:'btn btn-primary btn-block',type:'submit'},batch ? 'Comenzar lote en mi grupo' : 'Registrar en mi inventario')
+  ];
+
+  const administrativeFields = [
+    batch ? el('div',{class:'scanner-form-banner'},el('strong',{text:'Entrada por lote'}),el('span',{text:'Configura el producto y almacén. Después podrás escanear varios seriales de forma continua.'})) : null,
+    ...commonFields,
     field('Almacén receptor',el('select',{class:'select',name:'warehouseId',required:''},
       option('','Selecciona un almacén activo',true),
       warehouses.map(warehouse => option(warehouse.id,warehouseLabel(warehouse)))
@@ -34,8 +66,10 @@ export function openScannerEntryDialog({result,products,warehouses,batch=false})
     field('Observaciones',el('textarea',{class:'textarea',name:'observations',maxlength:'1500',placeholder:'Documento, condición, detalles de recepción…'})),
     el('p',{class:'draft-note',text:'La confirmación requiere internet y se ejecutará mediante una única RPC transaccional.'}),
     el('button',{class:'btn btn-primary btn-block',type:'submit'},batch ? 'Comenzar entrada por lote' : 'Confirmar entrada')
-  );
-  return openModal({id:batch?'scanner-batch-setup-dialog':'scanner-entry-dialog',title:batch?'Configurar lote de entrada':'Registrar entrada de serial',body:form,size:'bottom-sheet'});
+  ];
+
+  const form = el('form',{class:'stack scanner-inventory-form','data-form':formName},groupEntry ? groupFields : administrativeFields);
+  return openModal({id:batch?'scanner-batch-setup-dialog':'scanner-entry-dialog',title:groupEntry ? (batch?'Registrar lote en mi grupo':'Registrar en mi grupo') : (batch?'Configurar lote de entrada':'Registrar entrada de serial'),body:form,size:'bottom-sheet'});
 }
 
 export function openScannerTransferDialog({equipment,warehouses,agencies}){
