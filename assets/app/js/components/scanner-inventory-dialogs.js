@@ -115,6 +115,41 @@ export function openScannerTransferDialog({equipment,warehouses=[],agencies=[],g
 }
 
 export function openScannerReceiveDialog(equipment){
+  const context = equipment?.inventoryContext || {};
+  const physicalGroupReceipt = Boolean(context.groupManager && context.receiveMode === 'physical');
+
+  if(physicalGroupReceipt){
+    const groups = Array.isArray(equipment?.allowedGroups) ? equipment.allowedGroups : [];
+    const defaultGroupId = String(context.defaultGroupId || groups[0]?.id || '');
+    const selectedGroup = groups.find(group => String(group.id) === defaultGroupId) || groups[0] || null;
+    const form = el('form',{class:'stack scanner-inventory-form','data-form':'scanner-receive'},
+      el('input',{type:'hidden',name:'serial',value:equipment?.serial || ''}),
+      el('div',{class:'scanner-form-banner success'},
+        el('strong',{text:'Equipo registrado en el sistema'}),
+        el('span',{text:'Al confirmar, pasará al inventario de tu grupo porque lo tienes físicamente.'})
+      ),
+      infoGrid([
+        ['Serial',equipment?.serial || '-'],
+        ['Producto',equipment?.product?.nombre || equipment?.producto_id || '-'],
+        ['Ubicación actual',currentLocationLabel(equipment)],
+        ['Estado',equipment?.estado || '-']
+      ]),
+      groups.length > 1
+        ? field('Recibir en',el('select',{class:'select',name:'groupId',required:''},
+            option('','Selecciona uno de tus grupos',!defaultGroupId),
+            groups.map(group => option(group.id,groupLabel(group),String(group.id) === defaultGroupId))
+          ))
+        : el('input',{type:'hidden',name:'groupId',value:defaultGroupId}),
+      groups.length === 1 && selectedGroup
+        ? el('div',{class:'scanner-form-banner'},el('strong',{text:'Destino automático'}),el('span',{text:groupLabel(selectedGroup)}))
+        : null,
+      field('Observación opcional',el('textarea',{class:'textarea',name:'observations',maxlength:'700',placeholder:'Ej. Equipo retirado de almacén o recuperado de una agencia'})),
+      el('p',{class:'draft-note',text:'La recepción moverá el serial desde su ubicación actual al inventario del grupo y quedará registrada en el historial.'}),
+      el('button',{class:'btn btn-success btn-block',type:'submit'},'Recibir equipo')
+    );
+    return openModal({id:'scanner-receive-dialog',title:'Recibir equipo en mi grupo',body:form,size:'bottom-sheet'});
+  }
+
   const pending = equipment?.pendingReceipt;
   const dispatch = pending?.dispatch || {};
   const form = el('form',{class:'stack scanner-inventory-form','data-form':'scanner-receive'},
@@ -199,6 +234,7 @@ function resultSummary(result){
 }
 
 function resultEquipmentKicker(item){
+  if(item?.inventoryContext?.receiveMode === 'physical') return 'LISTO PARA RECIBIR';
   if(item?.inventoryContext?.canReceive) return 'PENDIENTE DE RECIBIR';
   if(item?.inventoryContext?.canSendToAgency) return 'DISPONIBLE EN MI GRUPO';
   if(String(item?.ubicacion_tipo || '').toUpperCase() === 'AGENCIA') return 'UBICADO EN AGENCIA';
@@ -212,7 +248,7 @@ function resultActions(result,permissions){
     actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-history'},'Ver historial'));
     if(permissions.agencies && item.agencia_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-agency','data-agency-id':item.agencia_id},'Abrir agencia'));
     if(permissions.operations && item.operacion_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-operation','data-operation-id':item.operacion_id},'Abrir operación'));
-    if(permissions.receive && item.inventoryContext?.canReceive) actions.push(el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},item.inventoryContext?.groupManager ? 'Recibir en mi grupo' : 'Recibir equipo'));
+    if(permissions.receive && item.inventoryContext?.canReceive) actions.push(el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo'));
     if(permissions.transfer && item.inventoryContext?.canTransfer) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},item.inventoryContext?.groupManager ? 'Enviar a una agencia' : 'Enviar o transferir'));
   }else if(result?.kind === 'product' && result.product?.requiere_serial !== false){
     if(permissions.entry) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar un serial'));
