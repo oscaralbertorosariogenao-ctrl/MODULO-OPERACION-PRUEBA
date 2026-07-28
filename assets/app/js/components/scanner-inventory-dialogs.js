@@ -2,6 +2,7 @@ import { el, option } from './dom.js';
 import { openBottomSheet } from './bottom-sheet.js';
 import { openModal } from './modal.js';
 import { agencyLabel, groupLabel, localDateTimeValue, productLabel, scannerResultTitle, warehouseLabel } from '../services/scanner-inventory-service.js';
+import { agencyPicker } from './agency-picker.js';
 
 export function openScannerResultSheet(result,{permissions={}} = {}){
   const body = el('div',{class:'scanner-sheet stack'},resultSummary(result),resultActions(result,permissions));
@@ -83,10 +84,14 @@ export function openScannerTransferDialog({equipment,warehouses=[],agencies=[],g
         el('strong',{text:'Enviar desde mi grupo'}),
         el('span',{text:`${equipment?.serial || 'Serial'} · ${currentLocationLabel(equipment)}`})
       ),
-      field('Enviar a',el('select',{class:'select',name:'destinationId',required:''},
-        option('','Selecciona una agencia de tu grupo',true),
-        agencies.map(agency => option(agency.id,agencyLabel(agency)))
-      )),
+      fieldBlock('Enviar a',agencyPicker({
+        agencies,
+        name:'destinationId',
+        placeholder:'Selecciona una agencia',
+        searchPlaceholder:'Buscar por número o nombre…',
+        emptyText:'Tu grupo no tiene agencias activas disponibles.',
+        contextLabel:'Agencias de tu grupo'
+      })),
       field('Observación opcional',el('textarea',{class:'textarea',name:'observations',maxlength:'700',placeholder:'Ej. Entrega para reemplazo o instalación'})),
       el('p',{class:'draft-note',text:'Solo aparecen agencias activas del mismo grupo. La fecha, referencia, origen y auditoría se generan automáticamente.'}),
       el('button',{class:'btn btn-primary btn-block',type:'submit'},'Enviar a la agencia')
@@ -300,6 +305,7 @@ function infoGrid(rows){
 }
 
 function field(label,control){ return el('label',{class:'field'},el('span',{text:label}),control); }
+function fieldBlock(label,control){ return el('div',{class:'field'},el('span',{text:label}),control); }
 
 function formatDate(value){
   if(!value) return '-';
