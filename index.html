@@ -15614,7 +15614,13 @@ window.BackendCero = window.BackendCero || {
           const name = typeof item.name === 'string' ? item.name.trim() : '';
           const extra = typeof item[descriptionKey] === 'string' ? item[descriptionKey].trim() : '';
           const phone = typeof item.phone === 'string' ? item.phone.trim() : '';
-          return name ? { name, [descriptionKey]: extra, phone } : null;
+          const id = typeof item.id === 'string' ? item.id : '';
+          const category = typeof item.category === 'string' ? item.category.trim() : '';
+          const priority = typeof item.priority === 'string' ? item.priority.trim() : 'Media';
+          const requiresEvidence = Boolean(item.requiresEvidence);
+          const order = Number.isFinite(Number(item.order)) ? Number(item.order) : 0;
+          const active = item.active !== false;
+          return name ? { id, name, [descriptionKey]: extra, phone, category, priority, requiresEvidence, order, active } : null;
         }
         return null;
       }).filter(Boolean);
@@ -15689,6 +15695,124 @@ window.BackendCero = window.BackendCero || {
       localStorage.setItem('operations_catalog_issue_types', JSON.stringify(ISSUE_TYPES));
       try { populateAdvancedReportDropdowns(); } catch (_error) {}
     }
+
+
+    const OPERATION_CATALOG_TABLE = 'catalogo_tipos_operacion';
+    const OPERATION_CATALOG_MIGRATION_KEY = 'operations_catalog_cloud_migrated_v1';
+    let operationCatalogSyncPromise = null;
+
+    function operationCatalogClient() {
+      return window.lotekaSupabase || window.supabaseClient || null;
+    }
+
+    function mapCloudCatalogRow(row) {
+      return {
+        id: String(row?.id || ''),
+        name: String(row?.nombre || '').trim(),
+        description: String(row?.descripcion || '').trim(),
+        category: String(row?.categoria || 'General').trim(),
+        priority: String(row?.prioridad_sugerida || 'Media').trim(),
+        requiresEvidence: Boolean(row?.requiere_evidencia),
+        order: Number.isFinite(Number(row?.orden)) ? Number(row.orden) : 0,
+        active: row?.activo !== false
+      };
+    }
+
+    async function migrateLocalOperationCatalogs(client) {
+      if (localStorage.getItem(OPERATION_CATALOG_MIGRATION_KEY) === '1') return true;
+      const items = [
+        ...(Array.isArray(ISSUE_TYPES) ? ISSUE_TYPES.map(item => ({...item, type:'Avería'})) : []),
+        ...(Array.isArray(WORK_TYPES) ? WORK_TYPES.map(item => ({...item, type:'Trabajo'})) : [])
+      ].filter(item => item.name);
+      try {
+        const current = await client.from(OPERATION_CATALOG_TABLE).select('tipo,nombre');
+        if (current.error) throw current.error;
+        const existing = new Set((current.data || []).map(row => `${row.tipo}::${String(row.nombre || '').trim().toLowerCase()}`));
+        const missingItems = items.filter(item => !existing.has(`${item.type}::${String(item.name || '').trim().toLowerCase()}`));
+        for (let index = 0; index < missingItems.length; index += 1) {
+          const item = missingItems[index];
+          const response = await client.rpc('rpc_admin_guardar_tipo_operacion', {
+            p_id: null,
+            p_tipo: item.type,
+            p_nombre: item.name,
+            p_descripcion: item.description || '',
+            p_categoria: item.category || 'General',
+            p_prioridad_sugerida: item.priority || 'Media',
+            p_requiere_evidencia: Boolean(item.requiresEvidence),
+            p_orden: Number(item.order || existing.size + index + 1),
+            p_activo: item.active !== false
+          });
+          if (response.error) throw response.error;
+        }
+        localStorage.setItem(OPERATION_CATALOG_MIGRATION_KEY, '1');
+        return true;
+      } catch (error) {
+        console.warn('[Catálogo operaciones] No se migró el catálogo local. Se conservará como respaldo.', error);
+        return false;
+      }
+    }
+
+    async function syncOperationCatalogsFromSupabase(options = {}) {
+      if (operationCatalogSyncPromise && !options.force) return operationCatalogSyncPromise;
+      operationCatalogSyncPromise = (async () => {
+        const client = operationCatalogClient();
+        if (!client) return false;
+        if (options.migrate !== false) await migrateLocalOperationCatalogs(client);
+        const response = await client
+          .from(OPERATION_CATALOG_TABLE)
+          .select('id,tipo,nombre,descripcion,categoria,prioridad_sugerida,requiere_evidencia,orden,activo')
+          .eq('activo', true)
+          .order('tipo', {ascending:true})
+          .order('orden', {ascending:true})
+          .order('nombre', {ascending:true});
+        if (response.error) throw response.error;
+        const rows = response.data || [];
+        const works = rows.filter(row => row.tipo === 'Trabajo').map(mapCloudCatalogRow).filter(item => item.name);
+        const issues = rows.filter(row => row.tipo === 'Avería').map(mapCloudCatalogRow).filter(item => item.name);
+        if (works.length) WORK_TYPES = works;
+        if (issues.length) ISSUE_TYPES = issues;
+        saveCatalogs();
+        refreshOpenTypeSelectors();
+        populateReportSpecificTypeOptions();
+        renderCurrentCatalogView();
+        return true;
+      })().catch(error => {
+        console.warn('[Catálogo operaciones] No se pudo sincronizar con Supabase. Se usará el respaldo local.', error);
+        return false;
+      }).finally(() => { operationCatalogSyncPromise = null; });
+      return operationCatalogSyncPromise;
+    }
+
+    async function saveCloudOperationCatalogItem(type, item) {
+      const client = operationCatalogClient();
+      if (!client) throw new Error('Supabase todavía no está disponible. Intenta nuevamente en unos segundos.');
+      const response = await client.rpc('rpc_admin_guardar_tipo_operacion', {
+        p_id: item.id || null,
+        p_tipo: type === 'work' ? 'Trabajo' : 'Avería',
+        p_nombre: item.name,
+        p_descripcion: item.description || '',
+        p_categoria: item.category || 'General',
+        p_prioridad_sugerida: item.priority || 'Media',
+        p_requiere_evidencia: Boolean(item.requiresEvidence),
+        p_orden: Number(item.order || 0),
+        p_activo: true
+      });
+      if (response.error) throw response.error;
+      localStorage.setItem(OPERATION_CATALOG_MIGRATION_KEY, '1');
+      await syncOperationCatalogsFromSupabase({force:true,migrate:false});
+      return response.data;
+    }
+
+    async function deactivateCloudOperationCatalogItem(item) {
+      if (!item?.id) throw new Error('El elemento todavía no está sincronizado con Supabase. Actualiza los datos y vuelve a intentar.');
+      const client = operationCatalogClient();
+      if (!client) throw new Error('Supabase todavía no está disponible.');
+      const response = await client.rpc('rpc_admin_desactivar_tipo_operacion', {p_id:item.id});
+      if (response.error) throw response.error;
+      await syncOperationCatalogsFromSupabase({force:true,migrate:false});
+    }
+
+    window.syncOperationCatalogsFromSupabase = syncOperationCatalogsFromSupabase;
 
     function ensureOperationalWorkTypes() {
       const required = [
@@ -17124,6 +17248,8 @@ function saveOperations(operations) {
     }
 
     function renderGenericTable(type, search = '') {
+      if (type === 'work' && !(WORK_TYPES || []).some(item => item && item.id)) syncOperationCatalogsFromSupabase().catch(() => false);
+      if (type === 'issue' && !(ISSUE_TYPES || []).some(item => item && item.id)) syncOperationCatalogsFromSupabase().catch(() => false);
       let items = [];
       let tbody = null;
       let columns = [];
@@ -17399,7 +17525,7 @@ function saveOperations(operations) {
       renderAssigneeOptions('editOperationTechnician', document.getElementById('editOperationType')?.value || 'Avería', document.getElementById('editOperationTechnician')?.value || '');
     }
 
-    function createCatalogItem(type) {
+    async function createCatalogItem(type) {
       if (type === 'users') {
         const name = prompt('Nombre visible del usuario:', 'Técnico 1');
         if (!name || !name.trim()) return;
@@ -17407,38 +17533,33 @@ function saveOperations(operations) {
         if (!username) return;
         const area = prompt('Área o especialidad:', '') || '';
         const phone = prompt('Teléfono:', '') || '';
-        if (USERS.some(x => slugifyUsername(x.username) === username)) {
-          alert('Ya existe un usuario con ese username.');
-          return;
-        }
+        if (USERS.some(x => slugifyUsername(x.username) === username)) { alert('Ya existe un usuario con ese username.'); return; }
         USERS.push({ name: name.trim(), username, area: area.trim(), phone: phone.trim() });
-      } else if (type === 'suppliers') {
+        saveCatalogs(); renderCurrentCatalogView(); return;
+      }
+      if (type === 'suppliers') {
         const name = prompt('Nombre del suplidor:');
         if (!name || !name.trim()) return;
         const service = prompt('Servicio que ofrece:') || '';
         const phone = prompt('Teléfono:') || '';
         if (SUPPLIERS.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
         SUPPLIERS.push({ name: name.trim(), service: service.trim(), phone: phone.trim() });
-      } else if (type === 'work') {
-        const name = prompt('Nombre del trabajo:');
-        if (!name || !name.trim()) return;
-        const description = prompt('Descripción:') || '';
-        if (WORK_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
-        WORK_TYPES.push({ name: name.trim(), description: description.trim() });
-      } else {
-        const name = prompt('Nombre de la avería:');
-        if (!name || !name.trim()) return;
-        const description = prompt('Descripción:') || '';
-        if (ISSUE_TYPES.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) return;
-        ISSUE_TYPES.push({ name: name.trim(), description: description.trim() });
+        saveCatalogs(); renderCurrentCatalogView(); return;
       }
-      saveCatalogs();
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
-      renderCurrentCatalogView();
+      const label = type === 'work' ? 'trabajo' : 'avería';
+      const name = prompt(`Nombre del ${label}:`);
+      if (!name || !name.trim()) return;
+      const description = prompt('Descripción:') || '';
+      const list = type === 'work' ? WORK_TYPES : ISSUE_TYPES;
+      if (list.some(x => x.name.toLowerCase() === name.trim().toLowerCase())) { alert(`Ya existe ${label === 'avería' ? 'una' : 'un'} ${label} con ese nombre.`); return; }
+      try {
+        await saveCloudOperationCatalogItem(type,{name:name.trim(),description:description.trim(),order:list.length + 1});
+      } catch (error) {
+        alert(`No se pudo guardar en Supabase: ${error?.message || error}`);
+      }
     }
 
-    function editCatalogItem(type, index) {
+    async function editCatalogItem(type, index) {
       let list = [];
       if (type === 'users') list = USERS;
       else if (type === 'suppliers') list = SUPPLIERS;
@@ -17452,41 +17573,42 @@ function saveOperations(operations) {
         if (!name || !name.trim()) return;
         const username = slugifyUsername(prompt('Editar username:', item.username || slugifyUsername(item.name)) || item.username || slugifyUsername(item.name));
         if (!username) return;
-        if (USERS.some((x, idx) => idx !== index && slugifyUsername(x.username) === username)) {
-          alert('Ya existe otro usuario con ese username.');
-          return;
-        }
+        if (USERS.some((x, idx) => idx !== index && slugifyUsername(x.username) === username)) { alert('Ya existe otro usuario con ese username.'); return; }
         const area = prompt('Editar área:', item.area || '') || '';
         const phone = prompt('Editar teléfono:', item.phone || '') || '';
         list[index] = { name: name.trim(), username, area: area.trim(), phone: phone.trim() };
-      } else if (type === 'suppliers') {
+        saveCatalogs(); renderCurrentCatalogView(); return;
+      }
+      if (type === 'suppliers') {
         const name = prompt('Editar nombre:', item.name);
         if (!name || !name.trim()) return;
         const service = prompt('Editar servicio:', item.service || '') || '';
         const phone = prompt('Editar teléfono:', item.phone || '') || '';
         list[index] = { name: name.trim(), service: service.trim(), phone: phone.trim() };
-      } else {
-        const name = prompt('Editar nombre:', item.name);
-        if (!name || !name.trim()) return;
-        const description = prompt('Editar descripción:', item.description || '') || '';
-        list[index] = { name: name.trim(), description: description.trim() };
+        saveCatalogs(); renderCurrentCatalogView(); return;
       }
-
-      saveCatalogs();
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
-      renderCurrentCatalogView();
+      const name = prompt('Editar nombre:', item.name);
+      if (!name || !name.trim()) return;
+      const description = prompt('Editar descripción:', item.description || '') || '';
+      try {
+        await saveCloudOperationCatalogItem(type,{...item,name:name.trim(),description:description.trim()});
+      } catch (error) {
+        alert(`No se pudo actualizar en Supabase: ${error?.message || error}`);
+      }
     }
 
-    function deleteCatalogItem(type, index) {
-      if (type === 'users') USERS.splice(index, 1);
-      else if (type === 'suppliers') SUPPLIERS.splice(index, 1);
-      else if (type === 'work') WORK_TYPES.splice(index, 1);
-      else ISSUE_TYPES.splice(index, 1);
-      saveCatalogs();
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
-      renderCurrentCatalogView();
+    async function deleteCatalogItem(type, index) {
+      if (type === 'users') { USERS.splice(index, 1); saveCatalogs(); renderCurrentCatalogView(); return; }
+      if (type === 'suppliers') { SUPPLIERS.splice(index, 1); saveCatalogs(); renderCurrentCatalogView(); return; }
+      const list = type === 'work' ? WORK_TYPES : ISSUE_TYPES;
+      const item = list[index];
+      if (!item) return;
+      if (!confirm(`¿Desactivar “${item.name}”? Dejará de aparecer al crear operaciones, pero las operaciones anteriores conservarán el dato.`)) return;
+      try {
+        await deactivateCloudOperationCatalogItem(item);
+      } catch (error) {
+        alert(`No se pudo desactivar en Supabase: ${error?.message || error}`);
+      }
     }
 
     function viewCatalogItem(type, index) {
@@ -17897,6 +18019,7 @@ function saveOperations(operations) {
     }
 
     function openCreateModal() {
+      syncOperationCatalogsFromSupabase().catch(() => false);
       createModalBackdrop.classList.remove('hidden');
       createError.classList.add('hidden');
       createError.textContent = '';
@@ -21164,6 +21287,7 @@ function openEditModal(id) {
       loginView.classList.add('hidden');
       appView.classList.remove('hidden');
       refreshOpenTypeSelectors();
+      syncOperationCatalogsFromSupabase().catch(() => false);
       populateReportSpecificTypeOptions();
       populateAdvancedReportDropdowns();
       renderOperations();
