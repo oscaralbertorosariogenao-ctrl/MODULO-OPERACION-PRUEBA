@@ -1,5 +1,6 @@
 import { el, option } from '../components/dom.js';
 import { evidenceUploader } from '../components/evidence-uploader.js';
+import { agencyPicker } from '../components/agency-picker.js';
 import { OPERATION_TYPES, PRIORITIES } from '../config.js';
 import { can } from '../permissions.js';
 
@@ -25,11 +26,6 @@ export function operationFormView(state, draft = {}) {
     .filter(item => item.active !== false && item.type === operationType)
     .sort((a,b) => Number(a.order || 0) - Number(b.order || 0) || a.name.localeCompare(b.name,'es'));
   const selectedTechnician = canAssign ? (draft.technician || '') : '';
-
-  const agencyOptions = agencies.map((agency) => option(
-    agency.id || agency.numero,
-    `${agency.numero || ''} · ${agency.nombre || 'Sin nombre'}`,
-  ));
 
   const technicianOptions = [
     option('', 'Sin asignar', !selectedTechnician),
@@ -65,12 +61,15 @@ export function operationFormView(state, draft = {}) {
     field('Tipo de reporte', el('select', {
       class: 'select', name: 'type', required: '', 'data-change-action':'operation-type'
     }, OPERATION_TYPES.map((value) => option(value, value, operationType === value)))),
-    field('Agencia',
-      el('input', {
-        class: 'input', name: 'agency', list: 'operation-agencies', value: draft.agency || '',
-        placeholder: 'Número o nombre', required: '', autocomplete: 'off',
-      }),
-      el('datalist', { id: 'operation-agencies' }, agencyOptions)),
+    fieldBlock('Agencia',agencyPicker({
+      agencies,
+      name:'agency',
+      selectedValue:draft.agency || '',
+      placeholder:'Selecciona una agencia',
+      searchPlaceholder:'Buscar por número o nombre…',
+      emptyText:'No tienes agencias disponibles para reportar.',
+      contextLabel:'Agencias disponibles'
+    })),
     el('div',{class:'operation-catalog-section'},
       el('div',{class:'operation-catalog-title-row'},
         el('div',{},
@@ -115,3 +114,8 @@ export function operationFormView(state, draft = {}) {
 function field(label, control, extra = null) {
   return el('label', { class: 'field' }, el('span', { text: label }), control, extra);
 }
+
+function fieldBlock(label, control, extra = null) {
+  return el('div', { class: 'field' }, el('span', { text: label }), control, extra);
+}
+
