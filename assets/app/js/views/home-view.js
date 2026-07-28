@@ -1,9 +1,13 @@
 import { el } from '../components/dom.js';
 import { operationCard } from '../components/operation-card.js';
 import { emptyState } from '../components/empty-state.js';
-import { can } from '../permissions.js';
+import { can, isGroupManager } from '../permissions.js';
+
 export function homeView(state){
-  const profile = state.profile || {}; const stats = state.operations.stats || emptyStats(); const recent = state.operations.items.slice(0,6);
+  const profile = state.profile || {};
+  const groupManager = isGroupManager(profile);
+  const stats = state.operations.stats || emptyStats();
+  const recent = state.operations.items.slice(0,6);
   const quickActions = [
     quickIf(state,'operations.create','＋','Crear operación','go-create-operation'),
     quickIf(state,'operations.view','⌕','Buscar operación','go-operations-search'),
@@ -12,21 +16,34 @@ export function homeView(state){
     quickIf(state,'scanner.lookup','⌗','Escanear serial','go-scanner'),
     quickIf(state,'agencies.map','⌖','Abrir mapa','go-map')
   ];
+  const metrics = groupManager
+    ? [metric(stats.pending,'Pendientes'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),metric(stats.overdue,'Atrasadas')]
+    : [
+        metric(stats.pending,'Pendientes'),metric(stats.unassigned,'Sin asignar'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),
+        metric(stats.assigned,'Asignadas'),metric(stats.overdue,'Atrasadas'),metric(stats.pendingEvidence,'Evidencia pendiente'),metric(stats.activeTechnicians,'Técnicos activos')
+      ];
+  const alertTitle = groupManager ? 'Avisos de mi grupo' : 'Alertas operativas';
+
   return el('div',{class:'page home-page'},
-    el('section',{class:'hero-card'},el('h1',{text:`Hola, ${firstName(profile.nombre_completo || profile.nombre || 'Administrador')}`}),el('p',{text:'Este es el estado operativo de hoy.'}),
-      el('div',{class:'hero-meta'},heroPill('📅',formatDate(new Date())),heroPill(state.connectivity.online ? '●' : '○',state.connectivity.online ? 'En línea' : 'Sin conexión'),heroPill('↻',syncText(state.connectivity.lastSync)))),
-    el('section',{class:'grid grid-2 grid-md-4','aria-label':'Indicadores operativos'},
-      metric(stats.pending,'Pendientes'),metric(stats.unassigned,'Sin asignar'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),
-      metric(stats.assigned,'Asignadas'),metric(stats.overdue,'Atrasadas'),metric(stats.pendingEvidence,'Evidencia pendiente'),metric(stats.activeTechnicians,'Técnicos activos')
+    el('section',{class:'hero-card'},
+      el('h1',{text:`Hola, ${firstName(profile.nombre_completo || profile.nombre || 'Administrador')}`}),
+      el('p',{text:groupManager ? 'Este es el estado operativo de tus grupos asignados.' : 'Este es el estado operativo de hoy.'}),
+      el('div',{class:'hero-meta'},
+        heroPill('📅',formatDate(new Date())),
+        heroPill(state.connectivity.online ? '●' : '○',state.connectivity.online ? 'En línea' : 'Sin conexión'),
+        heroPill('↻',syncText(state.connectivity.lastSync))
+      )
     ),
+    el('section',{class:'grid grid-2 grid-md-4','aria-label':'Indicadores operativos'},metrics),
     quickActions.some(Boolean) ? sectionHeading('Acciones rápidas') : null,
     quickActions.some(Boolean) ? el('section',{class:'quick-actions'},quickActions) : null,
-    can('notifications.view',state) ? sectionHeading('Alertas operativas',el('button',{class:'btn btn-ghost btn-sm',type:'button','data-action':'go-notifications'},'Ver todas')) : null,
+    can('notifications.view',state) ? sectionHeading(alertTitle,el('button',{class:'btn btn-ghost btn-sm',type:'button','data-action':'go-notifications'},'Ver todas')) : null,
     can('notifications.view',state) ? alertSummary(state.notifications.items) : null,
     can('operations.view',state) ? sectionHeading('Últimas operaciones',el('button',{class:'btn btn-ghost btn-sm',type:'button','data-action':'go-operations'},'Ver listado')) : null,
     can('operations.view',state) ? (recent.length ? el('div',{class:'list'},recent.map(operationCard)) : emptyState({icon:'▤',title:'Sin operaciones recientes',message:'Las nuevas operaciones aparecerán aquí.'})) : null
   );
 }
+
 function emptyStats(){ return {pending:0,unassigned:0,inProgress:0,completedToday:0,assigned:0,overdue:0,pendingEvidence:0,activeTechnicians:0}; }
 function firstName(value){ return String(value).trim().split(/\s+/)[0]; }
 function formatDate(date){ return new Intl.DateTimeFormat('es-DO',{weekday:'long',day:'numeric',month:'long'}).format(date); }
@@ -38,6 +55,6 @@ function quickIf(state,permission,icon,label,action){ return can(permission,stat
 function sectionHeading(title,action = null){ return el('div',{class:'section-heading'},el('h2',{text:title}),action); }
 function alertSummary(items){
   const alerts = (items || []).slice(0,3);
-  if(!alerts.length) return el('div',{class:'card'},el('p',{class:'muted',text:'No hay alertas operativas activas.'}));
+  if(!alerts.length) return el('div',{class:'card'},el('p',{class:'muted',text:'No hay avisos operativos activos.'}));
   return el('div',{class:'card list'},alerts.map(item => el('button',{class:'list-item',type:'button','data-action':'open-alert','data-alert-id':item.id},el('span',{'aria-hidden':'true',text:item.type === 'danger' ? '⚠' : item.type === 'success' ? '✓' : 'i'}),el('span',{class:'list-main'},el('strong',{text:item.title || item.titulo}),el('p',{text:item.message || item.mensaje || ''})))));
 }
