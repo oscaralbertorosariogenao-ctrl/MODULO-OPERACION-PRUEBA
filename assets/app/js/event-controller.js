@@ -33,6 +33,7 @@ export function attachEventController(controller){
   return () => { document.removeEventListener('click',onClick); document.removeEventListener('submit',onSubmit); document.removeEventListener('input',onInput); document.removeEventListener('change',onChange); document.removeEventListener('keydown',onKeydown); };
 }
 async function handleClick(event,controller){
+  if(!event.target.closest('[data-agency-picker]')) closeAllAgencyPickers();
   const target = event.target.closest('[data-action]'); if(!target) return;
   const action = target.dataset.action;
   if(action === 'close-drawer' && event.target.closest('[data-drawer-panel]')) return;
@@ -51,6 +52,8 @@ async function handleClick(event,controller){
       case 'close-drawer':updateSlice('ui',{drawerOpen:false},'drawer');controller.render();break;
       case 'refresh-view':await withLoader('Actualizando datos…',() => controller.refresh());break;
       case 'close-modal':closeModal();break;
+      case 'agency-picker-toggle':toggleAgencyPicker(target);break;
+      case 'agency-picker-select':selectAgencyPicker(target);break;
       case 'dismiss-toast':dismissToast(target.dataset.toastId);break;
       case 'toggle-password':togglePassword(target);break;
       case 'login-help':showToast('Ayuda de acceso','Usa tu correo autorizado. Si tu usuario no se resuelve, contacta al administrador para confirmar el perfil.','info');break;
@@ -154,6 +157,7 @@ async function handleSubmit(event,controller){
 }
 function handleInput(event,controller){
   const action = event.target.dataset.inputAction; if(!action) return;
+  if(action === 'agency-picker-search'){ filterAgencyPicker(event.target); return; }
   clearTimeout(debounceTimers.get(action));
   debounceTimers.set(action,setTimeout(async () => {
     try{
@@ -195,7 +199,14 @@ async function handleChange(event,controller){
 }
 function handleKeydown(event,controller){
   trapModalFocus(event);
+  if(event.key === 'Enter' && event.target.matches('[data-agency-picker-search]')){
+    const picker=event.target.closest('[data-agency-picker]');
+    const firstVisible=[...(picker?.querySelectorAll('[data-action="agency-picker-select"]') || [])].find(row => !row.hidden);
+    if(firstVisible){ event.preventDefault(); firstVisible.click(); return; }
+  }
   if(event.key === 'Escape'){
+    const picker=document.querySelector('[data-agency-picker].is-open');
+    if(picker){ closeAgencyPicker(picker); return; }
     if(hasOpenModal()){ closeModal(); return; }
     if(getState().ui.drawerOpen){ updateSlice('ui',{drawerOpen:false},'drawer');controller.render(); }
   }
@@ -472,6 +483,7 @@ async function submitScannerTransfer(data,controller){
 
   const groupManagerFlow=Boolean(equipment?.inventoryContext?.groupManager && equipment?.inventoryContext?.canSendToAgency);
   if(groupManagerFlow){
+    if(!String(data.destinationId || '').trim()) throw new Error('Selecciona una agencia de tu grupo.');
     const result=await withLoader('Enviando a la agencia…',() => sendGroupManagerSerialToAgency({
       equipment,
       agencyId:data.destinationId,
@@ -537,6 +549,84 @@ async function submitScannerReceiptIncident(data,controller){
   await withLoader('Registrando incidencia…',() => reportReceiptIncident({equipment,...data}));
   closeModal();showToast('Incidencia registrada','La ubicación no fue cambiada y el movimiento quedó pendiente de revisión.','warning',8000);
   await processScannerValue(equipment.serial,controller,{source:'incident'});
+}
+
+function toggleAgencyPicker(target){
+  const picker=target.closest('[data-agency-picker]');
+  if(!picker) return;
+  const shouldOpen=!picker.classList.contains('is-open');
+  closeAllAgencyPickers(picker);
+  if(shouldOpen){
+    picker.classList.add('is-open');
+    const panel=picker.querySelector('[data-agency-picker-panel]');
+    const trigger=picker.querySelector('[data-action="agency-picker-toggle"]');
+    if(panel) panel.hidden=false;
+    if(trigger) trigger.setAttribute('aria-expanded','true');
+    setTimeout(() => picker.querySelector('[data-agency-picker-search]')?.focus(),20);
+  }else closeAgencyPicker(picker);
+}
+
+function selectAgencyPicker(target){
+  const picker=target.closest('[data-agency-picker]');
+  if(!picker) return;
+  const input=picker.querySelector('[data-agency-picker-value]');
+  const trigger=picker.querySelector('.agency-picker-trigger');
+  const primary=picker.querySelector('[data-agency-picker-primary]');
+  const secondary=picker.querySelector('[data-agency-picker-secondary]');
+  const id=String(target.dataset.agencyId || '').trim();
+  if(!id) return;
+  if(input) input.value=id;
+  if(primary) primary.textContent=target.dataset.agencyCode || 'Agencia seleccionada';
+  if(secondary) secondary.textContent=target.dataset.agencyName || 'Agencia';
+  picker.classList.add('has-value');
+  picker.querySelectorAll('[data-action="agency-picker-select"]').forEach(option => {
+    const selected=option === target;
+    option.classList.toggle('is-selected',selected);
+    option.setAttribute('aria-selected',selected ? 'true' : 'false');
+    const check=option.querySelector('.agency-picker-option-check');
+    if(check) check.textContent=selected ? '✓' : '›';
+  });
+  closeAgencyPicker(picker);
+  trigger?.focus();
+  input?.dispatchEvent(new Event('change',{bubbles:true}));
+}
+
+function filterAgencyPicker(input){
+  const picker=input.closest('[data-agency-picker]');
+  if(!picker) return;
+  const term=normalizePickerSearch(input.value);
+  const options=[...picker.querySelectorAll('[data-action="agency-picker-select"]')];
+  let visible=0;
+  options.forEach(option => {
+    const matches=!term || normalizePickerSearch(option.dataset.agencySearch).includes(term);
+    option.hidden=!matches;
+    if(matches) visible += 1;
+  });
+  const count=picker.querySelector('[data-agency-picker-count]');
+  if(count) count.textContent=`${visible} agencia${visible === 1 ? '' : 's'}`;
+  const empty=picker.querySelector('[data-agency-picker-empty]');
+  if(empty) empty.hidden=visible > 0;
+}
+
+function closeAgencyPicker(picker){
+  if(!picker) return;
+  picker.classList.remove('is-open');
+  const panel=picker.querySelector('[data-agency-picker-panel]');
+  const trigger=picker.querySelector('[data-action="agency-picker-toggle"]');
+  const search=picker.querySelector('[data-agency-picker-search]');
+  if(panel) panel.hidden=true;
+  if(trigger) trigger.setAttribute('aria-expanded','false');
+  if(search && search.value){ search.value=''; filterAgencyPicker(search); }
+}
+
+function closeAllAgencyPickers(except=null){
+  document.querySelectorAll('[data-agency-picker].is-open').forEach(picker => {
+    if(picker !== except) closeAgencyPicker(picker);
+  });
+}
+
+function normalizePickerSearch(value){
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
 }
 
 function filterScannerProducts(input){
