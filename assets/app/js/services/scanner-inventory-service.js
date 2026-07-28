@@ -98,7 +98,11 @@ export function localDateTimeValue(value = new Date()){
 }
 
 export function scannerResultTitle(result){
-  if(result?.kind === 'equipment') return 'Equipo encontrado';
+  if(result?.kind === 'equipment'){
+    const context=result.equipment?.inventoryContext || {};
+    if(context.canReceive || context.canSendToAgency) return 'Recibir o enviar';
+    return 'Equipo encontrado';
+  }
   if(result?.kind === 'product') return 'Producto identificado';
   if(result?.kind === 'unknown') return 'Serial no registrado';
   return 'Código no reconocido';
