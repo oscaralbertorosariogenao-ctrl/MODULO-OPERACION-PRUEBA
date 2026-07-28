@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-07-27-v805.19-desbloqueo-real";
+const SW_VERSION = "2026-07-28-v805.18-encargado-movil";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -128,10 +128,10 @@ const CORE_ASSETS = [
   "/assets/app/js/views/profile-view.js",
   "/assets/app/js/views/scanner-view.js",
   "/assets/app/js/views/technicians-view.js",
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js",
 ];
 
 const OPTIONAL_ASSETS = [
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
@@ -373,24 +373,17 @@ async function staleWhileRevalidate(request) {
   return cached || networkPromise || Response.error();
 }
 
-async function fetchPrecacheAsset(asset, timeoutMs = 9000) {
+async function fetchPrecacheAsset(asset) {
   const external = /^https?:\/\//.test(asset);
-  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
-  try {
-    const response = await fetch(asset, {
-      cache: "no-store",
-      credentials: external ? "omit" : "same-origin",
-      mode: external ? "cors" : "same-origin",
-      signal: controller ? controller.signal : undefined
-    });
-    if (!response || !response.ok) {
-      throw new Error(`No se pudo precargar ${asset}: ${response?.status || "sin respuesta"}`);
-    }
-    return response;
-  } finally {
-    if (timer) clearTimeout(timer);
+  const response = await fetch(asset, {
+    cache: "no-store",
+    credentials: external ? "omit" : "same-origin",
+    mode: external ? "cors" : "same-origin"
+  });
+  if (!response || !response.ok) {
+    throw new Error(`No se pudo precargar ${asset}: ${response?.status || "sin respuesta"}`);
   }
+  return response;
 }
 
 async function runPrecachePool(assets, worker, concurrency = 6) {
@@ -436,31 +429,30 @@ async function precacheAppShellHtml() {
 
 self.addEventListener("install", (event) => {
   /*
-    HOTFIX V805.17: el núcleo obligatorio contiene únicamente archivos del mismo dominio.
-    Las librerías CDN se descargan después y nunca bloquean la instalación.
+    El núcleo móvil es obligatorio. Si durante un deploy falta un módulo,
+    esta versión no se instala y el teléfono conserva el Service Worker anterior.
   */
-  const coreInstall = Promise.all([
-    precacheRequiredAssets(),
-    precacheAppShellHtml()
-  ]).then(async () => {
-    // Activación automática solo para sacar a los clientes del ciclo de carga V805.15.
-    await self.skipWaiting();
-  });
-  event.waitUntil(coreInstall);
-  coreInstall.then(() => precacheOptionalAssets()).catch(() => {});
+  event.waitUntil((async () => {
+    await Promise.all([
+      precacheRequiredAssets(),
+      precacheAppShellHtml()
+    ]);
+    await precacheOptionalAssets();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(
-      keys
-        .filter((key) => key.startsWith("loteka-") && key !== STATIC_CACHE && key !== HTML_CACHE && key !== RUNTIME_CACHE)
-        .map((key) => caches.delete(key))
-    );
-    // Recuperación inmediata de pestañas y PWA que quedaron bajo el worker anterior.
-    await clients.claim();
-  })());
+  event.waitUntil(
+    caches.keys().then(async (keys) => {
+      await Promise.all(
+        keys
+          .filter((key) => key.startsWith("loteka-") && key !== STATIC_CACHE && key !== HTML_CACHE && key !== RUNTIME_CACHE)
+          .map((key) => caches.delete(key))
+      );
+      // Solo tomamos control inmediato cuando el usuario pulsó “Actualizar”.
+      if (userRequestedActivation) await clients.claim();
+    })
+  );
 });
 
 self.addEventListener("message", (event) => {
@@ -488,9 +480,6 @@ self.addEventListener("fetch", (event) => {
 
   // En Live Server/local no cacheamos nada.
   if (IS_DEV_HOST) return;
-
-  // La página de recuperación siempre debe venir directamente de la red.
-  if (url.pathname === "/recuperar.html") return;
 
   // Nunca interceptar Supabase, Appwrite, R2 ni APIs internas.
   if (isDynamicOrExternalApi(url)) return;
