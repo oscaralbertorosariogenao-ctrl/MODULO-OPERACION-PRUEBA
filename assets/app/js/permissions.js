@@ -17,6 +17,7 @@ const ACTION_PERMISSION = Object.freeze({
   'agencies.detail':PERMISSIONS.agencies,
   'agencies.map':PERMISSIONS.agencies,
   'equipment.view':PERMISSIONS.equipment,
+  'groupInventory.view':PERMISSIONS.groupInventory,
   'scanner.lookup':PERMISSIONS.equipment,
   'scanner.entry':PERMISSIONS.inventoryManage,
   'scanner.batchEntry':PERMISSIONS.inventoryManage,
@@ -36,6 +37,7 @@ const ROUTE_ACTION = Object.freeze({
   [ROUTES.agencies]:'agencies.view',
   [ROUTES.agency]:'agencies.detail',
   [ROUTES.map]:'agencies.map',
+  [ROUTES.groupInventory]:'groupInventory.view',
   [ROUTES.scanner]:'scanner.lookup',
   [ROUTES.technicians]:'technicians.view',
   [ROUTES.notifications]:'notifications.view',
@@ -45,6 +47,7 @@ const ROUTE_ACTION = Object.freeze({
 const ROUTE_PRIORITY = Object.freeze([
   ROUTES.home,
   ROUTES.operations,
+  ROUTES.groupInventory,
   ROUTES.scanner,
   ROUTES.agencies,
   ROUTES.profile
