@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-28-v805.21-entrada-rapida-encargado",
-  "name": "v805.21 · Entrada rápida de grupo",
+  "version": "2026-07-28-v805.22-scanner-contextual-encargado",
+  "name": "v805.22 · Escáner contextual del encargado",
   "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Formulario simplificado para Encargados de Grupo",
-    "Destino automático al inventario del grupo asignado",
-    "Referencia, fecha, origen y auditoría generados por Supabase",
-    "Entrada individual y por lote con selección de producto y estado físico",
-    "Administradores y auxiliares conservan el formulario completo"
+    "Reconoce seriales existentes dentro del inventario del grupo aunque estén protegidos por RLS",
+    "Muestra Recibir en mi grupo cuando existe una recepción pendiente",
+    "Muestra Enviar a una agencia cuando el equipo está disponible en el grupo",
+    "Limita los destinos a agencias activas del mismo grupo",
+    "Después de registrar una entrada, el escáner recarga el serial como equipo existente"
   ]
 }
