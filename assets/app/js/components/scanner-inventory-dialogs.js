@@ -72,8 +72,28 @@ export function openScannerEntryDialog({result,products,warehouses,batch=false,g
   return openModal({id:batch?'scanner-batch-setup-dialog':'scanner-entry-dialog',title:groupEntry ? (batch?'Registrar lote en mi grupo':'Registrar en mi grupo') : (batch?'Configurar lote de entrada':'Registrar entrada de serial'),body:form,size:'bottom-sheet'});
 }
 
-export function openScannerTransferDialog({equipment,warehouses,agencies}){
+export function openScannerTransferDialog({equipment,warehouses=[],agencies=[],groupManager=false}){
   const originType = String(equipment?.ubicacion_tipo || '').toUpperCase();
+
+  if(groupManager){
+    const form = el('form',{class:'stack scanner-inventory-form','data-form':'scanner-transfer'},
+      el('input',{type:'hidden',name:'serial',value:equipment?.serial || ''}),
+      el('input',{type:'hidden',name:'destinationType',value:'AGENCIA'}),
+      el('div',{class:'scanner-form-banner success'},
+        el('strong',{text:'Enviar desde mi grupo'}),
+        el('span',{text:`${equipment?.serial || 'Serial'} · ${currentLocationLabel(equipment)}`})
+      ),
+      field('Enviar a',el('select',{class:'select',name:'destinationId',required:''},
+        option('','Selecciona una agencia de tu grupo',true),
+        agencies.map(agency => option(agency.id,agencyLabel(agency)))
+      )),
+      field('Observación opcional',el('textarea',{class:'textarea',name:'observations',maxlength:'700',placeholder:'Ej. Entrega para reemplazo o instalación'})),
+      el('p',{class:'draft-note',text:'Solo aparecen agencias activas del mismo grupo. La fecha, referencia, origen y auditoría se generan automáticamente.'}),
+      el('button',{class:'btn btn-primary btn-block',type:'submit'},'Enviar a la agencia')
+    );
+    return openModal({id:'scanner-transfer-dialog',title:'Enviar a una agencia',body:form,size:'bottom-sheet'});
+  }
+
   const form = el('form',{class:'stack scanner-inventory-form','data-form':'scanner-transfer'},
     el('input',{type:'hidden',name:'serial',value:equipment?.serial || ''}),
     el('div',{class:'scanner-form-banner'},el('strong',{text:equipment?.serial || 'Serial'}),el('span',{text:`Origen actual: ${currentLocationLabel(equipment)}`})),
@@ -142,7 +162,7 @@ function resultSummary(result){
   if(result?.kind === 'equipment'){
     const item = result.equipment;
     return el('div',{class:'scanner-result-detail'},
-      el('span',{class:'scanner-result-kicker success',text:'EQUIPO ENCONTRADO'}),
+      el('span',{class:'scanner-result-kicker success',text:resultEquipmentKicker(item)}),
       el('div',{class:'scanner-result-serial',text:item.serial || result.normalizedValue}),
       el('h3',{text:item.product?.nombre || 'Producto no identificado'}),
       infoGrid([
@@ -178,6 +198,13 @@ function resultSummary(result){
   );
 }
 
+function resultEquipmentKicker(item){
+  if(item?.inventoryContext?.canReceive) return 'PENDIENTE DE RECIBIR';
+  if(item?.inventoryContext?.canSendToAgency) return 'DISPONIBLE EN MI GRUPO';
+  if(String(item?.ubicacion_tipo || '').toUpperCase() === 'AGENCIA') return 'UBICADO EN AGENCIA';
+  return 'EQUIPO ENCONTRADO';
+}
+
 function resultActions(result,permissions){
   const actions = [];
   if(result?.kind === 'equipment'){
@@ -185,8 +212,8 @@ function resultActions(result,permissions){
     actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-history'},'Ver historial'));
     if(permissions.agencies && item.agencia_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-agency','data-agency-id':item.agencia_id},'Abrir agencia'));
     if(permissions.operations && item.operacion_id) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'open-scanned-operation','data-operation-id':item.operacion_id},'Abrir operación'));
-    if(permissions.transfer && item.inventoryContext?.canTransfer) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},'Enviar o transferir'));
-    if(permissions.receive && item.inventoryContext?.canReceive) actions.push(el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo'));
+    if(permissions.receive && item.inventoryContext?.canReceive) actions.push(el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},item.inventoryContext?.groupManager ? 'Recibir en mi grupo' : 'Recibir equipo'));
+    if(permissions.transfer && item.inventoryContext?.canTransfer) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},item.inventoryContext?.groupManager ? 'Enviar a una agencia' : 'Enviar o transferir'));
   }else if(result?.kind === 'product' && result.product?.requiere_serial !== false){
     if(permissions.entry) actions.push(el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-entry'},'Registrar un serial'));
     if(permissions.batchEntry) actions.push(el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-batch-entry'},'Entrada por lote'));
