@@ -1,16 +1,18 @@
 import { el, initials } from './dom.js';
-import { can } from '../permissions.js';
+import { can, isGroupManager } from '../permissions.js';
 
 export function appDrawer(state){
   if(!state.ui?.drawerOpen) return null;
   const profile = state.profile || {};
+  const groupManager = isGroupManager(profile);
   const buttons = [
     drawerButtonIf(state,'home.view','⌂','Inicio','go-home'),
     drawerButtonIf(state,'operations.view','▤','Operaciones','go-operations'),
     drawerButtonIf(state,'operations.create','＋','Crear operación','go-create-operation'),
     drawerButtonIf(state,'agencies.map','⌖','Mapa de agencias','go-map'),
+    drawerButtonIf(state,'scanner.lookup','⌗','Escáner','go-scanner'),
     drawerButtonIf(state,'technicians.view','♟','Técnicos','go-technicians'),
-    drawerButtonIf(state,'notifications.view','◉','Alertas','go-notifications'),
+    drawerButtonIf(state,'notifications.view','◉',groupManager ? 'Avisos de mi grupo' : 'Alertas','go-notifications'),
     drawerButtonIf(state,'profile.view','●','Mi perfil','go-profile'),
     el('div',{class:'divider'}),
     drawerButton('↻','Actualizar datos','refresh-view'),
