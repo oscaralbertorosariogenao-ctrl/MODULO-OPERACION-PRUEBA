@@ -90,21 +90,29 @@ function makeAssignmentCode(){
 export async function createOperation(input, context){
   const code = await getNextOperationCode(); const now = new Date().toISOString();
   const profile = context.profile || {}; const agency = input.agency || {};
+  const operationType = OPERATION_TYPES.includes(input.type) ? input.type : 'Avería';
+  const selectedTypes = [...new Set((Array.isArray(input.selectedTypes) ? input.selectedTypes : [input.selectedTypes]).map(text).filter(Boolean))];
+  const canAssign = Boolean(context.allowAssign);
+  const technician = canAssign && input.technician && !/sin asignar/i.test(input.technician) ? text(input.technician) : 'Sin asignar';
   const payload = {
-    id:makeClientId(), codigo:code, tipo:OPERATION_TYPES.includes(input.type) ? input.type : 'Avería', titulo:text(input.title),
-    descripcion:text(input.description), estado:'Pendiente', prioridad:PRIORITIES.includes(input.priority) ? input.priority : 'Media',
+    id:makeClientId(), codigo:code, tipo:operationType, titulo:text(input.title || selectedTypes[0] || 'Operación'),
+    descripcion:text(input.description || selectedTypes.join(', ')), estado:'Pendiente', prioridad:PRIORITIES.includes(input.priority) ? input.priority : 'Media',
     agencia:text(agency.numero || input.agencyNumber), agencia_label:text(agency.nombre || input.agencyLabel), grupo:text(agency.grupos?.nombre || input.group),
-    tecnico:text(input.technician || 'Sin asignar'), encargado:text(agency.grupos?.encargado || input.manager),
+    tecnico:technician, encargado:text(agency.grupos?.encargado || input.manager),
     encargado_telefono:text(agency.grupos?.telefono || agency.telefono || input.managerPhone),
     creado_por:text(profile.usuario_login || profile.correo || context.user?.email), creado_por_nombre:text(profile.nombre_completo || profile.nombre || context.user?.email),
     reportado_por_nombre:text(profile.nombre_completo || profile.nombre || context.user?.email),
     fotos_reportadas:input.reportedMedia || [], fotos_evidencia:[], fecha_creacion:now, creado_en:now, actualizado_en:now,
-    source:'app_movil_v805', trabajos_seleccionados:input.work ? [text(input.work)] : [], trabajo_a_realizar:text(input.work),
-    historial:[historyEntry('Operación creada desde app móvil', profile, text(input.description))]
+    source:'app_movil_v805',
+    tipos_seleccionados:selectedTypes,
+    averias_seleccionadas:operationType === 'Avería' ? selectedTypes : [],
+    trabajos_seleccionados:operationType === 'Trabajo' ? selectedTypes : [],
+    trabajo_a_realizar:text(input.work),
+    historial:[historyEntry('Operación creada desde app móvil', profile, text(input.description || selectedTypes.join(', ')), {tipos_seleccionados:selectedTypes})]
   };
-  if(input.technician && !/sin asignar/i.test(input.technician)){
+  if(technician !== 'Sin asignar'){
     payload.estado = 'Asignada'; payload.fecha_asignacion = now; payload.asignacion_codigo = makeAssignmentCode();
-    payload.historial.push(historyEntry('Operación asignada', profile, input.technician, { codigo_asignacion:payload.asignacion_codigo }));
+    payload.historial.push(historyEntry('Operación asignada', profile, technician, { codigo_asignacion:payload.asignacion_codigo }));
   }
   return safeInsertOperation(payload);
 }
