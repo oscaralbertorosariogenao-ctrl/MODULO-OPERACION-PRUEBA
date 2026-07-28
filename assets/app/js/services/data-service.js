@@ -2,6 +2,7 @@ import { listOperations, getOperation, getRecentOperations, getOperationsForStat
 import { listAgencies, getAgency, listGroups, listAgencyCoordinates } from '../api/agencies-api.js';
 import { listTechnicians } from '../api/profiles-api.js';
 import { listAgencyEquipment } from '../api/equipment-api.js';
+import { getMyGroupInventory, saveGroupInventoryCache, loadGroupInventoryCache } from '../api/group-inventory-api.js';
 import { listNotifications } from '../api/notifications-api.js';
 import { computeStats, normalizeOperation } from './operations-service.js';
 import { deriveOperationalAlerts, filterNotificationsForProfile } from './notification-service.js';
@@ -9,6 +10,35 @@ import { getState, updateSlice } from '../store.js';
 import { markSync } from '../connectivity.js';
 import { can, isGroupManager } from '../permissions.js';
 
+
+
+export async function loadGroupInventoryData({ force = false, groupId = null } = {}){
+  const state=getState();
+  const current=state.groupInventory || {};
+  const selectedGroup=groupId ?? current.filters?.groupId ?? null;
+  if(!force && current.loadedAt && Date.now()-Number(current.loadedAt)<60000 && current.data?.groups?.length){
+    return current.data;
+  }
+  updateSlice('groupInventory',{loading:true},'group-inventory-loading');
+  const userId=state.user?.id || state.profile?.id || '';
+  try{
+    const data=await getMyGroupInventory({groupId:null,movementLimit:150});
+    const nextGroupId=selectedGroup && data.groups.some(row=>String(row.id)===String(selectedGroup)) ? selectedGroup : (data.groups[0]?.id || '');
+    updateSlice('groupInventory',currentSlice=>({data,loading:false,loadedAt:Date.now(),fromCache:false,filters:{...(currentSlice.filters || {}),groupId:nextGroupId}}),'group-inventory-loaded');
+    saveGroupInventoryCache(userId,data);
+    markSync();
+    return data;
+  }catch(error){
+    const cached=loadGroupInventoryCache(userId);
+    if(cached?.payload?.groups?.length){
+      const nextGroupId=selectedGroup && cached.payload.groups.some(row=>String(row.id)===String(selectedGroup)) ? selectedGroup : (cached.payload.groups[0]?.id || '');
+      updateSlice('groupInventory',currentSlice=>({data:cached.payload,loading:false,loadedAt:cached.savedAt,fromCache:true,filters:{...(currentSlice.filters || {}),groupId:nextGroupId}}),'group-inventory-cache');
+      return cached.payload;
+    }
+    updateSlice('groupInventory',{loading:false},'group-inventory-error');
+    throw error;
+  }
+}
 
 export async function loadOperationCatalog({ force = false } = {}){
   const state = getState();
