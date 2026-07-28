@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-07-28-v805.19-catalogo-operaciones-compartido";
+const SW_VERSION = "2026-07-28-v805.20-mi-inventario-grupo";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -56,6 +56,7 @@ const CORE_ASSETS = [
   "/assets/app/css/pages/operations.css",
   "/assets/app/css/pages/profile.css",
   "/assets/app/css/pages/scanner.css",
+  "/assets/app/css/pages/group-inventory.css",
   "/assets/app/css/pages/technicians.css",
   "/assets/app/css/reset.css",
   "/assets/app/css/responsive.css",
@@ -71,6 +72,7 @@ const CORE_ASSETS = [
   "/assets/app/js/api/agencies-api.js",
   "/assets/app/js/api/equipment-api.js",
   "/assets/app/js/api/evidence-api.js",
+  "/assets/app/js/api/group-inventory-api.js",
   "/assets/app/js/api/notifications-api.js",
   "/assets/app/js/api/operations-api.js",
   "/assets/app/js/api/profiles-api.js",
@@ -119,6 +121,7 @@ const CORE_ASSETS = [
   "/assets/app/js/views/agency-detail-view.js",
   "/assets/app/js/views/app-frame-view.js",
   "/assets/app/js/views/home-view.js",
+  "/assets/app/js/views/group-inventory-view.js",
   "/assets/app/js/views/login-view.js",
   "/assets/app/js/views/map-view.js",
   "/assets/app/js/views/notifications-view.js",
