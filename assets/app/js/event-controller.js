@@ -6,7 +6,7 @@ import { signIn, signOut } from './auth.js';
 import { loadOperationsPage, loadAgenciesPage, ensureAgencyReferenceData, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
 import { createOperation, assignOperation, reassignOperation, startOperation, addComment, addDiagnosis, addEvidence, finishOperation, closeByWhatsApp, normalizeOperation } from './services/operations-service.js';
 import { safeUpdateOperation } from './api/operations-api.js';
-import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, getGroupManagerEntryContext, registerGroupManagerInventoryEntry, registerInventoryEntry, sendGroupManagerSerialToAgency, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
+import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, getGroupManagerEntryContext, registerGroupManagerInventoryEntry, registerInventoryEntry, sendGroupManagerSerialToAgency, receiveGroupManagerSerial, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
 import { markNotificationRead, markAllNotificationsRead, createOperationalNotification } from './api/notifications-api.js';
 import { uploadEvidenceBatch, prepareFiles, revokePreviews } from './services/evidence-service.js';
 import { startScanner, stopScanner, switchScannerCamera, toggleScannerTorch } from './services/scanner-service.js';
@@ -490,7 +490,7 @@ async function submitScannerTransfer(data,controller){
 function openScannerReceiveFlow(controller){
   requireAction(controller,'scanner.receive');
   const equipment=getState().scanner.result?.equipment;
-  if(!equipment?.inventoryContext?.canReceive) throw new Error('Este serial no tiene una recepción pendiente.');
+  if(!equipment?.inventoryContext?.canReceive) throw new Error('Este serial no está disponible para recibir.');
   updateSlice('scanner',{mode:'receive'},'scanner-receive-open');
   openScannerReceiveDialog(equipment);
 }
@@ -499,8 +499,26 @@ async function submitScannerReceive(data,controller){
   requireOnline();requireAction(controller,'scanner.receive');
   const equipment=getState().scanner.result?.equipment;
   if(!equipment) throw new Error('Vuelve a consultar el serial.');
-  await withLoader('Confirmando recepción…',() => receivePendingSerial({equipment,observations:data.observations}));
-  closeModal();showToast('Recepción confirmada',`${equipment.serial} fue recibido correctamente.`,'success',7000);
+
+  const physicalGroupReceipt=Boolean(
+    equipment?.inventoryContext?.groupManager
+    && equipment?.inventoryContext?.receiveMode === 'physical'
+  );
+
+  if(physicalGroupReceipt){
+    await withLoader('Recibiendo en tu grupo…',() => receiveGroupManagerSerial({
+      equipment,
+      groupId:data.groupId,
+      observations:data.observations
+    }));
+    closeModal();
+    showToast('Equipo recibido',`${equipment.serial} pasó al inventario de tu grupo.`,'success',7000);
+  }else{
+    await withLoader('Confirmando recepción…',() => receivePendingSerial({equipment,observations:data.observations}));
+    closeModal();
+    showToast('Recepción confirmada',`${equipment.serial} fue recibido correctamente.`,'success',7000);
+  }
+
   await processScannerValue(equipment.serial,controller,{source:'receive'});
 }
 
