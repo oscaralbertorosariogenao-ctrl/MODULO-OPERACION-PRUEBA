@@ -207,6 +207,18 @@ export async function sendGroupManagerSerialToAgency({equipment, agencyId, obser
   });
 }
 
+export async function receiveGroupManagerSerial({equipment, groupId, observations}){
+  const serial = normalizeSerial(equipment?.serial).normalizedValue;
+  if(!serial) throw validationError('No se pudo identificar el serial.');
+  if(groupId) assertUuid(groupId, 'Selecciona uno de tus grupos.');
+
+  return callRpc('rpc_scanner_encargado_recibir_en_grupo', {
+    p_serial:serial,
+    p_grupo_id:groupId || null,
+    p_observaciones:String(observations || '').trim() || null
+  });
+}
+
 export async function registerGroupManagerInventoryEntry({groupId, productId, serials, physicalCondition}){
   assertUuid(productId, 'Selecciona un producto válido.');
   if(groupId) assertUuid(groupId, 'Selecciona uno de tus grupos.');
