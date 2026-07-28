@@ -1,17 +1,18 @@
 {
-  "version": "2026-07-27-v805.19-desbloqueo-real",
-  "name": "V805.17 · Desbloqueo real de carga",
-  "released_at": "2026-07-27",
+  "version": "2026-07-28-v805.18-encargado-movil",
+  "name": "v805.18 · Perfil móvil Encargado de Grupo",
+  "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
     "app": "app.html",
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Elimina MapLibre y hojas CDN del camino crítico de arranque del index",
-    "Evita borrar cachés automáticamente durante la carga normal",
-    "Incluye una página de recuperación independiente del Service Worker",
-    "Añade protección visible si la web o la app móvil no terminan de iniciar",
-    "Fuerza la actualización de los archivos de entrada de la app móvil"
+    "El Encargado de Grupo ya no ve el directorio de técnicos ni puede abrir su ruta directa",
+    "El menú móvil incluye acceso directo al escáner para perfiles autorizados",
+    "Las alertas del Encargado se limitan a operaciones de sus grupos y notificaciones dirigidas a su usuario",
+    "Se excluyen del Encargado las entradas generales de inventario y los avisos masivos de seriales",
+    "El inicio del Encargado muestra solamente indicadores operativos útiles para sus grupos",
+    "Los filtros de operaciones del Encargado no descargan ni muestran el catálogo general de técnicos"
   ]
 }
