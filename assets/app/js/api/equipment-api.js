@@ -28,6 +28,8 @@ export function normalizeSerial(value){
 export async function findSerial(serial){
   const { normalizedValue } = normalizeSerial(serial);
   if(!normalizedValue) return null;
+  const contextual = await lookupGroupManagerScannerCode(normalizedValue);
+  if(contextual?.applies) return contextual.kind === 'equipment' ? contextual.equipment || null : null;
   return findEquipmentRow(normalizedValue);
 }
 
@@ -35,6 +37,21 @@ export async function lookupScannerCode(value){
   const identity = normalizeSerial(value);
   if(!identity.normalizedValue){
     return { kind:'invalid', ...identity, message:'El código está vacío.' };
+  }
+
+  // El Encargado de Grupo consulta mediante una RPC contextual segura. Esto
+  // permite reconocer seriales ubicados en GRUPO, agencias autorizadas o en
+  // recepción, aunque las políticas RLS oculten la fila en una consulta directa.
+  const contextual = await lookupGroupManagerScannerCode(identity.normalizedValue);
+  if(contextual?.applies){
+    return {
+      kind:String(contextual.kind || 'unknown'),
+      rawValue:identity.rawValue,
+      normalizedValue:identity.normalizedValue,
+      message:String(contextual.message || ''),
+      equipment:contextual.equipment || undefined,
+      product:contextual.product || undefined
+    };
   }
 
   const equipment = await findEquipmentRow(identity.normalizedValue);
@@ -163,6 +180,31 @@ export async function getGroupManagerEntryContext(){
     requiresSelection:Boolean(safe.requiere_seleccion ?? safe.requires_selection),
     message:String(safe.mensaje || safe.message || '')
   };
+}
+
+async function lookupGroupManagerScannerCode(code){
+  try{
+    const data = await callRpc('rpc_scanner_encargado_consultar_codigo', {p_codigo:code});
+    const value = Array.isArray(data) && data.length === 1 ? data[0] : data;
+    return value && typeof value === 'object' ? value : null;
+  }catch(error){
+    // Mantener compatibilidad durante el despliegue: para perfiles que no usan
+    // esta RPC o mientras PostgREST recarga el esquema, continúa el flujo normal.
+    if(isMissingRpc(error)) return null;
+    throw error;
+  }
+}
+
+export async function sendGroupManagerSerialToAgency({equipment, agencyId, observations}){
+  const serial = normalizeSerial(equipment?.serial).normalizedValue;
+  if(!serial) throw validationError('No se pudo identificar el serial.');
+  assertUuid(agencyId, 'Selecciona una agencia válida.');
+
+  return callRpc('rpc_scanner_encargado_enviar_agencia', {
+    p_serial:serial,
+    p_agencia_id:agencyId,
+    p_observaciones:String(observations || '').trim() || null
+  });
 }
 
 export async function registerGroupManagerInventoryEntry({groupId, productId, serials, physicalCondition}){
