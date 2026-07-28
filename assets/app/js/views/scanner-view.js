@@ -1,5 +1,5 @@
 import { el } from '../components/dom.js';
-import { productLabel, warehouseLabel } from '../services/scanner-inventory-service.js';
+import { groupLabel, productLabel, warehouseLabel } from '../services/scanner-inventory-service.js';
 import { can } from '../permissions.js';
 
 export function scannerView(state){
@@ -109,7 +109,7 @@ function emptyResultCard(){
 function batchPanel(batch,online){
   return el('section',{class:'card scanner-batch-panel','data-scanner-batch-panel':'true'},
     el('div',{class:'scanner-section-heading'},
-      el('div',{},el('span',{class:'scanner-result-kicker info',text:'ENTRADA POR LOTE'}),el('h2',{text:batch.product ? productLabel(batch.product) : 'Producto'}),el('p',{text:batch.warehouse ? warehouseLabel(batch.warehouse) : 'Almacén pendiente'})),
+      el('div',{},el('span',{class:'scanner-result-kicker info',text:'ENTRADA POR LOTE'}),el('h2',{text:batch.product ? productLabel(batch.product) : 'Producto'}),el('p',{text:batch.entryMode === 'group' ? (batch.group ? `${groupLabel(batch.group)} · Mi inventario` : 'Mi almacén de grupo') : (batch.warehouse ? warehouseLabel(batch.warehouse) : 'Almacén pendiente')})),
       el('span',{class:'scanner-batch-count','data-scanner-batch-count':'true',text:String((batch.serials || []).length)})
     ),
     el('div',{class:'scanner-batch-controls'},
