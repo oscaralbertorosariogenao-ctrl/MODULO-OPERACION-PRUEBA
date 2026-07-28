@@ -69,12 +69,12 @@ function resultCard(result,access){
   if(result.kind === 'equipment'){
     const item = result.equipment || {};
     return el('section',{class:'card scanner-result scanner-result-found'},
-      el('div',{class:'scanner-result-head'},el('span',{class:'scanner-result-kicker success',text:'EQUIPO ENCONTRADO'}),el('button',{class:'btn btn-ghost btn-small',type:'button','data-action':'scanner-open-result'},'Abrir detalle')),
+      el('div',{class:'scanner-result-head'},el('span',{class:'scanner-result-kicker success',text:equipmentKicker(item)}),el('button',{class:'btn btn-ghost btn-small',type:'button','data-action':'scanner-open-result'},'Abrir detalle')),
       el('div',{class:'scanner-result-serial',text:item.serial || result.normalizedValue}),
       el('h2',{text:item.product?.nombre || 'Producto no identificado'}),
       el('div',{class:'scanner-result-quick'},quickInfo('Estado',item.estado || '-'),quickInfo('Ubicación',locationLabel(item)),quickInfo('Último movimiento',item.latestMovement?.tipo_movimiento || item.latestMovement?.referencia || 'Sin registro')),
-      access.receive && item.pendingReceipt ? el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo') : null,
-      access.transfer && item.inventoryContext?.canTransfer ? el('button',{class:'btn btn-outline btn-block',type:'button','data-action':'scanner-open-transfer'},'Enviar o transferir') : null
+      access.receive && item.inventoryContext?.canReceive ? el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},item.inventoryContext?.groupManager ? 'Recibir en mi grupo' : 'Recibir equipo') : null,
+      access.transfer && item.inventoryContext?.canTransfer ? el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},item.inventoryContext?.groupManager ? 'Enviar a una agencia' : 'Enviar o transferir') : null
     );
   }
   if(result.kind === 'product'){
@@ -134,6 +134,12 @@ function recentScans(items){
   );
 }
 
+function equipmentKicker(item){
+  if(item?.inventoryContext?.canReceive) return 'PENDIENTE DE RECIBIR';
+  if(item?.inventoryContext?.canSendToAgency) return 'DISPONIBLE EN MI GRUPO';
+  if(String(item?.ubicacion_tipo || '').toUpperCase() === 'AGENCIA') return 'UBICADO EN AGENCIA';
+  return 'EQUIPO ENCONTRADO';
+}
 function quickInfo(label,value){ return el('div',{},el('span',{text:label}),el('strong',{text:String(value)})); }
 function modeLabel(mode){ return ({'single-entry':'Entrada','batch-entry':'Lote','send':'Transferencia','receive':'Recepción'})[mode] || 'Consulta'; }
 function kindLabel(kind){ return ({equipment:'Equipo',product:'Producto',unknown:'Nuevo',invalid:'Inválido'})[kind] || 'Código'; }
