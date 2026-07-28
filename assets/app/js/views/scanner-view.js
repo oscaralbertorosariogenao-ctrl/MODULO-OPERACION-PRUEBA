@@ -73,7 +73,7 @@ function resultCard(result,access){
       el('div',{class:'scanner-result-serial',text:item.serial || result.normalizedValue}),
       el('h2',{text:item.product?.nombre || 'Producto no identificado'}),
       el('div',{class:'scanner-result-quick'},quickInfo('Estado',item.estado || '-'),quickInfo('Ubicación',locationLabel(item)),quickInfo('Último movimiento',item.latestMovement?.tipo_movimiento || item.latestMovement?.referencia || 'Sin registro')),
-      access.receive && item.inventoryContext?.canReceive ? el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},item.inventoryContext?.groupManager ? 'Recibir en mi grupo' : 'Recibir equipo') : null,
+      access.receive && item.inventoryContext?.canReceive ? el('button',{class:'btn btn-success btn-block',type:'button','data-action':'scanner-open-receive'},'Recibir equipo') : null,
       access.transfer && item.inventoryContext?.canTransfer ? el('button',{class:'btn btn-primary btn-block',type:'button','data-action':'scanner-open-transfer'},item.inventoryContext?.groupManager ? 'Enviar a una agencia' : 'Enviar o transferir') : null
     );
   }
@@ -135,6 +135,7 @@ function recentScans(items){
 }
 
 function equipmentKicker(item){
+  if(item?.inventoryContext?.receiveMode === 'physical') return 'LISTO PARA RECIBIR';
   if(item?.inventoryContext?.canReceive) return 'PENDIENTE DE RECIBIR';
   if(item?.inventoryContext?.canSendToAgency) return 'DISPONIBLE EN MI GRUPO';
   if(String(item?.ubicacion_tipo || '').toUpperCase() === 'AGENCIA') return 'UBICADO EN AGENCIA';
