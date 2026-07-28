@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-app-build="2026-07-27-v805.17-desbloqueo-real">
+<html lang="es" data-app-build="2026-07-28-v805.18-encargado-movil">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://tnymrjxdhzdmpcbilftj.supabase.co" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <link rel="stylesheet" href="./assets/app/css/app.css?v=80517">
+  <link rel="stylesheet" href="./assets/app/css/app.css">
 </head>
 <body>
   <a class="skip-link" href="#app-view">Saltar al contenido</a>
@@ -32,20 +32,7 @@
   </div>
   <div id="app-portals"></div>
   <noscript>Esta aplicación necesita JavaScript para funcionar.</noscript>
-  <script id="go-mobile-boot-watchdog">
-  (function(){
-    'use strict';
-    window.__goMobileBootErrors = [];
-    window.addEventListener('error',function(e){ try{window.__goMobileBootErrors.push(String(e && (e.message || e.error) || 'Error'));}catch(_e){} });
-    window.addEventListener('unhandledrejection',function(e){ try{window.__goMobileBootErrors.push(String(e && e.reason && (e.reason.message || e.reason) || 'Error'));}catch(_e){} });
-    setTimeout(function(){
-      var root=document.getElementById('app');
-      if(!root || !root.querySelector('.boot-screen')) return;
-      root.innerHTML='<main style="min-height:100dvh;display:grid;place-items:center;padding:24px;background:#071d32;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif"><section style="width:min(480px,100%);padding:26px;border-radius:24px;background:#0a3454;border:1px solid rgba(125,211,252,.28);text-align:center"><div style="width:68px;height:68px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;background:#0ea5c6;font-weight:1000;font-size:22px">GO</div><h1 style="font-size:22px;margin:0 0 10px">No se pudo completar el arranque</h1><p style="color:#c9e8f7;line-height:1.55;margin:0">La aplicación detectó archivos anteriores o una dependencia que no respondió.</p><a href="/recuperar.html?destino=app" style="display:inline-flex;margin-top:20px;padding:12px 18px;border-radius:14px;background:#67e8f9;color:#06233d;text-decoration:none;font-weight:950">Recuperar aplicación</a></section></main>';
-    },15000);
-  })();
-  </script>
-  <script src="./assets/app/js/vendor/supabase-loader.js?v=80517" defer></script>
-  <script type="module" src="./assets/app/js/main.js?v=80517"></script>
+  <script src="./assets/app/js/vendor/supabase-loader.js" defer></script>
+  <script type="module" src="./assets/app/js/main.js"></script>
 </body>
 </html>
