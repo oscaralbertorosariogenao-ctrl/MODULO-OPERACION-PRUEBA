@@ -1,4 +1,4 @@
-import { listOperations, getOperation, getRecentOperations, getOperationsForStats } from '../api/operations-api.js';
+import { listOperations, getOperation, getRecentOperations, getOperationsForStats, listOperationCatalog } from '../api/operations-api.js';
 import { listAgencies, getAgency, listGroups, listAgencyCoordinates } from '../api/agencies-api.js';
 import { listTechnicians } from '../api/profiles-api.js';
 import { listAgencyEquipment } from '../api/equipment-api.js';
@@ -8,6 +8,31 @@ import { deriveOperationalAlerts, filterNotificationsForProfile } from './notifi
 import { getState, updateSlice } from '../store.js';
 import { markSync } from '../connectivity.js';
 import { can, isGroupManager } from '../permissions.js';
+
+
+export async function loadOperationCatalog({ force = false } = {}){
+  const state = getState();
+  if(!force && state.operationCatalog.items.length && Date.now() - Number(state.operationCatalog.loadedAt || 0) < 300000){
+    return state.operationCatalog.items;
+  }
+  updateSlice('operationCatalog',{loading:true},'operation-catalog-loading');
+  try{
+    const items = await listOperationCatalog({activeOnly:true});
+    try{ localStorage.setItem('go_operation_catalog_v1',JSON.stringify(items)); }catch{}
+    updateSlice('operationCatalog',{items,loading:false,loadedAt:Date.now()},'operation-catalog-loaded');
+    markSync();
+    return items;
+  }catch(error){
+    let cached=[];
+    try{ const parsed=JSON.parse(localStorage.getItem('go_operation_catalog_v1') || '[]'); if(Array.isArray(parsed)) cached=parsed; }catch{}
+    if(cached.length){
+      updateSlice('operationCatalog',{items:cached,loading:false,loadedAt:0},'operation-catalog-cache');
+      return cached;
+    }
+    updateSlice('operationCatalog',{loading:false},'operation-catalog-error');
+    throw error;
+  }
+}
 
 export async function loadOperationsPage({ reset = true } = {}){
   const state = getState(); const page = reset ? 0 : state.operations.page + 1;
