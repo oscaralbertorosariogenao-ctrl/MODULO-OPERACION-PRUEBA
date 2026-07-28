@@ -39,7 +39,7 @@ async function handleClick(event,controller){
   if(action === 'close-modal' && event.target.closest('[data-modal-panel]') && event.target === event.currentTarget) return;
   try{
     switch(action){
-      case 'go-home':requireAction(controller,'home.view',() => go(ROUTES.home));break; case 'go-operations':requireAction(controller,'operations.view',() => go(ROUTES.operations));break; case 'go-scanner':requireAction(controller,'scanner.lookup',() => go(ROUTES.scanner));break;
+      case 'go-home':requireAction(controller,'home.view',() => go(ROUTES.home));break; case 'go-operations':requireAction(controller,'operations.view',() => go(ROUTES.operations));break; case 'go-group-inventory':requireAction(controller,'groupInventory.view',() => go(ROUTES.groupInventory));break; case 'go-scanner':requireAction(controller,'scanner.lookup',() => go(ROUTES.scanner));break;
       case 'go-agencies':requireAction(controller,'agencies.view',() => go(ROUTES.agencies));break; case 'go-profile':go(ROUTES.profile);break; case 'go-notifications':requireAction(controller,'notifications.view',() => go(ROUTES.notifications));break;
       case 'go-create-operation':requireAction(controller,'operations.create',() => go(ROUTES.createOperation));break;
       case 'go-map':requireAction(controller,'agencies.map',() => go(ROUTES.map));break; case 'go-technicians':requireAction(controller,'technicians.view',() => go(ROUTES.technicians));break;
@@ -92,6 +92,8 @@ async function handleClick(event,controller){
       case 'scanner-remove-batch-serial':removeScannerBatchSerial(target.dataset.serial,controller);break;
       case 'scanner-confirm-batch':await confirmScannerBatch(controller);break;
       case 'scanner-repeat-recent':await processScannerValue(target.dataset.value,controller,{source:'recent'});break;
+      case 'group-inventory-scope':updateSlice('groupInventory',current=>({filters:{...(current.filters||{}),scope:target.dataset.scope||'group'}}),'group-inventory-scope');controller.render();break;
+      case 'group-inventory-scan-serial':{const serial=target.dataset.serial;requireAction(controller,'scanner.lookup');go(ROUTES.scanner);setTimeout(()=>processScannerValue(serial,controller,{source:'group-inventory'}).catch(error=>controller.handleError('Consultar serial',error)),360);break;}
       case 'remove-evidence-file':removeEvidenceFile(target.dataset.fileId,target.dataset.prefix,controller);break;
       case 'open-notification':await openNotification(target.dataset.notificationId);controller.render();break;
       case 'mark-all-notifications-read':await withLoader('Actualizando avisos…',async () => { const state=getState();const groupManager=isGroupManager(state.profile);await markAllNotificationsRead({userId:state.user?.id || state.profile?.id || '',onlyAssigned:groupManager});await loadNotificationsData();controller.render(); });break;
@@ -160,6 +162,7 @@ function handleInput(event,controller){
       if(action === 'technicians-search'){ updateSlice('technicians',{search:event.target.value.trim()},'technicians-search');controller.render(); }
       if(action === 'operation-catalog-search') filterOperationCatalog(event.target.value);
       if(action === 'scanner-product-filter') filterScannerProducts(event.target);
+      if(action === 'group-inventory-search'){ updateSlice('groupInventory',current=>({filters:{...(current.filters||{}),search:event.target.value.trim()}}),'group-inventory-search');controller.render(); }
     }catch(error){ controller.handleError(`Búsqueda ${action}`,error); }
   },420));
 }
@@ -177,6 +180,12 @@ async function handleChange(event,controller){
   }
   if(event.target.dataset.changeAction === 'operation-catalog-selection'){
     updateOperationCatalogSelectionDom();
+    return;
+  }
+  if(event.target.dataset.changeAction === 'group-inventory-group'){
+    const groupId=event.target.value || '';
+    updateSlice('groupInventory',current=>({filters:{...(current.filters||{}),groupId}}),'group-inventory-group');
+    controller.render();
     return;
   }
   if(event.target.dataset.changeAction === 'map-group-filter'){
