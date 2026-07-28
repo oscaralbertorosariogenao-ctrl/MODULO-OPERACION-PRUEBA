@@ -1,5 +1,5 @@
 import { ROUTES } from './config.js';
-import { firstAllowedRoute } from './permissions.js';
+import { firstAllowedRoute, isGroupManager } from './permissions.js';
 import { getState, updateSlice, setState } from './store.js';
 import { navigate } from './router.js';
 import { signIn, signOut } from './auth.js';
@@ -56,7 +56,7 @@ async function handleClick(event,controller){
       case 'login-help':showToast('Ayuda de acceso','Usa tu correo autorizado. Si tu usuario no se resuelve, contacta al administrador para confirmar el perfil.','info');break;
       case 'open-operation':requireAction(controller,'operations.view',() => go(ROUTES.operation,{id:target.dataset.operationId}));break;
       case 'open-agency':requireAction(controller,'agencies.detail',() => go(ROUTES.agency,{id:target.dataset.agencyId}));break;
-      case 'open-operation-filters':await ensureAgencyReferenceData();if(!getState().technicians.items.length) await loadTechniciansData();openOperationFilters(getState().operations.filters,getState().technicians.items,getState().agencies.groups || []);break;
+      case 'open-operation-filters':{const state=getState();const groupManager=isGroupManager(state.profile);await ensureAgencyReferenceData();if(!groupManager && !state.technicians.items.length) await loadTechniciansData();openOperationFilters(getState().operations.filters,groupManager?[]:getState().technicians.items,getState().agencies.groups || [],{showTechnicians:!groupManager,groupEmptyLabel:groupManager?'Todos mis grupos':'Todos los grupos'});break;}
       case 'filter-operation-status':updateSlice('operations',current => ({filters:{...current.filters,status:target.dataset.status}}),'operation-status-filter');await loadOperationsPage({reset:true});controller.render();break;
       case 'clear-operation-filters':closeModal();updateSlice('operations',{filters:{status:'Todos'}},'operation-filters-clear');await loadOperationsPage({reset:true});controller.render();break;
       case 'load-more-operations':await loadOperationsPage({reset:false});controller.render();break;
@@ -94,7 +94,7 @@ async function handleClick(event,controller){
       case 'scanner-repeat-recent':await processScannerValue(target.dataset.value,controller,{source:'recent'});break;
       case 'remove-evidence-file':removeEvidenceFile(target.dataset.fileId,target.dataset.prefix,controller);break;
       case 'open-notification':await openNotification(target.dataset.notificationId);controller.render();break;
-      case 'mark-all-notifications-read':await withLoader('Actualizando alertas…',async () => { await markAllNotificationsRead(); await loadNotificationsData(); controller.render(); });break;
+      case 'mark-all-notifications-read':await withLoader('Actualizando avisos…',async () => { const state=getState();const groupManager=isGroupManager(state.profile);await markAllNotificationsRead({userId:state.user?.id || state.profile?.id || '',onlyAssigned:groupManager});await loadNotificationsData();controller.render(); });break;
       case 'open-alert':openAlert(target.dataset.alertId);break;
       case 'install-pwa':{
         const result=await installPwa();
