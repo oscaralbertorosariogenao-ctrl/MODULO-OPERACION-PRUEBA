@@ -6,10 +6,10 @@ import { startConnectivity } from './connectivity.js';
 import { subscribeTable, clearRealtime } from './realtime.js';
 import { setupPwa } from './services/pwa-service.js';
 import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage, ensureAgencyReferenceData, loadAgencyDetail, loadTechniciansData, loadNotificationsData, loadMapData, loadOperationCatalog, loadGroupInventoryData } from './services/data-service.js';
-import { getDraft } from './services/draft-service.js';
+import { getDraft, removeDraft } from './services/draft-service.js';
 import { renderAgencyMap, destroyMap } from './services/location-service.js';
 import { stopScanner } from './services/scanner-service.js';
-import { can, canAccessRoute, firstAllowedRoute } from './permissions.js';
+import { can, canAccessRoute, firstAllowedRoute, isGroupManager } from './permissions.js';
 import { classifyError, ERROR_TYPES, logError } from './errors.js';
 import { showToast } from './components/toast.js';
 import { loginView } from './views/login-view.js';
@@ -94,7 +94,15 @@ export class AppController{
       case ROUTES.technicians: await loadTechniciansData(); break;
       case ROUTES.notifications: await loadNotificationsData(); break;
       case ROUTES.map: await loadMapData(route.query.get('group') || ''); break;
-      case ROUTES.scanner:{ const scannerDraft=await getDraft('scanner-batch-entry').catch(() => null); if(scannerDraft?.active) updateSlice('scanner',{batch:scannerDraft,mode:'batch-entry',status:'batch-entry'},'scanner-draft-restore'); break; }
+      case ROUTES.scanner:{
+        const scannerDraft=await getDraft('scanner-batch-entry').catch(() => null);
+        if(scannerDraft?.active && isGroupManager(getState().profile) && scannerDraft.entryMode !== 'group'){
+          await removeDraft('scanner-batch-entry').catch(() => null);
+        }else if(scannerDraft?.active){
+          updateSlice('scanner',{batch:scannerDraft,mode:'batch-entry',status:'batch-entry'},'scanner-draft-restore');
+        }
+        break;
+      }
       case ROUTES.profile: default: if(force) this.render();
     }
   }
