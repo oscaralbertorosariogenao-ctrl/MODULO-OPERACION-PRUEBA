@@ -3,16 +3,16 @@ import { PERMISSIONS, ROUTES } from './config.js';
 const ACTION_PERMISSION = Object.freeze({
   'home.view':PERMISSIONS.home,
   'operations.view':PERMISSIONS.operations,
-  'operations.create':PERMISSIONS.operations,
-  'operations.assign':PERMISSIONS.operations,
-  'operations.reassign':PERMISSIONS.operations,
-  'operations.start':PERMISSIONS.operations,
-  'operations.comment':PERMISSIONS.operations,
-  'operations.diagnose':PERMISSIONS.operations,
-  'operations.evidence':PERMISSIONS.operations,
-  'operations.finish':PERMISSIONS.operations,
-  'operations.close':PERMISSIONS.operations,
-  'operations.closeWhatsapp':PERMISSIONS.operations,
+  'operations.create':PERMISSIONS.operationCreate,
+  'operations.assign':PERMISSIONS.operationAssign,
+  'operations.reassign':PERMISSIONS.operationAssign,
+  'operations.start':PERMISSIONS.operationStart,
+  'operations.comment':PERMISSIONS.operationComment,
+  'operations.diagnose':PERMISSIONS.operationComment,
+  'operations.evidence':PERMISSIONS.operationEvidence,
+  'operations.finish':PERMISSIONS.operationFinish,
+  'operations.close':PERMISSIONS.operationFinish,
+  'operations.closeWhatsapp':PERMISSIONS.operationCloseWhatsapp,
   'agencies.view':PERMISSIONS.agencies,
   'agencies.detail':PERMISSIONS.agencies,
   'agencies.map':PERMISSIONS.agencies,
@@ -24,7 +24,7 @@ const ACTION_PERMISSION = Object.freeze({
   'scanner.receive':PERMISSIONS.inventoryManage,
   'scanner.incident':PERMISSIONS.inventoryManage,
   'technicians.view':PERMISSIONS.operations,
-  'notifications.view':PERMISSIONS.operations,
+  'notifications.view':PERMISSIONS.notifications,
   'profile.view':null
 });
 
@@ -48,14 +48,6 @@ const ROUTE_PRIORITY = Object.freeze([
   ROUTES.scanner,
   ROUTES.agencies,
   ROUTES.profile
-]);
-
-const ADMIN_ONLY = new Set([
-  'operations.create',
-  'operations.assign',
-  'operations.reassign',
-  'operations.close',
-  'operations.closeWhatsapp'
 ]);
 
 const GROUP_MANAGER_DENIED = new Set([
@@ -106,7 +98,6 @@ export function can(action, state){
   if(!Object.hasOwn(ACTION_PERMISSION,action)) return false;
   if(isAdministrator(state?.profile)) return true;
   if(isGroupManager(state?.profile) && GROUP_MANAGER_DENIED.has(action)) return false;
-  if(ADMIN_ONLY.has(action)) return false;
   return hasPermission(state?.permissions, ACTION_PERMISSION[action]);
 }
 
