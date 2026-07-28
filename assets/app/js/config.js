@@ -1,5 +1,5 @@
-export const APP_BUILD = '2026-07-28-v805.18-encargado-movil';
-export const APP_VERSION = 'V805.18';
+export const APP_BUILD = '2026-07-28-v805.19-catalogo-operaciones-compartido';
+export const APP_VERSION = 'V805.19';
 export const SUPABASE_URL = 'https://tnymrjxdhzdmpcbilftj.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRueW1yanhkaHpkbXBjYmlsZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjEwOTksImV4cCI6MjA5MzgzNzA5OX0.YXG9juChbJUUdsdy01Qkoh9X0-MijewD5aQbKnG9Itk';
 export const R2_UPLOAD_ENDPOINT = '/api/r2-upload';
@@ -12,6 +12,7 @@ export const TABLES = Object.freeze({
   agencies: 'agencias',
   groups: 'grupos',
   notifications: 'notificaciones',
+  operationCatalog: 'catalogo_tipos_operacion',
   serials: 'equipos_seriales',
   products: 'productos',
   dispatches: 'despachos',
@@ -27,6 +28,15 @@ export const ROUTES = Object.freeze({
 export const PERMISSIONS = Object.freeze({
   home: 'ver_home',
   operations: 'ver_operaciones',
+  operationCreate: 'crear_operacion',
+  operationEdit: 'editar_operacion',
+  operationAssign: 'asignar_operacion',
+  operationStart: 'iniciar_operacion',
+  operationComment: 'comentar_operacion',
+  operationEvidence: 'subir_evidencia_operacion',
+  operationFinish: 'cerrar_operacion',
+  operationCloseWhatsapp: 'cerrar_operacion_whatsapp',
+  notifications: 'ver_notificaciones',
   agencies: 'ver_agencias',
   equipment: 'ver_inventario',
   inventoryManage: 'gestionar_inventario',
