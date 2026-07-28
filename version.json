@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-28-v805.19-catalogo-operaciones-compartido",
-  "name": "v805.19 · Catálogo compartido de operaciones",
+  "version": "2026-07-28-v805.20-mi-inventario-grupo",
+  "name": "v805.20 · Mi inventario de grupo",
   "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Index y app móvil utilizan el mismo catálogo de averías y trabajos desde Supabase",
-    "La creación móvil usa selección múltiple mediante tarjetas y búsqueda",
-    "Los reportes creados sin permiso de asignación quedan Pendientes y Sin asignar",
-    "La asignación móvil se controla mediante el permiso específico asignar_operacion",
-    "El catálogo local existente del index se migra automáticamente a Supabase al primer acceso administrativo"
+    "Nueva pantalla móvil Mi inventario para Encargados de Grupo",
+    "Consulta limitada a grupos asignados mediante RPC segura en Supabase",
+    "Secciones En mi grupo, En agencias, En tránsito e Historial",
+    "Buscador, selector de grupo y acceso directo al escáner",
+    "El módulo no muestra costos, suplidores, ajustes, bajas ni inventario general"
   ]
 }
