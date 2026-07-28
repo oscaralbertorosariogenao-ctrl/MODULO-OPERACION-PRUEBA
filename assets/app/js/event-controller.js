@@ -6,7 +6,7 @@ import { signIn, signOut } from './auth.js';
 import { loadOperationsPage, loadAgenciesPage, ensureAgencyReferenceData, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
 import { createOperation, assignOperation, reassignOperation, startOperation, addComment, addDiagnosis, addEvidence, finishOperation, closeByWhatsApp, normalizeOperation } from './services/operations-service.js';
 import { safeUpdateOperation } from './api/operations-api.js';
-import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, registerInventoryEntry, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
+import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, getGroupManagerEntryContext, registerGroupManagerInventoryEntry, registerInventoryEntry, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
 import { markNotificationRead, markAllNotificationsRead, createOperationalNotification } from './api/notifications-api.js';
 import { uploadEvidenceBatch, prepareFiles, revokePreviews } from './services/evidence-service.js';
 import { startScanner, stopScanner, switchScannerCamera, toggleScannerTorch } from './services/scanner-service.js';
@@ -325,11 +325,17 @@ async function scanAgain(controller){
 
 async function openScannerEntryFlow(controller,batch){
   requireAction(controller,batch?'scanner.batchEntry':'scanner.entry');
-  const result=getState().scanner.result || {kind:'unknown',normalizedValue:''};
+  const state=getState();
+  const result=state.scanner.result || {kind:'unknown',normalizedValue:''};
   if(!batch && result.kind === 'equipment') throw new Error('El serial ya existe; no puede registrarse como entrada nueva.');
-  const catalogs=await withLoader('Cargando inventario…',loadScannerCatalogs);
+  const groupManager=isGroupManager(state.profile);
+  const [catalogs,groupEntryContext]=await withLoader('Cargando inventario…',async() => Promise.all([
+    loadScannerCatalogs(),
+    groupManager ? getGroupManagerEntryContext() : Promise.resolve(null)
+  ]));
+  if(groupManager && !groupEntryContext?.groups?.length) throw new Error(groupEntryContext?.message || 'No tienes un grupo activo asignado para registrar productos.');
   updateSlice('scanner',{mode:batch?'batch-entry':'single-entry'},'scanner-entry-open');
-  openScannerEntryDialog({result,products:catalogs.products,warehouses:catalogs.warehouses,batch});
+  openScannerEntryDialog({result,products:catalogs.products,warehouses:catalogs.warehouses,batch,groupEntryContext});
 }
 
 async function submitScannerEntry(data,controller){
@@ -337,11 +343,23 @@ async function submitScannerEntry(data,controller){
   if(getState().scanner.processing) return;
   const validation=validateScannerValue(data.serial);
   if(!validation.valid) throw Object.assign(new Error(validation.message),{code:'VALIDATION'});
+  const groupEntry=data.entryMode === 'group' || isGroupManager(getState().profile);
   updateSlice('scanner',{processing:true},'scanner-entry-submit');
   try{
-    await withLoader('Registrando entrada…',() => registerInventoryEntry({...data,serials:[validation.normalizedValue]}));
-    closeModal();showToast('Entrada registrada',`${validation.normalizedValue} fue recibido correctamente en inventario.`,'success',7000);
-    await processScannerValue(validation.normalizedValue,controller,{source:'entry'});
+    if(groupEntry){
+      await withLoader('Registrando en tu grupo…',() => registerGroupManagerInventoryEntry({...data,serials:[validation.normalizedValue]}));
+      closeModal();showToast('Producto registrado',`${validation.normalizedValue} ya está disponible en Mi inventario.`,'success',7000);
+    }else{
+      await withLoader('Registrando entrada…',() => registerInventoryEntry({...data,serials:[validation.normalizedValue]}));
+      closeModal();showToast('Entrada registrada',`${validation.normalizedValue} fue recibido correctamente en inventario.`,'success',7000);
+    }
+    try{
+      await processScannerValue(validation.normalizedValue,controller,{source:'entry'});
+    }catch(error){
+      console.warn('[Grupo Ortiz] La entrada se guardó, pero no se pudo recargar el serial.',error?.message || error);
+      updateSlice('scanner',{result:null,status:'idle',error:''},'scanner-entry-post-refresh');
+      controller.render();
+    }
   }finally{updateSlice('scanner',{processing:false},'scanner-entry-finish');}
 }
 
@@ -349,10 +367,19 @@ async function submitScannerBatchSetup(data,controller){
   requireAction(controller,'scanner.batchEntry');
   const catalogs=getState().scanner.catalogs || {};
   const product=(catalogs.products || []).find(row => String(row.id) === String(data.productId));
-  const warehouse=(catalogs.warehouses || []).find(row => String(row.id) === String(data.warehouseId));
   if(!product || product.activo === false) throw new Error('Selecciona un producto activo.');
-  if(!warehouse || warehouse.activo === false) throw new Error('Selecciona un almacén activo.');
-  const batch=createBatchState({...data,product,warehouse,active:true,paused:false});
+  const groupEntry=data.entryMode === 'group' || isGroupManager(getState().profile);
+  let warehouse=null;
+  let group=null;
+  if(groupEntry){
+    const context=await getGroupManagerEntryContext();
+    group=(context.groups || []).find(row => String(row.id) === String(data.groupId || context.defaultGroupId));
+    if(!group) throw new Error('Selecciona uno de tus grupos autorizados.');
+  }else{
+    warehouse=(catalogs.warehouses || []).find(row => String(row.id) === String(data.warehouseId));
+    if(!warehouse || warehouse.activo === false) throw new Error('Selecciona un almacén activo.');
+  }
+  const batch=createBatchState({...data,product,warehouse,group,entryMode:groupEntry?'group':'warehouse',active:true,paused:false});
   closeModal();updateSlice('scanner',{mode:'batch-entry',status:'batch-entry',batch,result:null,error:''},'scanner-batch-start');await saveDraft('scanner-batch-entry',batch).catch(() => null);controller.render();
   try{await startCameraScanner(controller);}catch(error){showToast('Cámara no disponible','El lote quedó preparado. Puedes agregar los seriales manualmente.','warning',7000);}
 }
@@ -367,13 +394,24 @@ async function confirmScannerBatch(controller){
   if(getState().scanner.active) await stopCameraScanner(controller,{render:false});
   updateSlice('scanner',{processing:true},'scanner-batch-submit');
   try{
-    await withLoader(`Registrando ${batch.serials.length} seriales…`,() => registerInventoryEntry({
-      warehouseId:batch.warehouseId,productId:batch.productId,supplier:batch.supplier,date:batch.date,reference:batch.reference,physicalCondition:batch.physicalCondition,motive:batch.motive,observations:batch.observations,serials:batch.serials
-    }));
+    if(batch.entryMode === 'group'){
+      await withLoader(`Registrando ${batch.serials.length} seriales en tu grupo…`,() => registerGroupManagerInventoryEntry({
+        groupId:batch.groupId,productId:batch.productId,physicalCondition:batch.physicalCondition,serials:batch.serials
+      }));
+    }else{
+      await withLoader(`Registrando ${batch.serials.length} seriales…`,() => registerInventoryEntry({
+        warehouseId:batch.warehouseId,productId:batch.productId,supplier:batch.supplier,date:batch.date,reference:batch.reference,physicalCondition:batch.physicalCondition,motive:batch.motive,observations:batch.observations,serials:batch.serials
+      }));
+    }
     const first=batch.serials[0];
     updateSlice('scanner',{batch:null,mode:'lookup',status:'idle',processing:false},'scanner-batch-success');await removeDraft('scanner-batch-entry').catch(() => null);
-    showToast('Lote registrado',`${batch.serials.length} seriales fueron creados en una sola transacción.`,'success',8000);
-    await processScannerValue(first,controller,{source:'batch'});
+    showToast('Lote registrado',batch.entryMode === 'group' ? `${batch.serials.length} seriales ya están disponibles en Mi inventario.` : `${batch.serials.length} seriales fueron creados en una sola transacción.`,'success',8000);
+    try{
+      await processScannerValue(first,controller,{source:'batch'});
+    }catch(error){
+      console.warn('[Grupo Ortiz] El lote se guardó, pero no se pudo recargar el primer serial.',error?.message || error);
+      controller.render();
+    }
   }finally{updateSlice('scanner',{processing:false},'scanner-batch-finish');}
 }
 
