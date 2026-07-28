@@ -4,10 +4,10 @@ import { listTechnicians } from '../api/profiles-api.js';
 import { listAgencyEquipment } from '../api/equipment-api.js';
 import { listNotifications } from '../api/notifications-api.js';
 import { computeStats, normalizeOperation } from './operations-service.js';
-import { deriveOperationalAlerts } from './notification-service.js';
+import { deriveOperationalAlerts, filterNotificationsForProfile } from './notification-service.js';
 import { getState, updateSlice } from '../store.js';
 import { markSync } from '../connectivity.js';
-import { can } from '../permissions.js';
+import { can, isGroupManager } from '../permissions.js';
 
 export async function loadOperationsPage({ reset = true } = {}){
   const state = getState(); const page = reset ? 0 : state.operations.page + 1;
@@ -18,16 +18,21 @@ export async function loadOperationsPage({ reset = true } = {}){
 }
 
 export async function loadHomeData(){
+  const state = getState();
+  const groupManager = isGroupManager(state.profile);
+  const notificationOptions = { userId:state.user?.id || state.profile?.id || '', onlyAssigned:groupManager };
+  const techniciansPromise = groupManager ? Promise.resolve([]) : listTechnicians();
   const [statsResult,recentResult,notificationsResult,techniciansResult] = await Promise.allSettled([
-    getOperationsForStats(),getRecentOperations(8),listNotifications(40),listTechnicians()
+    getOperationsForStats(),getRecentOperations(8),listNotifications(40,notificationOptions),techniciansPromise
   ]);
   const statsRows = statsResult.status === 'fulfilled' ? statsResult.value : [];
   const recent = recentResult.status === 'fulfilled' ? recentResult.value : [];
-  const realNotifications = notificationsResult.status === 'fulfilled' ? notificationsResult.value : [];
+  const realNotificationsRaw = notificationsResult.status === 'fulfilled' ? notificationsResult.value : [];
+  const realNotifications = filterNotificationsForProfile(realNotificationsRaw,state.profile,notificationOptions.userId);
   const technicians = techniciansResult.status === 'fulfilled' ? techniciansResult.value : [];
   if(statsResult.status === 'rejected' && recentResult.status === 'rejected') throw statsResult.reason;
 
-  const derived = deriveOperationalAlerts(statsRows);
+  const derived = deriveOperationalAlerts(statsRows,state.profile);
   const technicianMap = new Map();
   for(const technician of technicians){
     const name = technician.nombre_completo || technician.nombre || technician.usuario_login;
@@ -97,11 +102,18 @@ export async function loadTechniciansData(){
 
 export async function loadNotificationsData(){
   updateSlice('notifications',{loading:true},'notifications-loading');
-  const [rowsResult,realResult] = await Promise.allSettled([getOperationsForStats(),listNotifications(80)]);
+  const state = getState();
+  const groupManager = isGroupManager(state.profile);
+  const userId = state.user?.id || state.profile?.id || '';
+  const [rowsResult,realResult] = await Promise.allSettled([
+    getOperationsForStats(),
+    listNotifications(80,{userId,onlyAssigned:groupManager})
+  ]);
   if(rowsResult.status === 'rejected' && realResult.status === 'rejected') throw rowsResult.reason;
   const rows = rowsResult.status === 'fulfilled' ? rowsResult.value : [];
-  const real = realResult.status === 'fulfilled' ? realResult.value : [];
-  updateSlice('notifications',{items:[...deriveOperationalAlerts(rows),...real],loading:false,real:realResult.status === 'fulfilled'},'notifications-loaded'); markSync();
+  const realRaw = realResult.status === 'fulfilled' ? realResult.value : [];
+  const real = filterNotificationsForProfile(realRaw,state.profile,userId);
+  updateSlice('notifications',{items:[...deriveOperationalAlerts(rows,state.profile),...real],loading:false,real:realResult.status === 'fulfilled'},'notifications-loaded'); markSync();
 }
 
 export async function loadMapData(groupId = ''){
