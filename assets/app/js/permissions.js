@@ -58,8 +58,31 @@ const ADMIN_ONLY = new Set([
   'operations.closeWhatsapp'
 ]);
 
+const GROUP_MANAGER_DENIED = new Set([
+  'technicians.view'
+]);
+
+function normalizedAccessText(profile){
+  return [
+    profile?.roles?.nombre,
+    profile?.puestos?.nombre,
+    profile?.rol,
+    profile?.role,
+    profile?.puesto,
+    profile?.cargo
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
 export function normalizeRole(profile){ return String(profile?.roles?.nombre || profile?.rol || profile?.role || '').trim(); }
 export function isAdministrator(profile){ return /administrador|admin/i.test(normalizeRole(profile)); }
+export function isGroupManager(profile){ return /encargado\s+de\s+grupo/.test(normalizedAccessText(profile)); }
 
 export function buildPermissionSet(rows, profile){
   const set = new Set();
@@ -82,6 +105,7 @@ export function can(action, state){
   if(!action) return true;
   if(!Object.hasOwn(ACTION_PERMISSION,action)) return false;
   if(isAdministrator(state?.profile)) return true;
+  if(isGroupManager(state?.profile) && GROUP_MANAGER_DENIED.has(action)) return false;
   if(ADMIN_ONLY.has(action)) return false;
   return hasPermission(state?.permissions, ACTION_PERMISSION[action]);
 }
