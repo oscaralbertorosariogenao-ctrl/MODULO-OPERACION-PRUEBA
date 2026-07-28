@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-28-v805.20-mi-inventario-grupo",
-  "name": "v805.20 · Mi inventario de grupo",
+  "version": "2026-07-28-v805.21-entrada-rapida-encargado",
+  "name": "v805.21 · Entrada rápida de grupo",
   "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Nueva pantalla móvil Mi inventario para Encargados de Grupo",
-    "Consulta limitada a grupos asignados mediante RPC segura en Supabase",
-    "Secciones En mi grupo, En agencias, En tránsito e Historial",
-    "Buscador, selector de grupo y acceso directo al escáner",
-    "El módulo no muestra costos, suplidores, ajustes, bajas ni inventario general"
+    "Formulario simplificado para Encargados de Grupo",
+    "Destino automático al inventario del grupo asignado",
+    "Referencia, fecha, origen y auditoría generados por Supabase",
+    "Entrada individual y por lote con selección de producto y estado físico",
+    "Administradores y auxiliares conservan el formulario completo"
   ]
 }
