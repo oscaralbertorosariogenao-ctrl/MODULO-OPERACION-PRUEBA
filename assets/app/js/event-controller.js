@@ -6,7 +6,7 @@ import { signIn, signOut } from './auth.js';
 import { loadOperationsPage, loadAgenciesPage, ensureAgencyReferenceData, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
 import { createOperation, assignOperation, reassignOperation, startOperation, addComment, addDiagnosis, addEvidence, finishOperation, closeByWhatsApp, normalizeOperation } from './services/operations-service.js';
 import { safeUpdateOperation } from './api/operations-api.js';
-import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, getGroupManagerEntryContext, registerGroupManagerInventoryEntry, registerInventoryEntry, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
+import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, getGroupManagerEntryContext, registerGroupManagerInventoryEntry, registerInventoryEntry, sendGroupManagerSerialToAgency, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
 import { markNotificationRead, markAllNotificationsRead, createOperationalNotification } from './api/notifications-api.js';
 import { uploadEvidenceBatch, prepareFiles, revokePreviews } from './services/evidence-service.js';
 import { startScanner, stopScanner, switchScannerCamera, toggleScannerTorch } from './services/scanner-service.js';
@@ -446,17 +446,44 @@ async function openScannerTransferFlow(controller){
   requireAction(controller,'scanner.transfer');
   const equipment=getState().scanner.result?.equipment;
   if(!equipment?.inventoryContext?.canTransfer) throw new Error(equipment?.inventoryContext?.blockedReasons?.[0] || 'Este equipo no puede transferirse ahora.');
+
+  const groupManagerFlow=Boolean(equipment?.inventoryContext?.groupManager && equipment?.inventoryContext?.canSendToAgency);
+  if(groupManagerFlow){
+    let agencies=Array.isArray(equipment.allowedAgencies) ? equipment.allowedAgencies : [];
+    if(!agencies.length){
+      const rows=await withLoader('Cargando agencias de tu grupo…',() => listActiveAgencies());
+      agencies=rows.filter(row => String(row.grupo_id || '') === String(equipment.grupo_id || ''));
+    }
+    if(!agencies.length) throw new Error('Tu grupo no tiene agencias activas disponibles como destino.');
+    updateSlice('scanner',{mode:'send'},'scanner-group-send-open');
+    openScannerTransferDialog({equipment,warehouses:[],agencies,groupManager:true});
+    return;
+  }
+
   const catalogs=await withLoader('Cargando destinos…',loadScannerCatalogs);
   updateSlice('scanner',{mode:'send'},'scanner-transfer-open');
-  openScannerTransferDialog({equipment,warehouses:catalogs.warehouses,agencies:catalogs.agencies});
+  openScannerTransferDialog({equipment,warehouses:catalogs.warehouses,agencies:catalogs.agencies,groupManager:false});
 }
 
 async function submitScannerTransfer(data,controller){
   requireOnline();requireAction(controller,'scanner.transfer');
   const equipment=getState().scanner.result?.equipment;
   if(!equipment) throw new Error('Vuelve a consultar el serial.');
-  await withLoader('Registrando transferencia…',() => transferInventorySerial({equipment,...data}));
-  closeModal();showToast('Transferencia registrada',`${equipment.serial} fue enviado al destino seleccionado.`,'success',7000);
+
+  const groupManagerFlow=Boolean(equipment?.inventoryContext?.groupManager && equipment?.inventoryContext?.canSendToAgency);
+  if(groupManagerFlow){
+    const result=await withLoader('Enviando a la agencia…',() => sendGroupManagerSerialToAgency({
+      equipment,
+      agencyId:data.destinationId,
+      observations:data.observations
+    }));
+    closeModal();
+    const agency=[result?.agencia_numero ? `Agencia ${result.agencia_numero}` : '',result?.agencia_nombre || ''].filter(Boolean).join(' · ') || 'la agencia seleccionada';
+    showToast('Equipo enviado',`${equipment.serial} fue enviado a ${agency}.`,'success',7000);
+  }else{
+    await withLoader('Registrando transferencia…',() => transferInventorySerial({equipment,...data}));
+    closeModal();showToast('Transferencia registrada',`${equipment.serial} fue enviado al destino seleccionado.`,'success',7000);
+  }
   await processScannerValue(equipment.serial,controller,{source:'transfer'});
 }
 
