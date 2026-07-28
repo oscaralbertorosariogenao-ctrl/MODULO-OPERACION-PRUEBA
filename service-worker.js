@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-07-28-v805.22-scanner-contextual-encargado";
+const SW_VERSION = "2026-07-28-v805.23-recibir-serial-existente";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
