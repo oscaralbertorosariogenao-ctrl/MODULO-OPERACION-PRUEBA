@@ -47,7 +47,7 @@ function minimalOperationPayload(payload){
     'id','codigo','tipo','titulo','descripcion','estado','prioridad','agencia','agencia_label','grupo','tecnico','encargado',
     'encargado_telefono','telefono_encargado','whatsapp_encargado','creado_por','creado_por_nombre','reportado_por',
     'reportado_por_nombre','usuario_nombre','usuario_creador','foto_url','fotos_reportadas','fotos_evidencia','evidencia_estado',
-    'evidencia_archivos_seleccionados','trabajos_seleccionados','trabajo_a_realizar','origen_reporte','reportado_por_rol',
+    'evidencia_archivos_seleccionados','trabajos_seleccionados','averias_seleccionadas','tipos_seleccionados','trabajo_a_realizar','origen_reporte','reportado_por_rol',
     'categoria_visible','problema_reportado','estado_agencia_reportado','source','historial','fecha_creacion','creado_en','actualizado_en',
     'fecha_asignacion','asignacion_codigo','asignacion_comentario'
   ];
@@ -89,6 +89,31 @@ async function queryOperationsPage({ page, pageSize, filters }){
     throw response.error;
   }
   throw new Error('No se pudo adaptar la consulta de operaciones al esquema actual.');
+}
+
+
+export async function listOperationCatalog({ activeOnly = true } = {}){
+  const sb = await getSupabase();
+  let query = sb
+    .from(TABLES.operationCatalog)
+    .select('id,tipo,nombre,descripcion,categoria,prioridad_sugerida,requiere_evidencia,orden,activo')
+    .order('tipo',{ascending:true})
+    .order('orden',{ascending:true})
+    .order('nombre',{ascending:true});
+  if(activeOnly) query = query.eq('activo',true);
+  const { data, error } = await query;
+  if(error) throw error;
+  return (data || []).map((row,index) => ({
+    id:String(row.id || ''),
+    type:String(row.tipo || 'Avería'),
+    name:String(row.nombre || '').trim(),
+    description:String(row.descripcion || '').trim(),
+    category:String(row.categoria || 'General').trim(),
+    priority:String(row.prioridad_sugerida || 'Media').trim(),
+    requiresEvidence:Boolean(row.requiere_evidencia),
+    order:Number.isFinite(Number(row.orden)) ? Number(row.orden) : index + 1,
+    active:row.activo !== false
+  })).filter(item => item.name);
 }
 
 export async function listOperations({ page = 0, pageSize = PAGE_SIZE, filters = {} } = {}){
