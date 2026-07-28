@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-28-v805.22-scanner-contextual-encargado",
-  "name": "v805.22 · Escáner contextual del encargado",
+  "version": "2026-07-28-v805.23-recibir-serial-existente",
+  "name": "v805.23 · Recepción física de seriales existentes",
   "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Reconoce seriales existentes dentro del inventario del grupo aunque estén protegidos por RLS",
-    "Muestra Recibir en mi grupo cuando existe una recepción pendiente",
-    "Muestra Enviar a una agencia cuando el equipo está disponible en el grupo",
-    "Limita los destinos a agencias activas del mismo grupo",
-    "Después de registrar una entrada, el escáner recarga el serial como equipo existente"
+    "El Encargado reconoce cualquier serial ya registrado en el sistema",
+    "Los seriales fuera de su grupo muestran la acción Recibir equipo",
+    "La recepción mueve el serial desde almacén, agencia u otro grupo hacia su inventario de grupo",
+    "Los seriales que ya están en su grupo muestran Enviar a una agencia",
+    "Los despachos pendientes conservan su flujo formal de recepción"
   ]
 }
