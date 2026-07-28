@@ -10,6 +10,7 @@ export function appDrawer(state){
     drawerButtonIf(state,'operations.view','▤','Operaciones','go-operations'),
     drawerButtonIf(state,'operations.create','＋','Crear operación','go-create-operation'),
     drawerButtonIf(state,'agencies.map','⌖','Mapa de agencias','go-map'),
+    drawerButtonIf(state,'groupInventory.view','▣','Mi inventario','go-group-inventory'),
     drawerButtonIf(state,'scanner.lookup','⌗','Escáner','go-scanner'),
     drawerButtonIf(state,'technicians.view','♟','Técnicos','go-technicians'),
     drawerButtonIf(state,'notifications.view','◉',groupManager ? 'Avisos de mi grupo' : 'Alertas','go-notifications'),
