@@ -152,6 +152,34 @@ export async function getInventoryPermission(){
   return normalizePermission(response.data);
 }
 
+export async function getGroupManagerEntryContext(){
+  const data = await callRpc('rpc_contexto_entrada_encargado_grupo', {});
+  const value = Array.isArray(data) && data.length === 1 ? data[0] : data;
+  const safe = value && typeof value === 'object' ? value : {};
+  return {
+    isGroupManager:Boolean(safe.es_encargado_grupo ?? safe.is_group_manager ?? true),
+    groups:Array.isArray(safe.grupos) ? safe.grupos : Array.isArray(safe.groups) ? safe.groups : [],
+    defaultGroupId:String(safe.grupo_predeterminado_id || safe.default_group_id || ''),
+    requiresSelection:Boolean(safe.requiere_seleccion ?? safe.requires_selection),
+    message:String(safe.mensaje || safe.message || '')
+  };
+}
+
+export async function registerGroupManagerInventoryEntry({groupId, productId, serials, physicalCondition}){
+  assertUuid(productId, 'Selecciona un producto válido.');
+  if(groupId) assertUuid(groupId, 'Selecciona uno de tus grupos.');
+  const cleanSerials = uniqueSerials(serials);
+  if(!cleanSerials.length) throw validationError('Agrega por lo menos un serial.');
+  await ensureSerialsDoNotExist(cleanSerials);
+
+  return callRpc('rpc_encargado_grupo_registrar_entrada', {
+    p_grupo_id:groupId || null,
+    p_producto_id:productId,
+    p_seriales:cleanSerials,
+    p_condicion:String(physicalCondition || 'USADO_FUNCIONAL').trim().toUpperCase()
+  });
+}
+
 export async function registerInventoryEntry({warehouseId, supplier, date, reference, observations, physicalCondition, motive, productId, serials}){
   assertUuid(warehouseId, 'Selecciona un almacén válido.');
   assertUuid(productId, 'Selecciona un producto válido.');
