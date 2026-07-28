@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-07-28-v805.23-recibir-serial-existente";
+const SW_VERSION = "2026-07-28-v805.24-selector-agencias-movil";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -79,6 +79,7 @@ const CORE_ASSETS = [
   "/assets/app/js/app-controller.js",
   "/assets/app/js/auth.js",
   "/assets/app/js/components/action-dialogs.js",
+  "/assets/app/js/components/agency-picker.js",
   "/assets/app/js/components/app-drawer.js",
   "/assets/app/js/components/app-header.js",
   "/assets/app/js/components/bottom-navigation.js",
