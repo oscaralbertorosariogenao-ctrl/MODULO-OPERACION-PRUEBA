@@ -6,6 +6,7 @@ const initialState = Object.freeze({
   operations: { items: [], total: 0, page: 0, hasMore: true, loading: false, filters: {}, selected: null, stats: null },
   agencies: { items: [], total: 0, page: 0, hasMore: true, loading: false, filters: {}, selected: null },
   technicians: { items: [], loading: false }, notifications: { items: [], loading: false, real: true },
+  operationCatalog: { items: [], loading: false, loadedAt: 0 },
   scanner: { status:'idle', mode:'lookup', rawValue:'', normalizedValue:'', result:null, recentScans:[], batch:null, cameraActive:false, active:false, torchEnabled:false, torchSupported:false, cameraCount:0, processing:false, error:'', engine:'', cameraLabel:'', catalogs:{products:[],warehouses:[],agencies:[],loadedAt:0} }, evidence: { files: [], progress: 0 }, errors: []
 });
 let state = cloneState(initialState);
@@ -20,6 +21,7 @@ function cloneState(source){
     agencies: { ...source.agencies, items: [...(source.agencies?.items || [])], filters: { ...(source.agencies?.filters || {}) } },
     technicians: { ...source.technicians, items: [...(source.technicians?.items || [])] },
     notifications: { ...source.notifications, items: [...(source.notifications?.items || [])] },
+    operationCatalog: { ...source.operationCatalog, items: [...(source.operationCatalog?.items || [])] },
     scanner: { ...source.scanner, recentScans:[...(source.scanner?.recentScans || [])], batch:source.scanner?.batch ? {...source.scanner.batch, serials:[...(source.scanner.batch.serials || [])], invalid:[...(source.scanner.batch.invalid || [])]} : null, catalogs:{...(source.scanner?.catalogs || {}), products:[...(source.scanner?.catalogs?.products || [])], warehouses:[...(source.scanner?.catalogs?.warehouses || [])], agencies:[...(source.scanner?.catalogs?.agencies || [])]} }, evidence: { ...source.evidence, files: [...(source.evidence?.files || [])] }, errors: [...(source.errors || [])]
   };
 }
