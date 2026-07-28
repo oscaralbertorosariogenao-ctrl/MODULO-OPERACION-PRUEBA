@@ -5,7 +5,7 @@ import { startRouter, navigate } from './router.js';
 import { startConnectivity } from './connectivity.js';
 import { subscribeTable, clearRealtime } from './realtime.js';
 import { setupPwa } from './services/pwa-service.js';
-import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage, ensureAgencyReferenceData, loadAgencyDetail, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
+import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage, ensureAgencyReferenceData, loadAgencyDetail, loadTechniciansData, loadNotificationsData, loadMapData, loadOperationCatalog } from './services/data-service.js';
 import { getDraft } from './services/draft-service.js';
 import { renderAgencyMap, destroyMap } from './services/location-service.js';
 import { stopScanner } from './services/scanner-service.js';
@@ -78,11 +78,15 @@ export class AppController{
       case ROUTES.home: await loadHomeData(); break;
       case ROUTES.operations: await loadOperationsPage({reset:true}); break;
       case ROUTES.operation: await loadOperationDetail(route.params.id); break;
-      case ROUTES.createOperation:
-        await Promise.all([ensureAgencyReferenceData(),loadTechniciansData()]);
+      case ROUTES.createOperation:{
+        const stateNow = getState();
+        const jobs = [ensureAgencyReferenceData(),loadOperationCatalog()];
+        if(can('operations.assign',stateNow)) jobs.push(loadTechniciansData());
+        await Promise.all(jobs);
         this.operationDraft = await getDraft('create-operation').catch(() => ({})) || {};
         if(route.query.get('agency')) this.operationDraft.agency = route.query.get('agency');
         break;
+      }
       case ROUTES.agencies: await ensureAgencyReferenceData(); await loadAgenciesPage({reset:true}); break;
       case ROUTES.agency: await loadAgencyDetail(route.params.id); break;
       case ROUTES.technicians: await loadTechniciansData(); break;
