@@ -5,7 +5,7 @@ import { startRouter, navigate } from './router.js';
 import { startConnectivity } from './connectivity.js';
 import { subscribeTable, clearRealtime } from './realtime.js';
 import { setupPwa } from './services/pwa-service.js';
-import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage, ensureAgencyReferenceData, loadAgencyDetail, loadTechniciansData, loadNotificationsData, loadMapData, loadOperationCatalog } from './services/data-service.js';
+import { loadHomeData, loadOperationsPage, loadOperationDetail, loadAgenciesPage, ensureAgencyReferenceData, loadAgencyDetail, loadTechniciansData, loadNotificationsData, loadMapData, loadOperationCatalog, loadGroupInventoryData } from './services/data-service.js';
 import { getDraft } from './services/draft-service.js';
 import { renderAgencyMap, destroyMap } from './services/location-service.js';
 import { stopScanner } from './services/scanner-service.js';
@@ -24,6 +24,7 @@ import { techniciansView } from './views/technicians-view.js';
 import { notificationsView } from './views/notifications-view.js';
 import { profileView } from './views/profile-view.js';
 import { mapView } from './views/map-view.js';
+import { groupInventoryView } from './views/group-inventory-view.js';
 import { appFrameView } from './views/app-frame-view.js';
 import { attachEventController } from './event-controller.js';
 export class AppController{
@@ -88,6 +89,7 @@ export class AppController{
         break;
       }
       case ROUTES.agencies: await ensureAgencyReferenceData(); await loadAgenciesPage({reset:true}); break;
+      case ROUTES.groupInventory: await loadGroupInventoryData({force}); break;
       case ROUTES.agency: await loadAgencyDetail(route.params.id); break;
       case ROUTES.technicians: await loadTechniciansData(); break;
       case ROUTES.notifications: await loadNotificationsData(); break;
@@ -116,6 +118,7 @@ export class AppController{
       case ROUTES.operation:return operationDetailView(state,permission);
       case ROUTES.createOperation:return operationFormView(state,this.operationDraft);
       case ROUTES.agencies:return agenciesView(state);
+      case ROUTES.groupInventory:return groupInventoryView(state);
       case ROUTES.agency:return agencyDetailView(state);
       case ROUTES.scanner:return scannerView(state);
       case ROUTES.technicians:return techniciansView(state);
