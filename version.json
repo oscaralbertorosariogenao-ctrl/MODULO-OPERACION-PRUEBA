@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-28-v805.18-encargado-movil",
-  "name": "v805.18 · Perfil móvil Encargado de Grupo",
+  "version": "2026-07-28-v805.19-catalogo-operaciones-compartido",
+  "name": "v805.19 · Catálogo compartido de operaciones",
   "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
@@ -8,11 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "El Encargado de Grupo ya no ve el directorio de técnicos ni puede abrir su ruta directa",
-    "El menú móvil incluye acceso directo al escáner para perfiles autorizados",
-    "Las alertas del Encargado se limitan a operaciones de sus grupos y notificaciones dirigidas a su usuario",
-    "Se excluyen del Encargado las entradas generales de inventario y los avisos masivos de seriales",
-    "El inicio del Encargado muestra solamente indicadores operativos útiles para sus grupos",
-    "Los filtros de operaciones del Encargado no descargan ni muestran el catálogo general de técnicos"
+    "Index y app móvil utilizan el mismo catálogo de averías y trabajos desde Supabase",
+    "La creación móvil usa selección múltiple mediante tarjetas y búsqueda",
+    "Los reportes creados sin permiso de asignación quedan Pendientes y Sin asignar",
+    "La asignación móvil se controla mediante el permiso específico asignar_operacion",
+    "El catálogo local existente del index se migra automáticamente a Supabase al primer acceso administrativo"
   ]
 }
