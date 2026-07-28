@@ -30,8 +30,11 @@ export function createBatchState(config = {}){
     paused:false,
     product:config.product || null,
     warehouse:config.warehouse || null,
+    group:config.group || null,
+    entryMode:String(config.entryMode || 'warehouse').trim(),
     productId:config.productId || config.product?.id || '',
     warehouseId:config.warehouseId || config.warehouse?.id || '',
+    groupId:config.groupId || config.group?.id || '',
     supplier:String(config.supplier || '').trim(),
     reference:String(config.reference || '').trim(),
     observations:String(config.observations || '').trim(),
@@ -66,6 +69,12 @@ export function productLabel(product){
 
 export function warehouseLabel(warehouse){
   return [warehouse?.codigo,warehouse?.nombre].map(value => String(value || '').trim()).filter(Boolean).join(' · ') || 'Almacén';
+}
+
+export function groupLabel(group){
+  const code = String(group?.codigo || '').trim();
+  const name = String(group?.nombre || '').trim();
+  return [code ? `G-${code.replace(/^G[-\s]*/i,'')}` : '',name].filter(Boolean).join(' · ') || 'Mi grupo';
 }
 
 export function agencyLabel(agency){
