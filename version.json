@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-28-v805.23-recibir-serial-existente",
-  "name": "v805.23 · Recepción física de seriales existentes",
+  "version": "2026-07-28-v805.24-selector-agencias-movil",
+  "name": "v805.24 · Selector profesional de agencias",
   "released_at": "2026-07-28",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "El Encargado reconoce cualquier serial ya registrado en el sistema",
-    "Los seriales fuera de su grupo muestran la acción Recibir equipo",
-    "La recepción mueve el serial desde almacén, agencia u otro grupo hacia su inventario de grupo",
-    "Los seriales que ya están en su grupo muestran Enviar a una agencia",
-    "Los despachos pendientes conservan su flujo formal de recepción"
+    "Reemplaza el selector nativo de agencias por un componente móvil claro y buscable",
+    "Oculta completamente los UUID internos y muestra código, nombre y grupo de la agencia",
+    "Ordena las agencias por número y permite buscarlas por número o nombre",
+    "Aplica el mismo selector al envío de equipos y a la creación móvil de operaciones",
+    "Mantiene los identificadores reales internamente para guardar los movimientos correctamente"
   ]
 }
