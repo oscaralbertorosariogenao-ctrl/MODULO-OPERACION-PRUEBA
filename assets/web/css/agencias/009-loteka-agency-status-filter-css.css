@@ -1,0 +1,6 @@
+
+.map-status-filter-list{display:grid;grid-template-columns:1fr;gap:7px;padding:10px 12px 8px;border-bottom:1px solid rgba(168,190,212,.35);}
+.map-status-row{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.map-status-row input{accent-color:#0ea5c6;}
+.map-status-row.is-off{opacity:.48;}
+.map-status-row .agency-status-pill{font-size:10px;padding:4px 8px;}

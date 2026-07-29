@@ -1,0 +1,75 @@
+
+  /* FIX FINAL: el listado de grupos no se comprime ni queda escondido.
+     El panel completo hace scroll y cada sección mantiene altura real. */
+  .map-filter-panel{
+    overflow:hidden!important;
+  }
+  .map-filter-scroll{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0 0 18px!important;
+    gap:10px!important;
+    overscroll-behavior:contain!important;
+  }
+  .map-filter-scroll > *{
+    flex-shrink:0!important;
+  }
+  .map-filter-section-groups{
+    margin-top:4px!important;
+    margin-bottom:2px!important;
+  }
+  #agencyGroupFilterList.map-filter-list-groups{
+    flex:0 0 auto!important;
+    min-height:0!important;
+    max-height:300px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding:0 18px 10px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    scrollbar-width:thin!important;
+    scrollbar-color:#94a9bc transparent!important;
+  }
+  #agencyGroupFilterList.map-filter-list-groups .map-filter-row{
+    flex:0 0 42px!important;
+    min-height:42px!important;
+    height:42px!important;
+  }
+  .map-filter-actions-groups{
+    position:static!important;
+    flex:0 0 auto!important;
+    margin:0 18px 12px!important;
+    padding:10px 0 14px!important;
+    border-top:0!important;
+    border-bottom:1px solid #e4edf5!important;
+    background:transparent!important;
+    z-index:2!important;
+  }
+  .map-filter-actions-groups button{
+    min-height:42px!important;
+  }
+  .map-filter-chip-list{
+    flex:0 0 auto!important;
+  }
+  .map-filter-mini-actions{
+    flex:0 0 auto!important;
+  }
+  .map-filter-row,
+  .map-filter-row *{
+    pointer-events:auto!important;
+  }
+  .map-filter-row input[type="checkbox"]{
+    cursor:pointer!important;
+  }
+  @media(max-height:780px){
+    #agencyGroupFilterList.map-filter-list-groups{
+      max-height:220px!important;
+    }
+  }
+  @media(max-width:900px){
+    .map-filter-panel{max-height:460px!important;}
+    #agencyGroupFilterList.map-filter-list-groups{max-height:180px!important;}
+  }

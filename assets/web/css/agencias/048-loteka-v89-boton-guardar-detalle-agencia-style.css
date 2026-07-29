@@ -1,0 +1,17 @@
+
+.loteka-save-detail-v89{
+  min-width: 176px !important;
+  height: 46px !important;
+  border-radius: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em !important;
+  box-shadow: 0 14px 28px rgba(13, 158, 207, .20) !important;
+}
+.loteka-save-detail-v89.is-saving{
+  opacity: .82 !important;
+  cursor: wait !important;
+}

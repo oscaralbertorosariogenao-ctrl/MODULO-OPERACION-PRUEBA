@@ -1,0 +1,28 @@
+
+/* ===== Filtros de mapa simplificados y profesionales ===== */
+.map-status-filter-list{display:none!important;}
+.map-filter-panel{width:310px!important;border-radius:22px!important;border:1px solid rgba(122,154,184,.44)!important;background:rgba(255,255,255,.97)!important;box-shadow:0 22px 55px rgba(7,33,59,.18)!important;overflow:hidden!important;}
+.map-filter-head{padding:18px 18px 14px!important;background:linear-gradient(135deg,#ffffff 0%,#f3f9ff 100%)!important;border-bottom:1px solid #dfeaf4!important;}
+.map-filter-head h3{font-size:17px!important;font-weight:950!important;color:#0b2b49!important;margin:0 0 5px!important;display:flex!important;align-items:center!important;gap:8px!important;}
+.map-filter-head h3:before{content:"\f3c5";font-family:"Font Awesome 6 Free";font-weight:900;color:#0ea5c6;font-size:15px;}
+.map-filter-head span{display:inline-flex!important;align-items:center!important;gap:6px!important;color:#506c83!important;font-size:12px!important;font-weight:900!important;background:#eef7ff!important;border:1px solid #d7eafb!important;border-radius:999px!important;padding:6px 10px!important;margin-top:4px!important;}
+.map-filter-search{margin:14px 18px 12px!important;height:46px!important;border:1px solid #cbdceb!important;border-radius:15px!important;background:#fff!important;box-shadow:0 10px 22px rgba(8,42,75,.07)!important;}
+.map-filter-search i{font-size:14px!important;color:#0b75b7!important;}
+.map-filter-search input#agencyMapSearchInput{font-size:13px!important;font-weight:800!important;color:#0e2a44!important;}
+.map-filter-search input#agencyMapSearchInput::placeholder{color:#7b8fa3!important;font-weight:700!important;}
+.map-filter-section-title{margin:0 18px 8px!important;padding:11px 12px!important;border-radius:14px!important;background:linear-gradient(135deg,#f8fbff,#eef7ff)!important;border:1px solid #dfeaf4!important;}
+.map-filter-section-title span{display:block!important;font-size:12px!important;font-weight:950!important;letter-spacing:.35px!important;text-transform:uppercase!important;color:#0a365b!important;}
+.map-filter-section-title small{display:block!important;margin-top:2px!important;font-size:11px!important;font-weight:750!important;color:#637d94!important;}
+.map-filter-list{padding:0 18px 10px!important;gap:8px!important;}
+.map-filter-row{height:42px!important;grid-template-columns:18px 22px 16px 1fr auto!important;padding:0 12px!important;border-radius:14px!important;background:linear-gradient(135deg,#eff8ff,#e6f4ff)!important;border:1px solid #cce3f7!important;box-shadow:0 8px 18px rgba(15,76,129,.06)!important;}
+.map-filter-row:hover{transform:translateX(2px)!important;background:linear-gradient(135deg,#e8f5ff,#dff1ff)!important;}
+.map-filter-row.is-off{background:#ffffff!important;border-color:#dfe8f1!important;opacity:.62!important;box-shadow:none!important;}
+.filter-chevron{color:#5e7489!important;font-size:12px!important;}
+.map-filter-row input[type="checkbox"]{width:17px!important;height:17px!important;accent-color:#0ea5c6!important;}
+.filter-color{width:14px!important;height:14px!important;border:3px solid #fff!important;box-shadow:0 0 0 1px rgba(7,39,70,.16),0 3px 8px rgba(7,39,70,.15)!important;}
+.filter-name{font-size:13px!important;font-weight:950!important;color:#0d2f4c!important;}
+.map-filter-row b{height:24px!important;min-width:34px!important;padding:0 8px!important;background:#ffffff!important;border:1px solid #d8e7f4!important;color:#0a2b49!important;box-shadow:0 5px 12px rgba(8,42,75,.05)!important;}
+.map-filter-actions{padding:13px 18px 18px!important;gap:12px!important;background:linear-gradient(180deg,#f8fbff,#ffffff)!important;}
+.map-filter-actions button{height:42px!important;border-radius:14px!important;border:1px solid #c6d9eb!important;background:#fff!important;color:#0b2b49!important;font-weight:950!important;}
+.map-filter-actions button:hover{background:#0b75b7!important;color:#fff!important;border-color:#0b75b7!important;}
+@media(max-width:900px){.map-filter-panel{width:calc(100% - 24px)!important;max-height:300px!important}.map-filter-section-title{display:none!important}}
