@@ -16,6 +16,9 @@
   function qsa(s,root){ return Array.prototype.slice.call((root||document).querySelectorAll(s)); }
   function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function client(){ return window.lotekaSupabase || window.supabaseClient || null; }
+  function runtime(){ return window.GOApp && window.GOApp.__phase2aRuntime ? window.GOApp : null; }
+  function cached(key,loader,options){var r=runtime();return r?r.data.fetch(key,loader,options||{}):Promise.resolve().then(loader);}
+  function invalidateAccessCatalogs(){var r=runtime();if(r){r.data.invalidate('accesos:');r.data.invalidate('usuarios:');}}
   function authState(){ return window.lotekaAuthState || {}; }
   function roleName(){ var p=authState().perfil||authState().profile||{}; return String((p.roles&&p.roles.nombre)||p.rol||''); }
   function isAdmin(){ return /administrador|admin/i.test(roleName()); }
@@ -69,9 +72,12 @@
     state.loading=true;
     renderLoading();
     try{
-      var response=await c.rpc('rpc_admin_catalogo_accesos');
-      if(response.error) throw response.error;
-      state.catalog=normalizeCatalog(response.data);
+      var raw=await cached('accesos:catalogo',async function(){
+        var response=await c.rpc('rpc_admin_catalogo_accesos');
+        if(response.error) throw response.error;
+        return response.data;
+      },{ttl:60000,force:!!force});
+      state.catalog=normalizeCatalog(raw);
       if(!state.selectedRoleId && state.catalog.roles.length) state.selectedRoleId=String(state.catalog.roles[0].id);
       if(state.selectedRoleId && !state.catalog.roles.some(function(r){return String(r.id)===String(state.selectedRoleId);})) state.selectedRoleId=state.catalog.roles.length?String(state.catalog.roles[0].id):null;
       renderAll();
@@ -147,7 +153,7 @@
     qsa('#ltkUsersAccessTabs [data-access-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.accessTab===tab);});
     qsa('#usersView [data-access-panel]').forEach(function(p){p.hidden=p.dataset.accessPanel!==tab;});
     if(tab==='permissions') loadCatalog(false);
-    else if(typeof window.lotekaLoadUsersCatalogSupabase==='function') window.lotekaLoadUsersCatalogSupabase();
+    else if(typeof window.lotekaLoadUsersCatalogSupabase==='function') window.lotekaLoadUsersCatalogSupabase(true);
   }
 
   function renderLoading(){ var list=qs('#ltkAccessRoleList'),editor=qs('#ltkAccessEditor'); if(list)list.innerHTML='<div class="ltk-access-loading"><i class="fas fa-spinner fa-spin"></i> Cargando perfiles...</div>'; if(editor)editor.innerHTML='<div class="ltk-access-loading"><i class="fas fa-spinner fa-spin"></i> Cargando matriz...</div>'; }
@@ -214,9 +220,9 @@
     try{
       var res=await client().rpc('rpc_admin_guardar_rol',{p_rol_id:state.newRole?null:role.id,p_nombre:name,p_descripcion:description,p_permiso_codigos:codes});
       if(res.error)throw res.error;
-      state.newRole=false;state.selectedRoleId=String(res.data&&res.data.rol_id||role.id||'');state.catalog=null;
+      state.newRole=false;state.selectedRoleId=String(res.data&&res.data.rol_id||role.id||'');invalidateAccessCatalogs();state.catalog=null;
       await loadCatalog(true);
-      if(typeof window.lotekaLoadUsersCatalogSupabase==='function') window.lotekaLoadUsersCatalogSupabase();
+      if(typeof window.lotekaLoadUsersCatalogSupabase==='function') window.lotekaLoadUsersCatalogSupabase(true);
       toast('Perfil guardado','La matriz de permisos fue actualizada correctamente.','success');
     }catch(error){toast('No se pudo guardar',friendly(error),'error');}
     finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-floppy-disk"></i> Guardar perfil y permisos';}}
@@ -224,7 +230,7 @@
   async function deleteRole(){
     if(!canManageAccess()){deny();return;}var role=selectedRole();if(!role||!role.id)return;
     if(!confirm('¿Eliminar el perfil de acceso "'+role.nombre+'"? Solo puede eliminarse si no tiene usuarios asignados.'))return;
-    try{var res=await client().rpc('rpc_admin_eliminar_rol',{p_rol_id:role.id});if(res.error)throw res.error;state.selectedRoleId=null;state.catalog=null;await loadCatalog(true);if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Perfil eliminado','El perfil fue eliminado correctamente.','success');}catch(error){toast('No se pudo eliminar',friendly(error),'error');}
+    try{var res=await client().rpc('rpc_admin_eliminar_rol',{p_rol_id:role.id});if(res.error)throw res.error;state.selectedRoleId=null;invalidateAccessCatalogs();state.catalog=null;await loadCatalog(true);if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase(true);toast('Perfil eliminado','El perfil fue eliminado correctamente.','success');}catch(error){toast('No se pudo eliminar',friendly(error),'error');}
   }
   function syncScopeControls(){
     var scope=String(qs('#ltkAccessScopeSelect')&&qs('#ltkAccessScopeSelect').value||'all');
@@ -268,7 +274,7 @@
     var btn=qs('#ltkAccessAssignUser');if(btn){btn.disabled=true;btn.textContent='Guardando alcance...';}
     try{
       var res=await client().rpc('rpc_admin_asignar_acceso_y_alcance_usuario',{p_usuario_id:userId,p_rol_id:role.id,p_puesto_id:positionId,p_acceso_todos_grupos:allGroups,p_grupo_ids:groupIds});if(res.error)throw res.error;
-      state.catalog=null;await loadCatalog(true);if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Acceso y alcance guardados',allGroups?'El usuario puede trabajar con todos los grupos.':'El usuario quedó limitado a '+groupIds.length+' grupo(s).','success');
+      invalidateAccessCatalogs();state.catalog=null;await loadCatalog(true);if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase(true);toast('Acceso y alcance guardados',allGroups?'El usuario puede trabajar con todos los grupos.':'El usuario quedó limitado a '+groupIds.length+' grupo(s).','success');
     }catch(error){toast('No se pudo asignar',friendly(error),'error');}
     finally{if(btn){btn.disabled=false;btn.textContent='Guardar asignación y alcance';}}
   }
@@ -286,10 +292,10 @@
   function closePositionsModal(){var m=qs('#ltkPositionsModal');if(m)m.classList.remove('open');}
   async function savePosition(id,name,description){
     name=name==null?String(qs('#ltkPositionName').value||'').trim():String(name||'').trim();description=description==null?String(qs('#ltkPositionDescription').value||'').trim():String(description||'').trim();if(!name){toast('Falta el nombre','Escribe el nombre del puesto laboral.','warning');return;}
-    try{var res=await client().rpc('rpc_admin_guardar_puesto',{p_puesto_id:id||null,p_nombre:name,p_descripcion:description});if(res.error)throw res.error;state.catalog=null;await loadCatalog(true);renderPositions();if(qs('#ltkPositionName'))qs('#ltkPositionName').value='';if(qs('#ltkPositionDescription'))qs('#ltkPositionDescription').value='';if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Puesto guardado','El puesto laboral fue actualizado.','success');}catch(error){toast('No se pudo guardar',friendly(error),'error');}
+    try{var res=await client().rpc('rpc_admin_guardar_puesto',{p_puesto_id:id||null,p_nombre:name,p_descripcion:description});if(res.error)throw res.error;invalidateAccessCatalogs();state.catalog=null;await loadCatalog(true);renderPositions();if(qs('#ltkPositionName'))qs('#ltkPositionName').value='';if(qs('#ltkPositionDescription'))qs('#ltkPositionDescription').value='';if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase(true);toast('Puesto guardado','El puesto laboral fue actualizado.','success');}catch(error){toast('No se pudo guardar',friendly(error),'error');}
   }
   function editPosition(id){var p=state.catalog&&state.catalog.puestos.find(function(x){return String(x.id)===String(id);});if(!p)return;var name=prompt('Nombre del puesto laboral:',p.nombre||'');if(name===null)return;var description=prompt('Descripción del puesto:',p.descripcion||'');if(description===null)return;savePosition(p.id,name,description);}
-  async function deletePosition(id){var p=state.catalog&&state.catalog.puestos.find(function(x){return String(x.id)===String(id);});if(!p)return;if(!confirm('¿Eliminar el puesto "'+p.nombre+'"? Solo puede eliminarse si no tiene usuarios asignados.'))return;try{var res=await client().rpc('rpc_admin_eliminar_puesto',{p_puesto_id:p.id});if(res.error)throw res.error;state.catalog=null;await loadCatalog(true);renderPositions();if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase();toast('Puesto eliminado','El puesto laboral fue eliminado.','success');}catch(error){toast('No se pudo eliminar',friendly(error),'error');}}
+  async function deletePosition(id){var p=state.catalog&&state.catalog.puestos.find(function(x){return String(x.id)===String(id);});if(!p)return;if(!confirm('¿Eliminar el puesto "'+p.nombre+'"? Solo puede eliminarse si no tiene usuarios asignados.'))return;try{var res=await client().rpc('rpc_admin_eliminar_puesto',{p_puesto_id:p.id});if(res.error)throw res.error;invalidateAccessCatalogs();state.catalog=null;await loadCatalog(true);renderPositions();if(typeof window.lotekaLoadUsersCatalogSupabase==='function')window.lotekaLoadUsersCatalogSupabase(true);toast('Puesto eliminado','El puesto laboral fue eliminado.','success');}catch(error){toast('No se pudo eliminar',friendly(error),'error');}}
 
   function boot(){
     if(!ensureUI()) return;
@@ -305,5 +311,6 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
   window.addEventListener('load',function(){ setTimeout(function(){ ensureUI(); updateAccessTabVisibility(); },500); },{once:true});
   window.lotekaOpenAccessManager=function(){switchTab('permissions');};
-  console.info('[LOTEKA] Parche 03B-1 · Perfiles, permisos y alcance por grupo instalado.');
+  if(runtime()) runtime().modules.register('usuarios-accesos',{version:'2A.1',refresh:function(){return loadCatalog(true);},invalidate:invalidateAccessCatalogs});
+  console.info('[LOTEKA] Fase 2A · Usuarios, permisos y caché compartida instalados.');
 })();
