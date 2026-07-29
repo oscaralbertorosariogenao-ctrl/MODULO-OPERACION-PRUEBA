@@ -354,6 +354,49 @@
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
   }
+
+  // V805.28: reglas canónicas compartidas para que todas las vistas usen la misma verdad.
+  function lotekaCatalogText(value){
+    return String(value == null ? '' : value).trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function lotekaCatalogAgencyActive(agency){
+    if(!agency) return false;
+    if(agency.activo === false) return false;
+    const status = lotekaCatalogText(agency.estadoOperativo || agency.estado_operativo || agency.estado || (agency.detalle && agency.detalle.estadoOperativo));
+    return !/(CERR|DESACT|INACT)/.test(status);
+  }
+  function lotekaCatalogGroupOperational(group){
+    if(!group) return false;
+    const code = supabaseGroupCode(group.codigo || group.numero || group.nombre);
+    const name = lotekaCatalogText(group.nombre || group.codigo);
+    return code !== '00' && !/(CERR|DESACT|INACT)/.test(name);
+  }
+  function lotekaCatalogStats(agencyList, groupList){
+    const allAgencies = Array.isArray(agencyList) ? agencyList : [];
+    const allGroups = Array.isArray(groupList) ? groupList : [];
+    const activeAgencies = allAgencies.filter(lotekaCatalogAgencyActive);
+    const activeGroupKeys = new Set(activeAgencies.map(function(a){
+      return String(a.grupoId || a.grupo_id || a.grupo || '').trim();
+    }).filter(Boolean));
+    const operationalGroups = allGroups.filter(function(g){
+      if(!lotekaCatalogGroupOperational(g)) return false;
+      const keys = [g.supabaseId, g.id, g.nombre, g.codigo, g.numero].map(function(v){ return String(v || '').trim(); }).filter(Boolean);
+      return keys.some(function(k){ return activeGroupKeys.has(k); }) || (Array.isArray(g.agencias) && g.agencias.length > 0);
+    });
+    return {
+      totalAgencies: allAgencies.length,
+      activeAgencies: activeAgencies.length,
+      closedAgencies: allAgencies.length - activeAgencies.length,
+      operationalGroups: operationalGroups.length,
+      activeAgencyRows: activeAgencies,
+      operationalGroupRows: operationalGroups
+    };
+  }
+  window.LotekaCatalog = Object.assign(window.LotekaCatalog || {}, {
+    isAgencyActive: lotekaCatalogAgencyActive,
+    isGroupOperational: lotekaCatalogGroupOperational,
+    stats: lotekaCatalogStats
+  });
   function supabaseRebuildUIAfterAgencias(){
     // V805.27: pintar primero solo lo visible y posponer trabajos pesados.
     const immediate = [
@@ -523,6 +566,9 @@
           tipo: tipoLocal,
           estadoOperativo: estadoLocal,
           estado: estadoLocal,
+          activo: row.activo !== false && !/(CERR|DESACT|INACT)/.test(lotekaCatalogText(row.estado_operativo || row.estado)),
+          estadoSupabase: row.estado || '',
+          estadoOperativoSupabase: row.estado_operativo || '',
           fechaCreacion: row.fecha_creacion || local.fechaCreacion || local.fecha_creacion || '',
           detalle: {
             ...(local.detalle || {}),
@@ -573,6 +619,7 @@
       window.grupos = grupos;
       window.lotekaAgenciasSource = 'supabase';
       window.lotekaGruposSource = 'supabase';
+      window.lotekaCatalogSnapshot = lotekaCatalogStats(remoteAgencyList, remoteGroupList);
       writePersistentAgenciasCache(remoteAgencyList, remoteGroupList);
       supabaseRebuildUIAfterAgencias();
       return true;
