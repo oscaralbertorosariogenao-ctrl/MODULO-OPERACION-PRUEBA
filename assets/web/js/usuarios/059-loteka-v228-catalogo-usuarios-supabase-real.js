@@ -9,6 +9,9 @@
   function qs(s, root){ return (root || document).querySelector(s); }
   function qsa(s, root){ return Array.prototype.slice.call((root || document).querySelectorAll(s)); }
   function client(){ return window.lotekaSupabase || window.supabaseClient || null; }
+  function runtime(){ return window.GOApp && window.GOApp.__phase2aRuntime ? window.GOApp : null; }
+  function cached(key, loader, options){ var r=runtime(); return r ? r.data.fetch(key,loader,options||{}) : Promise.resolve().then(loader); }
+  function invalidateCatalogs(){ var r=runtime(); if(r){ r.data.invalidate('usuarios:'); r.data.invalidate('accesos:'); } }
   function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function toast(title, text, type){
     try{
@@ -45,41 +48,56 @@
   function currentSearch(){ return (qs('#userSearch') && qs('#userSearch').value || '').toLowerCase().trim(); }
   function userText(u){ return [u.nombre_completo,u.correo,u.email,u.usuario_login,getRoleName(u),getPuestoName(u),u.departamento,u.telefono,u.telefono_whatsapp,u.grupo_asignado,u.agencia_asignada].join(' ').toLowerCase(); }
 
-  async function loadCatalogData(){
+  async function loadCatalogData(force){
     var c = client();
     if(!c) throw new Error('Supabase no está disponible en esta página.');
+    if(state.loading && !force) return state.users;
     state.loading = true;
     renderTableMessage('Cargando usuarios reales...');
 
-    var usersPromise = c.from('perfiles')
-      .select('id,nombre_completo,correo,email,telefono,telefono_whatsapp,usuario_login,departamento,activo,rol_id,puesto_id,grupo_asignado,agencia_asignada,creado_desde_catalogo,fecha_actualizacion,roles(nombre),puestos(nombre)')
-      .order('nombre_completo', {ascending:true})
-      .limit(1000);
-    var rolesPromise = c.from('roles').select('id,nombre').order('nombre', {ascending:true}).limit(100);
-    var puestosPromise = c.from('puestos').select('id,nombre').order('nombre', {ascending:true}).limit(200);
+    try{
+      var catalog = await cached('usuarios:catalogo', async function(){
+        var usersPromise = c.from('perfiles')
+          .select('id,nombre_completo,correo,email,telefono,telefono_whatsapp,usuario_login,departamento,activo,rol_id,puesto_id,grupo_asignado,agencia_asignada,creado_desde_catalogo,fecha_actualizacion,roles(nombre),puestos(nombre)')
+          .order('nombre_completo', {ascending:true})
+          .limit(1000);
+        var rolesPromise = c.from('roles').select('id,nombre').order('nombre', {ascending:true}).limit(100);
+        var puestosPromise = c.from('puestos').select('id,nombre').order('nombre', {ascending:true}).limit(200);
 
-    var results = await Promise.allSettled([usersPromise, rolesPromise, puestosPromise]);
-    var usersRes = results[0].status === 'fulfilled' ? results[0].value : { error: results[0].reason };
-    var rolesRes = results[1].status === 'fulfilled' ? results[1].value : { data: [], error: results[1].reason };
-    var puestosRes = results[2].status === 'fulfilled' ? results[2].value : { data: [], error: results[2].reason };
+        var results = await Promise.allSettled([usersPromise, rolesPromise, puestosPromise]);
+        var usersRes = results[0].status === 'fulfilled' ? results[0].value : { error: results[0].reason };
+        var rolesRes = results[1].status === 'fulfilled' ? results[1].value : { data: [], error: results[1].reason };
+        var puestosRes = results[2].status === 'fulfilled' ? results[2].value : { data: [], error: results[2].reason };
+        var usersData = [];
 
-    if(usersRes.error){
-      // Fallback por si Supabase no permite relaciones en el select.
-      var fallback = await c.from('perfiles')
-        .select('*')
-        .order('nombre_completo', {ascending:true})
-        .limit(1000);
-      if(fallback.error) throw fallback.error;
-      state.users = fallback.data || [];
-    }else{
-      state.users = usersRes.data || [];
+        if(usersRes.error){
+          var fallback = await c.from('perfiles')
+            .select('*')
+            .order('nombre_completo', {ascending:true})
+            .limit(1000);
+          if(fallback.error) throw fallback.error;
+          usersData = fallback.data || [];
+        }else{
+          usersData = usersRes.data || [];
+        }
+        return {
+          users: usersData,
+          roles: rolesRes && !rolesRes.error ? (rolesRes.data || []) : [],
+          puestos: puestosRes && !puestosRes.error ? (puestosRes.data || []) : []
+        };
+      }, { ttl:60000, force:!!force });
+
+      state.users = catalog.users || [];
+      state.roles = catalog.roles || [];
+      state.puestos = catalog.puestos || [];
+      renderUsersCatalogSupabase();
+      updateAssigneesFromProfiles();
+      var r=runtime();
+      if(r) r.events.emit('usuarios:loaded',{count:state.users.length,force:!!force});
+      return state.users;
+    }finally{
+      state.loading = false;
     }
-    state.roles = rolesRes && !rolesRes.error ? (rolesRes.data || []) : [];
-    state.puestos = puestosRes && !puestosRes.error ? (puestosRes.data || []) : [];
-    state.loading = false;
-    renderUsersCatalogSupabase();
-    updateAssigneesFromProfiles();
-    return state.users;
   }
 
   function renderTableMessage(msg){
@@ -124,7 +142,7 @@
     var refresh = qs('#usersCatalogRefreshBtn');
     if(refresh && !refresh.dataset.v228Clean){
       refresh.dataset.v228Clean='1';
-      refresh.addEventListener('click', function(){ loadCatalogData().catch(handleError); });
+      refresh.addEventListener('click', function(){ loadCatalogData(true).catch(handleError); });
     }
     var missing = qs('#usersCatalogOnlyMissingPhoneBtn');
     if(missing && !missing.dataset.v228Clean){
@@ -252,7 +270,8 @@
       else{ res = await c.from('perfiles').insert(payload).select().maybeSingle(); }
       if(res.error) throw res.error;
       closeUserModal();
-      await loadCatalogData();
+      invalidateCatalogs();
+      await loadCatalogData(true);
       toast('Usuario guardado','Los datos se guardaron correctamente.','success');
     }catch(e){ handleError(e); }
   }
@@ -266,7 +285,8 @@
     try{
       var r=await c.from('perfiles').update({activo:next}).eq('id',id);
       if(r.error) throw r.error;
-      await loadCatalogData();
+      invalidateCatalogs();
+      await loadCatalogData(true);
       toast('Estado actualizado', next ? 'Usuario activado.' : 'Usuario desactivado.','success');
     }catch(e){ handleError(e); }
   }
@@ -293,8 +313,8 @@
     renderTableMessage('No pude cargar/guardar usuarios. Revisa permisos RLS o columnas de perfiles.');
   }
 
-  window.lotekaLoadUsersCatalogSupabase = function(){ ensureUsersUI(); return loadCatalogData().catch(handleError); };
-  window.renderUsersCatalogV214 = function(){ ensureUsersUI(); return loadCatalogData().catch(handleError); };
+  window.lotekaLoadUsersCatalogSupabase = function(force){ ensureUsersUI(); return loadCatalogData(!!force).catch(handleError); };
+  window.renderUsersCatalogV214 = function(force){ ensureUsersUI(); return loadCatalogData(!!force).catch(handleError); };
   window.lotekaOpenUserCatalogModal = openUserModal;
   window.lotekaCloseUserCatalogModal = closeUserModal;
   window.lotekaSaveUserCatalogModal = saveUserModal;
@@ -312,4 +332,5 @@
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
+  if(runtime()) runtime().modules.register('usuarios-catalogo',{version:'2A.1',refresh:function(){return loadCatalogData(true);},invalidate:invalidateCatalogs});
 })();
