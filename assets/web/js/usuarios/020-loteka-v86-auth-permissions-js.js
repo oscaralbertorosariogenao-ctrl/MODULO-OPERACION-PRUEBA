@@ -13,6 +13,27 @@
     permissionsLoaded: false
   };
 
+  function goRuntime(){ return window.GOApp && window.GOApp.__phase2aRuntime ? window.GOApp : null; }
+  function goFetch(key, loader, options){
+    const runtime = goRuntime();
+    return runtime ? runtime.data.fetch(key, loader, options || {}) : Promise.resolve().then(loader);
+  }
+  function goInvalidate(prefix){
+    const runtime = goRuntime();
+    if(runtime) runtime.data.invalidate(prefix || '');
+  }
+  function syncGoAuthState(){
+    const runtime = goRuntime();
+    if(!runtime) return;
+    runtime.supabase.setClient(state.client);
+    runtime.state.patch({
+      session: state.session,
+      user: state.user,
+      perfil: state.perfil,
+      permissions: Array.from(state.permissions || [])
+    });
+  }
+
   function qs(selector){ return document.querySelector(selector); }
   function setText(selector, value){ const el = qs(selector); if(el) el.textContent = value || ''; }
   function showError(message){
@@ -115,32 +136,37 @@
       pass.focus();
     });
   }
-  async function loadPerfil(user){
+  async function loadPerfil(user, force){
     if(!user || !state.client) return null;
-    const { data, error } = await state.client
-      .from('perfiles')
-      .select('id,nombre_completo,correo,telefono,departamento,activo,rol_id,puesto_id,roles(nombre),puestos(nombre)')
-      .eq('id', user.id)
-      .maybeSingle();
-    if(error){ throw error; }
-    if(!data || data.activo === false){ throw new Error('Tu perfil no está activo o no fue encontrado.'); }
-    return data;
+    return goFetch('auth:perfil:' + user.id, async function(){
+      const { data, error } = await state.client
+        .from('perfiles')
+        .select('id,nombre_completo,correo,telefono,departamento,activo,rol_id,puesto_id,roles(nombre),puestos(nombre)')
+        .eq('id', user.id)
+        .maybeSingle();
+      if(error){ throw error; }
+      if(!data || data.activo === false){ throw new Error('Tu perfil no está activo o no fue encontrado.'); }
+      return data;
+    }, { ttl: 120000, force: !!force });
   }
-  async function loadPermissions(){
+  async function loadPermissions(force){
     state.permissions = new Set();
     state.permissionsLoaded = false;
     if(!state.client || !state.perfil || !state.perfil.rol_id) return state.permissions;
-    const { data, error } = await state.client
-      .from('roles_permisos')
-      .select('permisos(codigo)')
-      .eq('rol_id', state.perfil.rol_id);
-    if(error) throw error;
-    (data || []).forEach(function(row){
-      const codigo = row && row.permisos && row.permisos.codigo;
-      if(codigo) state.permissions.add(codigo);
-    });
+    const codes = await goFetch('auth:permisos:' + state.perfil.rol_id, async function(){
+      const { data, error } = await state.client
+        .from('roles_permisos')
+        .select('permisos(codigo)')
+        .eq('rol_id', state.perfil.rol_id);
+      if(error) throw error;
+      return (data || []).map(function(row){
+        return row && row.permisos && row.permisos.codigo;
+      }).filter(Boolean);
+    }, { ttl: 120000, force: !!force });
+    (codes || []).forEach(function(codigo){ state.permissions.add(codigo); });
     if(normalizeSystemRole(state.perfil) === 'Administrador') state.permissions.add('*');
     state.permissionsLoaded = true;
+    syncGoAuthState();
     return state.permissions;
   }
   function hasPermission(permission){
@@ -375,7 +401,7 @@
     return all;
   }
 
-  async function loadSupabaseAgenciasGrupos(){
+  async function loadSupabaseAgenciasGrupos(force){
     if(!state.client) return false;
     try{
       const localAgencias = (typeof agencias !== 'undefined' && Array.isArray(agencias)) ? agencias : (Array.isArray(window.agencias) ? window.agencias : []);
@@ -385,8 +411,15 @@
 
       // Supabase/PostgREST normalmente devuelve máximo 1000 filas por solicitud.
       // Por eso aquí se pagina de 1000 en 1000 para traer TODAS las agencias.
-      const remoteGroups = await fetchSupabaseAllRows('grupos', '*', { orderColumn: 'codigo', pageSize: 1000 });
-      const remoteAgencies = await fetchSupabaseAllRows('agencias', '*, grupos(id,codigo,nombre,encargado,telefono,correo,color)', { orderColumn: 'numero', pageSize: 1000 });
+      const rawCatalog = await goFetch('catalogo:agencias-grupos:raw', async function(){
+        const rows = await Promise.all([
+          fetchSupabaseAllRows('grupos', '*', { orderColumn: 'codigo', pageSize: 1000 }),
+          fetchSupabaseAllRows('agencias', '*, grupos(id,codigo,nombre,encargado,telefono,correo,color)', { orderColumn: 'numero', pageSize: 1000 })
+        ]);
+        return { remoteGroups: rows[0] || [], remoteAgencies: rows[1] || [] };
+      }, { ttl: 120000, force: !!force });
+      const remoteGroups = rawCatalog.remoteGroups || [];
+      const remoteAgencies = rawCatalog.remoteAgencies || [];
 
       console.log('[LOTEKA] Grupos cargados desde Supabase:', remoteGroups.length, 'Agencias cargadas:', remoteAgencies.length);
 
@@ -488,7 +521,7 @@
       return false;
     }
   }
-  window.lotekaReloadAgenciasGruposSupabase = loadSupabaseAgenciasGrupos;
+  window.lotekaReloadAgenciasGruposSupabase = function(){ return loadSupabaseAgenciasGrupos(true); };
   async function unlockWithSession(session){
     state.session = session;
     state.user = session && session.user ? session.user : null;
@@ -496,6 +529,9 @@
     state.perfil = await loadPerfil(state.user);
     await loadPermissions();
     await loadSupabaseAgenciasGrupos();
+    syncGoAuthState();
+    const runtime = goRuntime();
+    if(runtime) runtime.events.emit('auth:ready', { user:state.user, perfil:state.perfil, permissions:Array.from(state.permissions || []) });
     renderTopbarUser();
     applyPermissionsToUI();
     installPermissionGuards();
@@ -533,7 +569,10 @@
   async function handleLogout(){
     try{ await audit('Sistema', 'LOGOUT', 'perfiles', state.user && state.user.id, 'Cierre de sesión', null, null); }catch(e){}
     try{ await state.client.auth.signOut(); }catch(e){}
-    state.session = null; state.user = null; state.perfil = null;
+    state.session = null; state.user = null; state.perfil = null; state.permissions = new Set();
+    goInvalidate('auth:');
+    const runtime = goRuntime();
+    if(runtime){ runtime.state.resetSession(); runtime.events.emit('auth:signed-out', {}); }
     setLocked(true);
     clearError();
   }
@@ -548,6 +587,8 @@
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
     window.lotekaSupabase = state.client;
+    const runtime = goRuntime();
+    if(runtime) runtime.supabase.setClient(state.client);
     window.lotekaAuthState = state;
     window.lotekaAudit = audit;
     window.lotekaHasPermission = hasPermission;
