@@ -1,7 +1,7 @@
 (function(global){
 'use strict';
-if(global.GOMantenimientoPreventivo && global.GOMantenimientoPreventivo.version==='805.30B') return;
-var VERSION='805.30B';
+if(global.GOMantenimientoPreventivo && global.GOMantenimientoPreventivo.version==='805.30C') return;
+var VERSION='805.30C';
 var state={initialized:false,tipos:[],planes:[],detalle:null,selected:new Set(),agencyFilter:'',groupFilter:'ALL'};
 function q(s,r){return (r||document).querySelector(s)} function qa(s,r){return Array.from((r||document).querySelectorAll(s))}
 function tx(v){return String(v==null?'':v).trim()} function esc(v){return tx(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -42,27 +42,48 @@ function injectView(){
 function injectModals(){var wrap=document.createElement('div');wrap.innerHTML=`<div class="gomp-modal" id="gomp-plan-modal"><div class="gomp-dialog"><div class="gomp-card-head"><div><h3>Crear plan preventivo</h3><small id="gomp-selected-count">0 agencias seleccionadas</small></div><button class="gomp-btn" data-close="gomp-plan-modal">Cerrar</button></div><div class="gomp-grid"><div class="gomp-field"><label>Nombre del plan</label><input id="gomp-name" placeholder="Mantenimiento de aires — Agosto 2026"></div><div class="gomp-field"><label>Tipo</label><select id="gomp-type"></select></div><div class="gomp-field"><label>Fecha inicial</label><input type="date" id="gomp-start"></div><div class="gomp-field"><label>Fecha límite</label><input type="date" id="gomp-limit"></div><div class="gomp-field"><label>Frecuencia</label><select id="gomp-frequency"><option value="UNICA">Única</option><option value="MENSUAL">Mensual</option><option value="TRIMESTRAL">Trimestral</option><option value="SEMESTRAL">Semestral</option><option value="ANUAL">Anual</option><option value="PERSONALIZADA">Personalizada</option></select></div><div class="gomp-field"><label>Responsable</label><input id="gomp-responsible" placeholder="Técnico, encargado o suplidor"></div><div class="gomp-field"><label>Filtrar grupo</label><select id="gomp-group-filter"></select></div><div class="gomp-field"><label>Buscar agencia</label><input id="gomp-agency-search" placeholder="Número, nombre o dirección"></div><div class="gomp-field full"><label>Agencias del plan</label><div class="gomp-picker" id="gomp-agency-picker"></div></div><div class="gomp-field full"><label>Observaciones</label><textarea id="gomp-notes" rows="3"></textarea></div></div><div class="gomp-actions" style="justify-content:flex-end;margin-top:15px"><button class="gomp-btn" id="gomp-select-visible">Seleccionar visibles</button><button class="gomp-btn danger" id="gomp-clear-selection">Limpiar</button><button class="gomp-btn primary" id="gomp-save-plan">Guardar plan</button></div></div></div><div class="gomp-modal" id="gomp-type-modal"><div class="gomp-dialog" style="width:min(620px,96vw)"><div class="gomp-card-head"><h3>Nuevo tipo de mantenimiento</h3><button class="gomp-btn" data-close="gomp-type-modal">Cerrar</button></div><div class="gomp-grid"><div class="gomp-field full"><label>Nombre</label><input id="gomp-type-name"></div><div class="gomp-field"><label>Frecuencia recomendada (días)</label><input type="number" id="gomp-type-days" min="1"></div><div class="gomp-field"><label>Evidencia obligatoria</label><select id="gomp-type-evidence"><option value="true">Sí</option><option value="false">No</option></select></div><div class="gomp-field full"><label>Descripción</label><textarea id="gomp-type-desc"></textarea></div><div class="gomp-field full"><label>Checklist (una tarea por línea)</label><textarea id="gomp-type-checklist" rows="7"></textarea></div></div><div class="gomp-actions" style="justify-content:flex-end;margin-top:15px"><button class="gomp-btn primary" id="gomp-save-type">Guardar tipo</button></div></div></div><div class="gomp-modal" id="gomp-detail-modal"><div class="gomp-dialog"><div class="gomp-card-head"><div><h3 id="gomp-detail-title">Detalle</h3><small id="gomp-detail-code"></small></div><button class="gomp-btn" data-close="gomp-detail-modal">Cerrar</button></div><div id="gomp-detail"></div></div></div>`;document.body.appendChild(wrap)}
 function injectNav(){var existing=q('#navPreventiveMaintenance');if(existing){existing.style.display='';return true}var menu=q('.sidebar-group[data-section="operaciones"] .sidebar-group-menu')||q('.sidebar-group[data-section="operaciones"] .sidebar-submenu');if(!menu)return false;var a=document.createElement('a');a.id='navPreventiveMaintenance';a.className='sidebar-link ops-subitem';a.href='javascript:void(0)';a.innerHTML='<i class="fas fa-shield-heart"></i><span>Mantenimiento preventivo</span>';a.onclick=function(e){if(e)e.preventDefault();open(a);return false};var ref=q('#navHistory',menu);ref?menu.insertBefore(a,ref):menu.appendChild(a);a.style.display='';return true}
 function installNavigationBridge(){
-  if(global.__gompNavigationBridgeInstalled) return;
+  if(global.__gompNavigationBridgeVersion==='805.30C') return;
   var original=global.cambiarVista;
-  if(typeof original!=='function') return;
   global.cambiarVista=function(vista,el){
     var own=q('#vista-ops-mantenimiento');
-    if(own&&vista!=='ops-mantenimiento') own.classList.add('hidden');
-    return original.apply(this,arguments);
+    if(vista==='ops-mantenimiento'){
+      qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden')});
+      if(own){
+        own.classList.remove('hidden');
+        own.style.display='block';
+      }
+      qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
+      if(el) el.classList.add('active');
+      if(typeof global.setSidebarSectionOpen==='function') global.setSidebarSectionOpen('operaciones',true);
+      return;
+    }
+    if(own){
+      own.classList.add('hidden');
+      own.style.display='';
+    }
+    if(typeof original==='function') return original.apply(this,arguments);
   };
-  global.__gompNavigationBridgeInstalled=true;
+  try{ cambiarVista=global.cambiarVista }catch(e){}
+  global.__gompNavigationBridgeVersion='805.30C';
 }
 function hideOther(nav){
   installNavigationBridge();
-  if(typeof global.cambiarVista==='function') global.cambiarVista('ops-mantenimiento',nav||q('#navPreventiveMaintenance'));
-  else{
-    qa('[id^="vista-"]').forEach(function(x){x.classList.add('hidden')});
-    var own=q('#vista-ops-mantenimiento');if(own)own.classList.remove('hidden');
-    qa('.sidebar-link').forEach(function(x){x.classList.remove('active')});
+  var own=q('#vista-ops-mantenimiento');
+  qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden')});
+  if(own){
+    own.classList.remove('hidden');
+    own.style.display='block';
   }
+  qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
+  if(nav) nav.classList.add('active');
   if(typeof global.setSidebarSectionOpen==='function') global.setSidebarSectionOpen('operaciones',true);
 }
-function open(nav){if(!canView()){toast('No tienes permiso para ver este módulo.','error');return}hideOther(nav);if(nav)nav.classList.add('active');loadAll();try{global.scrollTo({top:0,behavior:'smooth'})}catch(e){global.scrollTo(0,0)}}
+function open(nav){
+  if(!canView()){toast('No tienes permiso para ver este módulo.','error');return}
+  hideOther(nav||q('#navPreventiveMaintenance'));
+  loadAll();
+  try{global.scrollTo({top:0,behavior:'smooth'})}catch(e){global.scrollTo(0,0)}
+}
 async function loadAll(){var c=db();if(!c)return err(new Error('Supabase no está disponible.'));try{var r=await Promise.all([c.from('mantenimiento_tipos').select('*').eq('activo',true).order('nombre'),c.from('mantenimiento_planes').select('*, mantenimiento_tipos(nombre), mantenimiento_plan_agencias(id,estado,agencia_id,orden)').eq('activo',true).order('fecha_inicio',{ascending:false})]);if(r[0].error)throw r[0].error;if(r[1].error)throw r[1].error;state.tipos=r[0].data||[];state.planes=r[1].data||[];render()}catch(e){err(e)}}
 function render(){renderStats();renderPlans();renderTypes();renderCalendar();fillFormOptions()}
 function renderStats(){var today=new Date().toISOString().slice(0,10),p=state.planes;var items=[['Programados',p.filter(x=>x.estado==='PROGRAMADO').length],['En proceso',p.filter(x=>x.estado==='EN_PROCESO').length],['Completados',p.filter(x=>x.estado==='COMPLETADO').length],['Vencidos',p.filter(x=>!['COMPLETADO','CANCELADO'].includes(x.estado)&&x.fecha_limite&&x.fecha_limite<today).length],['Agencias pendientes',p.reduce((n,x)=>n+(x.mantenimiento_plan_agencias||[]).filter(a=>a.estado!=='COMPLETADO').length,0)]];q('#gomp-stats').innerHTML=items.map(x=>'<div class="gomp-stat"><span>'+esc(x[0])+'</span><strong>'+x[1]+'</strong></div>').join('')}
