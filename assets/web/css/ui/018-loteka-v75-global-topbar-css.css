@@ -1,0 +1,154 @@
+
+/* Barra superior empresarial - Grupo Ortiz */
+body{
+  padding-top:62px!important;
+}
+.loteka-global-topbar{
+  position:fixed;
+  inset:0 0 auto 0;
+  height:62px;
+  z-index:999990;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:0 24px 0 82px;
+  background:linear-gradient(90deg,#071225 0%,#0c1b32 56%,#0e2b4a 100%);
+  color:#fff;
+  box-shadow:0 14px 34px rgba(5,22,43,.18);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.loteka-topbar-brand{
+  min-width:260px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.loteka-topbar-mark{
+  width:38px;
+  height:38px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#063b75,#11a9d8);
+  box-shadow:0 10px 24px rgba(0,117,185,.28);
+}
+.loteka-topbar-mark i{font-size:17px;color:#bdefff}
+.loteka-topbar-brand strong{
+  display:block;
+  font-size:15px;
+  line-height:1.05;
+  letter-spacing:.04em;
+  font-weight:900;
+}
+.loteka-topbar-brand span{
+  display:block;
+  margin-top:3px;
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.62);
+  font-weight:800;
+}
+.loteka-topbar-actions{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.loteka-topbar-actions button{
+  height:36px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:999px;
+  padding:0 14px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:#eaf8ff;
+  background:rgba(255,255,255,.07);
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease;
+}
+.loteka-topbar-actions button:hover{
+  transform:translateY(-1px);
+  background:rgba(17,158,207,.22);
+  border-color:rgba(67,203,240,.45);
+}
+.loteka-topbar-actions .loteka-topbar-ann-btn{
+  position:relative;
+  background:linear-gradient(135deg,rgba(13,158,207,.26),rgba(255,255,255,.08));
+  border-color:rgba(98,218,247,.34);
+}
+.loteka-topbar-actions .loteka-topbar-ann-btn.active,
+.loteka-topbar-actions .loteka-topbar-ann-btn:hover{
+  background:linear-gradient(135deg,#0d9ecf,#0b5f83);
+  border-color:rgba(150,235,255,.62);
+  color:#fff;
+}
+.ann-top-badge{
+  min-width:19px;
+  height:19px;
+  padding:0 6px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:999px;
+  background:#ffb703;
+  color:#071225;
+  font-size:10px;
+  font-weight:1000;
+  margin-left:2px;
+  box-shadow:0 0 0 2px rgba(7,18,37,.75);
+}
+.loteka-topbar-user{
+  min-width:180px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  font-size:13px;
+  font-weight:800;
+  color:#fff;
+}
+.loteka-topbar-user i{font-size:21px;color:#8fe4ff}
+.sidebar{
+  top:62px!important;
+  height:calc(100vh - 62px)!important;
+}
+.content{
+  min-height:calc(100vh - 62px)!important;
+}
+#ltkSidebarFloatingToggle{
+  top:10px!important;
+  left:22px!important;
+  z-index:1000000!important;
+  width:42px!important;
+  height:42px!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.10)!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(8px);
+}
+body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:22px!important;}
+body.ltk-sidebar-collapsed .content{padding-left:22px!important;}
+@media(max-width:1180px){
+  .loteka-topbar-actions button{padding:0 11px;font-size:11px}
+  .loteka-topbar-brand{min-width:220px}
+  .loteka-topbar-user{min-width:230px}
+  .loteka-topbar-user-role{padding:0 10px;font-size:9px}
+}
+@media(max-width:900px){
+  body{padding-top:58px!important;}
+  .loteka-global-topbar{height:58px;padding:0 12px 0 66px;gap:10px;}
+  .loteka-topbar-brand span,.loteka-topbar-actions{display:none;}
+  .loteka-topbar-brand{min-width:0;}
+  .loteka-topbar-user{min-width:auto;}
+  .loteka-topbar-user-role{display:none;}
+  .loteka-topbar-user-name{font-size:12px;}
+  .sidebar{top:58px!important;height:calc(100vh - 58px)!important;}
+  #ltkSidebarFloatingToggle{top:8px!important;left:12px!important;}
+  body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:12px!important;}
+}
