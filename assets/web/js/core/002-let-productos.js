@@ -2844,7 +2844,7 @@ function renderAgencias(){
         <td><span class="agency-status-pill-v80 ${lotekaAgencyStatusClassV80(estado)}">${lotekaAgencyAdminText(estado)}</span></td>
         <td><span class="agency-date-chip"><i class="fas fa-calendar-day"></i> ${lotekaAgencyAdminText(fechaCreacion)}</span></td>
         <td><div class="agency-location-mini">${lotekaAgencyAdminText(geo)}</div></td>
-        <td><div class="agency-admin-actions-cell"><button class="agency-action-btn" type="button" onclick="verDetalleAgencia(${realIndex})" title="Consultar"><i class="fas fa-eye"></i></button><button class="agency-action-btn" type="button" onclick="editarAgencia(${realIndex})" title="Editar"><i class="fas fa-pen"></i></button></div></td>
+        <td><div class="agency-admin-actions-cell"><button class="agency-action-btn" type="button" onclick="verDetalleAgencia(${realIndex})" title="Consultar"><i class="fas fa-eye"></i></button><button class="agency-action-btn" type="button" onclick="editarAgencia(${realIndex})" title="Editar"><i class="fas fa-pen"></i></button><button class="agency-action-btn" type="button" onclick="eliminarAgencia(${realIndex})" title="Eliminar agencia" style="color:#dc2626;border-color:#fecaca;background:#fff5f5"><i class="fas fa-trash"></i></button></div></td>
       </tr>
     `;
   });
@@ -3808,7 +3808,7 @@ function renderGrupos(){
         <td><span class="group-metric-pill">${agenciasDelGrupo.length}</span></td>
         <td><span class="group-metric-pill group-custody-pill">${equiposCustodia}</span></td>
         <td><span class="group-metric-pill group-serial-pill">${serialesActivos}</span></td>
-        <td><div class="group-admin-actions-cell"><button class="group-action-btn" type="button" onclick="verDetalleGrupo(${i})" title="Consultar"><i class="fas fa-eye"></i></button><button class="group-action-btn" type="button" onclick="editarGrupo(${i})" title="Editar"><i class="fas fa-pen"></i></button></div></td>
+        <td><div class="group-admin-actions-cell"><button class="group-action-btn" type="button" onclick="verDetalleGrupo(${i})" title="Consultar"><i class="fas fa-eye"></i></button><button class="group-action-btn" type="button" onclick="editarGrupo(${i})" title="Editar"><i class="fas fa-pen"></i></button><button class="group-action-btn" type="button" onclick="eliminarGrupo(${i})" title="Eliminar grupo" style="color:#dc2626;border-color:#fecaca;background:#fff5f5"><i class="fas fa-trash"></i></button></div></td>
       </tr>
     `);
   lotekaRenderPaginatedRows('tabla-grupos', rows, {colspan:7, emptyMessage:'No hay grupos registrados con esos filtros.', defaultPageSize:10});
