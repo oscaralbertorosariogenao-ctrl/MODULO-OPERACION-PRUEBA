@@ -43,10 +43,13 @@
   window.homeRenderDashboard = function(){
     const list = Array.isArray(window.agencias) ? window.agencias : (typeof agencias !== 'undefined' ? agencias : []);
     const groupList = Array.isArray(window.grupos) ? window.grupos : (typeof grupos !== 'undefined' ? grupos : []);
-    const active = list.filter(a => !homeIsClosed(a));
-    const closed = list.filter(homeIsClosed);
+    const canonical = window.LotekaCatalog && typeof window.LotekaCatalog.stats === 'function'
+      ? window.LotekaCatalog.stats(list, groupList)
+      : null;
+    const active = canonical ? canonical.activeAgencyRows : list.filter(a => !homeIsClosed(a));
+    const closed = list.filter(a => canonical ? !window.LotekaCatalog.isAgencyActive(a) : homeIsClosed(a));
     const currentYear = list.filter(a => { const d = homeCreationDate(a); return d && d.getFullYear() === HOME_CURRENT_YEAR; });
-    const groupsActive = groupList.filter(g => !String(g.nombre || '').toUpperCase().includes('CERRADAS')).length;
+    const groupsActive = canonical ? canonical.operationalGroups : groupList.filter(g => !String(g.nombre || '').toUpperCase().includes('CERRADAS')).length;
 
     const setText = (id, value) => { const el = document.getElementById(id); if(el) el.textContent = value; };
     setText('homeAgenciasActivas', active.length);
