@@ -92,10 +92,18 @@
       si reportes_operaciones no tiene alguno de los campos legacy.
       normalizeRemote() ya sabe leer diferentes nombres si existen.
     */
-    const res = await sb
-      .from(OPS_TABLE)
-      .select('*')
-      .limit(2000);
+    const loader = async function(){
+      const response = await sb
+        .from(OPS_TABLE)
+        .select('*')
+        .limit(2000);
+      if(response && response.error) throw response.error;
+      return response;
+    };
+    const runtime = window.GOApp;
+    const res = runtime && runtime.data && typeof runtime.data.fetch === 'function'
+      ? await runtime.data.fetch('dashboard:reportes-operaciones', loader, { ttl: 60000 })
+      : await loader();
 
     if(res && !res.error && Array.isArray(res.data)){
       return res.data
@@ -173,7 +181,6 @@
   window.lotekaCommandOpenOpsFilter=function(kind){try{if(typeof window.abrirVistaOperaciones==='function'){window.abrirVistaOperaciones('operations','ops-operaciones',document.getElementById('navOperations'));}else if(typeof window.showView==='function'){window.showView('operations');}else if(typeof showView==='function'){showView('operations');}setTimeout(function(){const status=document.getElementById('filterStatus');const from=document.getElementById('filterDateFrom');const to=document.getElementById('filterDateTo');const today=new Date().toISOString().slice(0,10);if(status){if(kind==='pendiente')status.value='Pendiente';else if(kind==='asignada')status.value='Asignada';else if(kind==='completado-hoy')status.value='Completado';else status.value='';}if(from&&to){if(kind==='today'||kind==='completado-hoy'){from.value=today;to.value=today;}else{from.value='';to.value='';}}try{if(typeof window.renderOperations==='function')window.renderOperations();else if(typeof renderOperations==='function')renderOperations();}catch(e){}},160);}catch(e){console.warn('[Centro de mando] No se pudo abrir filtro:',e);}};
   function boot(){
     window.lotekaRefreshCommandCenterSummary();
-    setTimeout(window.lotekaRefreshCommandCenterSummary,1200);
     if(window.__lotekaCommandCenterSummaryTimer) return;
     window.__lotekaCommandCenterSummaryTimer=setInterval(function(){
       if(document.hidden) return;
