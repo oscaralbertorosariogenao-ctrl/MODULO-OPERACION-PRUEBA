@@ -10046,6 +10046,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <a class="sidebar-link ops-subitem" id="navDashboard" onclick="abrirVistaOperaciones('dashboard','ops-dashboard', this)"><i class="fas fa-gauge-high"></i><span>Resumen operativo</span></a>
 <a class="sidebar-link ops-subitem" id="navOperations" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i><span>Gestión de operaciones</span></a>
 <a class="sidebar-link ops-subitem" id="navLevantamientos" onclick="abrirVistaOperaciones('levantamientos','ops-levantamientos', this)"><i class="fas fa-clipboard-check"></i><span>Levantamientos</span></a>
+<a class="sidebar-link ops-subitem" id="navPreventiveMaintenance" href="#" onclick="if(window.GOMantenimientoPreventivo){window.GOMantenimientoPreventivo.open(this);} return false;"><i class="fas fa-shield-heart"></i><span>Mantenimiento preventivo</span></a>
 <a class="sidebar-link ops-subitem" id="navHistory" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
 <a class="sidebar-link ops-subitem" id="navRendimientoOperativo" onclick="lotekaOpenRendimientoOperativoV252(this); return false;"><i class="fas fa-chart-line"></i><span>Rendimiento Operativo</span></a>
 </div>
@@ -10894,6 +10895,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 </div>
 </div></div></div>
+<div class="hidden" id="vista-ops-mantenimiento"></div>
 <div class="hidden" id="vista-ops-historial"><div class="ops-scope"><div class="view hidden" id="historyView">
 <div class="topbar">
 <div>
