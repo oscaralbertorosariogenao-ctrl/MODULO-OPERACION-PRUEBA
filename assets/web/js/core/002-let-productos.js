@@ -3772,8 +3772,15 @@ function renderGrupos(){
   const q = lotekaGroupNorm(document.getElementById('groupSearchInput')?.value || '');
   const managerFilter = lotekaGroupNorm(document.getElementById('groupManagerFilter')?.value || '');
 
-  const source = (grupos || []).map((grupo, i) => {
-    const agenciasDelGrupo = agencias.filter(a => agenciaMapGroupValue(a) === grupo.nombre || (grupo.agencias || []).includes(a.numero));
+  const catalog = window.LotekaCatalog || {};
+  const allGroupsForView = (grupos || []).filter(grupo => typeof catalog.isGroupOperational === 'function' ? catalog.isGroupOperational(grupo) : true);
+  const source = allGroupsForView.map((grupo) => {
+    const i = (grupos || []).indexOf(grupo);
+    const agenciasDelGrupo = agencias.filter(a => {
+      const belongs = agenciaMapGroupValue(a) === grupo.nombre || (grupo.agencias || []).includes(a.numero);
+      const active = typeof catalog.isAgencyActive === 'function' ? catalog.isAgencyActive(a) : true;
+      return belongs && active;
+    });
     grupo.agencias = agenciasDelGrupo.map(a => a.numero);
     const equiposCustodia = (grupo.custodia || []).length;
     const serialesActivos = (grupo.custodia || []).filter(item => item.serial).length;
@@ -3806,8 +3813,9 @@ function renderGrupos(){
     `);
   lotekaRenderPaginatedRows('tabla-grupos', rows, {colspan:7, emptyMessage:'No hay grupos registrados con esos filtros.', defaultPageSize:10});
 
-  const totalGrupos = (grupos || []).length;
-  const totalAgencias = (grupos || []).reduce((sum, grupo) => sum + ((grupo.agencias || []).length), 0);
+  const canonicalStats = typeof catalog.stats === 'function' ? catalog.stats(agencias || [], grupos || []) : null;
+  const totalGrupos = canonicalStats ? canonicalStats.operationalGroups : allGroupsForView.length;
+  const totalAgencias = canonicalStats ? canonicalStats.activeAgencies : source.reduce((sum, item) => sum + item.agenciasDelGrupo.length, 0);
   const totalCustodia = (grupos || []).reduce((sum, grupo) => sum + ((grupo.custodia || []).length), 0);
   const setText = (id, value) => { const el = document.getElementById(id); if(el) el.innerText = value; };
   setText('dashTotalGrupos', totalGrupos);
