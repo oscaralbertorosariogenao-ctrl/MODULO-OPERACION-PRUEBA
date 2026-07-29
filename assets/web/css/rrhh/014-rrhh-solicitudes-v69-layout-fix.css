@@ -1,0 +1,175 @@
+
+/* v69 · RRHH Solicitudes: limpieza visual y alineación estable sin tocar sidebar */
+#vista-solicitudes{
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+#vista-solicitudes::before{display:none!important;}
+#vista-solicitudes *,#vista-solicitudes *::before,#vista-solicitudes *::after{box-sizing:border-box;}
+#vista-solicitudes .hrx-shell{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  gap:18px!important;
+}
+#vista-solicitudes .opx-hero{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  display:block!important;
+  padding:30px 34px!important;
+  border-radius:28px!important;
+  background:
+    radial-gradient(circle at 92% 8%,rgba(255,255,255,.18),transparent 22%),
+    linear-gradient(135deg,#0d4f7c 0%,#0c79ae 58%,#14acd5 100%)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  box-shadow:0 20px 46px rgba(11,82,124,.18)!important;
+  overflow:hidden!important;
+}
+#vista-solicitudes .opx-hero::after{
+  right:-86px!important;
+  bottom:-110px!important;
+  width:260px!important;
+  height:260px!important;
+  opacity:.42!important;
+}
+#vista-solicitudes .opx-hero > div:first-child{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+#vista-solicitudes .opx-hero h2{
+  max-width:100%!important;
+  margin:0 0 10px!important;
+  font-size:clamp(30px,3vw,44px)!important;
+  line-height:1.05!important;
+  letter-spacing:-.035em!important;
+  white-space:normal!important;
+}
+#vista-solicitudes .opx-hero p{
+  max-width:920px!important;
+  margin:0!important;
+  font-size:15px!important;
+  line-height:1.55!important;
+  color:rgba(255,255,255,.93)!important;
+}
+#vista-solicitudes .opx-hero-tags{
+  margin-top:18px!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+}
+#vista-solicitudes .opx-hero-tag{
+  min-width:0!important;
+  padding:10px 14px!important;
+  border-radius:999px!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+}
+#vista-solicitudes .hrx-subnav{
+  margin-top:14px!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+}
+#vista-solicitudes .hrx-subnav-btn{
+  white-space:nowrap!important;
+  min-height:40px!important;
+  padding:10px 14px!important;
+}
+#vista-solicitudes .opx-hero-side{display:none!important;}
+#vista-solicitudes .hrx-grid-4{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+#vista-solicitudes .hrx-card{
+  min-width:0!important;
+  min-height:118px!important;
+  padding:20px!important;
+  border-radius:22px!important;
+}
+#vista-solicitudes .hrx-card .label{font-size:11px!important;margin-bottom:10px!important;}
+#vista-solicitudes .hrx-card .value{font-size:36px!important;margin-bottom:8px!important;}
+#vista-solicitudes .hrx-card .sub{font-size:13px!important;}
+#vista-solicitudes .hrx-panel{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  border-radius:24px!important;
+  overflow:hidden!important;
+}
+#vista-solicitudes .hrx-panel-head{
+  padding:20px 22px 16px!important;
+  align-items:center!important;
+}
+#vista-solicitudes .hrx-panel-head h3{font-size:22px!important;margin:0!important;}
+#vista-solicitudes .hrx-panel-head p{font-size:13px!important;margin-top:4px!important;}
+#vista-solicitudes .hrx-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+}
+#vista-solicitudes .hrx-panel-body{padding:20px 22px 22px!important;}
+#vista-solicitudes .hrx-filters{
+  display:grid!important;
+  grid-template-columns:minmax(240px,1fr) auto!important;
+  gap:14px!important;
+  align-items:end!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+#vista-solicitudes .hrx-field input{
+  width:100%!important;
+  margin:0!important;
+  min-height:50px!important;
+  font-size:15px!important;
+}
+#vista-solicitudes #hrxTableCount{
+  min-height:50px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  white-space:nowrap!important;
+  font-weight:900!important;
+  color:#6f879d!important;
+}
+#vista-solicitudes .hrx-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+}
+#vista-solicitudes .hrx-table{
+  width:100%!important;
+  min-width:980px!important;
+  table-layout:auto!important;
+}
+#vista-solicitudes .hrx-table th,#vista-solicitudes .hrx-table td{
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+#vista-solicitudes .hrx-table th:first-child,#vista-solicitudes .hrx-table td:first-child{width:54px!important;}
+#vista-solicitudes .hrx-table th:last-child,#vista-solicitudes .hrx-table td:last-child{width:150px!important;}
+@media (max-width:1280px){
+  #vista-solicitudes .hrx-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media (max-width:760px){
+  #vista-solicitudes .opx-hero{padding:24px 20px!important;border-radius:24px!important;}
+  #vista-solicitudes .opx-hero h2{font-size:30px!important;}
+  #vista-solicitudes .hrx-grid-4{grid-template-columns:1fr!important;}
+  #vista-solicitudes .hrx-panel-head{align-items:flex-start!important;}
+  #vista-solicitudes .hrx-actions{width:100%!important;}
+  #vista-solicitudes .hrx-actions .hrx-btn{flex:1 1 140px!important;}
+  #vista-solicitudes .hrx-filters{grid-template-columns:1fr!important;}
+  #vista-solicitudes #hrxTableCount{justify-content:flex-start!important;}
+}

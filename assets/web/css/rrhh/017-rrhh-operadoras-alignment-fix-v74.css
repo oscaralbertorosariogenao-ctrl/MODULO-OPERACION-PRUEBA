@@ -1,0 +1,53 @@
+
+/* Corrige la vista que quedaba desplazada hacia la derecha.
+   Solo afecta RRHH > Gestión de empleados/as. */
+#vista-operadoras{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+#vista-operadoras .opx-shell,
+#vista-operadoras .opx-clean-shell{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 0 24px 0!important;
+}
+#vista-operadoras .opx-hero-clean,
+#vista-operadoras .opx-kpi-clean,
+#vista-operadoras .opx-clean-panel,
+#vista-operadoras .opx-grid-employees{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+#vista-operadoras .opx-hero-clean{
+  border-radius:28px!important;
+}
+#vista-operadoras .opx-panel-head{
+  min-width:0!important;
+}
+#vista-operadoras .opx-panel-head > div{
+  min-width:0!important;
+}
+#vista-operadoras .opx-panel-head h3,
+#vista-operadoras .opx-panel-head p{
+  max-width:100%!important;
+}
+#vista-operadoras .opx-grid-employees{
+  grid-template-columns:minmax(0,1fr) minmax(300px,380px)!important;
+}
+#vista-operadoras .opx-group-total-panel{
+  min-width:0!important;
+}
+@media (max-width:1500px){
+  #vista-operadoras .opx-grid-employees{
+    grid-template-columns:1fr!important;
+  }
+  #vista-operadoras .opx-group-total-panel{
+    position:relative!important;
+    top:auto!important;
+  }
+}

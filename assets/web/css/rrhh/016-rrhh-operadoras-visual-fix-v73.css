@@ -1,0 +1,390 @@
+
+/* Contención segura: no toca sidebar ni módulos fuera de Gestión de empleados/as */
+#vista-operadoras,
+#vista-operadoras *{
+  box-sizing:border-box;
+}
+
+/* Quita la textura que estaba empujando/ensuciando la vista */
+#vista-operadoras::before{
+  display:none!important;
+  content:none!important;
+}
+
+#vista-operadoras{
+  background:transparent!important;
+  overflow-x:hidden!important;
+}
+
+#vista-operadoras .opx-clean-shell{
+  width:100%!important;
+  max-width:1360px!important;
+  margin:0 auto!important;
+  padding:4px 0 24px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:18px!important;
+}
+
+/* Hero compacto, elegante y sin letras cortadas */
+#vista-operadoras .opx-hero-clean{
+  width:100%!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(280px,360px)!important;
+  align-items:stretch!important;
+  gap:20px!important;
+  padding:26px 28px!important;
+  border-radius:26px!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,#0b4772 0%,#0e78b6 52%,#13a9d7 100%)!important;
+  box-shadow:0 18px 38px rgba(10,64,103,.18)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+}
+
+#vista-operadoras .opx-hero-clean::after{
+  opacity:.45!important;
+  right:-90px!important;
+  bottom:-120px!important;
+}
+
+#vista-operadoras .opx-hero-clean > div:first-child{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+}
+
+#vista-operadoras .opx-hero-clean h2{
+  font-size:clamp(30px,2.7vw,40px)!important;
+  line-height:1.05!important;
+  letter-spacing:-.02em!important;
+  margin:12px 0 10px!important;
+  max-width:100%!important;
+  color:#fff!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-wrap:balance;
+}
+
+#vista-operadoras .opx-hero-clean p{
+  max-width:720px!important;
+  margin:0!important;
+  color:rgba(255,255,255,.92)!important;
+  font-size:14.5px!important;
+  line-height:1.55!important;
+}
+
+#vista-operadoras .opx-hero-clean .opx-hero-tag{
+  min-height:38px!important;
+  padding:9px 13px!important;
+  border-radius:999px!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+
+#vista-operadoras .opx-hero-tags{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  margin-top:16px!important;
+}
+
+#vista-operadoras .opx-hero-btn{
+  background:rgba(255,255,255,.15)!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  color:#fff!important;
+}
+
+#vista-operadoras .opx-hero-side-clean{
+  min-width:0!important;
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+
+#vista-operadoras .opx-hero-side-clean .opx-hero-stat{
+  min-height:88px!important;
+  padding:14px!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.14)!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+}
+
+#vista-operadoras .opx-hero-side-clean .opx-hero-stat span{
+  font-size:10.5px!important;
+  letter-spacing:.06em!important;
+  line-height:1.2!important;
+}
+
+#vista-operadoras .opx-hero-side-clean .opx-hero-stat strong{
+  font-size:30px!important;
+  line-height:1!important;
+}
+
+/* Tarjetas útiles sin textura pesada */
+#vista-operadoras .opx-kpi-clean{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+
+#vista-operadoras .opx-kpi-clean .opx-card{
+  min-height:126px!important;
+  padding:18px 20px!important;
+  border-radius:22px!important;
+  background:#fff!important;
+  box-shadow:0 12px 26px rgba(19,65,98,.07)!important;
+}
+
+#vista-operadoras .opx-kpi-clean .opx-card::after{
+  opacity:.55!important;
+}
+
+#vista-operadoras .opx-kpi-clean .label,
+#vista-operadoras .opx-card .label{
+  color:#667f94!important;
+  font-size:11px!important;
+  letter-spacing:.055em!important;
+}
+
+#vista-operadoras .opx-kpi-clean .value,
+#vista-operadoras .opx-card .value{
+  color:#0b4772!important;
+  font-size:34px!important;
+}
+
+#vista-operadoras .opx-kpi-clean .sub,
+#vista-operadoras .opx-card .sub{
+  color:#6f8599!important;
+  font-size:12.5px!important;
+}
+
+/* Paneles más limpios */
+#vista-operadoras .opx-panel{
+  border-radius:24px!important;
+  background:#fff!important;
+  border:1px solid #dce9f3!important;
+  box-shadow:0 12px 30px rgba(19,65,98,.065)!important;
+  overflow:hidden!important;
+}
+
+#vista-operadoras .opx-panel-head{
+  padding:20px 22px 16px!important;
+  background:#fff!important;
+  border-bottom:1px solid #e7f0f6!important;
+}
+
+#vista-operadoras .opx-panel-head h3{
+  color:#123f63!important;
+  font-size:22px!important;
+  line-height:1.15!important;
+  margin:0!important;
+}
+
+#vista-operadoras .opx-panel-head p{
+  color:#6f8599!important;
+  font-size:13px!important;
+  margin-top:5px!important;
+}
+
+#vista-operadoras .opx-panel-body{
+  padding:20px 22px!important;
+}
+
+/* Consulta: solo filtros útiles, bien alineados */
+#vista-operadoras .opx-filters-clean{
+  display:grid!important;
+  grid-template-columns:minmax(260px,1.3fr) minmax(170px,.55fr) minmax(180px,.55fr) auto!important;
+  gap:12px!important;
+  align-items:end!important;
+}
+
+#vista-operadoras .opx-field label{
+  color:#637e93!important;
+  font-size:10.5px!important;
+  letter-spacing:.06em!important;
+  margin-bottom:6px!important;
+}
+
+#vista-operadoras .opx-field input,
+#vista-operadoras .opx-field select{
+  min-height:46px!important;
+  border-radius:14px!important;
+  border:1px solid #d2e1ec!important;
+  background:#fbfdff!important;
+  color:#274961!important;
+  font-size:14px!important;
+}
+
+#vista-operadoras .opx-field input:focus,
+#vista-operadoras .opx-field select:focus{
+  border-color:#13a9d7!important;
+  box-shadow:0 0 0 3px rgba(19,169,215,.13)!important;
+}
+
+#vista-operadoras .opx-btn{
+  min-height:44px!important;
+  border-radius:14px!important;
+  padding:10px 15px!important;
+  font-size:13px!important;
+  white-space:nowrap!important;
+}
+
+#vista-operadoras .opx-actions{
+  gap:9px!important;
+}
+
+#vista-operadoras .opx-apply-inline{
+  height:46px!important;
+  align-self:end!important;
+}
+
+/* Listado + Total por grupo, sin columnas apretadas */
+#vista-operadoras .opx-grid-employees{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(310px,390px)!important;
+  gap:16px!important;
+  align-items:start!important;
+}
+
+#vista-operadoras .opx-table-wrap{
+  width:100%!important;
+  overflow:auto!important;
+}
+
+#vista-operadoras .opx-table{
+  width:100%!important;
+  min-width:1040px!important;
+  table-layout:auto!important;
+}
+
+#vista-operadoras .opx-table th,
+#vista-operadoras .opx-table td{
+  padding:13px 12px!important;
+}
+
+#vista-operadoras .opx-table th{
+  background:#f5faff!important;
+  color:#657e94!important;
+  font-size:10.5px!important;
+  letter-spacing:.07em!important;
+}
+
+#vista-operadoras .opx-table td{
+  color:#2d4c64!important;
+  font-size:13.5px!important;
+}
+
+#vista-operadoras .opx-table tbody tr:hover{
+  transform:none!important;
+}
+
+#vista-operadoras .opx-group-total-panel{
+  position:sticky!important;
+  top:14px!important;
+}
+
+#vista-operadoras .opx-bars-pretty{
+  gap:10px!important;
+}
+
+#vista-operadoras .opx-bars-pretty .opx-bar-row{
+  display:grid!important;
+  grid-template-columns:minmax(82px,112px) minmax(70px,1fr) minmax(68px,auto)!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:12px!important;
+  border:1px solid #dce9f3!important;
+  border-radius:16px!important;
+  background:#fbfdff!important;
+}
+
+#vista-operadoras .opx-bars-pretty .opx-bar-label{
+  margin:0!important;
+  color:#123f63!important;
+  font-size:12.5px!important;
+  font-weight:900!important;
+  white-space:normal!important;
+}
+
+#vista-operadoras .opx-bars-pretty .opx-bar-track{
+  height:11px!important;
+  background:#e8f4fa!important;
+  border-radius:999px!important;
+}
+
+#vista-operadoras .opx-bars-pretty .opx-bar-fill{
+  background:linear-gradient(90deg,#0b4772,#13a9d7)!important;
+}
+
+#vista-operadoras .opx-bars-pretty .opx-bar-value{
+  margin:0!important;
+  color:#0b4772!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  line-height:1.15!important;
+  text-align:right!important;
+  white-space:normal!important;
+}
+
+/* Responsive real: evita que se rompa cuando el sidebar ocupa espacio */
+@media (max-width:1380px){
+  #vista-operadoras .opx-hero-clean{
+    grid-template-columns:1fr!important;
+  }
+  #vista-operadoras .opx-hero-side-clean{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  #vista-operadoras .opx-grid-employees{
+    grid-template-columns:1fr!important;
+  }
+  #vista-operadoras .opx-group-total-panel{
+    position:relative!important;
+    top:auto!important;
+  }
+}
+
+@media (max-width:1100px){
+  #vista-operadoras .opx-kpi-clean{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #vista-operadoras .opx-filters-clean{
+    grid-template-columns:1fr 1fr!important;
+  }
+  #vista-operadoras .opx-apply-inline{
+    width:100%!important;
+  }
+}
+
+@media (max-width:760px){
+  #vista-operadoras .opx-clean-shell{
+    padding:0 0 18px!important;
+  }
+  #vista-operadoras .opx-hero-clean{
+    padding:22px 18px!important;
+    border-radius:22px!important;
+  }
+  #vista-operadoras .opx-hero-clean h2{
+    font-size:29px!important;
+  }
+  #vista-operadoras .opx-hero-side-clean,
+  #vista-operadoras .opx-kpi-clean,
+  #vista-operadoras .opx-filters-clean{
+    grid-template-columns:1fr!important;
+  }
+  #vista-operadoras .opx-panel-head{
+    align-items:flex-start!important;
+  }
+  #vista-operadoras .opx-actions,
+  #vista-operadoras .opx-actions .opx-btn{
+    width:100%!important;
+  }
+  #vista-operadoras .opx-bars-pretty .opx-bar-row{
+    grid-template-columns:1fr!important;
+    text-align:left!important;
+  }
+  #vista-operadoras .opx-bars-pretty .opx-bar-value{
+    text-align:left!important;
+  }
+}
