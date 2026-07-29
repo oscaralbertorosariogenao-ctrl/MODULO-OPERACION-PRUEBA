@@ -1,0 +1,810 @@
+
+/* LOTEKA v300 · Rediseño empresarial del submódulo EXISTENTE de Rendimiento Operativo */
+#vista-ops-rendimiento.hidden{display:none!important}
+#vista-ops-rendimiento{display:block}
+#vista-ops-rendimiento .view.hidden{display:block!important}
+
+#vista-ops-rendimiento .rend-shell-v300{
+  display:grid;
+  gap:18px;
+  padding-bottom:32px;
+  color:#092d45;
+  --rend-bg:#edf6fb;
+  --rend-card:#ffffff;
+  --rend-soft:#f5fbff;
+  --rend-line:rgba(92,130,160,.22);
+  --rend-blue:#0878b6;
+  --rend-cyan:#0da9cc;
+  --rend-green:#16a06b;
+  --rend-amber:#d89116;
+  --rend-red:#d94b4b;
+  --rend-muted:#627f92;
+  --rend-shadow:0 18px 46px rgba(8,45,70,.11);
+}
+
+#vista-ops-rendimiento .rend-hero-v300{
+  position:relative;
+  overflow:hidden;
+  border-radius:30px;
+  padding:28px;
+  background:
+    radial-gradient(circle at 86% 12%,rgba(45,212,191,.24),transparent 28%),
+    linear-gradient(135deg,#062338 0%,#073d5e 54%,#079fc0 100%);
+  color:#fff;
+  box-shadow:var(--rend-shadow);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:24px;
+}
+#vista-ops-rendimiento .rend-hero-v300:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+  background-size:42px 42px;
+  opacity:.34;
+  pointer-events:none;
+}
+#vista-ops-rendimiento .rend-hero-v300>*{position:relative;z-index:2}
+#vista-ops-rendimiento .rend-kicker-v300{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:34px;
+  padding:0 13px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.20);
+  background:rgba(255,255,255,.11);
+  color:#dff8ff;
+  font-size:12px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#vista-ops-rendimiento .rend-hero-v300 h2{
+  margin:16px 0 8px;
+  color:#fff;
+  font-size:clamp(28px,4vw,44px);
+  line-height:1.06;
+  letter-spacing:-.045em;
+  font-weight:1000;
+}
+#vista-ops-rendimiento .rend-hero-v300 p{
+  margin:0;
+  max-width:820px;
+  color:rgba(238,249,255,.84);
+  font-size:15px;
+  font-weight:700;
+  line-height:1.65;
+}
+#vista-ops-rendimiento .rend-mode-card-v300{
+  min-width:255px;
+  padding:17px;
+  border-radius:22px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(12px);
+}
+#vista-ops-rendimiento .rend-mode-card-v300 span{
+  display:block;
+  color:rgba(238,249,255,.72);
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+#vista-ops-rendimiento .rend-mode-card-v300 strong{
+  display:block;
+  color:#fff;
+  font-size:20px;
+  letter-spacing:-.02em;
+}
+#vista-ops-rendimiento .rend-mode-card-v300 small{
+  display:block;
+  margin-top:6px;
+  color:rgba(238,249,255,.78);
+  font-size:12px;
+  font-weight:800;
+  line-height:1.45;
+}
+
+#vista-ops-rendimiento .rend-tabs-v300,
+#vista-ops-rendimiento .rend-periods-v300,
+#vista-ops-rendimiento .rend-sheet-tabs-v300{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+#vista-ops-rendimiento .rend-tabs-v300 button,
+#vista-ops-rendimiento .rend-periods-v300 button,
+#vista-ops-rendimiento .rend-sheet-tabs-v300 button,
+#vista-ops-rendimiento .rend-soft-btn-v300,
+#vista-ops-rendimiento .rend-primary-btn-v300,
+#vista-ops-rendimiento .rend-filter-toggle-v300{
+  min-height:43px;
+  border:1px solid rgba(92,130,160,.28);
+  border-radius:15px;
+  padding:0 18px;
+  background:rgba(255,255,255,.82);
+  color:#123950;
+  font-weight:950;
+  cursor:pointer;
+  box-shadow:0 10px 23px rgba(8,45,70,.06);
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  white-space:nowrap;
+}
+#vista-ops-rendimiento .rend-tabs-v300 button:hover,
+#vista-ops-rendimiento .rend-periods-v300 button:hover,
+#vista-ops-rendimiento .rend-sheet-tabs-v300 button:hover,
+#vista-ops-rendimiento .rend-soft-btn-v300:hover,
+#vista-ops-rendimiento .rend-primary-btn-v300:hover,
+#vista-ops-rendimiento .rend-filter-toggle-v300:hover{
+  transform:translateY(-1px);
+}
+#vista-ops-rendimiento .rend-tabs-v300 button.active,
+#vista-ops-rendimiento .rend-periods-v300 button.active,
+#vista-ops-rendimiento .rend-sheet-tabs-v300 button.active,
+#vista-ops-rendimiento .rend-primary-btn-v300{
+  border-color:transparent;
+  color:#fff;
+  background:linear-gradient(135deg,#087fbd,#10aacd);
+  box-shadow:0 14px 30px rgba(13,169,204,.24);
+}
+
+#vista-ops-rendimiento .rend-filter-panel-v300{
+  border-radius:24px;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.86);
+  box-shadow:var(--rend-shadow);
+  overflow:hidden;
+}
+#vista-ops-rendimiento .rend-filter-main-v300{
+  display:grid;
+  grid-template-columns:auto minmax(250px,1fr) auto;
+  gap:14px;
+  align-items:center;
+  padding:16px;
+}
+#vista-ops-rendimiento .rend-search-v300{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:46px;
+  border-radius:16px;
+  border:1px solid rgba(92,130,160,.26);
+  background:#fff;
+  padding:0 14px;
+}
+#vista-ops-rendimiento .rend-search-v300 i{color:#0b86b4}
+#vista-ops-rendimiento .rend-search-v300 input{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  min-height:42px;
+  font-size:14px;
+  font-weight:850;
+  color:#123950;
+}
+#vista-ops-rendimiento .rend-advanced-v300{
+  display:none;
+  grid-template-columns:repeat(6,minmax(0,1fr)) auto auto;
+  gap:12px;
+  align-items:end;
+  padding:0 16px 16px;
+  border-top:1px solid rgba(92,130,160,.14);
+}
+#vista-ops-rendimiento .rend-advanced-v300.open{display:grid}
+#vista-ops-rendimiento .rend-field-v300 label{
+  display:block;
+  margin:0 0 7px 3px;
+  color:#4e7188;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#vista-ops-rendimiento .rend-field-v300 input,
+#vista-ops-rendimiento .rend-field-v300 select{
+  width:100%;
+  margin:0;
+  min-height:46px;
+  padding:0 13px;
+  border-radius:15px;
+  border:1px solid rgba(92,130,160,.30);
+  background:rgba(249,253,255,.94);
+  color:#123950;
+  font-size:14px;
+  font-weight:850;
+  outline:none;
+}
+#vista-ops-rendimiento .rend-field-v300 input:focus,
+#vista-ops-rendimiento .rend-field-v300 select:focus{
+  border-color:rgba(13,169,204,.95);
+  box-shadow:0 0 0 4px rgba(13,169,204,.13);
+  background:#fff;
+}
+
+#vista-ops-rendimiento .rend-view-v300{display:none;gap:18px}
+#vista-ops-rendimiento .rend-view-v300.active{display:grid}
+#vista-ops-rendimiento .rend-section-head-v300{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  padding:18px 20px;
+  border-radius:24px;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.86);
+  box-shadow:var(--rend-shadow);
+}
+#vista-ops-rendimiento .rend-block-v300 .rend-section-head-v300,
+#vista-ops-rendimiento .rend-detail-table-wrap-v300 .rend-section-head-v300{
+  border-radius:0;
+  border:0;
+  border-bottom:1px solid var(--rend-line);
+  box-shadow:none;
+}
+#vista-ops-rendimiento .rend-section-head-v300 h3,
+#vista-ops-rendimiento .rend-section-head-v300 h4{
+  margin:0;
+  color:#092d45;
+  font-size:20px;
+  font-weight:1000;
+  letter-spacing:-.03em;
+}
+#vista-ops-rendimiento .rend-section-head-v300 p{
+  margin:6px 0 0;
+  color:var(--rend-muted);
+  font-size:13px;
+  font-weight:820;
+  line-height:1.45;
+}
+#vista-ops-rendimiento .rend-period-label-v300,
+#vista-ops-rendimiento .rend-mini-badge-v300{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;
+  padding:0 11px;
+  border-radius:999px;
+  background:#eaf8fd;
+  color:#0878b6;
+  font-size:12px;
+  font-weight:950;
+  white-space:nowrap;
+}
+
+#vista-ops-rendimiento .rend-split-grid-v300,
+#vista-ops-rendimiento .rend-ranking-split-v300{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  align-items:start;
+}
+#vista-ops-rendimiento .rend-block-v300,
+#vista-ops-rendimiento .rend-ranking-panel-v300,
+#vista-ops-rendimiento .rend-detail-table-wrap-v300{
+  border-radius:24px;
+  background:rgba(255,255,255,.90);
+  border:1px solid rgba(255,255,255,.86);
+  box-shadow:var(--rend-shadow);
+  overflow:hidden;
+}
+#vista-ops-rendimiento .rend-block-head-v300{
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  padding:18px 20px;
+  border-bottom:1px solid var(--rend-line);
+}
+#vista-ops-rendimiento .rend-block-head-v300 h4,
+#vista-ops-rendimiento .rend-ranking-panel-v300 h4{
+  margin:0;
+  color:#092d45;
+  font-size:19px;
+  font-weight:1000;
+  letter-spacing:-.03em;
+}
+#vista-ops-rendimiento .rend-block-head-v300 p,
+#vista-ops-rendimiento .rend-ranking-panel-v300 p{
+  margin:5px 0 0;
+  color:var(--rend-muted);
+  font-size:13px;
+  font-weight:820;
+}
+#vista-ops-rendimiento .rend-block-icon-v300{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  box-shadow:0 10px 24px rgba(13,169,204,.20);
+  flex:0 0 auto;
+}
+#vista-ops-rendimiento .rend-block-icon-v300.averia{background:linear-gradient(135deg,#087fbd,#10aacd)}
+#vista-ops-rendimiento .rend-block-icon-v300.trabajo{background:linear-gradient(135deg,#5b45b9,#9276ef)}
+#vista-ops-rendimiento .rend-kpi-grid-v300{
+  padding:16px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+#vista-ops-rendimiento .rend-kpi-v300{
+  position:relative;
+  overflow:hidden;
+  min-height:128px;
+  border-radius:20px;
+  padding:17px;
+  background:linear-gradient(180deg,#fff,#f7fcff);
+  border:1px solid rgba(92,130,160,.16);
+}
+#vista-ops-rendimiento .rend-kpi-v300:after{
+  content:"";
+  position:absolute;
+  right:-35px;
+  top:-38px;
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  background:rgba(13,169,204,.11);
+}
+#vista-ops-rendimiento .rend-kpi-v300 span,
+#vista-ops-rendimiento .rend-sheet-card-v300 small{
+  position:relative;
+  z-index:2;
+  display:block;
+  color:#3f6680;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#vista-ops-rendimiento .rend-kpi-v300 strong{
+  position:relative;
+  z-index:2;
+  display:block;
+  margin:13px 0 7px;
+  font-size:31px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-.05em;
+  color:#062d45;
+}
+#vista-ops-rendimiento .rend-kpi-v300 small{
+  position:relative;
+  z-index:2;
+  display:block;
+  color:#23485e;
+  font-size:13px;
+  font-weight:900;
+  line-height:1.35;
+}
+#vista-ops-rendimiento .rend-kpi-v300 em{
+  position:relative;
+  z-index:2;
+  display:block;
+  margin-top:6px;
+  color:#7892a4;
+  font-size:12px;
+  font-weight:850;
+  font-style:normal;
+}
+
+#vista-ops-rendimiento .rend-mini-grid-v300{
+  padding:0 16px 16px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+#vista-ops-rendimiento .rend-mini-grid-v300>div,
+#vista-ops-rendimiento .rend-single-content-v300,
+#vista-ops-rendimiento .rend-ranking-list-v300{
+  border-radius:20px;
+  background:#f8fcff;
+  border:1px solid rgba(92,130,160,.16);
+}
+#vista-ops-rendimiento .rend-mini-grid-v300 h5{
+  margin:0;
+  padding:14px 14px 10px;
+  color:#092d45;
+  font-size:14px;
+  font-weight:1000;
+  letter-spacing:-.02em;
+}
+#vista-ops-rendimiento .rend-mini-list-v300,
+#vista-ops-rendimiento .rend-ranking-list-v300,
+#vista-ops-rendimiento .rend-card-list-v300{
+  padding:10px;
+  display:grid;
+  gap:8px;
+}
+#vista-ops-rendimiento .rend-mini-row-v300,
+#vista-ops-rendimiento .rend-ranking-row-v300,
+#vista-ops-rendimiento .rend-time-row-v300{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+  border-radius:16px;
+  background:#fff;
+  border:1px solid rgba(92,130,160,.12);
+}
+#vista-ops-rendimiento .rend-rank-v300{
+  width:32px;
+  height:32px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:#eaf8fd;
+  color:#0878b6;
+  font-weight:1000;
+}
+#vista-ops-rendimiento .rend-mini-row-v300 b,
+#vista-ops-rendimiento .rend-ranking-row-v300 b,
+#vista-ops-rendimiento .rend-time-row-v300 b{
+  display:block;
+  color:#123950;
+  font-size:13px;
+  font-weight:1000;
+}
+#vista-ops-rendimiento .rend-mini-row-v300 small,
+#vista-ops-rendimiento .rend-ranking-row-v300 small,
+#vista-ops-rendimiento .rend-time-row-v300 small{
+  display:block;
+  margin-top:3px;
+  color:var(--rend-muted);
+  font-size:12px;
+  font-weight:780;
+}
+#vista-ops-rendimiento .rend-chip-v300{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:1000;
+  white-space:nowrap;
+}
+#vista-ops-rendimiento .rend-chip-v300.ok{background:#e9f8f1;color:#08754c}
+#vista-ops-rendimiento .rend-chip-v300.warn{background:#fff4d5;color:#965f00}
+#vista-ops-rendimiento .rend-chip-v300.bad{background:#ffe8e8;color:#bd3333}
+#vista-ops-rendimiento .rend-chip-v300.muted{background:#eef3f6;color:#577286}
+#vista-ops-rendimiento .rend-chip-v300.issue{background:#eaf8fd;color:#0878b6}
+#vista-ops-rendimiento .rend-chip-v300.work{background:#f3ecff;color:#6844b8}
+
+#vista-ops-rendimiento .rend-ranking-panel-v300{
+  padding:16px;
+}
+#vista-ops-rendimiento .rend-ranking-panel-v300 h4,
+#vista-ops-rendimiento .rend-ranking-panel-v300 p{
+  padding:0 2px;
+}
+#vista-ops-rendimiento .rend-ranking-list-v300{
+  margin-top:14px;
+}
+#vista-ops-rendimiento .rend-ranking-row-v300{
+  grid-template-columns:auto 1fr repeat(3,auto) auto;
+}
+#vista-ops-rendimiento .rend-consult-btn-v300{
+  min-height:36px;
+  border:0;
+  border-radius:13px;
+  padding:0 13px;
+  background:#6f91aa;
+  color:#fff;
+  font-weight:950;
+  cursor:pointer;
+}
+#vista-ops-rendimiento .rend-consult-btn-v300:hover{background:#537690}
+
+#vista-ops-rendimiento .rend-single-content-v300{
+  padding:16px;
+  display:grid;
+  gap:14px;
+}
+#vista-ops-rendimiento .rend-single-grid-v300{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+#vista-ops-rendimiento .rend-detail-table-wrap-v300{
+  display:none;
+}
+#vista-ops-rendimiento .rend-detail-table-wrap-v300.open{display:block}
+#vista-ops-rendimiento .rend-table-v300{
+  width:100%;
+  min-width:1120px;
+  border-collapse:separate;
+  border-spacing:0;
+}
+#vista-ops-rendimiento .rend-table-v300 th{
+  text-align:left;
+  padding:14px 16px;
+  background:#edf7fc;
+  border-bottom:1px solid var(--rend-line);
+  color:#4a6c82;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+#vista-ops-rendimiento .rend-table-v300 td{
+  padding:15px 16px;
+  border-bottom:1px solid rgba(92,130,160,.12);
+  font-size:13px;
+  font-weight:820;
+  vertical-align:middle;
+}
+#vista-ops-rendimiento .rend-code-v300{
+  display:inline-flex;
+  padding:8px 10px;
+  border-radius:12px;
+  background:#eaf8fd;
+  color:#0878b6;
+  font-weight:1000;
+}
+#vista-ops-rendimiento .rend-empty-v300{
+  display:none;
+  padding:26px;
+  text-align:center;
+  border-radius:20px;
+  background:#fff;
+  border:1px dashed rgba(92,130,160,.30);
+  color:#6d8799;
+  font-weight:900;
+}
+#vista-ops-rendimiento .rend-empty-v300.open{display:block}
+
+/* Ficha de rendimiento */
+#vista-ops-rendimiento .rend-sheet-backdrop-v300{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  padding:22px;
+  background:rgba(2,18,30,.38);
+  backdrop-filter:blur(8px);
+  overflow:auto;
+}
+#vista-ops-rendimiento .rend-sheet-backdrop-v300.open{display:block}
+#vista-ops-rendimiento .rend-sheet-v300{
+  max-width:1180px;
+  margin:0 auto;
+  border-radius:28px;
+  overflow:hidden;
+  background:#f8fcff;
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:0 26px 80px rgba(2,18,30,.28);
+}
+#vista-ops-rendimiento .rend-sheet-head-v300{
+  padding:22px;
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  color:#fff;
+  background:linear-gradient(135deg,#062338,#074769 58%,#0da9cc);
+}
+#vista-ops-rendimiento .rend-sheet-head-v300 h3{
+  margin:10px 0 4px;
+  font-size:26px;
+  color:#fff;
+  font-weight:1000;
+  letter-spacing:-.035em;
+}
+#vista-ops-rendimiento .rend-sheet-head-v300 p{
+  margin:0;
+  color:rgba(238,249,255,.80);
+  font-size:13px;
+  font-weight:820;
+}
+#vista-ops-rendimiento .rend-close-sheet-v300{
+  width:44px;
+  height:44px;
+  border:1px solid rgba(255,255,255,.20);
+  border-radius:15px;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  cursor:pointer;
+}
+#vista-ops-rendimiento .rend-sheet-tabs-v300{
+  padding:14px 18px;
+  border-bottom:1px solid var(--rend-line);
+  background:#f8fcff;
+}
+#vista-ops-rendimiento .rend-sheet-tabs-v300 button.hidden{display:none!important}
+#vista-ops-rendimiento .rend-sheet-body-v300{
+  padding:18px;
+  display:grid;
+  gap:16px;
+}
+#vista-ops-rendimiento .rend-sheet-view-v300{display:none;gap:14px}
+#vista-ops-rendimiento .rend-sheet-view-v300.active{display:grid}
+#vista-ops-rendimiento .rend-sheet-grid-v300{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+#vista-ops-rendimiento .rend-sheet-card-v300{
+  border-radius:20px;
+  background:#fff;
+  border:1px solid rgba(92,130,160,.14);
+  padding:16px;
+}
+#vista-ops-rendimiento .rend-sheet-card-v300 strong{
+  display:block;
+  margin-top:10px;
+  font-size:25px;
+  font-weight:1000;
+  letter-spacing:-.04em;
+  color:#092d45;
+}
+#vista-ops-rendimiento .rend-sheet-card-v300 span{
+  display:block;
+  margin-top:7px;
+  color:var(--rend-muted);
+  font-size:12px;
+  font-weight:820;
+  line-height:1.4;
+}
+#vista-ops-rendimiento .rend-sheet-two-v300{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+#vista-ops-rendimiento .rend-sheet-panel-v300{
+  border-radius:20px;
+  background:#fff;
+  border:1px solid rgba(92,130,160,.14);
+  overflow:hidden;
+}
+#vista-ops-rendimiento .rend-sheet-panel-v300 h4{
+  margin:0;
+  padding:14px 14px 10px;
+  color:#092d45;
+  font-size:15px;
+  font-weight:1000;
+}
+#vista-ops-rendimiento .rend-sheet-note-v300{
+  padding:14px 18px;
+  color:#607d91;
+  font-size:12px;
+  font-weight:820;
+  background:#f3f9fd;
+  border-top:1px solid var(--rend-line);
+}
+#vista-ops-rendimiento .rend-no-data-v300{
+  padding:18px;
+  border-radius:18px;
+  background:#f8fcff;
+  border:1px dashed rgba(92,130,160,.30);
+  color:#6d8799;
+  font-weight:900;
+  text-align:center;
+}
+
+/* Dark mode */
+body.dark #vista-ops-rendimiento .rend-shell-v300,
+html.dark #vista-ops-rendimiento .rend-shell-v300,
+body.dark-mode #vista-ops-rendimiento .rend-shell-v300,
+html.dark-mode #vista-ops-rendimiento .rend-shell-v300{
+  color:#eaf6ff;
+}
+body.dark #vista-ops-rendimiento .rend-filter-panel-v300,
+body.dark #vista-ops-rendimiento .rend-section-head-v300,
+body.dark #vista-ops-rendimiento .rend-block-v300,
+body.dark #vista-ops-rendimiento .rend-ranking-panel-v300,
+body.dark #vista-ops-rendimiento .rend-detail-table-wrap-v300,
+body.dark #vista-ops-rendimiento .rend-sheet-v300,
+html.dark #vista-ops-rendimiento .rend-filter-panel-v300,
+html.dark #vista-ops-rendimiento .rend-section-head-v300,
+html.dark #vista-ops-rendimiento .rend-block-v300,
+html.dark #vista-ops-rendimiento .rend-ranking-panel-v300,
+html.dark #vista-ops-rendimiento .rend-detail-table-wrap-v300,
+html.dark #vista-ops-rendimiento .rend-sheet-v300,
+body.dark-mode #vista-ops-rendimiento .rend-filter-panel-v300,
+body.dark-mode #vista-ops-rendimiento .rend-section-head-v300,
+body.dark-mode #vista-ops-rendimiento .rend-block-v300,
+body.dark-mode #vista-ops-rendimiento .rend-ranking-panel-v300,
+body.dark-mode #vista-ops-rendimiento .rend-detail-table-wrap-v300,
+body.dark-mode #vista-ops-rendimiento .rend-sheet-v300{
+  background:rgba(13,31,49,.92);
+  border-color:rgba(126,197,231,.16);
+}
+body.dark #vista-ops-rendimiento .rend-kpi-v300,
+body.dark #vista-ops-rendimiento .rend-mini-grid-v300>div,
+body.dark #vista-ops-rendimiento .rend-mini-row-v300,
+body.dark #vista-ops-rendimiento .rend-ranking-row-v300,
+body.dark #vista-ops-rendimiento .rend-sheet-card-v300,
+body.dark #vista-ops-rendimiento .rend-sheet-panel-v300,
+html.dark #vista-ops-rendimiento .rend-kpi-v300,
+html.dark #vista-ops-rendimiento .rend-mini-grid-v300>div,
+html.dark #vista-ops-rendimiento .rend-mini-row-v300,
+html.dark #vista-ops-rendimiento .rend-ranking-row-v300,
+html.dark #vista-ops-rendimiento .rend-sheet-card-v300,
+html.dark #vista-ops-rendimiento .rend-sheet-panel-v300,
+body.dark-mode #vista-ops-rendimiento .rend-kpi-v300,
+body.dark-mode #vista-ops-rendimiento .rend-mini-grid-v300>div,
+body.dark-mode #vista-ops-rendimiento .rend-mini-row-v300,
+body.dark-mode #vista-ops-rendimiento .rend-ranking-row-v300,
+body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300,
+body.dark-mode #vista-ops-rendimiento .rend-sheet-panel-v300{
+  background:#102b43;
+  border-color:rgba(126,197,231,.16);
+}
+body.dark #vista-ops-rendimiento h3,
+body.dark #vista-ops-rendimiento h4,
+body.dark #vista-ops-rendimiento .rend-kpi-v300 strong,
+body.dark #vista-ops-rendimiento .rend-sheet-card-v300 strong,
+html.dark #vista-ops-rendimiento h3,
+html.dark #vista-ops-rendimiento h4,
+html.dark #vista-ops-rendimiento .rend-kpi-v300 strong,
+html.dark #vista-ops-rendimiento .rend-sheet-card-v300 strong,
+body.dark-mode #vista-ops-rendimiento h3,
+body.dark-mode #vista-ops-rendimiento h4,
+body.dark-mode #vista-ops-rendimiento .rend-kpi-v300 strong,
+body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
+  color:#eaf6ff;
+}
+
+@media(max-width:1180px){
+  #vista-ops-rendimiento .rend-split-grid-v300,
+  #vista-ops-rendimiento .rend-ranking-split-v300,
+  #vista-ops-rendimiento .rend-sheet-two-v300{
+    grid-template-columns:1fr;
+  }
+  #vista-ops-rendimiento .rend-advanced-v300{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  #vista-ops-rendimiento .rend-filter-main-v300{
+    grid-template-columns:1fr;
+  }
+  #vista-ops-rendimiento .rend-ranking-row-v300{
+    grid-template-columns:auto 1fr auto;
+  }
+  #vista-ops-rendimiento .rend-ranking-row-v300 .rend-rank-stat-v300{
+    display:none;
+  }
+}
+@media(max-width:760px){
+  #vista-ops-rendimiento .rend-hero-v300,
+  #vista-ops-rendimiento .rend-section-head-v300,
+  #vista-ops-rendimiento .rend-sheet-head-v300{
+    flex-direction:column;
+  }
+  #vista-ops-rendimiento .rend-mode-card-v300{min-width:0;width:100%}
+  #vista-ops-rendimiento .rend-tabs-v300 button,
+  #vista-ops-rendimiento .rend-periods-v300 button,
+  #vista-ops-rendimiento .rend-sheet-tabs-v300 button,
+  #vista-ops-rendimiento .rend-soft-btn-v300,
+  #vista-ops-rendimiento .rend-primary-btn-v300,
+  #vista-ops-rendimiento .rend-filter-toggle-v300{flex:1}
+  #vista-ops-rendimiento .rend-kpi-grid-v300,
+  #vista-ops-rendimiento .rend-mini-grid-v300,
+  #vista-ops-rendimiento .rend-single-grid-v300,
+  #vista-ops-rendimiento .rend-sheet-grid-v300,
+  #vista-ops-rendimiento .rend-advanced-v300{
+    grid-template-columns:1fr;
+  }
+  #vista-ops-rendimiento .rend-mini-row-v300,
+  #vista-ops-rendimiento .rend-time-row-v300{
+    grid-template-columns:auto 1fr;
+  }
+  #vista-ops-rendimiento .rend-chip-v300{grid-column:2;width:max-content}
+  #vista-ops-rendimiento .rend-sheet-backdrop-v300{padding:10px}
+}
