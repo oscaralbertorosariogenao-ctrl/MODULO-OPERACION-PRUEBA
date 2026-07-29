@@ -257,4 +257,56 @@
       if(saveBtn){ saveBtn.disabled = false; saveBtn.innerHTML = originalText || 'Guardar Grupo'; }
     }
   };
+
+  async function confirmDeleteEntity(title, message, keyword){
+    const ok = window.confirm(title + '\n\n' + message + '\n\nEsta acción conserva el historial y desactiva el registro en Supabase.');
+    if(!ok) return false;
+    const typed = window.prompt('Para confirmar, escribe: ' + keyword);
+    return cleanText(typed).toUpperCase() === keyword;
+  }
+
+  window.eliminarAgencia = async function eliminarAgenciaSupabaseV80529(index){
+    const client = supabaseClient();
+    if(!client){ alert('No hay conexión activa con Supabase.'); return; }
+    if(!hasPerm('eliminar_agencia')){ alert('No tienes permiso para eliminar agencias.'); return; }
+    const local = Array.isArray(window.agencias) ? window.agencias[index] : null;
+    if(!local){ alert('No se encontró la agencia seleccionada.'); return; }
+    const numero = padAgency(local.numero);
+    const confirmed = await confirmDeleteEntity('Eliminar agencia ' + numero, 'La agencia dejará de aparecer como activa en Home, Grupos, Mapa, Rutas y app móvil.', 'ELIMINAR');
+    if(!confirmed){ alert('Eliminación cancelada.'); return; }
+    try{
+      const res = await client.rpc('rpc_agencias_eliminar_seguro', { p_numero: numero, p_motivo: 'Eliminada desde Gestión de Agencias' });
+      if(res.error) throw res.error;
+      await audit('Gestión de agencias','ELIMINAR_AGENCIA','agencias',numero,'Agencia desactivada desde el sistema',local,res.data);
+      await reloadAgenciasGrupos();
+      alert('Agencia ' + numero + ' eliminada de la operación activa. El historial fue conservado.');
+    }catch(error){
+      console.error('Error eliminando agencia:', error);
+      alert('No se pudo eliminar la agencia: ' + (error && error.message ? error.message : error));
+    }
+  };
+
+  window.eliminarGrupo = async function eliminarGrupoSupabaseV80529(index){
+    const client = supabaseClient();
+    if(!client){ alert('No hay conexión activa con Supabase.'); return; }
+    if(!hasPerm('eliminar_grupo')){ alert('No tienes permiso para eliminar grupos.'); return; }
+    const local = Array.isArray(window.grupos) ? window.grupos[index] : null;
+    if(!local){ alert('No se encontró el grupo seleccionado.'); return; }
+    const codigo = groupCode(local.codigo || local.numero || local.nombre);
+    if(codigo === '00'){ alert('El Grupo 00 es un grupo de sistema y no puede eliminarse.'); return; }
+    const count = Array.isArray(local.agencias) ? local.agencias.length : 0;
+    const confirmed = await confirmDeleteEntity('Eliminar ' + groupNameFromCode(codigo), 'Sus ' + count + ' agencia(s) activas serán movidas al Grupo 00 hasta que las reasignes.', 'ELIMINAR');
+    if(!confirmed){ alert('Eliminación cancelada.'); return; }
+    try{
+      const res = await client.rpc('rpc_grupos_eliminar_seguro', { p_codigo: codigo, p_motivo: 'Eliminado desde Gestión de Grupos' });
+      if(res.error) throw res.error;
+      await audit('Gestión de agencias','ELIMINAR_GRUPO','grupos',codigo,'Grupo desactivado desde el sistema',local,res.data);
+      await reloadAgenciasGrupos();
+      alert(groupNameFromCode(codigo) + ' eliminado. Sus agencias fueron movidas al Grupo 00 y el historial fue conservado.');
+    }catch(error){
+      console.error('Error eliminando grupo:', error);
+      alert('No se pudo eliminar el grupo: ' + (error && error.message ? error.message : error));
+    }
+  };
+
 })();
