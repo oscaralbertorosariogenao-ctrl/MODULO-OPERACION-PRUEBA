@@ -1,0 +1,26 @@
+
+  /* Taller V2 · Recepciones: pantalla principal = registradas; nueva recepción se abre como cuadro/modal. */
+  #taller-v2-recepciones > .taller-v2-subtabs{display:none!important;}
+  #taller-v2-sub-registradas.active{display:block!important;}
+  #taller-v2-sub-nueva:not(.active){display:none!important;}
+  #taller-v2-sub-nueva.active{
+    position:fixed!important;
+    inset:0!important;
+    z-index:2147482800!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    padding:24px!important;
+    overflow:auto!important;
+    background:rgba(6,20,33,.54)!important;
+    backdrop-filter:blur(6px)!important;
+  }
+  #taller-v2-sub-nueva.active .taller-v2-reception-card{
+    width:min(1120px,96vw)!important;
+    max-height:92vh!important;
+    overflow:auto!important;
+    margin:0 auto!important;
+    border-radius:28px!important;
+    box-shadow:0 34px 120px rgba(2,12,27,.34)!important;
+  }
+  body.taller-v2-recepcion-modal-open{overflow:hidden!important;}

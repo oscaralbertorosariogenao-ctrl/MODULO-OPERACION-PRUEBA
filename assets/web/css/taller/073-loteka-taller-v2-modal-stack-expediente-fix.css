@@ -1,0 +1,45 @@
+
+  /* Taller V2 · Corrección de capas: cualquier modal del Taller debe abrir por encima de la recepción. */
+  .taller-v2-modal-backdrop{
+    z-index:2147482900!important;
+  }
+  #tallerV2ConfirmModal{
+    z-index:2147483100!important;
+    align-items:center!important;
+  }
+  #tallerV2ConfirmModal .taller-v2-modal{
+    width:min(760px,94vw)!important;
+    max-height:88vh!important;
+    overflow:auto!important;
+    border-radius:26px!important;
+    box-shadow:0 34px 120px rgba(2,12,27,.38)!important;
+  }
+  #tallerV2ConfirmModal .taller-v2-confirm-list{
+    display:grid!important;
+    gap:10px!important;
+    margin-top:14px!important;
+  }
+  #tallerV2ConfirmModal .taller-v2-confirm-item{
+    padding:12px 14px!important;
+    border:1px solid #d7e8f2!important;
+    border-radius:16px!important;
+    background:#f8fcff!important;
+    color:#0b3554!important;
+  }
+  #tallerV2ConfirmModal .taller-v2-confirm-item small{
+    color:#5f7589!important;
+    font-weight:850!important;
+  }
+  .taller-v2-expediente-modal{
+    width:min(920px,94vw)!important;
+    max-height:88vh!important;
+  }
+  .taller-v2-exp-body{
+    color:#0b3554!important;
+  }
+  .taller-v2-section-card,
+  .taller-v2-exp-info-grid > div,
+  .taller-v2-exp-main,
+  .taller-v2-exp-status{
+    color:#0b3554!important;
+  }

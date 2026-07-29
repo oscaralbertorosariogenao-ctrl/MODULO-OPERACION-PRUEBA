@@ -1,0 +1,11 @@
+
+  .taller-v2-row-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-start}
+  .taller-v2-mini-row-pro{display:grid!important;grid-template-columns:minmax(220px,1fr) auto!important;gap:14px!important;align-items:center!important}
+  .taller-v2-pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0 4px;flex-wrap:wrap}
+  .taller-v2-pagination button,.taller-v2-pagination select{border:1px solid #cfe3ee;background:#fff;color:#0b4266;border-radius:12px;min-width:42px;height:38px;padding:0 10px;font-weight:900;cursor:pointer}
+  .taller-v2-pagination button.active{background:#e7f6ff;border-color:#1aa7d4;color:#006b99;box-shadow:0 8px 18px rgba(14,165,198,.12)}
+  .taller-v2-pagination button:disabled{opacity:.45;cursor:not-allowed}
+  .taller-v2-modal-top{z-index:2147483300!important;align-items:center!important;background:rgba(6,20,33,.58)!important;backdrop-filter:blur(7px)!important}
+  .taller-v2-expediente-modal{width:min(980px,95vw)!important;max-height:90vh!important;overflow:auto!important;border-radius:28px!important;box-shadow:0 34px 120px rgba(2,12,27,.40)!important}
+  .taller-v2-exp-body,.taller-v2-exp-body *{letter-spacing:0!important}
+  .taller-v2-clean-summary{display:grid;gap:10px}.taller-v2-summary-line{background:#f8fcff;border:1px solid #d8e8f2;border-radius:14px;padding:12px 14px;color:#123d5b;font-weight:800;line-height:1.45}
