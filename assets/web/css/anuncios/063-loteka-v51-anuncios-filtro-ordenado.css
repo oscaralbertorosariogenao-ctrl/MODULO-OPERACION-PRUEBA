@@ -1,0 +1,102 @@
+
+/* ================= LOTEKA v51 · Filtro de anuncios ordenado y sin desbordarse ================= */
+.ltk-ann-v43 .ltk-ann-inbox .ltk-ann-body{
+  height:calc(100vh - 445px);
+  min-height:430px;
+}
+.ltk-ann-v49-filterbar{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:12px!important;
+  align-items:stretch!important;
+  padding:14px 18px 12px!important;
+  border-bottom:1px solid #dceff7;
+  background:linear-gradient(180deg,#ffffff 0%,#f6fbff 100%);
+}
+.ltk-ann-v49-today-card{
+  min-height:auto!important;
+  padding:12px 14px!important;
+  border-radius:18px!important;
+  display:grid!important;
+  grid-template-columns:auto 1fr auto!important;
+  align-items:center!important;
+  column-gap:12px!important;
+}
+.ltk-ann-v49-today-card strong{
+  font-size:25px!important;
+  line-height:1!important;
+}
+.ltk-ann-v49-today-card span{
+  margin:0!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+}
+.ltk-ann-v49-today-card small{
+  margin:0!important;
+  padding:7px 10px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.18)!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+}
+.ltk-ann-v49-tools{
+  padding:12px!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+}
+.ltk-ann-v49-tools-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  margin-bottom:11px!important;
+}
+.ltk-ann-v49-tools-title{
+  min-width:0!important;
+  font-size:12px!important;
+  letter-spacing:.035em!important;
+  white-space:nowrap!important;
+}
+.ltk-ann-v49-active-label{
+  max-width:48%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  padding:6px 9px!important;
+  font-size:10.5px!important;
+}
+.ltk-ann-v49-controls{
+  display:grid!important;
+  grid-template-columns:minmax(150px,1fr) minmax(130px,auto)!important;
+  gap:9px!important;
+  align-items:center!important;
+}
+.ltk-ann-v49-date,
+.ltk-ann-v49-btn{
+  min-height:40px!important;
+  border-radius:13px!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+  font-size:12px!important;
+}
+.ltk-ann-v49-btn{
+  width:100%!important;
+}
+.ltk-ann-v49-btn:not(.primary){
+  background:#eef8fd!important;
+}
+.ltk-ann-v49-empty{
+  margin:10px 18px 0!important;
+}
+@media(max-width:1280px){
+  .ltk-ann-v43 .ltk-ann-board{grid-template-columns:minmax(390px,.9fr) minmax(480px,1.1fr)!important;}
+  .ltk-ann-v49-controls{grid-template-columns:1fr!important;}
+  .ltk-ann-v49-active-label{max-width:100%!important;}
+  .ltk-ann-v49-tools-head{align-items:flex-start!important;flex-direction:column!important;}
+}
+@media(max-width:700px){
+  .ltk-ann-v49-today-card{grid-template-columns:1fr!important;row-gap:5px!important;}
+  .ltk-ann-v49-today-card small{width:max-content!important;}
+}
+body.go-dark-mode .ltk-ann-v49-filterbar{background:linear-gradient(180deg,#0d2438,#0b1d2d);border-color:rgba(125,211,252,.15)}
+body.go-dark-mode .ltk-ann-v49-tools{background:#102b42;border-color:rgba(125,211,252,.18)}

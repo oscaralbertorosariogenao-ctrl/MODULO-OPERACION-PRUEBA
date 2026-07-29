@@ -1,0 +1,156 @@
+
+/* ================= LOTEKA v49 · Filtros visuales para Anuncios ================= */
+.ltk-ann-v49-filterbar{
+  display:grid;
+  grid-template-columns:minmax(150px, 190px) 1fr;
+  gap:14px;
+  align-items:stretch;
+  padding:14px 16px 4px;
+  border-top:1px solid rgba(12,92,135,.08);
+}
+.ltk-ann-v49-today-card{
+  position:relative;
+  overflow:hidden;
+  min-height:76px;
+  padding:14px 16px;
+  border:1px solid rgba(13,158,207,.22);
+  border-radius:20px;
+  background:linear-gradient(135deg,#06365c 0%,#087eb1 55%,#1cc2e0 100%);
+  color:#fff;
+  box-shadow:0 16px 34px rgba(4,54,88,.16);
+  cursor:pointer;
+  user-select:none;
+}
+.ltk-ann-v49-today-card:before{
+  content:"";
+  position:absolute;
+  width:108px;
+  height:108px;
+  right:-38px;
+  top:-42px;
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+}
+.ltk-ann-v49-today-card strong{
+  position:relative;
+  display:block;
+  font-size:29px;
+  line-height:1;
+  letter-spacing:.03em;
+  font-weight:900;
+}
+.ltk-ann-v49-today-card span{
+  position:relative;
+  display:block;
+  margin-top:7px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:.9;
+}
+.ltk-ann-v49-today-card small{
+  position:relative;
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  font-weight:800;
+  opacity:.86;
+}
+.ltk-ann-v49-tools{
+  border:1px solid rgba(12,92,135,.13);
+  border-radius:20px;
+  background:linear-gradient(180deg,#ffffff 0%,#f5fbff 100%);
+  box-shadow:0 14px 30px rgba(4,53,83,.06);
+  padding:12px;
+}
+.ltk-ann-v49-tools-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.ltk-ann-v49-tools-title{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:13px;
+  font-weight:900;
+  color:#07365a;
+  text-transform:uppercase;
+  letter-spacing:.045em;
+}
+.ltk-ann-v49-tools-title i{color:#0d9ecf;}
+.ltk-ann-v49-active-label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border-radius:999px;
+  padding:7px 10px;
+  background:#e9f7ff;
+  color:#006c9d;
+  font-size:11px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.ltk-ann-v49-controls{
+  display:grid;
+  grid-template-columns:1fr auto auto auto;
+  gap:10px;
+  align-items:center;
+}
+.ltk-ann-v49-date{
+  width:100%;
+  min-height:42px;
+  border:1px solid #cce3f4;
+  border-radius:14px;
+  padding:0 13px;
+  background:#fff;
+  color:#07365a;
+  outline:none;
+  font-weight:800;
+}
+.ltk-ann-v49-date:focus{
+  border-color:#0d9ecf;
+  box-shadow:0 0 0 4px rgba(13,158,207,.12);
+}
+.ltk-ann-v49-btn{
+  min-height:42px;
+  border:1px solid #cce3f4;
+  border-radius:14px;
+  padding:0 14px;
+  background:#f4fbff;
+  color:#07365a;
+  font-weight:900;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:.18s ease;
+  white-space:nowrap;
+}
+.ltk-ann-v49-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(4,53,83,.10);}
+.ltk-ann-v49-btn.primary{background:linear-gradient(135deg,#075680,#0d9ecf);border-color:rgba(13,158,207,.5);color:#fff;}
+.ltk-ann-v49-empty{
+  display:none;
+  margin:12px 16px 0;
+  padding:18px;
+  border:1px dashed #b9dff4;
+  border-radius:18px;
+  background:#f4fbff;
+  color:#5c7891;
+  font-weight:800;
+  text-align:center;
+}
+.ltk-ann-v49-empty.is-visible{display:block;}
+.ltk-ann-card.ltk-ann-v49-hidden{display:none!important;}
+@media(max-width:1100px){
+  .ltk-ann-v49-filterbar{grid-template-columns:1fr;}
+  .ltk-ann-v49-controls{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:700px){
+  .ltk-ann-v49-controls{grid-template-columns:1fr;}
+  .ltk-ann-v49-tools-head{align-items:flex-start;flex-direction:column;}
+}
