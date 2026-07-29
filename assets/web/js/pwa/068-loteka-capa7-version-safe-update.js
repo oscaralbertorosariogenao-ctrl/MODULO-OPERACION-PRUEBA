@@ -16,6 +16,7 @@
   var LOTEKA_HTML_VERSION = '2026-07-27-v805.17-desbloqueo-real';
   var VERSION_URL = '/version.json';
   var DISMISSED_KEY = 'loteka_update_dismissed_session_version';
+  var APPLIED_KEY = 'loteka_update_applied_version';
   var CHECK_INTERVAL_MS = 120000;
   var CHECK_DELAY_MS = 2200;
   var isChecking = false;
@@ -106,6 +107,23 @@
   }
 
   async function activateNewVersion(){
+    var acceptedVersion = String((pendingInfo && pendingInfo.version) || '');
+    var banner = document.getElementById(bannerId);
+
+    // La misma versión aceptada no debe volver a anunciarse después de recargar.
+    try{
+      if(acceptedVersion) localStorage.setItem(APPLIED_KEY, acceptedVersion);
+      if(acceptedVersion) sessionStorage.setItem(DISMISSED_KEY, acceptedVersion);
+    }catch(e){}
+
+    if(banner){
+      var button = banner.querySelector('.ltk-safe-update');
+      if(button){
+        button.disabled = true;
+        button.textContent = 'Actualizando…';
+      }
+    }
+
     await clearLotekaCaches();
 
     try{
@@ -155,6 +173,17 @@
       if(!info || !info.version) return;
 
       var serverVersion = String(info.version);
+      var appliedVersion = '';
+      try{ appliedVersion = String(localStorage.getItem(APPLIED_KEY) || ''); }catch(e){}
+
+      // Si el usuario ya pulsó Actualizar ahora para esta versión exacta,
+      // no volver a mostrar el mismo aviso. Una versión futura sí aparecerá.
+      if(serverVersion && appliedVersion === serverVersion){
+        var oldBanner = document.getElementById(bannerId);
+        if(oldBanner) oldBanner.remove();
+        console.log('[LOTEKA] Versión ya aceptada por el usuario:', serverVersion);
+        return;
+      }
 
       if(serverVersion && serverVersion !== LOTEKA_HTML_VERSION){
         console.log('[LOTEKA] Nueva versión disponible:', serverVersion, 'HTML actual:', LOTEKA_HTML_VERSION);
