@@ -29,57 +29,52 @@ function injectStyle(){if(q('#gomp-style'))return;var s=document.createElement('
 #gomp-view{padding:0 0 30px}.gomp{font-family:Inter,system-ui;color:#12344f}.gomp-hero{display:flex;justify-content:space-between;gap:16px;padding:25px;border:1px solid #d6e6f1;border-radius:22px;background:linear-gradient(135deg,#f8fdff,#eaf7ff);box-shadow:0 16px 38px rgba(14,70,107,.08);margin-bottom:16px}.gomp-hero h2{margin:0;color:#092f4f;font-size:27px}.gomp-hero p{margin:7px 0 0;color:#657f94}.gomp-actions,.gomp-tabs,.gomp-row{display:flex;gap:9px;flex-wrap:wrap}.gomp-btn{border:1px solid #c9dce9;background:#fff;color:#075f96;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer}.gomp-btn.primary{background:linear-gradient(135deg,#087bbb,#05a7d4);color:#fff;border:0}.gomp-btn.danger{color:#b42318}.gomp-tabs{background:#edf5fa;border-radius:13px;padding:5px;width:max-content;margin-bottom:15px}.gomp-tab{border:0;background:transparent;padding:9px 14px;border-radius:9px;font-weight:900;color:#607b90;cursor:pointer}.gomp-tab.active{background:#fff;color:#086395;box-shadow:0 4px 14px #aac4d555}.gomp-panel{display:none}.gomp-panel.active{display:block}.gomp-stats{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:11px;margin-bottom:15px}.gomp-stat,.gomp-card{background:#fff;border:1px solid #d7e6f0;border-radius:17px;padding:16px;box-shadow:0 10px 25px rgba(11,62,97,.055)}.gomp-stat span{font-size:12px;color:#6d879b;font-weight:800}.gomp-stat strong{display:block;font-size:26px;color:#0a3e66;margin-top:5px}.gomp-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.gomp-card h3{margin:0;color:#123f62}.gomp-table{width:100%;border-collapse:collapse}.gomp-table th,.gomp-table td{padding:11px;border-bottom:1px solid #e5eef4;text-align:left;font-size:13px}.gomp-table th{color:#668094;font-size:11px;text-transform:uppercase}.gomp-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.gomp-badge.ok{background:#e7f8ef;color:#08774a}.gomp-badge.bad{background:#fff0ef;color:#b42318}.gomp-badge.run{background:#eaf5ff;color:#08689e}.gomp-badge.wait{background:#fff7df;color:#8b6500}.gomp-empty{text-align:center;padding:35px;color:#71899a}.gomp-modal{position:fixed;inset:0;background:#092b4677;display:none;align-items:center;justify-content:center;z-index:10050;padding:20px}.gomp-modal.open{display:flex}.gomp-dialog{width:min(980px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #061c2e66}.gomp-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.gomp-field label{display:block;font-size:11px;font-weight:1000;color:#587389;margin-bottom:6px;text-transform:uppercase}.gomp-field input,.gomp-field select,.gomp-field textarea{width:100%;border:1px solid #cbdce8;border-radius:11px;padding:10px;font:inherit}.gomp-field.full{grid-column:1/-1}.gomp-picker{border:1px solid #d8e6ef;border-radius:13px;max-height:300px;overflow:auto}.gomp-ag{display:grid;grid-template-columns:32px 95px 1fr 120px;gap:8px;align-items:center;padding:9px 11px;border-bottom:1px solid #edf2f6}.gomp-ag:hover{background:#f5fbff}.gomp-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.gomp-type{border:1px solid #d7e6ef;border-radius:15px;padding:15px}.gomp-type h4{margin:0 0 6px;color:#123e5f}.gomp-progress{height:8px;background:#e8f0f5;border-radius:999px;overflow:hidden}.gomp-progress i{display:block;height:100%;background:#0b9ccd}.gomp-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}@media(max-width:900px){.gomp-stats{grid-template-columns:repeat(2,1fr)}.gomp-grid,.gomp-type-grid,.gomp-detail-grid{grid-template-columns:1fr}.gomp-hero{flex-direction:column}.gomp-ag{grid-template-columns:28px 80px 1fr}}
 `;document.head.appendChild(s)}
 function injectView(){
-  if(q('#vista-ops-mantenimiento')) return;
-  var anchor=q('#vista-ops-historial')||q('#vista-ops-operaciones')||q('#vista-home');
-  var wrapper=document.createElement('div');
-  wrapper.id='vista-ops-mantenimiento';
-  wrapper.className='hidden';
+  var wrapper=q('#vista-ops-mantenimiento');
+  if(!wrapper){
+    var anchor=q('#vista-ops-historial')||q('#vista-ops-operaciones')||q('#vista-home');
+    wrapper=document.createElement('div');
+    wrapper.id='vista-ops-mantenimiento';
+    wrapper.className='hidden';
+    if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(wrapper,anchor);
+    else (q('#mainContent')||q('.main-content')||document.body).appendChild(wrapper);
+  }
+  if(q('#gomp-view',wrapper)) return;
   wrapper.innerHTML=`<div id="gomp-view"><div class="gomp"><div class="gomp-hero"><div><h2>Mantenimiento preventivo</h2><p>Planificación, rutas y control preventivo por agencia.</p></div><div class="gomp-actions"><button class="gomp-btn" id="gomp-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="gomp-btn primary" id="gomp-new"><i class="fas fa-plus"></i> Crear plan</button></div></div><div class="gomp-tabs"><button class="gomp-tab active" data-tab="plans">Planes</button><button class="gomp-tab" data-tab="calendar">Calendario</button><button class="gomp-tab" data-tab="types">Tipos</button></div><section class="gomp-panel active" data-panel="plans"><div class="gomp-stats" id="gomp-stats"></div><div class="gomp-card"><div class="gomp-card-head"><h3>Planes preventivos</h3><div class="gomp-row"><select id="gomp-filter-status"><option value="">Todos los estados</option><option>PROGRAMADO</option><option>EN_PROCESO</option><option>COMPLETADO</option><option>BORRADOR</option><option>CANCELADO</option></select></div></div><div id="gomp-plans"></div></div></section><section class="gomp-panel" data-panel="calendar"><div class="gomp-card"><div class="gomp-card-head"><h3>Agenda preventiva</h3></div><div id="gomp-calendar"></div></div></section><section class="gomp-panel" data-panel="types"><div class="gomp-card"><div class="gomp-card-head"><h3>Tipos de mantenimiento</h3><button class="gomp-btn primary" id="gomp-new-type">Crear tipo</button></div><div class="gomp-type-grid" id="gomp-types"></div></div></section></div></div>`;
-  if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(wrapper,anchor);
-  else (q('#mainContent')||q('.main-content')||document.body).appendChild(wrapper);
   injectModals();
 }
 function injectModals(){var wrap=document.createElement('div');wrap.innerHTML=`<div class="gomp-modal" id="gomp-plan-modal"><div class="gomp-dialog"><div class="gomp-card-head"><div><h3>Crear plan preventivo</h3><small id="gomp-selected-count">0 agencias seleccionadas</small></div><button class="gomp-btn" data-close="gomp-plan-modal">Cerrar</button></div><div class="gomp-grid"><div class="gomp-field"><label>Nombre del plan</label><input id="gomp-name" placeholder="Mantenimiento de aires — Agosto 2026"></div><div class="gomp-field"><label>Tipo</label><select id="gomp-type"></select></div><div class="gomp-field"><label>Fecha inicial</label><input type="date" id="gomp-start"></div><div class="gomp-field"><label>Fecha límite</label><input type="date" id="gomp-limit"></div><div class="gomp-field"><label>Frecuencia</label><select id="gomp-frequency"><option value="UNICA">Única</option><option value="MENSUAL">Mensual</option><option value="TRIMESTRAL">Trimestral</option><option value="SEMESTRAL">Semestral</option><option value="ANUAL">Anual</option><option value="PERSONALIZADA">Personalizada</option></select></div><div class="gomp-field"><label>Responsable</label><input id="gomp-responsible" placeholder="Técnico, encargado o suplidor"></div><div class="gomp-field"><label>Filtrar grupo</label><select id="gomp-group-filter"></select></div><div class="gomp-field"><label>Buscar agencia</label><input id="gomp-agency-search" placeholder="Número, nombre o dirección"></div><div class="gomp-field full"><label>Agencias del plan</label><div class="gomp-picker" id="gomp-agency-picker"></div></div><div class="gomp-field full"><label>Observaciones</label><textarea id="gomp-notes" rows="3"></textarea></div></div><div class="gomp-actions" style="justify-content:flex-end;margin-top:15px"><button class="gomp-btn" id="gomp-select-visible">Seleccionar visibles</button><button class="gomp-btn danger" id="gomp-clear-selection">Limpiar</button><button class="gomp-btn primary" id="gomp-save-plan">Guardar plan</button></div></div></div><div class="gomp-modal" id="gomp-type-modal"><div class="gomp-dialog" style="width:min(620px,96vw)"><div class="gomp-card-head"><h3>Nuevo tipo de mantenimiento</h3><button class="gomp-btn" data-close="gomp-type-modal">Cerrar</button></div><div class="gomp-grid"><div class="gomp-field full"><label>Nombre</label><input id="gomp-type-name"></div><div class="gomp-field"><label>Frecuencia recomendada (días)</label><input type="number" id="gomp-type-days" min="1"></div><div class="gomp-field"><label>Evidencia obligatoria</label><select id="gomp-type-evidence"><option value="true">Sí</option><option value="false">No</option></select></div><div class="gomp-field full"><label>Descripción</label><textarea id="gomp-type-desc"></textarea></div><div class="gomp-field full"><label>Checklist (una tarea por línea)</label><textarea id="gomp-type-checklist" rows="7"></textarea></div></div><div class="gomp-actions" style="justify-content:flex-end;margin-top:15px"><button class="gomp-btn primary" id="gomp-save-type">Guardar tipo</button></div></div></div><div class="gomp-modal" id="gomp-detail-modal"><div class="gomp-dialog"><div class="gomp-card-head"><div><h3 id="gomp-detail-title">Detalle</h3><small id="gomp-detail-code"></small></div><button class="gomp-btn" data-close="gomp-detail-modal">Cerrar</button></div><div id="gomp-detail"></div></div></div>`;document.body.appendChild(wrap)}
-function injectNav(){var existing=q('#navPreventiveMaintenance');if(existing){existing.style.display='';return true}var menu=q('.sidebar-group[data-section="operaciones"] .sidebar-group-menu')||q('.sidebar-group[data-section="operaciones"] .sidebar-submenu');if(!menu)return false;var a=document.createElement('a');a.id='navPreventiveMaintenance';a.className='sidebar-link ops-subitem';a.href='javascript:void(0)';a.innerHTML='<i class="fas fa-shield-heart"></i><span>Mantenimiento preventivo</span>';a.onclick=function(e){if(e)e.preventDefault();open(a);return false};var ref=q('#navHistory',menu);ref?menu.insertBefore(a,ref):menu.appendChild(a);a.style.display='';return true}
-function installNavigationBridge(){
-  if(global.__gompNavigationBridgeVersion==='805.30C') return;
-  var original=global.cambiarVista;
-  global.cambiarVista=function(vista,el){
-    var own=q('#vista-ops-mantenimiento');
-    if(vista==='ops-mantenimiento'){
-      qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden')});
-      if(own){
-        own.classList.remove('hidden');
-        own.style.display='block';
-      }
-      qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
-      if(el) el.classList.add('active');
-      if(typeof global.setSidebarSectionOpen==='function') global.setSidebarSectionOpen('operaciones',true);
-      return;
-    }
-    if(own){
-      own.classList.add('hidden');
-      own.style.display='';
-    }
-    if(typeof original==='function') return original.apply(this,arguments);
-  };
-  try{ cambiarVista=global.cambiarVista }catch(e){}
-  global.__gompNavigationBridgeVersion='805.30C';
+function injectNav(){
+  var a=q('#navPreventiveMaintenance');
+  if(!a){
+    var menu=q('.sidebar-group[data-section="operaciones"] .sidebar-group-menu');
+    if(!menu)return false;
+    a=document.createElement('a');
+    a.id='navPreventiveMaintenance';
+    a.className='sidebar-link ops-subitem';
+    a.innerHTML='<i class="fas fa-shield-heart"></i><span>Mantenimiento preventivo</span>';
+    var ref=q('#navHistory',menu);
+    ref?menu.insertBefore(a,ref):menu.appendChild(a);
+  }
+  a.href='#';
+  a.onclick=function(e){if(e){e.preventDefault();e.stopPropagation();}open(a);return false};
+  a.style.display='';
+  return true;
 }
+function installNavigationBridge(){ return true; }
 function hideOther(nav){
   installNavigationBridge();
   var own=q('#vista-ops-mantenimiento');
-  qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden')});
+  qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden');node.style.display=''});
   if(own){
     own.classList.remove('hidden');
-    own.style.display='block';
+    own.style.setProperty('display','block','important');
+    qa('.view.hidden',own).forEach(function(node){node.classList.remove('hidden')});
   }
   qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
   if(nav) nav.classList.add('active');
   if(typeof global.setSidebarSectionOpen==='function') global.setSidebarSectionOpen('operaciones',true);
 }
 function open(nav){
-  if(!canView()){toast('No tienes permiso para ver este módulo.','error');return}
   hideOther(nav||q('#navPreventiveMaintenance'));
   loadAll();
   try{global.scrollTo({top:0,behavior:'smooth'})}catch(e){global.scrollTo(0,0)}
@@ -101,7 +96,7 @@ async function saveType(){var c=db(),name=tx(q('#gomp-type-name').value);if(!nam
 async function showDetail(id){var c=db();try{var r=await c.from('mantenimiento_planes').select('*, mantenimiento_tipos(*), mantenimiento_plan_agencias(*)').eq('id',id).single();if(r.error)throw r.error;state.detalle=r.data;var p=r.data,z=progress(p);q('#gomp-detail-title').textContent=p.nombre;q('#gomp-detail-code').textContent=(p.codigo||'')+' · '+statusLabel(p.estado);var amap=new Map(agencies().map(a=>[aid(a),a]));q('#gomp-detail').innerHTML='<div class="gomp-detail-grid"><div class="gomp-stat"><span>Tipo</span><strong style="font-size:16px">'+esc(p.mantenimiento_tipos&&p.mantenimiento_tipos.nombre)+'</strong></div><div class="gomp-stat"><span>Fecha</span><strong style="font-size:16px">'+fmtDate(p.fecha_inicio)+'</strong></div><div class="gomp-stat"><span>Avance</span><strong style="font-size:16px">'+z.done+'/'+z.total+' ('+z.pct+'%)</strong></div></div><div style="overflow:auto"><table class="gomp-table"><thead><tr><th>#</th><th>Agencia</th><th>Grupo</th><th>Estado</th><th>Actualizar</th></tr></thead><tbody>'+(p.mantenimiento_plan_agencias||[]).sort((a,b)=>a.orden-b.orden).map(function(x){var a=amap.get(x.agencia_id),g=a&&groupForAgency(a);return '<tr><td>'+x.orden+'</td><td><b>AG '+esc(a?anum(a):x.agencia_id)+'</b><br><small>'+esc(a?aname(a):'')+'</small></td><td>'+esc(glabel(g))+'</td><td><span class="gomp-badge '+statusClass(x.estado)+'">'+esc(statusLabel(x.estado))+'</span></td><td><select data-state-id="'+x.id+'"><option '+(x.estado==='PENDIENTE'?'selected':'')+'>PENDIENTE</option><option '+(x.estado==='EN_PROCESO'?'selected':'')+'>EN_PROCESO</option><option '+(x.estado==='COMPLETADO'?'selected':'')+'>COMPLETADO</option><option '+(x.estado==='AGENCIA_CERRADA'?'selected':'')+'>AGENCIA_CERRADA</option><option '+(x.estado==='REQUIERE_REPARACION'?'selected':'')+'>REQUIERE_REPARACION</option><option '+(x.estado==='REQUIERE_PIEZAS'?'selected':'')+'>REQUIERE_PIEZAS</option><option '+(x.estado==='REQUIERE_NUEVA_VISITA'?'selected':'')+'>REQUIERE_NUEVA_VISITA</option></select></td></tr>'}).join('')+'</tbody></table></div>';qa('[data-state-id]',q('#gomp-detail')).forEach(s=>s.onchange=()=>updateAgencyState(s.dataset.stateId,s.value));q('#gomp-detail-modal').classList.add('open')}catch(e){err(e)}}
 async function updateAgencyState(id,status){if(!canManage())return;var c=db(),payload={estado:status,actualizado_en:new Date().toISOString()};if(status==='COMPLETADO')payload.fecha_completada=new Date().toISOString();try{var r=await c.from('mantenimiento_plan_agencias').update(payload).eq('id',id);if(r.error)throw r.error;toast('Estado actualizado.','success');await loadAll();showDetail(state.detalle.id)}catch(e){err(e)}}
 function bind(){if(state.initialized)return;state.initialized=true;qa('.gomp-tab').forEach(b=>b.onclick=function(){qa('.gomp-tab').forEach(x=>x.classList.remove('active'));qa('.gomp-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');q('[data-panel="'+b.dataset.tab+'"]').classList.add('active')});q('#gomp-refresh').onclick=loadAll;q('#gomp-new').onclick=openPlan;q('#gomp-new-type').onclick=()=>q('#gomp-type-modal').classList.add('open');q('#gomp-filter-status').onchange=renderPlans;q('#gomp-group-filter').onchange=renderPicker;q('#gomp-agency-search').oninput=renderPicker;q('#gomp-select-visible').onclick=()=>{visibleAgencies().forEach(a=>state.selected.add(aid(a)));renderPicker()};q('#gomp-clear-selection').onclick=()=>{state.selected.clear();renderPicker()};q('#gomp-save-plan').onclick=savePlan;q('#gomp-save-type').onclick=saveType;qa('[data-close]').forEach(b=>b.onclick=()=>q('#'+b.dataset.close).classList.remove('open'));qa('.gomp-modal').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove('open')})}
-function init(){injectStyle();injectView();installNavigationBridge();injectNav();bind();var tries=0,timer=setInterval(function(){tries++;if(injectNav()||tries>=20)clearInterval(timer)},500);document.addEventListener('loteka:session-ready',injectNav);document.addEventListener('goapp:state-change',injectNav);if(rt())try{rt().modules.register('mantenimiento-preventivo',{version:VERSION,open:open,refresh:loadAll})}catch(e){}}
+function init(){injectStyle();injectView();injectNav();bind();document.addEventListener('loteka:session-ready',injectNav);if(rt())try{rt().modules.register('mantenimiento-preventivo',{version:VERSION,open:open,refresh:loadAll})}catch(e){}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else setTimeout(init,0);
 global.GOMantenimientoPreventivo={version:VERSION,open:open,refresh:loadAll};
 })(window);
