@@ -355,27 +355,73 @@
     return Number.isFinite(n) ? n : null;
   }
   function supabaseRebuildUIAfterAgencias(){
-    const calls = [
+    // V805.27: pintar primero solo lo visible y posponer trabajos pesados.
+    const immediate = [
       'syncClosedAgenciesGroup',
-      'lotekaPopulateAgencyAdminFilters',
-      'renderAgencias',
-      'renderGrupos',
       'actualizarDashboardHome',
       'homeUpdateAgencyDashboard',
-      'homeRenderAgencyPanel',
-      'agencyMapRefresh',
-      'llenarSelectsTransferencia',
-      'populateOperationAgencyOptions',
-      'populateEditOperationAgencyOptions'
+      'homeRenderDashboard'
     ];
-    calls.forEach(function(fn){
-      try{
-        if(typeof window[fn] === 'function'){
-          if(fn === 'agencyMapRefresh') window[fn](typeof agencias !== 'undefined' ? agencias : window.agencias);
-          else window[fn]();
-        }
-      }catch(err){ console.warn('Refresh post Supabase:', fn, err && err.message ? err.message : err); }
+    immediate.forEach(function(fn){
+      try{ if(typeof window[fn] === 'function') window[fn](); }
+      catch(err){ console.warn('Refresh inmediato post Supabase:', fn, err && err.message ? err.message : err); }
     });
+
+    const deferred = function(){
+      const calls = [
+        'lotekaPopulateAgencyAdminFilters',
+        'renderAgencias',
+        'renderGrupos',
+        'homeRenderAgencyPanel',
+        'llenarSelectsTransferencia',
+        'populateOperationAgencyOptions',
+        'populateEditOperationAgencyOptions'
+      ];
+      calls.forEach(function(fn){
+        try{ if(typeof window[fn] === 'function') window[fn](); }
+        catch(err){ console.warn('Refresh diferido post Supabase:', fn, err && err.message ? err.message : err); }
+      });
+      try{
+        const mapPanel = document.getElementById('homeAgencyMapPanel');
+        const mapVisible = mapPanel && !mapPanel.classList.contains('hidden') && mapPanel.offsetParent !== null;
+        if(mapVisible && typeof window.agencyMapRefresh === 'function'){
+          window.agencyMapRefresh(typeof agencias !== 'undefined' ? agencias : window.agencias);
+        }
+      }catch(err){ console.warn('Refresh diferido del mapa:', err && err.message ? err.message : err); }
+    };
+    if(typeof window.requestIdleCallback === 'function') window.requestIdleCallback(deferred, { timeout: 1200 });
+    else setTimeout(deferred, 80);
+  }
+
+  const AGENCIAS_CACHE_KEY = 'loteka.catalogo.agencias-grupos.v80527';
+  const AGENCIAS_CACHE_TTL = 6 * 60 * 60 * 1000;
+  function readPersistentAgenciasCache(){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(AGENCIAS_CACHE_KEY) || 'null');
+      if(!parsed || !Array.isArray(parsed.agencias) || !Array.isArray(parsed.grupos)) return null;
+      if(!parsed.savedAt || (Date.now() - Number(parsed.savedAt)) > AGENCIAS_CACHE_TTL) return null;
+      return parsed;
+    }catch(_e){ return null; }
+  }
+  function writePersistentAgenciasCache(agencyRows, groupRows){
+    try{
+      localStorage.setItem(AGENCIAS_CACHE_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        agencias: agencyRows,
+        grupos: groupRows
+      }));
+    }catch(_e){}
+  }
+  function applyPersistentAgenciasCache(cached){
+    if(!cached) return false;
+    agencias = cached.agencias;
+    grupos = cached.grupos;
+    window.agencias = agencias;
+    window.grupos = grupos;
+    window.lotekaAgenciasSource = 'supabase-cache';
+    window.lotekaGruposSource = 'supabase-cache';
+    supabaseRebuildUIAfterAgencias();
+    return true;
   }
   async function fetchSupabaseAllRows(tableName, selectColumns, options){
     options = options || {};
@@ -403,6 +449,20 @@
 
   async function loadSupabaseAgenciasGrupos(force){
     if(!state.client) return false;
+
+    // V805.27: usar el último catálogo real de Supabase inmediatamente.
+    // La actualización remota ocurre en segundo plano y solo repinta si termina correctamente.
+    if(!force){
+      const cached = readPersistentAgenciasCache();
+      if(cached && applyPersistentAgenciasCache(cached)){
+        setTimeout(function(){
+          loadSupabaseAgenciasGrupos(true).catch(function(err){
+            console.warn('[LOTEKA] Actualización silenciosa de agencias:', err && err.message ? err.message : err);
+          });
+        }, 120);
+        return true;
+      }
+    }
     try{
       const localAgencias = (typeof agencias !== 'undefined' && Array.isArray(agencias)) ? agencias : (Array.isArray(window.agencias) ? window.agencias : []);
       const localGrupos = (typeof grupos !== 'undefined' && Array.isArray(grupos)) ? grupos : (Array.isArray(window.grupos) ? window.grupos : []);
@@ -413,8 +473,8 @@
       // Por eso aquí se pagina de 1000 en 1000 para traer TODAS las agencias.
       const rawCatalog = await goFetch('catalogo:agencias-grupos:raw', async function(){
         const rows = await Promise.all([
-          fetchSupabaseAllRows('grupos', '*', { orderColumn: 'codigo', pageSize: 1000 }),
-          fetchSupabaseAllRows('agencias', '*, grupos(id,codigo,nombre,encargado,telefono,correo,color)', { orderColumn: 'numero', pageSize: 1000 })
+          fetchSupabaseAllRows('grupos', 'id,codigo,nombre,encargado,telefono,correo,color', { orderColumn: 'codigo', pageSize: 1000 }),
+          fetchSupabaseAllRows('agencias', 'id,numero,nombre,grupo_id,tipo,estado,latitud,longitud,direccion,sector,municipio,provincia,telefono,correo,observaciones,fecha_creacion,activo,estado_operativo,grupos(id,codigo,nombre,encargado,telefono,correo,color)', { orderColumn: 'numero', pageSize: 1000 })
         ]);
         return { remoteGroups: rows[0] || [], remoteAgencies: rows[1] || [] };
       }, { ttl: 120000, force: !!force });
@@ -513,6 +573,7 @@
       window.grupos = grupos;
       window.lotekaAgenciasSource = 'supabase';
       window.lotekaGruposSource = 'supabase';
+      writePersistentAgenciasCache(remoteAgencyList, remoteGroupList);
       supabaseRebuildUIAfterAgencias();
       return true;
     }catch(err){
