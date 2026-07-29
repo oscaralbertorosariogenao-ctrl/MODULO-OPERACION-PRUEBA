@@ -1,0 +1,6 @@
+
+  .agency-v42-note{display:flex;align-items:flex-start;gap:10px;margin:12px 0 16px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#f5fbff,#e8f7fc);border:1px solid #bfe7f3;color:#0b5577;font-weight:850;box-shadow:0 10px 24px rgba(13,158,207,.08)}
+  .agency-v42-note i{width:34px;height:34px;display:grid;place-items:center;border-radius:12px;background:#dff7fe;color:#0786b4;flex:0 0 auto}
+  .agency-v42-note small{display:block;margin-top:3px;color:#607d94;font-weight:700;line-height:1.35}
+  .agency-inv-chip.installed{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+  .agency-inv-chip.pending{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
