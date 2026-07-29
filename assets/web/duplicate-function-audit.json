@@ -1,0 +1,2116 @@
+{
+  "duplicate_named_function_declarations": {
+    "$": [
+      {
+        "path": "assets/web/js/legacy/041-loteka-v180-account-menu-js.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/legacy/042-go-enterprise-v210-script.js",
+        "line": 3
+      },
+      {
+        "path": "assets/web/js/reportes/027-loteka-reportes-consulta-v47-js.js",
+        "line": 3
+      }
+    ],
+    "aName": [
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 22
+      }
+    ],
+    "addSerialToWarehouse": [
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 70
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 46
+      }
+    ],
+    "agencyDigits": [
+      {
+        "path": "assets/web/js/core/002-let-productos.js",
+        "line": 2923
+      },
+      {
+        "path": "assets/web/js/operaciones/057-loteka-v302-operaciones-grupo-notificaciones.js",
+        "line": 11
+      }
+    ],
+    "agencyLabel": [
+      {
+        "path": "assets/web/js/agencias/019-loteka-home-estados-agencias-v67-js.js",
+        "line": 58
+      },
+      {
+        "path": "assets/web/js/dashboard/018-loteka-home-type-filters-v57-js.js",
+        "line": 59
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 253
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 92
+      }
+    ],
+    "agencyName": [
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 81
+      }
+    ],
+    "aliases": [
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 26
+      }
+    ],
+    "applyPhotos": [
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 131
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 225
+      }
+    ],
+    "arr": [
+      {
+        "path": "assets/web/js/agencias/058-loteka-v301-agency-operational-movements-fix.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 14
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/operaciones/056-loteka-v300-operaciones-supabase-r2-bridge.js",
+        "line": 24
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 43
+      }
+    ],
+    "bind": [
+      {
+        "path": "assets/web/js/dashboard/061-loteka-v246-no-autohome-safe.js",
+        "line": 81
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 1664
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 847
+      }
+    ],
+    "boot": [
+      {
+        "path": "assets/web/js/agencias/019-loteka-home-estados-agencias-v67-js.js",
+        "line": 211
+      },
+      {
+        "path": "assets/web/js/agencias/028-loteka-agency-creation-date-v55-js.js",
+        "line": 82
+      },
+      {
+        "path": "assets/web/js/anuncios/054-loteka-v49-anuncios-filtros-fecha-hoy.js",
+        "line": 93
+      },
+      {
+        "path": "assets/web/js/dashboard/018-loteka-home-type-filters-v57-js.js",
+        "line": 137
+      },
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 174
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 1712
+      },
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 239
+      },
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 300
+      },
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 269
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 514
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 163
+      },
+      {
+        "path": "assets/web/js/legacy/042-go-enterprise-v210-script.js",
+        "line": 24
+      },
+      {
+        "path": "assets/web/js/operaciones/056-loteka-v300-operaciones-supabase-r2-bridge.js",
+        "line": 598
+      },
+      {
+        "path": "assets/web/js/operaciones/057-loteka-v302-operaciones-grupo-notificaciones.js",
+        "line": 160
+      },
+      {
+        "path": "assets/web/js/pwa/068-loteka-capa7-version-safe-update.js",
+        "line": 200
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 216
+      },
+      {
+        "path": "assets/web/js/ui/046-loteka-v218-mobile-safe-js.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 302
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 293
+      }
+    ],
+    "byId": [
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 18
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/operaciones/035-loteka-v162-operaciones-rescate-real.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 29
+      }
+    ],
+    "cambiarVista": [
+      {
+        "path": "assets/web/js/core/002-let-productos.js",
+        "line": 903
+      },
+      {
+        "path": "assets/web/js/core/006-function-setsidebarsectionopen-sectionname-forceopen.js",
+        "line": 49
+      }
+    ],
+    "changeAgencyTab": [
+      {
+        "path": "assets/web/js/agencias/045-loteka-v216-agency-filter-js.js",
+        "line": 204
+      },
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 199
+      }
+    ],
+    "clean": [
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/034-loteka-v149-entrada-no-serializado-hard-fix.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/levantamientos/009-script-009.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/notificaciones/053-loteka-v48-notificaciones-anuncios-comentarios-safe.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/operaciones/057-loteka-v302-operaciones-grupo-notificaciones.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 31
+      },
+      {
+        "path": "assets/web/js/pwa/069-loteka-live-server-visible-code-cleanup.js",
+        "line": 4
+      }
+    ],
+    "cleanText": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 33
+      }
+    ],
+    "clearTemp": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 31
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 123
+      }
+    ],
+    "client": [
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 69
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/operaciones/056-loteka-v300-operaciones-supabase-r2-bridge.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 18
+      }
+    ],
+    "clone": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 56
+      },
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 9
+      }
+    ],
+    "closeModal": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 1139
+      },
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 44
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 183
+      }
+    ],
+    "currentIndex": [
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 35
+      }
+    ],
+    "currentUserId": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 48
+      },
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 15
+      }
+    ],
+    "currentUserName": [
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 24
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 26
+      }
+    ],
+    "dateInputToISO": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 44
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 92
+      }
+    ],
+    "dateObj": [
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 55
+      }
+    ],
+    "digits": [
+      {
+        "path": "assets/web/js/agencias/058-loteka-v301-agency-operational-movements-fix.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 20
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 45
+      }
+    ],
+    "done": [
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 163
+      },
+      {
+        "path": "assets/web/js/ui/044-go-v211-toasts-confirm-detail-js.js",
+        "line": 37
+      }
+    ],
+    "el": [
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/agencias/038-loteka-v174-agencia-grupo-dropdown-limpio-encargado-auto.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/034-loteka-v149-entrada-no-serializado-hard-fix.js",
+        "line": 4
+      }
+    ],
+    "ensureModal": [
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 32
+      },
+      {
+        "path": "assets/web/js/reportes/027-loteka-reportes-consulta-v47-js.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 171
+      }
+    ],
+    "esc": [
+      {
+        "path": "assets/web/js/agencias/019-loteka-home-estados-agencias-v67-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/agencias/058-loteka-v301-agency-operational-movements-fix.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/agencias/062-loteka-v239-estado-agencia-index-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/dashboard/018-loteka-home-type-filters-v57-js.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 30
+      },
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/inventario/032-loteka-v142-movimientos-almacen-consulta.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 18
+      },
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 35
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 42
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 38
+      },
+      {
+        "path": "assets/web/js/reportes/027-loteka-reportes-consulta-v47-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/ui/044-go-v211-toasts-confirm-detail-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 17
+      }
+    ],
+    "escapeHtml": [
+      {
+        "path": "assets/web/js/agencias/038-loteka-v174-agencia-grupo-dropdown-limpio-encargado-auto.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 2817
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 14
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 15
+      }
+    ],
+    "fechaCorta": [
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 19
+      }
+    ],
+    "fillEntrySelects": [
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 168
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 319
+      }
+    ],
+    "fillSelects": [
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 39
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 180
+      }
+    ],
+    "filteredRows": [
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 99
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 468
+      }
+    ],
+    "findProduct": [
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 101
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 21
+      }
+    ],
+    "findProfile": [
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 43
+      }
+    ],
+    "first": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 80
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 16
+      }
+    ],
+    "fmtDate": [
+      {
+        "path": "assets/web/js/agencias/058-loteka-v301-agency-operational-movements-fix.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 27
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 73
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 92
+      }
+    ],
+    "formatDate": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 57
+      },
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 626
+      },
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 70
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 36
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 52
+      }
+    ],
+    "friendly": [
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 25
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 35
+      }
+    ],
+    "getAgencias": [
+      {
+        "path": "assets/web/js/agencias/028-loteka-agency-creation-date-v55-js.js",
+        "line": 24
+      },
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 14
+      }
+    ],
+    "getAgency": [
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 48
+      }
+    ],
+    "getAlmacenes": [
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 20
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 18
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 15
+      }
+    ],
+    "getCode": [
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 49
+      }
+    ],
+    "getEntryItems": [
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 129
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 29
+      }
+    ],
+    "getItemsEntrada": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 19
+      }
+    ],
+    "getLocal": [
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 35
+      }
+    ],
+    "getProductos": [
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 21
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 15
+      }
+    ],
+    "getReporter": [
+      {
+        "path": "assets/web/js/agencias/062-loteka-v239-estado-agencia-index-js.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 43
+      }
+    ],
+    "getSerialesTemp": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 21
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 22
+      }
+    ],
+    "groupCode": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 80
+      }
+    ],
+    "groupLabel": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 261
+      },
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 136
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 93
+      }
+    ],
+    "groupName": [
+      {
+        "path": "assets/web/js/agencias/019-loteka-home-estados-agencias-v67-js.js",
+        "line": 64
+      },
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/dashboard/018-loteka-home-type-filters-v57-js.js",
+        "line": 55
+      }
+    ],
+    "guessLabelFromName": [
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 49
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 98
+      }
+    ],
+    "hideOpsInnerViews": [
+      {
+        "path": "assets/web/js/operaciones/035-loteka-v162-operaciones-rescate-real.js",
+        "line": 37
+      },
+      {
+        "path": "assets/web/js/reportes/040-loteka-v179-reportes-catalogos-direct-fix.js",
+        "line": 27
+      }
+    ],
+    "hideToast": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 149
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 349
+      }
+    ],
+    "idOf": [
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 14
+      }
+    ],
+    "install": [
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 213
+      },
+      {
+        "path": "assets/web/js/agencias/062-loteka-v239-estado-agencia-index-js.js",
+        "line": 116
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 36
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 447
+      },
+      {
+        "path": "assets/web/js/legacy/041-loteka-v180-account-menu-js.js",
+        "line": 96
+      }
+    ],
+    "isCompleted": [
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 21
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 189
+      }
+    ],
+    "isEncargadoUser": [
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 507
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 39
+      }
+    ],
+    "isToday": [
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 163
+      }
+    ],
+    "key": [
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/ui/044-go-v211-toasts-confirm-detail-js.js",
+        "line": 38
+      }
+    ],
+    "low": [
+      {
+        "path": "assets/web/js/agencias/062-loteka-v239-estado-agencia-index-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 32
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 12
+      }
+    ],
+    "minutesBetween": [
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 989
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 83
+      }
+    ],
+    "movementTime": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 624
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 32
+      }
+    ],
+    "norm": [
+      {
+        "path": "assets/web/js/agencias/038-loteka-v174-agencia-grupo-dropdown-limpio-encargado-auto.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/agencias/058-loteka-v301-agency-operational-movements-fix.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/inventario/032-loteka-v142-movimientos-almacen-consulta.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/034-loteka-v149-entrada-no-serializado-hard-fix.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 11
+      }
+    ],
+    "normalizarEstadoAgencia": [
+      {
+        "path": "assets/web/js/core/002-let-productos.js",
+        "line": 438
+      },
+      {
+        "path": "assets/web/js/core/004-const-reportes-table-reportes-operaciones.js",
+        "line": 139
+      }
+    ],
+    "normalizeAlmacen": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 83
+      }
+    ],
+    "nowISO": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 14
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 11
+      }
+    ],
+    "nowInput": [
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 24
+      }
+    ],
+    "nowIso": [
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 419
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 24
+      },
+      {
+        "path": "assets/web/js/operaciones/056-loteka-v300-operaciones-supabase-r2-bridge.js",
+        "line": 25
+      }
+    ],
+    "num": [
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 21
+      },
+      {
+        "path": "assets/web/js/legacy/055-loteka-v160-carga-masiva-grupos-ortiz.js",
+        "line": 14
+      }
+    ],
+    "onlyDigits": [
+      {
+        "path": "assets/web/js/levantamientos/009-script-009.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 34
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 13
+      }
+    ],
+    "openModal": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 1121
+      },
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 43
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 182
+      }
+    ],
+    "openView": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 158
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 706
+      }
+    ],
+    "pName": [
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 21
+      }
+    ],
+    "pad": [
+      {
+        "path": "assets/web/js/agencias/028-loteka-agency-creation-date-v55-js.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/anuncios/054-loteka-v49-anuncios-filtros-fecha-hoy.js",
+        "line": 20
+      },
+      {
+        "path": "assets/web/js/dashboard/018-loteka-home-type-filters-v57-js.js",
+        "line": 21
+      }
+    ],
+    "padAgency": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/legacy/055-loteka-v160-carga-masiva-grupos-ortiz.js",
+        "line": 9
+      }
+    ],
+    "parseDate": [
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 16
+      }
+    ],
+    "patch": [
+      {
+        "path": "assets/web/js/dashboard/061-loteka-v246-no-autohome-safe.js",
+        "line": 59
+      },
+      {
+        "path": "assets/web/js/notificaciones/053-loteka-v48-notificaciones-anuncios-comentarios-safe.js",
+        "line": 46
+      }
+    ],
+    "photosFromRow": [
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 71
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 135
+      }
+    ],
+    "prodSerializado": [
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 20
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 35
+      }
+    ],
+    "productLabel": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 243
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 89
+      }
+    ],
+    "productMeta": [
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 22
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 41
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 26
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 25
+      }
+    ],
+    "productName": [
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 184
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 20
+      }
+    ],
+    "productoInfo": [
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 178
+      },
+      {
+        "path": "assets/web/js/inventario/032-loteka-v142-movimientos-almacen-consulta.js",
+        "line": 68
+      }
+    ],
+    "profileName": [
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 132
+      },
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 52
+      }
+    ],
+    "publicUrl": [
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 45
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 57
+      }
+    ],
+    "qs": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/anuncios/054-loteka-v49-anuncios-filtros-fecha-hoy.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/usuarios/020-loteka-v86-auth-permissions-js.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 14
+      }
+    ],
+    "qsa": [
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 16
+      }
+    ],
+    "relName": [
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 16
+      }
+    ],
+    "renderAll": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 125
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 1010
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 118
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 155
+      }
+    ],
+    "renderDashboard": [
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 1743
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 76
+      }
+    ],
+    "renderDetail": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 132
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 424
+      }
+    ],
+    "renderEntryItems": [
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 137
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 45
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 226
+      }
+    ],
+    "renderHistory": [
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 1537
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 976
+      }
+    ],
+    "renderItems": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 29
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 242
+      }
+    ],
+    "requiereSerial": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 27
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 19
+      }
+    ],
+    "rowsWithPhotos": [
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 191
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 286
+      }
+    ],
+    "same": [
+      {
+        "path": "assets/web/js/inventario/032-loteka-v142-movimientos-almacen-consulta.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 11
+      }
+    ],
+    "sb": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 14
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/inventario/032-loteka-v142-movimientos-almacen-consulta.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 14
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 8
+      }
+    ],
+    "selectedText": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 111
+      }
+    ],
+    "selectedValue": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 112
+      }
+    ],
+    "serialCode": [
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 19
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 29
+      }
+    ],
+    "serialLabel": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 273
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 184
+      }
+    ],
+    "setAlmacenes": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 18
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 13
+      }
+    ],
+    "setEntradas": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 84
+      }
+    ],
+    "setEntryItems": [
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 130
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 37
+      }
+    ],
+    "setItemsEntrada": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 20
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 20
+      }
+    ],
+    "setLocal": [
+      {
+        "path": "assets/web/js/inventario/023-loteka-v95-inventario-stock-persistente-no-reset.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 40
+      }
+    ],
+    "setProductos": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 17
+      }
+    ],
+    "setSerialesTemp": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 22
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 21
+      }
+    ],
+    "setText": [
+      {
+        "path": "assets/web/js/agencias/019-loteka-home-estados-agencias-v67-js.js",
+        "line": 75
+      },
+      {
+        "path": "assets/web/js/dashboard/066-loteka-centro-mando-v2-js.js",
+        "line": 7
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 41
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/usuarios/020-loteka-v86-auth-permissions-js.js",
+        "line": 17
+      }
+    ],
+    "showToast": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 148
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 347
+      }
+    ],
+    "slug": [
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 5
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/levantamientos/010-script-010.js",
+        "line": 37
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 44
+      }
+    ],
+    "statusBadge": [
+      {
+        "path": "assets/web/js/core/005-const-demo-user-email-admin-empresa-com-password-1234.js",
+        "line": 940
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 290
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 34
+      }
+    ],
+    "supa": [
+      {
+        "path": "assets/web/js/legacy/063-loteka-v243-tecnico-nombre-real.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 17
+      }
+    ],
+    "supabaseClient": [
+      {
+        "path": "assets/web/js/agencias/021-loteka-v88-agencias-grupos-supabase-escritura.js",
+        "line": 51
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 352
+      }
+    ],
+    "tempSeriales": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 30
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 113
+      }
+    ],
+    "toast": [
+      {
+        "path": "assets/web/js/agencias/045-loteka-v216-agency-filter-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 88
+      },
+      {
+        "path": "assets/web/js/despachos/075-loteka-v603-entrega-directa-destinos-js.js",
+        "line": 20
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 29
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 61
+      },
+      {
+        "path": "assets/web/js/operaciones/056-loteka-v300-operaciones-supabase-r2-bridge.js",
+        "line": 27
+      },
+      {
+        "path": "assets/web/js/operaciones/060-loteka-v231-whatsapp-operacion-js.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/usuarios/059-loteka-v228-catalogo-usuarios-supabase-real.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/usuarios/076-loteka-v308-access-manager-js.js",
+        "line": 29
+      }
+    ],
+    "todayKey": [
+      {
+        "path": "assets/web/js/anuncios/054-loteka-v49-anuncios-filtros-fecha-hoy.js",
+        "line": 21
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 13
+      }
+    ],
+    "txt": [
+      {
+        "path": "assets/web/js/agencias/029-loteka-v89-boton-guardar-detalle-agencia-supabase.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/agencias/038-loteka-v174-agencia-grupo-dropdown-limpio-encargado-auto.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/agencias/058-loteka-v301-agency-operational-movements-fix.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/agencias/062-loteka-v239-estado-agencia-index-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 18
+      },
+      {
+        "path": "assets/web/js/inventario/032-loteka-v142-movimientos-almacen-consulta.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/inventario/047-loteka-v221-almacenes-movimientos-js.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 16
+      },
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/legacy/064-loteka-v244-nombres-reales-definitivo.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/levantamientos/011-script-011.js",
+        "line": 40
+      },
+      {
+        "path": "assets/web/js/operaciones/056-loteka-v300-operaciones-supabase-r2-bridge.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 8
+      },
+      {
+        "path": "assets/web/js/taller/071-loteka-taller-v2-transferencias-notificaciones-final-fix.js",
+        "line": 10
+      }
+    ],
+    "uid": [
+      {
+        "path": "assets/web/js/anuncios/051-loteka-v37-anuncios-js.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 10
+      }
+    ],
+    "updateCounters": [
+      {
+        "path": "assets/web/js/anuncios/054-loteka-v49-anuncios-filtros-fecha-hoy.js",
+        "line": 61
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 211
+      }
+    ],
+    "upper": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 6
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 9
+      },
+      {
+        "path": "assets/web/js/inventario/048-loteka-v17-csv-entradas-y-movimientos-js.js",
+        "line": 10
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 22
+      }
+    ],
+    "userId": [
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 15
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 32
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 18
+      }
+    ],
+    "userName": [
+      {
+        "path": "assets/web/js/inventario/016-loteka-v42-movimiento-refresh-js.js",
+        "line": 18
+      },
+      {
+        "path": "assets/web/js/inventario/022-loteka-v93-entrada-stock-real-fix.js",
+        "line": 13
+      },
+      {
+        "path": "assets/web/js/inventario/030-loteka-v92-entrada-productos-supabase-fix.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/039-loteka-v176-salida-inventario-js.js",
+        "line": 14
+      },
+      {
+        "path": "assets/web/js/notificaciones/036-loteka-v168-notificaciones-filtros-pro-js.js",
+        "line": 26
+      },
+      {
+        "path": "assets/web/js/taller/070-loteka-taller-v2-js.js",
+        "line": 17
+      }
+    ],
+    "uuid": [
+      {
+        "path": "assets/web/js/inventario/024-loteka-v100-entrada-final-estable-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/inventario/031-loteka-v141-agencias-ficha-almacen-real.js",
+        "line": 23
+      },
+      {
+        "path": "assets/web/js/inventario/033-loteka-v148-entrada-no-serializado-fix.js",
+        "line": 11
+      },
+      {
+        "path": "assets/web/js/inventario/072-loteka-v153-entradas-agrupadas-reales-fix.js",
+        "line": 17
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 20
+      }
+    ],
+    "val": [
+      {
+        "path": "assets/web/js/reportes/027-loteka-reportes-consulta-v47-js.js",
+        "line": 4
+      },
+      {
+        "path": "assets/web/js/ui/044-go-v211-toasts-confirm-detail-js.js",
+        "line": 42
+      }
+    ],
+    "value": [
+      {
+        "path": "assets/web/js/legacy/025-loteka-v44-guardar-refresh-js.js",
+        "line": 12
+      },
+      {
+        "path": "assets/web/js/operaciones/065-loteka-v300-rendimiento-js.js",
+        "line": 60
+      }
+    ],
+    "warehouseLabel": [
+      {
+        "path": "assets/web/js/despachos/073-loteka-v410-control-despachos-rpc-js.js",
+        "line": 237
+      },
+      {
+        "path": "assets/web/js/inventario/074-loteka-v502-inventario-rpc-canonico.js",
+        "line": 91
+      }
+    ]
+  }
+}
