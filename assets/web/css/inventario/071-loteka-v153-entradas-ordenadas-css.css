@@ -1,0 +1,18 @@
+
+  #vista-entrada .ltk-entry-product-cell{display:grid;gap:4px;line-height:1.25}
+  #vista-entrada .ltk-entry-product-cell strong{font-size:14px;color:#0a385a}
+  #vista-entrada .ltk-entry-product-cell small{font-size:12px;color:#60788c;font-weight:800;display:block;max-width:720px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #vista-entrada .ltk-entry-code{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 10px;background:#eef8ff;border:1px solid #cce8f5;color:#075f89;font-weight:1000}
+  #vista-entrada .ltk-entry-date-chip{display:grid;gap:3px;line-height:1.1}
+  #vista-entrada .ltk-entry-date-chip strong{font-size:13px;color:#0a385a}
+  #vista-entrada .ltk-entry-date-chip span{font-size:12px;color:#6f879a;font-weight:850}
+  .ltk-entry-detail-head{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
+  .ltk-entry-detail-card{border:1px solid #d8eaf4;border-radius:18px;background:linear-gradient(180deg,#fff,#f8fcff);padding:16px}
+  .ltk-entry-detail-card h4{margin:0 0 6px;color:#0a385a;font-size:18px}.ltk-entry-detail-card p{margin:0;color:#60788c;font-weight:850;line-height:1.45}
+  .ltk-entry-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ltk-entry-mini{border:1px solid #dcebf3;border-radius:14px;background:#fff;padding:12px}.ltk-entry-mini b{display:block;font-size:11px;color:#71889b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}.ltk-entry-mini span{font-weight:1000;color:#0a385a;font-size:14px}
+
+  #vista-entrada .ltk-entry-pager{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0 4px;flex-wrap:wrap}
+  #vista-entrada .ltk-entry-pager button{min-width:36px;height:36px;border:1px solid #d4e7f2;background:#fff;color:#0a385a;border-radius:12px;font-weight:900;cursor:pointer}
+  #vista-entrada .ltk-entry-pager button.active{background:#dff3ff;border-color:#9fd8ee;color:#075f89}
+  #vista-entrada .ltk-entry-pager button:disabled{opacity:.45;cursor:not-allowed}
+  #vista-entrada .ltk-entry-pager select{width:auto;min-width:76px;margin:0;border-radius:12px;font-weight:900;color:#0a385a}
