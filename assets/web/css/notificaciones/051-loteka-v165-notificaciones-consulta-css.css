@@ -1,0 +1,105 @@
+
+/* =========================================================
+   LOTEKA v164 · Centro de notificaciones empresarial
+   Campana + panel + toast tipo WhatsApp Web + notificación navegador
+   ========================================================= */
+.ltk-notif-bell{
+  position:relative!important;
+  width:36px!important;
+  height:36px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(143,228,255,.28)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#bff3ff!important;
+  display:grid!important;
+  place-items:center!important;
+  cursor:pointer!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 24px rgba(0,0,0,.10)!important;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease!important;
+}
+.ltk-notif-bell:hover{transform:translateY(-1px)!important;background:rgba(17,158,207,.22)!important;border-color:rgba(143,228,255,.55)!important;}
+.ltk-notif-bell i{font-size:15px!important;color:#bff3ff!important;}
+.ltk-notif-bell.is-hot{animation:ltkNotifPulse 1.4s ease-in-out infinite;}
+@keyframes ltkNotifPulse{0%,100%{box-shadow:0 0 0 0 rgba(17,185,225,.28)}50%{box-shadow:0 0 0 8px rgba(17,185,225,0)}}
+.ltk-notif-badge{
+  position:absolute;right:-5px;top:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ef4444;color:#fff;
+  font-size:10px;font-weight:950;display:none;align-items:center;justify-content:center;border:2px solid #071225;line-height:1;
+}
+.ltk-notif-badge.is-visible{display:flex;}
+.ltk-notif-panel{
+  position:fixed;right:22px;top:72px;width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 96px);z-index:1000005;
+  border-radius:24px;background:rgba(255,255,255,.98);border:1px solid #cfe6f4;box-shadow:0 24px 70px rgba(5,31,57,.28);
+  overflow:hidden;display:none;font-family:"Inter","Segoe UI",Arial,sans-serif;color:#08324f;
+}
+.ltk-notif-panel.is-open{display:flex;flex-direction:column;}
+.ltk-notif-head{padding:16px 18px;background:linear-gradient(135deg,#07213d,#0b83b2);color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.ltk-notif-head h3{margin:0;font-size:18px;font-weight:950;line-height:1.15;}
+.ltk-notif-head p{margin:5px 0 0;color:rgba(255,255,255,.76);font-size:12px;font-weight:750;}
+.ltk-notif-close{width:34px;height:34px;border:0;border-radius:12px;background:rgba(255,255,255,.13);color:#fff;cursor:pointer;display:grid;place-items:center;}
+.ltk-notif-toolbar{padding:12px 14px;border-bottom:1px solid #e0eef6;display:flex;flex-direction:column;gap:10px;background:#f7fcff;}
+.ltk-notif-toolbar-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.ltk-notif-filter-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-top:2px;}
+.ltk-notif-filter-label{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.06em;color:#7594a8;margin-right:2px;}
+.ltk-notif-tabs{display:flex;gap:7px;flex-wrap:wrap;}
+.ltk-notif-tabs-group{display:flex;gap:7px;flex-wrap:wrap;}
+.ltk-notif-tab{border:1px solid #cfe6f4;background:#fff;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;color:#35637d;cursor:pointer;}
+.ltk-notif-tab.active{background:#0aa5d5;color:#fff;border-color:#0aa5d5;box-shadow:0 8px 18px rgba(10,165,213,.18);}
+.ltk-notif-actions{display:flex;gap:7px;justify-content:flex-end;}
+.ltk-notif-mini-btn{border:1px solid #cfe6f4;background:#fff;color:#0b5d82;border-radius:12px;padding:8px 9px;font-size:11px;font-weight:950;cursor:pointer;white-space:nowrap;}
+.ltk-notif-mini-btn:hover{background:#eaf8ff;}
+.ltk-notif-list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:9px;}
+.ltk-notif-empty{padding:24px 14px;text-align:center;color:#7e98ab;font-size:13px;font-weight:850;border:1px dashed #c9e4f2;border-radius:18px;background:#f8fcff;}
+.ltk-notif-item{position:relative;border:1px solid #d8ebf5;background:#fff;border-radius:18px;padding:12px 12px 12px 14px;display:grid;grid-template-columns:34px 1fr;gap:11px;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;}
+.ltk-notif-item:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(5,31,57,.10);border-color:#9ed9ef;}
+.ltk-notif-item.unread:before{content:"";position:absolute;right:13px;top:13px;width:8px;height:8px;border-radius:99px;background:#ef4444;}
+.ltk-notif-icon{width:34px;height:34px;border-radius:13px;display:grid;place-items:center;background:#e8f8ff;color:#08769f;}
+.ltk-notif-icon.critica{background:#fff1f2;color:#dc2626}.ltk-notif-icon.alta{background:#fff7ed;color:#ea580c}.ltk-notif-icon.normal{background:#e8f8ff;color:#08769f}.ltk-notif-icon.baja{background:#f0fdf4;color:#16a34a}
+.ltk-notif-title-row{display:flex;align-items:center;gap:8px;justify-content:space-between;padding-right:12px;}
+.ltk-notif-title{font-size:13px;font-weight:950;color:#082f49;line-height:1.25;}
+.ltk-notif-module{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.04em;color:#0b9ec9;background:#eaf8ff;border:1px solid #cceefa;border-radius:999px;padding:3px 7px;white-space:nowrap;}
+.ltk-notif-message{margin-top:5px;font-size:12px;font-weight:750;color:#557188;line-height:1.35;white-space:pre-line;}
+.ltk-notif-meta{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#7892a4;font-size:11px;font-weight:800;}
+.ltk-notif-panel-foot{padding:10px 14px;border-top:1px solid #e0eef6;background:#f7fcff;color:#6e889b;font-size:11px;font-weight:800;}
+.ltk-toast-stack{position:fixed;right:22px;bottom:22px;z-index:1000006;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none;}
+.ltk-toast{width:min(380px,calc(100vw - 30px));pointer-events:auto;border-radius:20px;background:#fff;border:1px solid #cfe6f4;box-shadow:0 20px 55px rgba(5,31,57,.24);overflow:hidden;display:grid;grid-template-columns:42px 1fr auto;gap:10px;padding:13px;transform:translateX(110%);opacity:0;animation:ltkToastIn .26s ease forwards;font-family:"Inter","Segoe UI",Arial,sans-serif;color:#08324f;}
+.ltk-toast.hide{animation:ltkToastOut .22s ease forwards;}
+@keyframes ltkToastIn{to{transform:translateX(0);opacity:1}}@keyframes ltkToastOut{to{transform:translateX(110%);opacity:0}}
+.ltk-toast-icon{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#e8f8ff,#d9f4ff);color:#0681ad;font-size:17px;}
+.ltk-toast-title{font-size:13px;font-weight:950;color:#082f49;line-height:1.25;}
+.ltk-toast-msg{margin-top:4px;font-size:12px;font-weight:750;color:#557188;line-height:1.35;}
+.ltk-toast-meta{margin-top:6px;font-size:11px;font-weight:850;color:#7f96a7;}
+.ltk-toast-close{width:28px;height:28px;border:0;border-radius:10px;background:#f0f7fb;color:#66869a;cursor:pointer;display:grid;place-items:center;}
+@media(max-width:900px){.ltk-notif-panel{right:10px;top:66px}.ltk-toast-stack{right:12px;bottom:12px}.ltk-notif-bell{width:34px!important;height:34px!important}.loteka-topbar-user-info{display:none!important;}}
+
+
+/* LOTEKA v165 · Consulta visual desde notificaciones */
+.ltk-notif-item{grid-template-columns:36px 1fr!important;}
+.ltk-notif-message strong{color:#073b5b;font-weight:950;}
+.ltk-notif-refline{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.ltk-notif-refchip{display:inline-flex;gap:5px;align-items:center;border:1px solid #d4ebf6;background:#f8fdff;color:#0b6387;border-radius:999px;padding:4px 8px;font-size:10.5px;font-weight:900;}
+.ltk-notif-query-hint{margin-left:auto;color:#0b83b2;font-size:11px;font-weight:950;display:inline-flex;gap:5px;align-items:center;}
+.ltk-notif-detail-modal{position:fixed;inset:0;background:rgba(5,18,32,.48);z-index:1000012;display:none;align-items:center;justify-content:center;padding:18px;font-family:"Inter","Segoe UI",Arial,sans-serif;}
+.ltk-notif-detail-modal.is-open{display:flex;}
+.ltk-notif-detail-card{width:min(820px,calc(100vw - 24px));max-height:calc(100vh - 34px);overflow:hidden;border-radius:26px;background:#fff;border:1px solid #cfe6f4;box-shadow:0 30px 90px rgba(3,24,45,.35);display:flex;flex-direction:column;}
+.ltk-notif-detail-head{background:linear-gradient(135deg,#071f3d,#0b9ec9);color:#fff;padding:18px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+.ltk-notif-detail-head h3{margin:0;font-size:20px;font-weight:950;line-height:1.15;}
+.ltk-notif-detail-head p{margin:6px 0 0;color:rgba(255,255,255,.78);font-size:12px;font-weight:800;}
+.ltk-notif-detail-close{width:36px;height:36px;border:0;border-radius:14px;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;display:grid;place-items:center;}
+.ltk-notif-detail-body{padding:18px;overflow:auto;background:#f6fbfe;}
+.ltk-notif-detail-hero{border:1px solid #d7ebf6;background:#fff;border-radius:22px;padding:16px;margin-bottom:14px;display:grid;grid-template-columns:54px 1fr;gap:14px;align-items:start;}
+.ltk-notif-detail-hero-icon{width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,#e7f8ff,#d5f2ff);color:#087aa5;display:grid;place-items:center;font-size:22px;}
+.ltk-notif-detail-hero h4{margin:0;font-size:17px;font-weight:950;color:#08324f;}
+.ltk-notif-detail-hero p{margin:7px 0 0;font-size:13px;font-weight:750;color:#587286;line-height:1.45;}
+.ltk-notif-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.ltk-notif-detail-item{border:1px solid #d7ebf6;background:#fff;border-radius:17px;padding:12px;}
+.ltk-notif-detail-item .k{display:block;font-size:10.5px;font-weight:950;text-transform:uppercase;letter-spacing:.04em;color:#7090a5;margin-bottom:6px;}
+.ltk-notif-detail-item .v{font-size:13px;font-weight:900;color:#123b56;word-break:break-word;}
+.ltk-notif-detail-item.full{grid-column:1/-1;}
+.ltk-notif-detail-actions{display:flex;justify-content:flex-end;gap:9px;padding:14px 18px;background:#fff;border-top:1px solid #e2f0f7;}
+.ltk-notif-detail-btn{border:1px solid #cfe6f4;background:#fff;color:#0b6387;border-radius:13px;padding:10px 13px;font-weight:950;font-size:12px;cursor:pointer;}
+.ltk-notif-detail-btn.primary{background:#0aa5d5;color:#fff;border-color:#0aa5d5;box-shadow:0 12px 24px rgba(10,165,213,.20);}
+@media(max-width:700px){.ltk-notif-detail-grid{grid-template-columns:1fr}.ltk-notif-detail-hero{grid-template-columns:1fr}.ltk-notif-detail-hero-icon{width:46px;height:46px}.ltk-notif-detail-card{border-radius:20px}}
+
+
+/* LOTEKA v168 · Filtros profesionales + sonido fuerte */
+.ltk-notif-mini-btn.active{background:#0ea5c6!important;color:#ffffff!important;border-color:#5ee3ff!important;box-shadow:0 10px 24px rgba(14,165,198,.22)!important;}
