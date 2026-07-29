@@ -1,0 +1,43 @@
+
+/* v66 RRHH: arreglo real sin tocar sidebar ni layout global */
+#vista-dashboard-rrhh{position:relative!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:26px!important;background:linear-gradient(180deg,#f7fbff 0%,#eef7fc 100%)!important;border:1px solid #d8e8f2!important;border-radius:30px!important;overflow:hidden!important;}
+#vista-dashboard-rrhh::before{display:none!important;}
+#vista-dashboard-rrhh *,#vista-dashboard-rrhh *::before,#vista-dashboard-rrhh *::after{box-sizing:border-box;}
+.rrhh-dashboard-final{display:grid;gap:18px;width:100%;max-width:100%;min-width:0;}
+.rrhh-final-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:18px;align-items:stretch;min-width:0;}
+.rrhh-final-copy{min-width:0;min-height:315px;padding:42px 44px;border-radius:32px;background:linear-gradient(135deg,#0a4774 0%,#087fb7 58%,#16b9dd 100%);color:#fff;box-shadow:0 22px 48px rgba(5,83,128,.18);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;}
+.rrhh-final-copy::after{content:"";position:absolute;right:-70px;top:-80px;width:230px;height:230px;border-radius:999px;background:rgba(255,255,255,.14);}
+.rrhh-final-tag{width:max-content;max-width:100%;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);font-size:12px;font-weight:1000;letter-spacing:.04em;text-transform:uppercase;margin-bottom:18px;}
+.rrhh-final-copy h2{font-size:clamp(38px,4.2vw,60px);line-height:.96;margin:0 0 12px;font-weight:1000;letter-spacing:-.04em;color:#fff;white-space:normal;}
+.rrhh-final-copy p{max-width:720px;margin:0;color:rgba(255,255,255,.92);font-size:17px;line-height:1.55;font-weight:700;}
+.rrhh-final-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+.rrhh-final-actions button,.rrhh-final-card button{border:0;border-radius:14px;background:#11a8d2;color:#fff;font-weight:1000;padding:12px 16px;cursor:pointer;box-shadow:0 12px 24px rgba(4,101,145,.18);}
+.rrhh-final-actions button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.24);}
+.rrhh-final-actions button:hover,.rrhh-final-card button:hover{transform:translateY(-2px);}
+.rrhh-final-logo-card{min-width:0;min-height:315px;border-radius:32px;background:linear-gradient(180deg,#fff 0%,#f7fcff 100%);border:1px solid #d8e9f2;box-shadow:0 18px 46px rgba(9,70,111,.10);display:grid;place-items:center;padding:24px;overflow:hidden;}
+.rrhh-final-logo-card img{width:min(100%,330px);height:auto;max-height:260px;object-fit:contain;filter:drop-shadow(0 16px 26px rgba(7,65,105,.11));}
+.rrhh-final-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;min-width:0;}
+.rrhh-final-kpis button{min-width:0;text-align:left;border:1px solid #d8e8f2;border-radius:24px;background:#fff;padding:22px;min-height:132px;cursor:pointer;box-shadow:0 14px 34px rgba(18,77,114,.07);transition:.18s ease;}
+.rrhh-final-kpis button:hover,.rrhh-final-card:hover{transform:translateY(-3px);box-shadow:0 20px 42px rgba(17,94,145,.12);border-color:#bfe3f2;}
+.rrhh-final-kpis span,.rrhh-card-head span,.rrhh-panel-title span{display:block;font-size:12px;font-weight:1000;text-transform:uppercase;letter-spacing:.06em;color:#6f879d;}
+.rrhh-final-kpis strong{display:block;font-size:42px;line-height:1;margin:12px 0 8px;color:#0f4f7e;font-weight:1000;}
+.rrhh-final-kpis em{font-style:normal;color:#5b748a;font-weight:900;font-size:13px;}
+.rrhh-final-consults{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:16px;min-width:0;}
+.rrhh-final-card{min-width:0;border:1px solid #d8e8f2;border-radius:28px;background:#fff;padding:24px;box-shadow:0 14px 34px rgba(18,77,114,.07);cursor:pointer;transition:.18s ease;}
+.rrhh-final-card.primary{background:linear-gradient(180deg,#fff 0%,#f7fcff 100%);}
+.rrhh-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px;}
+.rrhh-card-head h3{margin:5px 0 0;color:#144c73;font-size:25px;line-height:1.05;font-weight:1000;}
+.rrhh-card-head i{width:48px;height:48px;border-radius:18px;display:grid;place-items:center;background:#e7f8fd;color:#0a9fd0;font-size:20px;flex:0 0 auto;}
+.rrhh-mini-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;}
+.rrhh-mini-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr));}
+.rrhh-mini-grid div{min-width:0;border:1px solid #e1edf5;border-radius:18px;background:#f8fbfe;padding:14px;}
+.rrhh-mini-grid span{display:block;color:#6f879d;font-size:11px;text-transform:uppercase;font-weight:1000;margin-bottom:8px;}
+.rrhh-mini-grid strong{display:block;color:#0f4f7e;font-size:28px;font-weight:1000;line-height:1;}
+.rrhh-final-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-width:0;}
+.rrhh-final-panel{min-width:0;background:#fff;border:1px solid #d8e8f2;border-radius:28px;padding:22px;box-shadow:0 14px 34px rgba(18,77,114,.07);}
+.rrhh-panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.rrhh-panel-title h3{margin:0;color:#144c73;font-size:21px;font-weight:1000;}
+.rrhh-hidden-filters{display:none!important;}
+#vista-dashboard-rrhh .rrhd-bars,#vista-dashboard-rrhh .rrhd-feed-list{max-height:290px;overflow:auto;}
+@media (max-width:1280px){.rrhh-final-hero{grid-template-columns:1fr}.rrhh-final-logo-card{display:none}.rrhh-final-consults{grid-template-columns:1fr}.rrhh-final-bottom{grid-template-columns:1fr}.rrhh-final-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.rrhh-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){#vista-dashboard-rrhh{padding:18px!important;border-radius:24px!important}.rrhh-final-copy{padding:30px 24px;min-height:260px;border-radius:24px}.rrhh-final-copy h2{font-size:38px}.rrhh-final-kpis{grid-template-columns:1fr}.rrhh-final-actions button{width:100%;}.rrhh-mini-grid,.rrhh-mini-grid.compact{grid-template-columns:1fr}}
