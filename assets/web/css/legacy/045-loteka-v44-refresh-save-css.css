@@ -1,0 +1,14 @@
+
+  .loteka-global-refresh-v43{display:none!important;
+    position:fixed;right:22px;top:18px;z-index:99998;border:0;border-radius:18px;
+    padding:12px 18px;background:linear-gradient(135deg,#0584b6,#14b8d4);color:#fff;
+    font-weight:1000;letter-spacing:.02em;box-shadow:0 16px 34px rgba(14,165,198,.28);
+    display:inline-flex;align-items:center;gap:10px;cursor:pointer;transition:.18s ease;
+  }
+  .loteka-global-refresh-v43:hover{transform:translateY(-2px);box-shadow:0 20px 44px rgba(14,165,198,.36)}
+  .loteka-global-refresh-v43:active{transform:translateY(0)}
+  .loteka-global-refresh-v43.loading i{animation:ltkSpinV43 .8s linear infinite}
+  @keyframes ltkSpinV43{to{transform:rotate(360deg)}}
+  .loteka-refresh-toast-v43{position:fixed;right:22px;top:74px;z-index:99999;background:#083d63;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:12px 16px;font-weight:900;box-shadow:0 16px 36px rgba(4,28,44,.22);opacity:0;transform:translateY(-8px);pointer-events:none;transition:.2s ease}
+  .loteka-refresh-toast-v43.show{opacity:1;transform:translateY(0)}
+  @media(max-width:820px){.loteka-global-refresh-v43{top:auto;bottom:18px;right:16px;padding:12px 14px}.loteka-refresh-toast-v43{top:auto;bottom:78px;right:16px}}

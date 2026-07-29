@@ -1,0 +1,327 @@
+
+/* ==========================================================================\n   GRUPO ORTIZ · PREMIUM UI V701 REAL\n   Capa exclusivamente visual. No modifica RPC, datos, IDs ni flujos.\n   ========================================================================== */
+:root{
+  --go-premium-navy:#073b63;
+  --go-premium-navy-2:#0b5279;
+  --go-premium-blue:#078fbd;
+  --go-premium-cyan:#19b7df;
+  --go-premium-ink:#123b59;
+  --go-premium-muted:#6d8498;
+  --go-premium-bg:#f3f9fd;
+  --go-premium-panel:#ffffff;
+  --go-premium-line:#d8eaf4;
+  --go-premium-line-strong:#c3dfed;
+  --go-premium-success:#16834a;
+  --go-premium-warning:#ba6500;
+  --go-premium-danger:#c52d4b;
+  --go-premium-radius-sm:12px;
+  --go-premium-radius-md:18px;
+  --go-premium-radius-lg:26px;
+  --go-premium-shadow-sm:0 8px 22px rgba(9,63,95,.07);
+  --go-premium-shadow-md:0 18px 48px rgba(9,63,95,.10);
+  --go-premium-shadow-lg:0 30px 85px rgba(4,42,69,.18);
+  --go-premium-transition:160ms cubic-bezier(.2,.75,.25,1);
+}
+
+/* ---------- Control de Despachos ---------- */
+#vista-control-despachos{
+  padding:6px 0 30px;
+  background:
+    radial-gradient(circle at 96% 4%,rgba(25,183,223,.10),transparent 25%),
+    linear-gradient(180deg,#f8fcff 0%,#f0f7fb 100%);
+  border-radius:30px;
+}
+#vista-control-despachos .dispatch-shell{gap:18px;padding:0 2px;}
+#vista-control-despachos .dispatch-hero{
+  min-height:188px;
+  grid-template-columns:minmax(0,1.45fr) minmax(360px,.72fr);
+  align-items:center;
+  padding:28px 30px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 94% 8%,rgba(255,255,255,.18),transparent 26%),
+    linear-gradient(120deg,#073b63 0%,#086c94 53%,#0aa8d1 100%);
+  box-shadow:0 24px 62px rgba(7,59,99,.22);
+}
+#vista-control-despachos .dispatch-hero:before{
+  content:"";position:absolute;inset:auto -45px -100px auto;width:310px;height:310px;
+  border-radius:50%;border:46px solid rgba(255,255,255,.065);pointer-events:none;
+}
+#vista-control-despachos .dispatch-hero h2{
+  font-size:clamp(29px,2.4vw,38px);line-height:1.08;letter-spacing:-.035em;margin:4px 0 10px;
+  text-shadow:0 2px 12px rgba(0,0,0,.12);
+}
+#vista-control-despachos .dispatch-hero-copy{font-size:15px;max-width:760px;line-height:1.65;}
+#vista-control-despachos .dispatch-eyebrow{
+  padding:8px 13px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+}
+#vista-control-despachos .dspx-hero-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+#vista-control-despachos .dispatch-hero-side .dispatch-kpi{
+  min-height:112px;padding:17px 18px;display:grid;grid-template-rows:auto 1fr auto;align-content:stretch;
+  background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.105));
+  border:1px solid rgba(255,255,255,.24);border-radius:22px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 14px 28px rgba(0,38,63,.12);
+  backdrop-filter:blur(8px);
+}
+#vista-control-despachos .dispatch-hero-side .dispatch-kpi span{
+  margin:0 0 8px;font-size:10px;letter-spacing:.09em;color:rgba(255,255,255,.76);
+}
+#vista-control-despachos .dispatch-hero-side .dispatch-kpi strong{
+  display:block!important;font-size:34px;line-height:1;font-weight:1000;letter-spacing:-.045em;margin:0 0 7px;color:#fff;
+  font-variant-numeric:tabular-nums;
+}
+#vista-control-despachos .dispatch-hero-side .dispatch-kpi small{
+  display:block!important;font-size:12px;line-height:1.35;color:rgba(255,255,255,.88);font-weight:800;margin:0;
+}
+
+#vista-control-despachos .dspx-kpi-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin-top:0;
+}
+#vista-control-despachos .dspx-kpi{
+  position:relative;min-height:104px;padding:17px 17px 15px;overflow:hidden;
+  border:1px solid var(--go-premium-line);border-radius:22px;
+  background:linear-gradient(180deg,#fff 0%,#fafdff 100%);
+  box-shadow:var(--go-premium-shadow-sm);transition:transform var(--go-premium-transition),box-shadow var(--go-premium-transition),border-color var(--go-premium-transition);
+}
+#vista-control-despachos .dspx-kpi:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#0b82ad,#21bedf);opacity:.52;
+}
+#vista-control-despachos .dspx-kpi:nth-child(4):after{background:linear-gradient(90deg,#16a05c,#5bd18a);}
+#vista-control-despachos .dspx-kpi:nth-child(5):after{background:linear-gradient(90deg,#ef8f18,#ffbd55);}
+#vista-control-despachos .dspx-kpi:hover,#vista-control-despachos .dspx-kpi.active{
+  transform:translateY(-3px);border-color:#8bd1e8;box-shadow:0 19px 38px rgba(7,94,132,.13);
+}
+#vista-control-despachos .dspx-kpi span{
+  min-height:27px;display:flex;align-items:flex-start;font-size:10px;line-height:1.28;letter-spacing:.075em;color:#6b8397;
+}
+#vista-control-despachos .dspx-kpi strong{
+  margin-top:10px;font-size:31px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.04em;
+}
+
+#vista-control-despachos .dspx-tabs{
+  padding:11px 12px;gap:8px;border-radius:22px;border-color:var(--go-premium-line);
+  background:rgba(255,255,255,.94);box-shadow:0 13px 35px rgba(7,59,99,.075);backdrop-filter:blur(10px);
+}
+#vista-control-despachos .dspx-tab,#vista-control-despachos .dspx-tabs>.dspx-btn{
+  min-height:43px;padding:10px 15px;border-radius:14px;gap:9px;white-space:nowrap;transition:all var(--go-premium-transition);
+}
+#vista-control-despachos .dspx-tab i,#vista-control-despachos .dspx-tabs>.dspx-btn i{width:16px;text-align:center;}
+#vista-control-despachos .dspx-tab.active{
+  background:linear-gradient(135deg,#07527d,#079bc6);box-shadow:0 10px 22px rgba(7,139,183,.24);
+}
+#vista-control-despachos .dispatch-panel{
+  border-radius:27px;border-color:var(--go-premium-line);box-shadow:var(--go-premium-shadow-md);overflow:hidden;
+}
+#vista-control-despachos .dispatch-panel-head{
+  padding:20px 22px;background:linear-gradient(180deg,#fff 0%,#f8fcff 100%);border-radius:0;
+}
+#vista-control-despachos .dispatch-panel-head h3{font-size:20px;letter-spacing:-.018em;color:#0b3e60;}
+#vista-control-despachos .dispatch-panel-head p{margin-top:6px;line-height:1.45;}
+#vista-control-despachos .dispatch-panel-body{padding:22px;}
+
+#vista-control-despachos .dspx-card{
+  border-radius:23px;padding:19px;border-color:var(--go-premium-line);box-shadow:0 11px 30px rgba(7,59,99,.065);
+  transition:transform var(--go-premium-transition),box-shadow var(--go-premium-transition),border-color var(--go-premium-transition);
+}
+#vista-control-despachos .dspx-card:hover{transform:translateY(-2px);border-color:#a9d9e9;box-shadow:0 18px 38px rgba(7,72,105,.10);}
+#vista-control-despachos .dspx-card-head h4{font-size:18px;letter-spacing:-.015em;}
+#vista-control-despachos .dspx-meta{padding:11px 12px;border-radius:16px;background:linear-gradient(180deg,#fbfeff,#f6fbfe);}
+#vista-control-despachos .dspx-meta span{margin-bottom:6px;}
+#vista-control-despachos .dspx-meta b{line-height:1.35;}
+#vista-control-despachos .dspx-progress{height:10px;margin-top:11px;box-shadow:inset 0 1px 2px rgba(7,59,99,.06);}
+#vista-control-despachos .dspx-banner{border-radius:17px;}
+
+/* Historial ejecutivo */
+#vista-control-despachos .dspx-history-wrap{padding:0 1px 4px;overflow-x:auto;scrollbar-gutter:stable;}
+#vista-control-despachos .dspx-history-table{min-width:1110px;border-spacing:0 9px;table-layout:fixed;}
+#vista-control-despachos .dspx-history-table th{
+  padding:0 14px 7px;font-size:10px;line-height:1.25;letter-spacing:.075em;color:#5f7b91;
+}
+#vista-control-despachos .dspx-history-table th:nth-child(1){width:180px;}
+#vista-control-despachos .dspx-history-table th:nth-child(2){width:105px;}
+#vista-control-despachos .dspx-history-table th:nth-child(3){width:245px;}
+#vista-control-despachos .dspx-history-table th:nth-child(4){width:170px;}
+#vista-control-despachos .dspx-history-table th:nth-child(5),
+#vista-control-despachos .dspx-history-table th:nth-child(6),
+#vista-control-despachos .dspx-history-table th:nth-child(7){width:96px;text-align:center;}
+#vista-control-despachos .dspx-history-table th:nth-child(8){width:178px;text-align:center;}
+#vista-control-despachos .dspx-history-table td{
+  padding:14px 14px;vertical-align:middle;border-color:#dcebf4;background:linear-gradient(180deg,#fff,#fcfeff);
+}
+#vista-control-despachos .dspx-history-table tbody tr{filter:drop-shadow(0 5px 10px rgba(7,59,99,.035));}
+#vista-control-despachos .dspx-history-table tbody tr:hover td{background:#f7fcff;border-color:#bfe0ee;}
+#vista-control-despachos .dspx-history-code-cell .dspx-code{display:block;font-size:14px;line-height:1.2;letter-spacing:.005em;}
+#vista-control-despachos .dspx-history-code-cell .dspx-sub{margin-top:5px;font-size:10.5px;line-height:1.35;color:#748a9c;}
+#vista-control-despachos .dspx-history-type-cell{font-size:12px;letter-spacing:.02em;color:#1c4d6b;}
+#vista-control-despachos .dspx-history-destination-cell{line-height:1.4;color:#173f5b;}
+#vista-control-despachos .dspx-history-status-cell{text-align:left;}
+#vista-control-despachos .dspx-number-cell{text-align:center!important;}
+#vista-control-despachos .dspx-count{
+  display:inline-grid;place-items:center;min-width:39px;height:34px;padding:0 10px;border-radius:12px;
+  background:#edf7fc;border:1px solid #cce6f2;color:#0a5f87;font-size:14px;font-weight:1000;
+  font-variant-numeric:tabular-nums;box-shadow:inset 0 1px 0 #fff;
+}
+#vista-control-despachos .dspx-count-success{background:#ebf8ef;border-color:#c9e9d3;color:#167943;}
+#vista-control-despachos .dspx-history-action-cell{text-align:center;}
+#vista-control-despachos .dspx-open-file-btn{min-width:146px;justify-content:center;}
+#vista-control-despachos .dspx-status{padding:7px 11px;line-height:1.1;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
+
+/* Modales del flujo */
+#dspxModal{background:rgba(4,25,42,.61);backdrop-filter:blur(7px);}
+#dspxModal .dispatch-modal-card{border-radius:29px;border:1px solid rgba(202,227,240,.92);box-shadow:var(--go-premium-shadow-lg);}
+#dspxModal .dispatch-modal-head{padding:21px 24px;background:linear-gradient(180deg,#fff,#f7fbfe);}
+#dspxModal .dispatch-modal-head h3{font-size:21px;letter-spacing:-.02em;}
+#dspxModal .dispatch-modal-body{padding:22px 24px 24px;}
+#dspxModal .dispatch-close{transition:all var(--go-premium-transition);}
+#dspxModal .dispatch-close:hover{transform:rotate(4deg) scale(1.05);background:#dff3fb;}
+#dspxModal .dspx-field input,#dspxModal .dspx-field select,#dspxModal .dspx-field textarea{min-height:46px;border-radius:15px;}
+#dspxModal .dspx-item-row{border-radius:19px;padding:14px;}
+#dspxModal .dspx-actions{padding-top:4px;}
+
+/* ---------- Detalle de grupo ---------- */
+#modalDetalleGrupo{background:rgba(5,26,43,.56);backdrop-filter:blur(7px);}
+#modalDetalleGrupo .modal-content{
+  width:min(1220px,96vw);max-height:92vh;padding:0;border:1px solid #d3e8f3;border-radius:29px;
+  box-shadow:var(--go-premium-shadow-lg);overflow:auto;background:#f7fbfe;
+}
+#modalDetalleGrupo #detalleGrupoTitulo{padding:21px 24px 15px;margin:0;font-size:21px;color:#0b3d5d;background:#fff;border-bottom:1px solid #deedf5;}
+#modalDetalleGrupo .group-detail-card{border-color:#d8eaf4;border-radius:22px;padding:18px 19px;box-shadow:var(--go-premium-shadow-sm);}
+#modalDetalleGrupo .group-detail-card[style*="margin-bottom"]{
+  margin:18px 20px 16px!important;padding:20px 22px!important;background:linear-gradient(135deg,#fff,#f5fbff);
+}
+#modalDetalleGrupo #detalleGrupoNombre{font-size:31px!important;letter-spacing:-.035em!important;color:#0b3f61!important;}
+#modalDetalleGrupo .group-inline-meta{gap:19px;line-height:1.55;}
+#modalDetalleGrupo .dashboard-cards{padding:0 20px;gap:14px;}
+#modalDetalleGrupo .dashboard-card{
+  min-height:126px;padding:17px 19px;border-radius:21px;border-color:#d8eaf4;background:linear-gradient(180deg,#fff,#f9fdff);box-shadow:var(--go-premium-shadow-sm);
+}
+#modalDetalleGrupo .dashboard-card-label{font-size:11px;text-transform:uppercase;letter-spacing:.065em;font-weight:900;color:#6e879a;}
+#modalDetalleGrupo .dashboard-card-value{font-size:34px;line-height:1.05;margin:8px 0 5px;color:#0b557e;font-variant-numeric:tabular-nums;}
+#modalDetalleGrupo .dashboard-card-sub{margin:0;line-height:1.35;}
+#modalDetalleGrupo .group-detail-grid{padding:0 20px 22px;gap:16px;grid-template-columns:minmax(350px,.95fr) minmax(540px,1.25fr);}
+#modalDetalleGrupo .group-detail-card h4{font-size:16px;margin-bottom:14px;letter-spacing:-.01em;}
+#modalDetalleGrupo #detalleGrupoAgenciasList{display:flex;flex-wrap:wrap;gap:9px;align-content:flex-start;}
+#modalDetalleGrupo .group-agency-chip{margin:0;padding:8px 11px;background:#f4f9fc;border-color:#d6e8f2;box-shadow:0 4px 10px rgba(7,59,99,.035);transition:all var(--go-premium-transition);}
+#modalDetalleGrupo .group-agency-chip:hover{transform:translateY(-2px);border-color:#a9d6e8;background:#fff;}
+#modalDetalleGrupo .group-agency-chip b{font-size:12px;letter-spacing:.045em;}
+#modalDetalleGrupo .group-agency-chip small{padding:4px 7px;}
+#modalDetalleGrupo input{min-height:46px;border-radius:14px;}
+#modalDetalleGrupo #detalleGrupoCustodiaBody td{padding:14px 12px;line-height:1.4;}
+#modalDetalleGrupo #detalleGrupoCustodiaBody small{display:block;margin-top:4px;color:#73899b;font-weight:750;}
+
+/* ---------- Ficha técnica de agencia ---------- */
+#modalDetalleAgencia{background:rgba(5,26,43,.56);backdrop-filter:blur(7px);}
+#modalDetalleAgencia .modal-content{
+  width:min(1320px,97vw);max-height:94vh;padding:0;border-radius:30px;border:1px solid #d3e8f3;
+  box-shadow:var(--go-premium-shadow-lg);overflow:auto;background:#f7fbfe;
+}
+#modalDetalleAgencia .agency-record-header{
+  margin:0!important;padding:22px 24px!important;border:0!important;border-bottom:1px solid #d9eaf3!important;
+  background:radial-gradient(circle at 92% 10%,rgba(30,190,225,.16),transparent 25%),linear-gradient(135deg,#fff,#eefaff)!important;
+}
+#modalDetalleAgencia .agency-record-title h3{font-size:25px!important;letter-spacing:-.028em;}
+#modalDetalleAgencia .agency-record-title p{line-height:1.5;}
+#modalDetalleAgencia .agency-record-switcher{gap:9px!important;}
+#modalDetalleAgencia .agency-record-chip,#modalDetalleAgencia .agency-record-switcher .btn,#modalDetalleAgencia .agency-record-switcher .btn-secondary{
+  min-height:42px;border-radius:14px!important;padding:9px 13px!important;box-shadow:0 6px 15px rgba(7,59,99,.055);
+}
+#modalDetalleAgencia .agency-record-shell>.agency-record-panel,#modalDetalleAgencia .detail-panel{
+  margin:18px 20px 20px;border-radius:24px;border-color:#d8eaf4;box-shadow:var(--go-premium-shadow-md);background:#fff;
+}
+#modalDetalleAgencia .agency-ficha-sync-banner-v141{border-radius:19px;padding:15px 17px;box-shadow:0 10px 26px rgba(7,117,151,.075);}
+#modalDetalleAgencia .agency-tabs{
+  display:flex;flex-wrap:nowrap;gap:7px;margin:0 0 16px;overflow-x:auto;padding:5px;background:#edf7fc;border:1px solid #d5e9f3;border-radius:16px;
+}
+#modalDetalleAgencia .agency-tab{
+  flex:0 0 auto;min-height:42px;display:inline-flex;align-items:center;gap:8px;padding:10px 14px!important;margin:0!important;
+  border-radius:12px!important;background:transparent!important;color:#245b79!important;transition:all var(--go-premium-transition);
+}
+#modalDetalleAgencia .agency-tab:hover{background:#fff!important;}
+#modalDetalleAgencia .agency-tab.active{background:linear-gradient(135deg,#075781,#0b9fc9)!important;color:#fff!important;box-shadow:0 8px 18px rgba(7,130,172,.21);}
+#modalDetalleAgencia .agency-tab i{width:16px;text-align:center;}
+#modalDetalleAgencia #detalleAgenciaInventarioBody td{padding:15px 13px;line-height:1.35;}
+#modalDetalleAgencia #detalleAgenciaInventarioBody tr:hover td{background:#f6fcff;}
+#modalDetalleAgencia #detalleAgenciaInventarioBody b{color:#103f5f;}
+
+/* ---------- Inventario general y modales ---------- */
+#vista-productos .card-table,#vista-almacenes .card-table,#vista-entrada .card-table,#vista-transferencia .card-table{
+  border-radius:23px;border-color:var(--go-premium-line);box-shadow:var(--go-premium-shadow-md);overflow:hidden;
+}
+#vista-productos .dashboard-card,#vista-almacenes .dashboard-card,#vista-entrada .dashboard-card,#vista-transferencia .dashboard-card{
+  border-radius:21px;border-color:var(--go-premium-line);box-shadow:var(--go-premium-shadow-sm);background:linear-gradient(180deg,#fff,#f9fdff);
+}
+#vista-productos table th,#vista-almacenes table th,#vista-entrada table th,#vista-transferencia table th{
+  padding:14px 15px;background:#f1f8fc;color:#285a78;font-size:11px;text-transform:uppercase;letter-spacing:.055em;
+}
+#vista-productos table td,#vista-almacenes table td,#vista-entrada table td,#vista-transferencia table td{padding:15px;}
+#vista-productos tbody tr:hover td,#vista-almacenes tbody tr:hover td,#vista-entrada tbody tr:hover td,#vista-transferencia tbody tr:hover td{background:#f8fcff;}
+
+#modalEntrada,#modalTransferencia,#modalProducto,#modalAlmacen,#modalDetalleEntrada,#modalDetalleAlmacen{
+  background:rgba(5,26,43,.56);backdrop-filter:blur(6px);
+}
+#modalEntrada .modal-content,#modalTransferencia .modal-content,#modalProducto .modal-content,#modalAlmacen .modal-content,
+#modalDetalleEntrada .modal-content,#modalDetalleAlmacen .modal-content{
+  border-radius:27px;border:1px solid #d3e8f3;box-shadow:var(--go-premium-shadow-lg);background:#fff;
+}
+#modalEntrada .modal-content{width:min(1080px,96vw);padding:22px 24px;}
+#modalEntrada input,#modalEntrada select,#modalEntrada textarea,
+#modalTransferencia input,#modalTransferencia select,#modalTransferencia textarea,
+#modalProducto input,#modalProducto select,#modalProducto textarea,
+#modalAlmacen input,#modalAlmacen select,#modalAlmacen textarea{
+  min-height:45px;border-radius:13px;border-color:#cfdfeb;background:#fbfdff;transition:border-color var(--go-premium-transition),box-shadow var(--go-premium-transition);
+}
+#modalEntrada textarea,#modalTransferencia textarea,#modalProducto textarea,#modalAlmacen textarea{min-height:92px;}
+#modalEntrada input:focus,#modalEntrada select:focus,#modalEntrada textarea:focus,
+#modalTransferencia input:focus,#modalTransferencia select:focus,#modalTransferencia textarea:focus,
+#modalProducto input:focus,#modalProducto select:focus,#modalProducto textarea:focus,
+#modalAlmacen input:focus,#modalAlmacen select:focus,#modalAlmacen textarea:focus{
+  border-color:#17a6d1;box-shadow:0 0 0 4px rgba(23,166,209,.12);
+}
+
+/* ---------- Botones, chips y accesibilidad visual ---------- */
+#vista-control-despachos button,#modalDetalleGrupo button,#modalDetalleAgencia button,#modalEntrada button{
+  -webkit-tap-highlight-color:transparent;
+}
+#vista-control-despachos button:focus-visible,#modalDetalleGrupo button:focus-visible,#modalDetalleAgencia button:focus-visible,#modalEntrada button:focus-visible,
+#vista-control-despachos input:focus-visible,#modalDetalleGrupo input:focus-visible,#modalDetalleAgencia input:focus-visible,#modalEntrada input:focus-visible{
+  outline:3px solid rgba(15,161,207,.25);outline-offset:2px;
+}
+.group-metric-pill{font-variant-numeric:tabular-nums;box-shadow:inset 0 1px 0 #fff;}
+.group-name-chip{box-shadow:0 7px 17px rgba(7,93,132,.11);}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1180px){
+  #vista-control-despachos .dispatch-hero{grid-template-columns:1fr minmax(330px,.75fr);}
+  #vista-control-despachos .dspx-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  #modalDetalleGrupo .group-detail-grid{grid-template-columns:1fr;}
+}
+@media(max-width:900px){
+  #vista-control-despachos .dispatch-hero{grid-template-columns:1fr;padding:24px;}
+  #vista-control-despachos .dspx-hero-side{max-width:620px;}
+  #vista-control-despachos .dspx-tabs{overflow-x:auto;flex-wrap:nowrap;position:relative;top:auto;}
+  #vista-control-despachos .dspx-tabs>.dspx-btn{margin-left:0!important;}
+  #vista-control-despachos .dspx-grid{grid-template-columns:1fr;}
+  #modalDetalleGrupo .dashboard-cards{grid-template-columns:repeat(3,minmax(0,1fr));overflow-x:auto;}
+}
+@media(max-width:680px){
+  #vista-control-despachos{border-radius:20px;}
+  #vista-control-despachos .dispatch-hero{border-radius:23px;padding:21px;}
+  #vista-control-despachos .dspx-hero-side{grid-template-columns:1fr 1fr;}
+  #vista-control-despachos .dispatch-hero-side .dispatch-kpi{min-height:103px;padding:14px;}
+  #vista-control-despachos .dspx-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  #vista-control-despachos .dispatch-panel-body{padding:16px;}
+  #modalDetalleGrupo .dashboard-cards{grid-template-columns:1fr;padding:0 14px;}
+  #modalDetalleGrupo .group-detail-grid{padding:0 14px 18px;}
+  #modalDetalleAgencia .agency-record-shell>.agency-record-panel,#modalDetalleAgencia .detail-panel{margin:13px;}
+}
+
+/* ---------- Dark mode compatible ---------- */
+body.go-dark-mode #vista-control-despachos{background:#081a29!important;}
+body.go-dark-mode #vista-control-despachos .dspx-history-table td,
+body.go-dark-mode #modalDetalleGrupo .group-detail-card,
+body.go-dark-mode #modalDetalleGrupo .dashboard-card,
+body.go-dark-mode #modalDetalleAgencia .agency-record-shell>.agency-record-panel,
+body.go-dark-mode #modalDetalleAgencia .detail-panel{background:#0e2537!important;border-color:rgba(112,197,233,.18)!important;color:#dceef8!important;}
+body.go-dark-mode #vista-control-despachos .dspx-count{background:#102f44!important;border-color:#24526b!important;color:#8ad7f0!important;}
+body.go-dark-mode #vista-control-despachos .dspx-count-success{color:#8ee4ac!important;}

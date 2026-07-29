@@ -1,0 +1,35 @@
+
+.ltk-hidden-logout{display:none!important;}
+.loteka-topbar-user{position:relative!important;}
+.ltk-account-avatar-btn{border:0;cursor:pointer;transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;}
+.ltk-account-avatar-btn:hover{transform:translateY(-1px);filter:brightness(1.05);box-shadow:0 0 0 4px rgba(17,158,207,.16), 0 12px 24px rgba(8,42,70,.22);}
+.ltk-account-menu{position:absolute;right:0;top:calc(100% + 12px);width:240px;padding:10px;border-radius:20px;background:rgba(255,255,255,.98);border:1px solid #cfe0ec;box-shadow:0 24px 54px rgba(8,35,55,.22);z-index:99998;display:none;overflow:hidden;}
+.ltk-account-menu.is-open{display:grid;gap:8px;animation:ltkAccountDrop .16s ease both;}
+.ltk-account-menu::before{content:"";position:absolute;top:-7px;right:16px;width:14px;height:14px;background:#fff;border-left:1px solid #cfe0ec;border-top:1px solid #cfe0ec;transform:rotate(45deg);}
+.ltk-account-menu button{position:relative;width:100%;border:0;border-radius:14px;background:#f5fbff;color:#0b3f71;padding:12px 13px;display:flex;align-items:center;gap:10px;font-weight:950;cursor:pointer;text-align:left;transition:.15s ease;}
+.ltk-account-menu button i{width:18px;color:#0ea5c6;text-align:center;}
+.ltk-account-menu button:hover{background:#e7f7fd;transform:translateY(-1px);}
+#ltkAccountLogout{background:#fff4f4;color:#974242;}
+#ltkAccountLogout i{color:#d9534f;}
+#ltkAccountLogout:hover{background:#ffe8e8;}
+@keyframes ltkAccountDrop{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.ltk-pass-overlay{position:fixed;inset:0;background:rgba(5,20,34,.48);backdrop-filter:blur(6px);z-index:100000;display:none;align-items:center;justify-content:center;padding:22px;}
+.ltk-pass-overlay.is-open{display:flex;}
+.ltk-pass-modal{width:min(520px,96vw);border-radius:28px;background:#fff;box-shadow:0 30px 80px rgba(5,30,50,.32);border:1px solid #d5e7f2;overflow:hidden;}
+.ltk-pass-head{padding:22px 24px;background:linear-gradient(135deg,#07517c,#12acd9);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ltk-pass-head h3{margin:0;font-size:21px;font-weight:950;letter-spacing:.01em;}
+.ltk-pass-head p{margin:5px 0 0;font-size:12px;font-weight:800;color:rgba(255,255,255,.82);}
+.ltk-pass-close{width:40px;height:40px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-size:18px;}
+.ltk-pass-body{padding:24px;display:grid;gap:14px;}
+.ltk-pass-field label{display:block;margin-bottom:7px;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:#55758d;}
+.ltk-pass-field input{width:100%;height:48px;border-radius:15px;border:1px solid #cfe0ec;background:#f9fcfe;color:#123b58;font-weight:800;font-size:14px;padding:0 14px;outline:none;}
+.ltk-pass-field input:focus{border-color:#13a8d3;box-shadow:0 0 0 4px rgba(17,158,207,.12);background:#fff;}
+.ltk-pass-msg{display:none;border-radius:14px;padding:11px 12px;font-size:13px;font-weight:850;line-height:1.35;}
+.ltk-pass-msg.is-error{display:block;background:#fff1f1;border:1px solid #ffd0d0;color:#9f3333;}
+.ltk-pass-msg.is-success{display:block;background:#ecfff6;border:1px solid #bdf0d6;color:#176c43;}
+.ltk-pass-actions{padding:18px 24px 24px;display:flex;justify-content:flex-end;gap:10px;background:#f7fbfe;border-top:1px solid #e0edf5;}
+.ltk-pass-actions button{border:0;border-radius:15px;padding:12px 18px;font-weight:950;cursor:pointer;}
+.ltk-pass-cancel{background:#eaf3f8;color:#315b75;}
+.ltk-pass-save{background:linear-gradient(135deg,#0c77b7,#14b6dc);color:#fff;box-shadow:0 15px 26px rgba(17,158,207,.22);}
+.ltk-pass-save:disabled{opacity:.65;cursor:wait;}
+@media(max-width:720px){.ltk-account-menu{right:-8px;width:230px}.ltk-pass-modal{border-radius:22px}.ltk-pass-actions{flex-direction:column}.ltk-pass-actions button{width:100%;}}

@@ -1,0 +1,6 @@
+
+/* Ficha técnica de agencia: consulta para perfiles sin permiso de edición. */
+body:not(.ltk-can-edit-agency-tech) #modalDetalleAgencia [data-section="ficha"] .agency-search-box{display:none!important;}
+body:not(.ltk-can-edit-agency-tech) #modalDetalleAgencia [data-section="ficha"] .detail-table th:last-child,
+body:not(.ltk-can-edit-agency-tech) #modalDetalleAgencia [data-section="ficha"] .detail-table td:last-child{display:none!important;}
+body:not(.ltk-can-edit-agency-tech) #modalDetalleAgencia [data-section="ficha"] .agency-form-card-head p:after{content:" · Modo solo lectura";font-weight:900;color:#0b83ad;}

@@ -1,0 +1,193 @@
+
+/* =========================================================
+   v222 · Corrección visual modo oscuro Inventario/Almacenes
+   Solo CSS: no toca Supabase, Taller, flujos, rutas ni JS.
+   Objetivo: eliminar bloques blancos en modales/tablas oscuras.
+   ========================================================= */
+body.go-dark-mode #modalDetalleAlmacen .modal-content.large,
+body.go-dark-mode #modalDetalleProducto .modal-content,
+body.go-dark-mode #modalAlmacen .modal-content,
+body.go-dark-mode #modalProducto .modal-content{
+  background:linear-gradient(180deg,#071b2c 0%,#061525 100%) !important;
+  border:1px solid rgba(74,210,242,.24) !important;
+  box-shadow:0 30px 90px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.05) !important;
+  color:#dff3ff !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-top h2,
+body.go-dark-mode #modalDetalleAlmacen #detalleNombre,
+body.go-dark-mode #modalDetalleProducto #detalleProductoNombre,
+body.go-dark-mode #modalAlmacen h3,
+body.go-dark-mode #modalProducto h3{
+  color:#63e7ff !important;
+  text-shadow:0 8px 26px rgba(0,205,255,.18) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen #detalleSubtitulo,
+body.go-dark-mode #modalDetalleAlmacen #detalleStats,
+body.go-dark-mode #modalDetalleProducto #detalleProductoMeta,
+body.go-dark-mode #modalDetalleProducto #detalleProductoResumen{
+  color:#a9c7d8 !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-panel,
+body.go-dark-mode #modalDetalleProducto .detail-panel{
+  background:linear-gradient(180deg,rgba(10,31,48,.98),rgba(5,19,32,.98)) !important;
+  border:1px solid rgba(88,217,248,.22) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 18px 48px rgba(0,0,0,.28) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .tab-buttons{
+  border-bottom:1px solid rgba(96,213,242,.18) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .tab-btn{
+  background:linear-gradient(135deg,#0b7ea7,#0a5e86) !important;
+  color:#ffffff !important;
+  border:1px solid rgba(126,231,255,.25) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.22) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .tab-btn.inactive{
+  background:rgba(255,255,255,.055) !important;
+  color:#9fc4d8 !important;
+  border-color:rgba(126,231,255,.12) !important;
+  box-shadow:none !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .tab-btn:hover{
+  background:linear-gradient(135deg,#12afd0,#08749e) !important;
+  color:#ffffff !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .search-box{
+  background:rgba(3,16,27,.92) !important;
+  border:1px solid rgba(91,205,235,.22) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .search-box i{color:#69dfff !important;}
+body.go-dark-mode #modalDetalleAlmacen .search-box input{
+  background:transparent !important;
+  color:#eaf9ff !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .search-box input::placeholder{color:#8db1c4 !important;}
+body.go-dark-mode #modalDetalleAlmacen .detail-table{
+  background:#071b2c !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+  color:#e0f3ff !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-table thead th,
+body.go-dark-mode #modalDetalleAlmacen .detail-table th{
+  background:linear-gradient(180deg,#102b40,#0b2134) !important;
+  color:#c8f4ff !important;
+  border-color:rgba(94,213,244,.16) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-table tbody tr,
+body.go-dark-mode #modalDetalleAlmacen .detail-table tr{
+  background:#071b2c !important;
+  color:#dff2ff !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-table tbody tr:nth-child(even){
+  background:#092136 !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-table tbody tr:hover{
+  background:rgba(22,184,220,.12) !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .detail-table td{
+  background:transparent !important;
+  color:#dcefff !important;
+  border-color:rgba(94,213,244,.11) !important;
+}
+/* Filas separadoras generadas con estilos inline: EQUIPOS / PIEZAS / mensajes vacíos */
+body.go-dark-mode #modalDetalleAlmacen #detalleInventarioBody td[colspan],
+body.go-dark-mode #modalDetalleAlmacen #detalleMovimientosBody td[colspan]{
+  background:linear-gradient(90deg,rgba(20,184,212,.18),rgba(20,184,212,.07)) !important;
+  color:#75ebff !important;
+  border-top:1px solid rgba(112,224,255,.18) !important;
+  border-bottom:1px solid rgba(112,224,255,.18) !important;
+  text-shadow:none !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .actions i,
+body.go-dark-mode #modalDetalleProducto .actions i{
+  background:rgba(34,211,238,.11) !important;
+  border:1px solid rgba(96,224,255,.18) !important;
+  color:#80e9ff !important;
+}
+body.go-dark-mode #modalDetalleAlmacen .actions i:hover,
+body.go-dark-mode #modalDetalleProducto .actions i:hover{
+  background:linear-gradient(135deg,#12afd0,#0b7ea7) !important;
+  color:#fff !important;
+  transform:translateY(-1px) !important;
+}
+/* Refuerzo global para tablas y paneles de Inventario cuando el modo oscuro está activo */
+body.go-dark-mode #vista-inventario .card-table,
+body.go-dark-mode #vista-almacenes .card-table,
+body.go-dark-mode #vista-productos .card-table,
+body.go-dark-mode #vista-entradas .card-table,
+body.go-dark-mode #vista-transferencias .card-table,
+body.go-dark-mode #vista-salidas .card-table{
+  background:linear-gradient(180deg,rgba(12,31,48,.98),rgba(7,21,35,.98)) !important;
+  border-color:rgba(98,218,247,.18) !important;
+  color:#dff2ff !important;
+}
+body.go-dark-mode #vista-inventario table,
+body.go-dark-mode #vista-almacenes table,
+body.go-dark-mode #vista-productos table,
+body.go-dark-mode #vista-entradas table,
+body.go-dark-mode #vista-transferencias table,
+body.go-dark-mode #vista-salidas table{
+  background:transparent !important;
+  color:#dff2ff !important;
+}
+body.go-dark-mode #vista-inventario tbody tr,
+body.go-dark-mode #vista-almacenes tbody tr,
+body.go-dark-mode #vista-productos tbody tr,
+body.go-dark-mode #vista-entradas tbody tr,
+body.go-dark-mode #vista-transferencias tbody tr,
+body.go-dark-mode #vista-salidas tbody tr{
+  background:transparent !important;
+}
+body.go-dark-mode #vista-inventario tbody tr:nth-child(even),
+body.go-dark-mode #vista-almacenes tbody tr:nth-child(even),
+body.go-dark-mode #vista-productos tbody tr:nth-child(even),
+body.go-dark-mode #vista-entradas tbody tr:nth-child(even),
+body.go-dark-mode #vista-transferencias tbody tr:nth-child(even),
+body.go-dark-mode #vista-salidas tbody tr:nth-child(even){
+  background:rgba(255,255,255,.025) !important;
+}
+body.go-dark-mode #vista-inventario tbody tr:hover,
+body.go-dark-mode #vista-almacenes tbody tr:hover,
+body.go-dark-mode #vista-productos tbody tr:hover,
+body.go-dark-mode #vista-entradas tbody tr:hover,
+body.go-dark-mode #vista-transferencias tbody tr:hover,
+body.go-dark-mode #vista-salidas tbody tr:hover{
+  background:rgba(20,184,212,.11) !important;
+}
+body.go-dark-mode #vista-inventario td,
+body.go-dark-mode #vista-almacenes td,
+body.go-dark-mode #vista-productos td,
+body.go-dark-mode #vista-entradas td,
+body.go-dark-mode #vista-transferencias td,
+body.go-dark-mode #vista-salidas td{
+  color:#dff2ff !important;
+  border-color:rgba(98,218,247,.10) !important;
+}
+body.go-dark-mode #vista-inventario td:first-child,
+body.go-dark-mode #vista-almacenes td:first-child,
+body.go-dark-mode #vista-productos td:first-child{
+  color:#f3fbff !important;
+}
+body.go-dark-mode #vista-almacenes #tabla-almacenes td:nth-child(2){color:#62e3ff !important;}
+body.go-dark-mode #vista-almacenes #tabla-almacenes .go-v221-mov-title{color:#f3fbff !important;}
+body.go-dark-mode #vista-almacenes #tabla-almacenes .go-v221-mov-meta{color:#9dbbd0 !important;}
+body.go-dark-mode #vista-almacenes #tabla-almacenes .go-v221-mov-pill{
+  background:rgba(20,184,212,.15) !important;
+  color:#72eaff !important;
+  border-color:rgba(102,225,255,.22) !important;
+}
+body.go-dark-mode #vista-almacenes #tabla-almacenes .go-v221-mov-pill.is-empty{
+  background:rgba(148,163,184,.10) !important;
+  color:#aebfca !important;
+  border-color:rgba(148,163,184,.16) !important;
+}
+/* También cubre instalaciones donde el body use .dark-mode en vez de .go-dark-mode */
+body.dark-mode #modalDetalleAlmacen .detail-table td,
+body.dark-mode #modalDetalleAlmacen .detail-table th,
+body.dark-mode #modalDetalleAlmacen #detalleInventarioBody td[colspan],
+body.dark-mode #modalDetalleAlmacen #detalleMovimientosBody td[colspan]{
+  background:#092136 !important;
+  color:#e9f8ff !important;
+}

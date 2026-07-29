@@ -1,0 +1,35 @@
+
+
+/* LOTEKA v241 · Estado de agencia: contraste legible en detalle */
+body:not(.dark-mode) .go-estado-panel,
+body.go-light-mode .go-estado-panel{
+  background:linear-gradient(180deg,#eaf9ff 0%,#f7fcff 100%)!important;
+  border-color:#93d9ef!important;
+  box-shadow:0 18px 38px rgba(14,78,112,.10)!important;
+}
+body:not(.dark-mode) .go-estado-panel h4,
+body.go-light-mode .go-estado-panel h4{color:#063b5c!important}
+body:not(.dark-mode) .go-estado-box,
+body.go-light-mode .go-estado-box{
+  background:#ffffff!important;
+  border-color:#c3e2ef!important;
+  box-shadow:0 10px 24px rgba(13,76,112,.06)!important;
+}
+body:not(.dark-mode) .go-estado-box span,
+body.go-light-mode .go-estado-box span{color:#54738a!important}
+body:not(.dark-mode) .go-estado-box b,
+body.go-light-mode .go-estado-box b{color:#0a3554!important}
+body:not(.dark-mode) .go-estado-ok,
+body.go-light-mode .go-estado-ok{
+  background:#dcfce7!important;
+  border-color:#86efac!important;
+  color:#166534!important;
+}
+body:not(.dark-mode) .go-estado-ok b,
+body.go-light-mode .go-estado-ok b{color:#064e3b!important}
+body:not(.dark-mode) .go-estado-alert,
+body.go-light-mode .go-estado-alert{
+  background:#fffbeb!important;
+  border-color:#facc15!important;
+  color:#92400e!important;
+}
