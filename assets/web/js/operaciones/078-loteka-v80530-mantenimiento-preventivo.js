@@ -1,7 +1,7 @@
 (function(global){
 'use strict';
-if(global.GOMantenimientoPreventivo && global.GOMantenimientoPreventivo.version==='805.30C') return;
-var VERSION='805.30C';
+if(global.GOMantenimientoPreventivo && global.GOMantenimientoPreventivo.version==='805.30D') return;
+var VERSION='805.30D';
 var state={initialized:false,tipos:[],planes:[],detalle:null,selected:new Set(),agencyFilter:'',groupFilter:'ALL'};
 function q(s,r){return (r||document).querySelector(s)} function qa(s,r){return Array.from((r||document).querySelectorAll(s))}
 function tx(v){return String(v==null?'':v).trim()} function esc(v){return tx(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -63,15 +63,16 @@ function injectNav(){
 function installNavigationBridge(){ return true; }
 function hideOther(nav){
   installNavigationBridge();
-  if(global.GONavigationCoordinator&&typeof global.GONavigationCoordinator.show==='function'){
-    global.GONavigationCoordinator.show('vista-ops-mantenimiento',nav||q('#navPreventiveMaintenance'));
-    return;
+  var link=nav||q('#navPreventiveMaintenance');
+  if(typeof global.cambiarVista==='function'){
+    global.cambiarVista('ops-mantenimiento',link);
+  }else{
+    var own=q('#vista-ops-mantenimiento');
+    qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden')});
+    if(own)own.classList.remove('hidden');
+    qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
+    if(link)link.classList.add('active');
   }
-  var own=q('#vista-ops-mantenimiento');
-  qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden');node.style.setProperty('display','none','important')});
-  if(own){own.classList.remove('hidden');own.style.setProperty('display','block','important')}
-  qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
-  if(nav)nav.classList.add('active');
   if(typeof global.setSidebarSectionOpen==='function')global.setSidebarSectionOpen('operaciones',true);
 }
 function open(nav){
