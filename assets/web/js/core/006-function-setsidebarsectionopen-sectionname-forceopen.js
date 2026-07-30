@@ -22,7 +22,7 @@ function sidebarSectionForView(vista){
   if(['agencias','grupos'].includes(vista)) return 'consultas';
   if(['dashboard-rrhh','operadoras','solicitudes','historial-rrhh'].includes(vista)) return 'rrhh';
   if(['anuncios'].includes(vista)) return 'comunicacion';
-  if(['ops-dashboard','ops-operaciones','ops-levantamientos','ops-historial','ops-rendimiento'].includes(vista)) return 'operaciones';
+  if(['ops-dashboard','ops-operaciones','ops-levantamientos','ops-historial','ops-rendimiento','ops-rutas','ops-mantenimiento','ops-control-tecnico'].includes(vista)) return 'operaciones';
   if(['ops-reportes','ops-reportes-agencia','ops-reportes-responsable','ops-reportes-tipos','ops-levantamiento-grupos-pdf'].includes(vista)) return 'reportes';
   if(['ops-usuarios','ops-suplidores','ops-trabajos','ops-averias'].includes(vista)) return 'catalogos';
   return 'inventario';
@@ -48,14 +48,8 @@ function initSidebarNavigation(){
 document.addEventListener('DOMContentLoaded', initSidebarNavigation);
 
 function cambiarVista(vista, el){
-  const ids = [
-    'vista-home','vista-productos','vista-almacenes','vista-entrada','vista-transferencia','vista-control-despachos','vista-agencias','vista-grupos',
-    'vista-dashboard-rrhh','vista-operadoras','vista-solicitudes','vista-historial-rrhh','vista-anuncios','vista-taller-v2',
-    'vista-ops-dashboard','vista-ops-operaciones','vista-ops-levantamientos','vista-ops-historial','vista-ops-rendimiento','vista-ops-reportes','vista-ops-reportes-agencia','vista-ops-reportes-responsable','vista-ops-reportes-tipos','vista-ops-usuarios','vista-ops-suplidores','vista-ops-trabajos','vista-ops-averias'
-  ];
-  ids.forEach(id => {
-    const node = document.getElementById(id);
-    if(node) node.classList.add('hidden');
+  document.querySelectorAll('[id^="vista-"]').forEach(node => {
+    if(node && node.classList) node.classList.add('hidden');
   });
   const target = document.getElementById('vista-' + vista);
   if(target) target.classList.remove('hidden');
