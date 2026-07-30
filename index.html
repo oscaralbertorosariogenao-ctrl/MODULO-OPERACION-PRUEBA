@@ -10047,6 +10047,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <a class="sidebar-link ops-subitem" id="navOperations" onclick="abrirVistaOperaciones('operations','ops-operaciones', this)"><i class="fas fa-screwdriver-wrench"></i><span>Gestión de operaciones</span></a>
 <a class="sidebar-link ops-subitem" id="navLevantamientos" onclick="abrirVistaOperaciones('levantamientos','ops-levantamientos', this)"><i class="fas fa-clipboard-check"></i><span>Levantamientos</span></a>
 <a class="sidebar-link ops-subitem" id="navPreventiveMaintenance" href="#" onclick="if(window.GOMantenimientoPreventivo){window.GOMantenimientoPreventivo.open(this);} return false;"><i class="fas fa-shield-heart"></i><span>Mantenimiento preventivo</span></a>
+<a class="sidebar-link ops-subitem" id="navControlTecnico" href="#" onclick="if(window.GOControlTecnico){window.GOControlTecnico.open(this);} return false;"><i class="fas fa-video"></i><span>Control técnico</span></a>
 <a class="sidebar-link ops-subitem" id="navHistory" onclick="abrirVistaOperaciones('history','ops-historial', this)"><i class="fas fa-clock-rotate-left"></i><span>Historial</span></a>
 <a class="sidebar-link ops-subitem" id="navRendimientoOperativo" onclick="lotekaOpenRendimientoOperativoV252(this); return false;"><i class="fas fa-chart-line"></i><span>Rendimiento Operativo</span></a>
 </div>
@@ -10896,6 +10897,8 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 </div></div></div>
 <div class="hidden" id="vista-ops-mantenimiento"></div>
+<div class="hidden" id="vista-ops-control-tecnico"></div>
+
 <div class="hidden" id="vista-ops-historial"><div class="ops-scope"><div class="view hidden" id="historyView">
 <div class="topbar">
 <div>
@@ -13202,6 +13205,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <script id="loteka-v80525-rutas-cobertura" src="assets/web/js/operaciones/077-loteka-v80525-rutas-cobertura.js"></script>
 <script id="loteka-v80530-mantenimiento-preventivo" src="assets/web/js/operaciones/078-loteka-v80530-mantenimiento-preventivo.js"></script>
 
+<script id="loteka-v80532-control-tecnico-personal" src="assets/web/js/operaciones/079-loteka-v80532-control-tecnico-personal.js"></script>
 
 </body>
 </html>
