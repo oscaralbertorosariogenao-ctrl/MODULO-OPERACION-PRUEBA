@@ -1,9 +1,9 @@
 (function(global){
   'use strict';
 
-  if(global.GOOperationalRoutes && global.GOOperationalRoutes.version === '805.26.1') return;
+  if(global.GOOperationalRoutes && global.GOOperationalRoutes.version === '805.31.0') return;
 
-  var VERSION = '805.26.1';
+  var VERSION = '805.31.0';
   var ALL_GROUPS = '__ALL__';
   var state = {
     comparison: null,
@@ -18,7 +18,9 @@
     pickerGroup: ALL_GROUPS,
     exportContext: null,
     mapEditor: null,
-    mapMarkers: []
+    mapMarkers: [],
+    roadRoute: null,
+    roadRouteAbort: null
   };
 
   function qs(selector,root){ return (root||document).querySelector(selector); }
@@ -118,6 +120,7 @@
       .gor-picker-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:10px;margin-bottom:12px}.gor-picker-list{display:grid;gap:8px;max-height:58vh;overflow:auto;padding-right:3px}.gor-picker-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:11px;align-items:center;border:1px solid #dbe7ef;border-radius:13px;padding:10px 12px;background:#fff;cursor:pointer}.gor-picker-row:hover{border-color:#9fd5e8;background:#f8fdff}.gor-picker-row.selected{border-color:#16a5d1;background:#edfaff}.gor-picker-code{font-weight:1000;color:#086f9f}.gor-picker-main strong{display:block;color:#173f5d}.gor-picker-main small{display:block;color:#73899a;margin-top:2px}.gor-check{width:25px;height:25px;border:2px solid #b9cfdd;border-radius:8px;display:grid;place-items:center;color:#fff}.gor-picker-row.selected .gor-check{background:#0999c9;border-color:#0999c9}.gor-export-preview{width:100%;min-height:380px;box-sizing:border-box;border:1px solid #c8dceb;border-radius:13px;padding:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.55;resize:vertical;background:#fbfdff}.gor-loading{opacity:.62;pointer-events:none}.gor-spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gorSpin .7s linear infinite}@keyframes gorSpin{to{transform:rotate(360deg)}}
       @media(max-width:980px){.gor-grid{grid-template-columns:1fr}.gor-hero{flex-direction:column}.gor-hero-actions{justify-content:flex-start}.gor-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:900px){.gor-map-editor{grid-template-columns:1fr}.gor-map-side{min-height:300px;max-height:420px}}
+      .gor-road-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border:1px solid #dce8f0;border-radius:13px;background:#f7fbfd}.gor-road-summary{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:#5f778a}.gor-road-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #d8e5ed;font-weight:800;color:#174866}.gor-road-note{font-size:11px;color:#71889a}.gor-btn.loading{opacity:.75;pointer-events:none}.gor-map-marker.start{background:#0f9d58}.gor-map-marker.end{background:#d93025}
       @media(max-width:620px){.gor-hero{padding:20px}.gor-hero h2{font-size:23px}.gor-form-grid,.gor-picker-toolbar{grid-template-columns:1fr}.gor-field.full{grid-column:auto}.gor-kpis{grid-template-columns:1fr 1fr}.gor-route-card{grid-template-columns:1fr}.gor-route-actions{justify-content:flex-start}.gor-tabs{width:100%}.gor-tab{flex:1;padding:9px 7px}.gor-card{padding:14px}.gor-map{height:380px}.gor-order-row{grid-template-columns:36px minmax(0,1fr)}.gor-order-controls{grid-column:2}.gor-modal{padding:8px}}
     `;
     document.head.appendChild(style);
@@ -152,7 +155,7 @@
       <div class="gor-modal" id="gorAgencyPickerModal" aria-hidden="true"><div class="gor-modal-card"><div class="gor-modal-head"><strong>Elegir agencias para la ruta</strong><button class="gor-modal-close" data-gor-close="gorAgencyPickerModal" type="button">×</button></div><div class="gor-modal-body"><div class="gor-picker-toolbar"><input class="gor-input" id="gorAgencySearch" placeholder="Buscar por número, nombre, sector o grupo"><select class="gor-select" id="gorAgencyGroupFilter"><option value="${ALL_GROUPS}">Todos los grupos</option></select></div><div class="gor-picker-list" id="gorAgencyPickerList"></div></div><div class="gor-modal-footer"><strong id="gorPickerCount">0 seleccionadas</strong><div class="gor-helper-row"><button class="gor-btn" id="gorPickerClearBtn" type="button">Limpiar selección</button><button class="gor-btn primary" id="gorPickerApplyBtn" type="button"><i class="fas fa-check"></i> Usar seleccionadas</button></div></div></div></div>
       <div class="gor-modal" id="gorExportModal" aria-hidden="true"><div class="gor-modal-card medium"><div class="gor-modal-head"><strong>Copiar o exportar ruta</strong><button class="gor-modal-close" data-gor-close="gorExportModal" type="button">×</button></div><div class="gor-modal-body"><textarea class="gor-export-preview" id="gorExportPreview" readonly></textarea></div><div class="gor-modal-footer"><span style="font-size:12px;color:#71889a">Formato listo para WhatsApp.</span><div class="gor-helper-row"><button class="gor-btn success" id="gorExportCopyBtn" type="button"><i class="fas fa-copy"></i> Copiar</button><button class="gor-btn" id="gorExportTxtBtn" type="button"><i class="fas fa-file-lines"></i> Descargar TXT</button><button class="gor-btn" id="gorExportCsvBtn" type="button"><i class="fas fa-file-csv"></i> Descargar CSV</button></div></div></div></div>
       <div class="gor-modal" id="gorDetailModal" aria-hidden="true"><div class="gor-modal-card"><div class="gor-modal-head"><strong id="gorDetailTitle">Detalle de ruta</strong><button class="gor-modal-close" data-gor-close="gorDetailModal" type="button">×</button></div><div class="gor-modal-body" id="gorDetailBody"></div></div></div>
-      <div class="gor-modal" id="gorMapModal" aria-hidden="true"><div class="gor-modal-card"><div class="gor-modal-head"><div><strong id="gorMapTitle">Mapa de ruta</strong><div style="font-size:11px;color:#71889a;margin-top:3px">Edita el orden directamente desde el mapa o arrastrando la lista.</div></div><button class="gor-modal-close" data-gor-close="gorMapModal" type="button">×</button></div><div class="gor-modal-body"><div class="gor-map-editor"><div><div class="gor-map" id="gorMapCanvas"></div><div id="gorMapFallback" style="margin-top:12px"></div></div><aside class="gor-map-side"><div class="gor-map-side-head"><strong>Orden visual de la ruta</strong><small>Toca un marcador para seleccionarlo. Arrastra las filas o usa las flechas para decidir cuál será 1, 2, 3...</small></div><div class="gor-map-order-list" id="gorMapOrderList"></div><div class="gor-map-footer"><button class="gor-btn small" id="gorMapResetOrderBtn" type="button"><i class="fas fa-rotate-left"></i> Restaurar</button><button class="gor-btn small success" id="gorMapApplyOrderBtn" type="button"><i class="fas fa-check"></i> Aplicar orden</button></div></aside></div></div></div></div>
+      <div class="gor-modal" id="gorMapModal" aria-hidden="true"><div class="gor-modal-card"><div class="gor-modal-head"><div><strong id="gorMapTitle">Mapa de ruta</strong><div style="font-size:11px;color:#71889a;margin-top:3px">Edita el orden directamente desde el mapa o arrastrando la lista.</div></div><button class="gor-modal-close" data-gor-close="gorMapModal" type="button">×</button></div><div class="gor-modal-body"><div class="gor-map-editor"><div><div class="gor-map" id="gorMapCanvas"></div><div class="gor-road-toolbar"><button class="gor-btn primary" id="gorCalculateRoadRouteBtn" type="button"><i class="fas fa-road"></i> Calcular ruta real</button><button class="gor-btn" id="gorClearRoadRouteBtn" type="button" style="display:none"><i class="fas fa-xmark"></i> Quitar recorrido</button><div class="gor-road-summary" id="gorRoadRouteSummary"><span class="gor-road-note">Ordena las agencias y pulsa “Calcular ruta real”. No se guarda en Supabase.</span></div></div><div id="gorMapFallback" style="margin-top:12px"></div></div><aside class="gor-map-side"><div class="gor-map-side-head"><strong>Orden visual de la ruta</strong><small>Toca un marcador para seleccionarlo. Arrastra las filas o usa las flechas para decidir cuál será 1, 2, 3...</small></div><div class="gor-map-order-list" id="gorMapOrderList"></div><div class="gor-map-footer"><button class="gor-btn small" id="gorMapResetOrderBtn" type="button"><i class="fas fa-rotate-left"></i> Restaurar</button><button class="gor-btn small success" id="gorMapApplyOrderBtn" type="button"><i class="fas fa-check"></i> Aplicar orden</button></div></aside></div></div></div></div>
     `;
     anchor.parentNode.insertBefore(view,anchor.nextSibling);
   }
@@ -442,7 +445,7 @@
   }
   function mapEditorMove(from,to){
     var ed=state.mapEditor;if(!ed||from<0||to<0||from>=ed.order.length||to>=ed.order.length||from===to)return;
-    var item=ed.order.splice(from,1)[0];ed.order.splice(to,0,item);renderMapEditor();
+    var item=ed.order.splice(from,1)[0];ed.order.splice(to,0,item);invalidateRoadRoute();renderMapEditor();
   }
   function renderMapEditor(){
     var ed=state.mapEditor,listEl=qs('#gorMapOrderList');if(!ed||!listEl)return;
@@ -463,11 +466,71 @@
   function selectMapAgency(key,openPopup){
     var ed=state.mapEditor;if(!ed)return;ed.selectedKey=key;renderMapEditor();var marker=state.mapMarkers.find(function(m){return m.key===key;});if(marker&&openPopup){try{marker.marker.togglePopup();state.map.easeTo({center:marker.marker.getLngLat(),zoom:Math.max(state.map.getZoom(),14)});}catch(_e){}}
   }
+  function routeFeature(coordinates){return{type:'Feature',geometry:{type:'LineString',coordinates:coordinates||[]},properties:{}};}
+  function formatKm(meters){var km=Number(meters||0)/1000;return km<10?km.toFixed(1)+' km':Math.round(km)+' km';}
+  function formatDuration(seconds){var mins=Math.round(Number(seconds||0)/60);if(mins<60)return mins+' min';var h=Math.floor(mins/60),m=mins%60;return h+' h'+(m?' '+m+' min':'');}
+  function setRoadSummary(html){var el=qs('#gorRoadRouteSummary');if(el)el.innerHTML=html;}
+  function invalidateRoadRoute(){
+    state.roadRoute=null;
+    if(state.roadRouteAbort){try{state.roadRouteAbort.abort();}catch(_e){}state.roadRouteAbort=null;}
+    var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='none';
+    setRoadSummary('<span class="gor-road-note">Orden modificado. Pulsa “Calcular ruta real” para actualizar el recorrido.</span>');
+    drawMapRouteLine();
+  }
+  function setRouteSource(data){
+    if(!state.map||!state.map.isStyleLoaded())return;
+    try{
+      var source=state.map.getSource('gor-route-line');
+      if(source)source.setData(data);else state.map.addSource('gor-route-line',{type:'geojson',data:data});
+      if(!state.map.getLayer('gor-route-line-outline'))state.map.addLayer({id:'gor-route-line-outline',type:'line',source:'gor-route-line',paint:{'line-color':'#ffffff','line-width':8,'line-opacity':.92,'line-blur':1}});
+      if(!state.map.getLayer('gor-route-line-layer'))state.map.addLayer({id:'gor-route-line-layer',type:'line',source:'gor-route-line',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#087fba','line-width':5,'line-opacity':.95}});
+    }catch(_e){}
+  }
   function drawMapRouteLine(){
     if(!state.map||!state.mapEditor||!state.map.isStyleLoaded())return;
-    var coordinates=state.mapEditor.order.map(agencyCoords).filter(Boolean).map(function(c){return[c.lng,c.lat];}),data={type:'Feature',geometry:{type:'LineString',coordinates:coordinates},properties:{}};
-    try{var source=state.map.getSource('gor-route-line');if(source)source.setData(data);else{state.map.addSource('gor-route-line',{type:'geojson',data:data});state.map.addLayer({id:'gor-route-line-layer',type:'line',source:'gor-route-line',paint:{'line-color':'#087fba','line-width':4,'line-opacity':.72}});}}catch(_e){}
+    var straight=state.mapEditor.order.map(agencyCoords).filter(Boolean).map(function(c){return[c.lng,c.lat];});
+    var coordinates=state.roadRoute&&state.roadRoute.coordinates&&state.roadRoute.coordinates.length?state.roadRoute.coordinates:straight;
+    setRouteSource(routeFeature(coordinates));
+    try{
+      if(state.map.getLayer('gor-route-line-layer'))state.map.setPaintProperty('gor-route-line-layer','line-dasharray',state.roadRoute?[1,0]:[1.5,1.5]);
+      if(state.map.getLayer('gor-route-line-layer'))state.map.setPaintProperty('gor-route-line-layer','line-opacity',state.roadRoute?.9:.55);
+    }catch(_e){}
   }
+  async function fetchRoadChunk(points,signal){
+    var coords=points.map(function(c){return c.lng+','+c.lat;}).join(';');
+    var url='https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson&steps=false&alternatives=false';
+    var response=await fetch(url,{method:'GET',signal:signal,headers:{'Accept':'application/json'}});
+    if(!response.ok)throw new Error('El servicio de rutas respondió '+response.status+'.');
+    var json=await response.json();
+    if(json.code!=='Ok'||!json.routes||!json.routes[0])throw new Error(json.message||'No se pudo calcular el recorrido por calles.');
+    return json.routes[0];
+  }
+  async function calculateRoadRoute(){
+    var ed=state.mapEditor,btn=qs('#gorCalculateRoadRouteBtn');if(!ed)return;
+    var points=ed.order.map(function(a){var c=agencyCoords(a);return c?{a:a,lng:c.lng,lat:c.lat}:null;}).filter(Boolean);
+    if(points.length<2){notify('Necesitas al menos dos agencias con coordenadas.','error');return;}
+    if(state.roadRouteAbort){try{state.roadRouteAbort.abort();}catch(_e){}}
+    var controller=global.AbortController?new AbortController():null;state.roadRouteAbort=controller;
+    setButtonLoading(btn,true,'Calculando calles...');setRoadSummary('<span class="gor-spin" style="display:inline-block"></span><span>Calculando recorrido real por las calles...</span>');
+    try{
+      var all=[],distance=0,duration=0,max=25;
+      for(var i=0;i<points.length-1;i+=max-1){
+        var chunk=points.slice(i,Math.min(i+max,points.length));if(chunk.length<2)break;
+        var route=await fetchRoadChunk(chunk,controller?controller.signal:undefined),segment=route.geometry&&route.geometry.coordinates||[];
+        if(all.length&&segment.length)segment=segment.slice(1);all=all.concat(segment);distance+=Number(route.distance||0);duration+=Number(route.duration||0);
+      }
+      if(!all.length)throw new Error('El servicio no devolvió un trazado válido.');
+      state.roadRoute={coordinates:all,distance:distance,duration:duration,calculatedAt:new Date().toISOString(),provider:'OSRM'};
+      drawMapRouteLine();
+      var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='';
+      setRoadSummary('<span class="gor-road-pill"><i class="fas fa-road"></i> '+formatKm(distance)+'</span><span class="gor-road-pill"><i class="fas fa-clock"></i> '+formatDuration(duration)+'</span><span class="gor-road-pill"><i class="fas fa-location-dot"></i> '+points.length+' paradas</span><span class="gor-road-note">Recorrido temporal; no guardado en Supabase.</span>');
+      try{var b=new global.maplibregl.LngLatBounds();all.forEach(function(c){b.extend(c);});state.map.fitBounds(b,{padding:55,maxZoom:15});}catch(_e){}
+    }catch(error){
+      if(error&&error.name==='AbortError')return;
+      state.roadRoute=null;drawMapRouteLine();setRoadSummary('<span class="gor-road-note">No se pudo calcular la ruta real. Se mantiene la línea de referencia.</span>');handleError(error,'calcular ruta real');
+    }finally{state.roadRouteAbort=null;setButtonLoading(btn,false);}
+  }
+  function clearRoadRoute(){state.roadRoute=null;var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='none';setRoadSummary('<span class="gor-road-note">Recorrido eliminado. Pulsa “Calcular ruta real” cuando quieras generarlo otra vez.</span>');drawMapRouteLine();}
   function applyMapOrder(){
     var ed=state.mapEditor;if(!ed)return;
     if(ed.applyToCurrent){state.routeOrder=ed.order.map(function(a){return agencyKey(a.numero||a.codigo);});syncItemOrder();renderComparison();notify('Orden del mapa aplicado a la ruta.','success');closeModal('gorMapModal');}
@@ -475,9 +538,9 @@
     else closeModal('gorMapModal');
   }
   function openMap(routeAgencies,title,options){
-    var list=(routeAgencies||[]).filter(Boolean),opts=options||{};openModal('gorMapModal');qs('#gorMapTitle').textContent=title||'Mapa de ruta';var fallback=qs('#gorMapFallback');fallback.innerHTML='';qs('#gorMapCanvas').innerHTML='';state.mapEditor={order:list.slice(),original:list.slice(),selectedKey:null,dragKey:null,applyToCurrent:!!opts.applyToCurrent,onApply:opts.onApply||null};
+    var list=(routeAgencies||[]).filter(Boolean),opts=options||{};openModal('gorMapModal');qs('#gorMapTitle').textContent=title||'Mapa de ruta';var fallback=qs('#gorMapFallback');fallback.innerHTML='';qs('#gorMapCanvas').innerHTML='';state.mapEditor={order:list.slice(),original:list.slice(),selectedKey:null,dragKey:null,applyToCurrent:!!opts.applyToCurrent,onApply:opts.onApply||null};state.roadRoute=null;
     qs('#gorMapApplyOrderBtn').style.display=opts.editable===false?'none':'';qs('#gorMapResetOrderBtn').style.display=opts.editable===false?'none':'';
-    qs('#gorMapApplyOrderBtn').onclick=applyMapOrder;qs('#gorMapResetOrderBtn').onclick=function(){state.mapEditor.order=state.mapEditor.original.slice();renderMapEditor();};renderMapEditor();
+    qs('#gorMapApplyOrderBtn').onclick=applyMapOrder;qs('#gorMapResetOrderBtn').onclick=function(){state.mapEditor.order=state.mapEditor.original.slice();invalidateRoadRoute();renderMapEditor();};var calcBtn=qs('#gorCalculateRoadRouteBtn'),clearBtn=qs('#gorClearRoadRouteBtn');if(calcBtn)calcBtn.onclick=calculateRoadRoute;if(clearBtn){clearBtn.onclick=clearRoadRoute;clearBtn.style.display='none';}setRoadSummary('<span class="gor-road-note">Ordena las agencias y pulsa “Calcular ruta real”. No se guarda en Supabase.</span>');renderMapEditor();
     var coords=list.map(function(a){var c=agencyCoords(a);return c?{a:a,lat:c.lat,lng:c.lng}:null;}).filter(Boolean);
     if(!global.maplibregl||!coords.length){qs('#gorMapCanvas').innerHTML='<div class="gor-empty" style="margin:20px">No hay coordenadas suficientes para dibujar el mapa. Todavía puedes organizar la ruta desde la lista lateral.</div>';fallback.innerHTML='<div class="gor-chips">'+list.map(function(a){return '<a class="gor-chip" href="'+esc(agencyMapUrl(a))+'" target="_blank">AG '+esc(agencyNumber(a))+'</a>';}).join('')+'</div>';return;}
     try{
@@ -492,6 +555,6 @@
   async function open(nav){if(!canView()){notify('No tienes permiso para consultar Rutas y cobertura.','error');return;}if(typeof global.cambiarVista==='function')global.cambiarVista('ops-rutas',nav||document.getElementById('navRoutesCoverage'));else{qsa('[id^="vista-"]').forEach(function(v){v.classList.add('hidden');});document.getElementById('vista-ops-rutas')?.classList.remove('hidden');}try{if(typeof global.setSidebarSectionOpen==='function')global.setSidebarSectionOpen('operaciones',true);}catch(_e){}populateGroups();populateProfiles(false);if(!qs('#gorRouteDate').value)qs('#gorRouteDate').value=nowISO();if(!qs('#gorGroupSelect').value)qs('#gorGroupSelect').value=ALL_GROUPS;}
   function init(){injectStyles();buildView();buildNav();wrapNavigation();bindEvents();populateGroups();if(qs('#gorRouteDate'))qs('#gorRouteDate').value=nowISO();if(qs('#gorGroupSelect'))qs('#gorGroupSelect').value=ALL_GROUPS;refreshPermissionVisibility();var rt=runtime();if(rt){rt.modules.register('operaciones-rutas',{version:VERSION,refresh:refreshAllData,open:open});rt.events.on('auth:ready',function(){refreshPermissionVisibility();populateGroups();});rt.events.on('state:permissions',refreshPermissionVisibility);}}
 
-  global.GOOperationalRoutes={version:VERSION,init:init,open:open,compare:compareFromForm,refresh:refreshAllData,parseList:parseAgencyTokens,compareData:makeComparison,copyCurrent:function(){openExportForCurrent(true);},moveMapAgencyToPosition:function(key){var ed=state.mapEditor;if(!ed)return;var i=ed.order.findIndex(function(a){return agencyKey(a.numero||a.codigo)===String(key);});var raw=global.prompt?global.prompt('Mover AG '+agencyNumber(ed.order[i])+' a la posición (1-'+ed.order.length+'): ',String(i+1)):null,n=Number(raw);if(Number.isInteger(n)&&n>=1&&n<=ed.order.length)mapEditorMove(i,n-1);},diagnostics:function(){return{version:VERSION,comparison:state.comparison?state.comparison.counts:null,routes:state.routes.length,profiles:state.profiles.length,canView:canView(),canManage:canManage(),routeOrder:state.routeOrder.slice()};}};
+  global.GOOperationalRoutes={version:VERSION,init:init,open:open,compare:compareFromForm,refresh:refreshAllData,parseList:parseAgencyTokens,compareData:makeComparison,copyCurrent:function(){openExportForCurrent(true);},moveMapAgencyToPosition:function(key){var ed=state.mapEditor;if(!ed)return;var i=ed.order.findIndex(function(a){return agencyKey(a.numero||a.codigo)===String(key);});var raw=global.prompt?global.prompt('Mover AG '+agencyNumber(ed.order[i])+' a la posición (1-'+ed.order.length+'): ',String(i+1)):null,n=Number(raw);if(Number.isInteger(n)&&n>=1&&n<=ed.order.length)mapEditorMove(i,n-1);},diagnostics:function(){return{version:VERSION,comparison:state.comparison?state.comparison.counts:null,routes:state.routes.length,profiles:state.profiles.length,canView:canView(),canManage:canManage(),routeOrder:state.routeOrder.slice(),roadRoute:state.roadRoute?{distance:state.roadRoute.distance,duration:state.roadRoute.duration,points:state.roadRoute.coordinates.length}:null};}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })(window);
