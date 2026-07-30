@@ -63,16 +63,16 @@ function injectNav(){
 function installNavigationBridge(){ return true; }
 function hideOther(nav){
   installNavigationBridge();
-  var own=q('#vista-ops-mantenimiento');
-  qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden');node.style.display=''});
-  if(own){
-    own.classList.remove('hidden');
-    own.style.setProperty('display','block','important');
-    qa('.view.hidden',own).forEach(function(node){node.classList.remove('hidden')});
+  if(global.GONavigationCoordinator&&typeof global.GONavigationCoordinator.show==='function'){
+    global.GONavigationCoordinator.show('vista-ops-mantenimiento',nav||q('#navPreventiveMaintenance'));
+    return;
   }
+  var own=q('#vista-ops-mantenimiento');
+  qa('[id^="vista-"]').forEach(function(node){node.classList.add('hidden');node.style.setProperty('display','none','important')});
+  if(own){own.classList.remove('hidden');own.style.setProperty('display','block','important')}
   qa('.sidebar-link').forEach(function(node){node.classList.remove('active')});
-  if(nav) nav.classList.add('active');
-  if(typeof global.setSidebarSectionOpen==='function') global.setSidebarSectionOpen('operaciones',true);
+  if(nav)nav.classList.add('active');
+  if(typeof global.setSidebarSectionOpen==='function')global.setSidebarSectionOpen('operaciones',true);
 }
 function open(nav){
   hideOther(nav||q('#navPreventiveMaintenance'));
