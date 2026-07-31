@@ -1,7 +1,7 @@
 (function(global){
 'use strict';
-if(global.GOMantenimientoPreventivo && global.GOMantenimientoPreventivo.version==='805.30D') return;
-var VERSION='805.30D';
+if(global.GOMantenimientoPreventivo && global.GOMantenimientoPreventivo.version==='807.00') return;
+var VERSION='807.00';
 var state={initialized:false,tipos:[],planes:[],detalle:null,selected:new Set(),agencyFilter:'',groupFilter:'ALL'};
 function q(s,r){return (r||document).querySelector(s)} function qa(s,r){return Array.from((r||document).querySelectorAll(s))}
 function tx(v){return String(v==null?'':v).trim()} function esc(v){return tx(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -21,10 +21,11 @@ function gid(g){for(var x of [g&&g.supabaseId,g&&g.id_supabase,g&&g.grupo_id,g&&
 function agid(a){return tx(a&&(a.grupoId||a.grupo_id||a.group_id))}
 function anum(a){return pad(a&&(a.numero||a.codigo||a.agencia))} function aname(a){return tx(a&&(a.nombre||a.descripcion||a.nombre_agencia))||('Agencia '+anum(a))}
 function glabel(g){return tx(g&&(g.codigo||g.nombre||g.numero))||'Grupo'}
-function groupForAgency(a){return groups().find(function(g){return gid(g)===agid(a)})}
+function normGroup(v){return tx(v).replace(/^\s*(?:grupo|g)\s*[-:]?\s*/i,'').replace(/^0+/,'')}
+function groupForAgency(a){var candidates=[agid(a),a&&a.grupo,a&&a.grupo_codigo,a&&a.codigo_grupo].map(tx).filter(Boolean);return groups().find(function(g){var values=[gid(g),g&&g.id,g&&g.codigo,g&&g.nombre,g&&g.numero].map(tx).filter(Boolean);return candidates.some(function(c){return values.some(function(v){return c===v||normGroup(c)===normGroup(v)})})})}
 function fmtDate(v){if(!v)return'-';try{return new Intl.DateTimeFormat('es-DO',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(String(v).slice(0,10)+'T00:00:00'))}catch(e){return tx(v)}}
 function statusLabel(s){return tx(s).replace(/_/g,' ')}
-function statusClass(s){s=tx(s);return /COMPLET/.test(s)?'ok':/VENC|REQUIERE|NO_REAL|CANCEL/.test(s)?'bad':/PROCESO|CAMINO/.test(s)?'run':'wait'}
+function statusClass(s){s=tx(s);return /COMPLET|SIN_HALLAZGOS|CERRADO/.test(s)?'ok':/VENC|REQUIERE|NO_REAL|CANCEL|CON_HALLAZGOS/.test(s)?'bad':/PROCESO|CAMINO|RECIBIDO|REVISION/.test(s)?'run':'wait'}
 function injectStyle(){if(q('#gomp-style'))return;var s=document.createElement('style');s.id='gomp-style';s.textContent=`
 #gomp-view{padding:0 0 30px}.gomp{font-family:Inter,system-ui;color:#12344f}.gomp-hero{display:flex;justify-content:space-between;gap:16px;padding:25px;border:1px solid #d6e6f1;border-radius:22px;background:linear-gradient(135deg,#f8fdff,#eaf7ff);box-shadow:0 16px 38px rgba(14,70,107,.08);margin-bottom:16px}.gomp-hero h2{margin:0;color:#092f4f;font-size:27px}.gomp-hero p{margin:7px 0 0;color:#657f94}.gomp-actions,.gomp-tabs,.gomp-row{display:flex;gap:9px;flex-wrap:wrap}.gomp-btn{border:1px solid #c9dce9;background:#fff;color:#075f96;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer}.gomp-btn.primary{background:linear-gradient(135deg,#087bbb,#05a7d4);color:#fff;border:0}.gomp-btn.danger{color:#b42318}.gomp-tabs{background:#edf5fa;border-radius:13px;padding:5px;width:max-content;margin-bottom:15px}.gomp-tab{border:0;background:transparent;padding:9px 14px;border-radius:9px;font-weight:900;color:#607b90;cursor:pointer}.gomp-tab.active{background:#fff;color:#086395;box-shadow:0 4px 14px #aac4d555}.gomp-panel{display:none}.gomp-panel.active{display:block}.gomp-stats{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:11px;margin-bottom:15px}.gomp-stat,.gomp-card{background:#fff;border:1px solid #d7e6f0;border-radius:17px;padding:16px;box-shadow:0 10px 25px rgba(11,62,97,.055)}.gomp-stat span{font-size:12px;color:#6d879b;font-weight:800}.gomp-stat strong{display:block;font-size:26px;color:#0a3e66;margin-top:5px}.gomp-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.gomp-card h3{margin:0;color:#123f62}.gomp-table{width:100%;border-collapse:collapse}.gomp-table th,.gomp-table td{padding:11px;border-bottom:1px solid #e5eef4;text-align:left;font-size:13px}.gomp-table th{color:#668094;font-size:11px;text-transform:uppercase}.gomp-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.gomp-badge.ok{background:#e7f8ef;color:#08774a}.gomp-badge.bad{background:#fff0ef;color:#b42318}.gomp-badge.run{background:#eaf5ff;color:#08689e}.gomp-badge.wait{background:#fff7df;color:#8b6500}.gomp-empty{text-align:center;padding:35px;color:#71899a}.gomp-modal{position:fixed;inset:0;background:#092b4677;display:none;align-items:center;justify-content:center;z-index:10050;padding:20px}.gomp-modal.open{display:flex}.gomp-dialog{width:min(980px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #061c2e66}.gomp-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.gomp-field label{display:block;font-size:11px;font-weight:1000;color:#587389;margin-bottom:6px;text-transform:uppercase}.gomp-field input,.gomp-field select,.gomp-field textarea{width:100%;border:1px solid #cbdce8;border-radius:11px;padding:10px;font:inherit}.gomp-field.full{grid-column:1/-1}.gomp-picker{border:1px solid #d8e6ef;border-radius:13px;max-height:300px;overflow:auto}.gomp-ag{display:grid;grid-template-columns:32px 95px 1fr 120px;gap:8px;align-items:center;padding:9px 11px;border-bottom:1px solid #edf2f6}.gomp-ag:hover{background:#f5fbff}.gomp-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.gomp-type{border:1px solid #d7e6ef;border-radius:15px;padding:15px}.gomp-type h4{margin:0 0 6px;color:#123e5f}.gomp-progress{height:8px;background:#e8f0f5;border-radius:999px;overflow:hidden}.gomp-progress i{display:block;height:100%;background:#0b9ccd}.gomp-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}@media(max-width:900px){.gomp-stats{grid-template-columns:repeat(2,1fr)}.gomp-grid,.gomp-type-grid,.gomp-detail-grid{grid-template-columns:1fr}.gomp-hero{flex-direction:column}.gomp-ag{grid-template-columns:28px 80px 1fr}}
 `;document.head.appendChild(s)}
@@ -94,10 +95,72 @@ function renderPicker(){var list=visibleAgencies(),el=q('#gomp-agency-picker');e
 function updateSelected(){q('#gomp-selected-count').textContent=state.selected.size+' agencias seleccionadas'}
 async function savePlan(){if(!canManage())return;var c=db(),name=tx(q('#gomp-name').value),type=q('#gomp-type').value,start=q('#gomp-start').value;if(!name||!type||!start||!state.selected.size)return toast('Completa nombre, tipo, fecha y selecciona agencias.','error');var payload={nombre:name,tipo_id:type,fecha_inicio:start,fecha_limite:q('#gomp-limit').value||null,frecuencia:q('#gomp-frequency').value,responsable_nombre:tx(q('#gomp-responsible').value)||null,observaciones:tx(q('#gomp-notes').value)||null,estado:'PROGRAMADO'};try{var r=await c.from('mantenimiento_planes').insert(payload).select('id').single();if(r.error)throw r.error;var rows=Array.from(state.selected).map((id,i)=>({plan_id:r.data.id,agencia_id:id,orden:i+1,fecha_programada:start,estado:'PENDIENTE'}));var x=await c.from('mantenimiento_plan_agencias').insert(rows);if(x.error)throw x.error;q('#gomp-plan-modal').classList.remove('open');toast('Plan preventivo creado correctamente.','success');loadAll()}catch(e){err(e)}}
 async function saveType(){var c=db(),name=tx(q('#gomp-type-name').value);if(!name)return toast('Escribe el nombre del tipo.','error');var checklist=tx(q('#gomp-type-checklist').value).split(/\n/).map(tx).filter(Boolean);try{var r=await c.from('mantenimiento_tipos').insert({nombre:name,descripcion:tx(q('#gomp-type-desc').value)||null,frecuencia_dias:Number(q('#gomp-type-days').value)||null,evidencia_obligatoria:q('#gomp-type-evidence').value==='true',checklist:checklist});if(r.error)throw r.error;q('#gomp-type-modal').classList.remove('open');toast('Tipo creado.','success');loadAll()}catch(e){err(e)}}
-async function showDetail(id){var c=db();try{var r=await c.from('mantenimiento_planes').select('*, mantenimiento_tipos(*), mantenimiento_plan_agencias(*)').eq('id',id).single();if(r.error)throw r.error;state.detalle=r.data;var p=r.data,z=progress(p);q('#gomp-detail-title').textContent=p.nombre;q('#gomp-detail-code').textContent=(p.codigo||'')+' · '+statusLabel(p.estado);var amap=new Map(agencies().map(a=>[aid(a),a]));q('#gomp-detail').innerHTML='<div class="gomp-detail-grid"><div class="gomp-stat"><span>Tipo</span><strong style="font-size:16px">'+esc(p.mantenimiento_tipos&&p.mantenimiento_tipos.nombre)+'</strong></div><div class="gomp-stat"><span>Fecha</span><strong style="font-size:16px">'+fmtDate(p.fecha_inicio)+'</strong></div><div class="gomp-stat"><span>Avance</span><strong style="font-size:16px">'+z.done+'/'+z.total+' ('+z.pct+'%)</strong></div></div><div style="overflow:auto"><table class="gomp-table"><thead><tr><th>#</th><th>Agencia</th><th>Grupo</th><th>Estado</th><th>Actualizar</th></tr></thead><tbody>'+(p.mantenimiento_plan_agencias||[]).sort((a,b)=>a.orden-b.orden).map(function(x){var a=amap.get(x.agencia_id),g=a&&groupForAgency(a);return '<tr><td>'+x.orden+'</td><td><b>AG '+esc(a?anum(a):x.agencia_id)+'</b><br><small>'+esc(a?aname(a):'')+'</small></td><td>'+esc(glabel(g))+'</td><td><span class="gomp-badge '+statusClass(x.estado)+'">'+esc(statusLabel(x.estado))+'</span></td><td><select data-state-id="'+x.id+'"><option '+(x.estado==='PENDIENTE'?'selected':'')+'>PENDIENTE</option><option '+(x.estado==='EN_PROCESO'?'selected':'')+'>EN_PROCESO</option><option '+(x.estado==='COMPLETADO'?'selected':'')+'>COMPLETADO</option><option '+(x.estado==='AGENCIA_CERRADA'?'selected':'')+'>AGENCIA_CERRADA</option><option '+(x.estado==='REQUIERE_REPARACION'?'selected':'')+'>REQUIERE_REPARACION</option><option '+(x.estado==='REQUIERE_PIEZAS'?'selected':'')+'>REQUIERE_PIEZAS</option><option '+(x.estado==='REQUIERE_NUEVA_VISITA'?'selected':'')+'>REQUIERE_NUEVA_VISITA</option></select></td></tr>'}).join('')+'</tbody></table></div>';qa('[data-state-id]',q('#gomp-detail')).forEach(s=>s.onchange=()=>updateAgencyState(s.dataset.stateId,s.value));q('#gomp-detail-modal').classList.add('open')}catch(e){err(e)}}
-async function updateAgencyState(id,status){if(!canManage())return;var c=db(),payload={estado:status,actualizado_en:new Date().toISOString()};if(status==='COMPLETADO')payload.fecha_completada=new Date().toISOString();try{var r=await c.from('mantenimiento_plan_agencias').update(payload).eq('id',id);if(r.error)throw r.error;toast('Estado actualizado.','success');await loadAll();showDetail(state.detalle.id)}catch(e){err(e)}}
+async function showDetail(id){
+  var c=db();
+  try{
+    var r=await c.from('mantenimiento_planes').select('*, mantenimiento_tipos(*), mantenimiento_plan_agencias(*)').eq('id',id).single();
+    if(r.error)throw r.error;
+    state.detalle=r.data;
+    var p=r.data,z=progress(p),rows=(p.mantenimiento_plan_agencias||[]).sort(function(a,b){return a.orden-b.orden});
+    var originIds=rows.map(function(x){return x.id});
+    var linked=[];
+    if(originIds.length){
+      var lr=await c.from('ops_levantamiento_agencias').select('id,campana_id,origen_registro_id,estado,hallazgos_activos,hallazgos_resueltos,evidencias_count').eq('origen','MANTENIMIENTO_PREVENTIVO').in('origen_registro_id',originIds);
+      if(!lr.error)linked=lr.data||[];
+    }
+    var linkedMap=new Map(linked.map(function(x){return [x.origen_registro_id,x]}));
+    q('#gomp-detail-title').textContent=p.nombre;
+    q('#gomp-detail-code').textContent=(p.codigo||'')+' · '+statusLabel(p.estado);
+    var amap=new Map(agencies().map(function(a){return [aid(a),a]}));
+    q('#gomp-detail').innerHTML='<div class="gomp-detail-grid"><div class="gomp-stat"><span>Tipo</span><strong style="font-size:16px">'+esc(p.mantenimiento_tipos&&p.mantenimiento_tipos.nombre)+'</strong></div><div class="gomp-stat"><span>Fecha</span><strong style="font-size:16px">'+fmtDate(p.fecha_inicio)+'</strong></div><div class="gomp-stat"><span>Avance</span><strong style="font-size:16px">'+z.done+'/'+z.total+' ('+z.pct+'%)</strong></div></div><div style="overflow:auto"><table class="gomp-table"><thead><tr><th>#</th><th>Agencia</th><th>Grupo</th><th>Levantamiento</th><th>Estado del plan</th><th>Acciones</th></tr></thead><tbody>'+rows.map(function(x){
+      var a=amap.get(x.agencia_id),g=a&&groupForAgency(a),survey=linkedMap.get(x.id);
+      var surveyHtml=survey?'<span class="gomp-badge '+statusClass(survey.estado)+'">'+esc(statusLabel(survey.estado))+'</span><br><small>'+Number(survey.hallazgos_activos||0)+' problema(s) activo(s) · '+Number(survey.evidencias_count||0)+' foto(s)</small>':'<span class="gomp-badge wait">PENDIENTE DE FORMULARIO</span>';
+      return '<tr><td>'+x.orden+'</td><td><b>AG '+esc(a?anum(a):x.agencia_id)+'</b><br><small>'+esc(a?aname(a):'')+'</small></td><td>'+esc(glabel(g))+'</td><td>'+surveyHtml+'</td><td><span class="gomp-badge '+statusClass(x.estado)+'">'+esc(statusLabel(x.estado))+'</span><br><select data-state-id="'+x.id+'" style="margin-top:7px"><option '+(x.estado==='PENDIENTE'?'selected':'')+'>PENDIENTE</option><option '+(x.estado==='EN_PROCESO'?'selected':'')+'>EN_PROCESO</option><option '+(x.estado==='COMPLETADO'?'selected':'')+'>COMPLETADO</option><option '+(x.estado==='AGENCIA_CERRADA'?'selected':'')+'>AGENCIA_CERRADA</option><option '+(x.estado==='REQUIERE_REPARACION'?'selected':'')+'>REQUIERE_REPARACION</option><option '+(x.estado==='REQUIERE_PIEZAS'?'selected':'')+'>REQUIERE_PIEZAS</option><option '+(x.estado==='REQUIERE_NUEVA_VISITA'?'selected':'')+'>REQUIERE_NUEVA_VISITA</option></select></td><td><div class="gomp-actions"><button class="gomp-btn primary" data-maint-survey="'+x.id+'">'+(survey?'Continuar / repetir formulario':'Abrir formulario')+'</button>'+(survey?'<button class="gomp-btn" data-maint-campaign="'+survey.campana_id+'">Ver levantamiento</button>':'')+'</div></td></tr>'
+    }).join('')+'</tbody></table></div>';
+    qa('[data-state-id]',q('#gomp-detail')).forEach(function(select){select.onchange=function(){updateAgencyState(select.dataset.stateId,select.value)}});
+    qa('[data-maint-survey]',q('#gomp-detail')).forEach(function(button){button.onclick=function(){openMaintenanceSurvey(button.dataset.maintSurvey)}});
+    qa('[data-maint-campaign]',q('#gomp-detail')).forEach(function(button){button.onclick=function(){q('#gomp-detail-modal').classList.remove('open');if(global.GOLevantamientosGrupos)global.GOLevantamientosGrupos.openCampaign(button.dataset.maintCampaign);else toast('El módulo Levantamientos todavía no está disponible.','error')}});
+    q('#gomp-detail-modal').classList.add('open');
+  }catch(e){err(e)}
+}
+function openMaintenanceSurvey(planAgencyId){
+  var p=state.detalle,row=(p&&p.mantenimiento_plan_agencias||[]).find(function(x){return x.id===planAgencyId});
+  if(!p||!row)return toast('No se encontró la agencia del plan.','error');
+  var a=agencies().find(function(item){return aid(item)===row.agencia_id}),g=a&&groupForAgency(a);
+  if(!a||!g)return toast('No se pudo identificar la agencia o su grupo.','error');
+  if(!global.GOLevantamientosGrupos)return toast('El módulo Levantamientos todavía no está disponible.','error');
+  q('#gomp-detail-modal').classList.remove('open');
+  global.GOLevantamientosGrupos.openFromMaintenance({
+    planId:p.id,
+    planAgencyId:row.id,
+    agencyId:aid(a),
+    groupId:gid(g),
+    groupCode:glabel(g),
+    responsible:p.responsable_nombre||'',
+    name:'Mantenimiento preventivo · '+p.nombre,
+    metadata:{plan_codigo:p.codigo||null,tipo:p.mantenimiento_tipos&&p.mantenimiento_tipos.nombre||null}
+  });
+}
+async function updateAgencyState(id,status){
+  if(!canManage())return;
+  var c=db(),payload={estado:status,actualizado_en:new Date().toISOString()};
+  try{
+    if(status==='COMPLETADO'){
+      var survey=await c.from('ops_levantamiento_agencias').select('id,estado,hallazgos_activos').eq('origen','MANTENIMIENTO_PREVENTIVO').eq('origen_registro_id',id).maybeSingle();
+      if(survey.error)throw survey.error;
+      if(!survey.data){toast('Primero debes completar el formulario de levantamiento de esta agencia.','error');return showDetail(state.detalle.id)}
+      if(!['SIN_HALLAZGOS','CERRADO'].includes(survey.data.estado)){toast('Esta agencia todavía tiene hallazgos pendientes. Resuélvelos o ciérralos desde Levantamientos antes de completar el mantenimiento.','error');return showDetail(state.detalle.id)}
+      payload.fecha_completada=new Date().toISOString();
+    }else payload.fecha_completada=null;
+    var r=await c.from('mantenimiento_plan_agencias').update(payload).eq('id',id);
+    if(r.error)throw r.error;
+    toast('Estado actualizado.','success');
+    await loadAll();
+    showDetail(state.detalle.id)
+  }catch(e){err(e)}
+}
 function bind(){if(state.initialized)return;state.initialized=true;qa('.gomp-tab').forEach(b=>b.onclick=function(){qa('.gomp-tab').forEach(x=>x.classList.remove('active'));qa('.gomp-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');q('[data-panel="'+b.dataset.tab+'"]').classList.add('active')});q('#gomp-refresh').onclick=loadAll;q('#gomp-new').onclick=openPlan;q('#gomp-new-type').onclick=()=>q('#gomp-type-modal').classList.add('open');q('#gomp-filter-status').onchange=renderPlans;q('#gomp-group-filter').onchange=renderPicker;q('#gomp-agency-search').oninput=renderPicker;q('#gomp-select-visible').onclick=()=>{visibleAgencies().forEach(a=>state.selected.add(aid(a)));renderPicker()};q('#gomp-clear-selection').onclick=()=>{state.selected.clear();renderPicker()};q('#gomp-save-plan').onclick=savePlan;q('#gomp-save-type').onclick=saveType;qa('[data-close]').forEach(b=>b.onclick=()=>q('#'+b.dataset.close).classList.remove('open'));qa('.gomp-modal').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove('open')})}
 function init(){injectStyle();injectView();injectNav();bind();document.addEventListener('loteka:session-ready',injectNav);if(rt())try{rt().modules.register('mantenimiento-preventivo',{version:VERSION,open:open,refresh:loadAll})}catch(e){}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else setTimeout(init,0);
-global.GOMantenimientoPreventivo={version:VERSION,open:open,refresh:loadAll};
+global.GOMantenimientoPreventivo={version:VERSION,open:open,refresh:loadAll,openLevantamiento:openMaintenanceSurvey};
 })(window);
