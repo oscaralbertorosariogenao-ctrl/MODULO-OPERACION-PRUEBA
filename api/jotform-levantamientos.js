@@ -46,7 +46,12 @@ function normalizeLoose(value) {
 }
 
 function normalizeAgency(value) {
-  const digits = safeText(value).replace(/\D/g, '');
+  const raw = safeText(value);
+  if (!raw) return '';
+  const explicit = raw.match(/(?:agencia|ag)\s*[:#-]?\s*(\d{1,5})/i);
+  const tokens = explicit ? [explicit[1]] : (raw.match(/\d{1,5}/g) || []);
+  let digits = tokens.find((token) => token.length <= 4) || tokens[0] || '';
+  digits = digits.replace(/^0+(?=\d)/, '');
   return digits ? (digits.length < 4 ? digits.padStart(4, '0') : digits) : '';
 }
 
@@ -172,6 +177,43 @@ function unwrapPayload(envelope) {
   }
   if (rawRequest && typeof rawRequest === 'object') return { ...envelope, ...rawRequest, _webhookEnvelope: envelope };
   return envelope && typeof envelope === 'object' ? envelope : {};
+}
+
+async function fetchJotformSubmission(submissionId) {
+  const apiKey = safeText(process.env.JOTFORM_API_KEY);
+  const id = safeText(submissionId);
+  if (!apiKey || !id) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`https://api.jotform.com/submission/${encodeURIComponent(id)}`, {
+      headers: { APIKEY: apiKey, Accept: 'application/json' },
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error(`Jotform API respondió ${response.status}.`);
+    const body = await response.json();
+    return body?.response || null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function mergeJotformSubmission(payload, submission) {
+  if (!submission || typeof submission !== 'object') return payload;
+  return {
+    ...payload,
+    formID: submission.form_id || submission.formID || payload.formID || payload.formId,
+    submissionID: submission.id || submission.submission_id || payload.submissionID || payload.submissionId,
+    created_at: submission.created_at || payload.created_at,
+    updated_at: submission.updated_at || payload.updated_at,
+    answers: submission.answers || payload.answers || {}
+  };
+}
+
+function firstEntryMatching(entries, pattern) {
+  const match = entries.find((entry) => pattern.test(`${entry.key} ${entry.label}`) && safeText(entry.value));
+  return match ? match.value : '';
 }
 
 function flattenPayload(payload) {
@@ -309,7 +351,7 @@ async function hydrateAgencyGroup(client, agency) {
   return agency;
 }
 
-async function resolveAgency(client, id, number) {
+async function resolveAgency(client, id, number, groupHint = '') {
   const selectWithGroup = '*, grupos(id,codigo,nombre)';
   if (/^[0-9a-f-]{36}$/i.test(safeText(id))) {
     let response = await client.from('agencias').select(selectWithGroup).eq('id', safeText(id)).maybeSingle();
@@ -318,9 +360,23 @@ async function resolveAgency(client, id, number) {
   }
   const normalized = normalizeAgency(number);
   if (!normalized) return null;
-  let response = await client.from('agencias').select(selectWithGroup).eq('numero', Number(normalized)).maybeSingle();
-  if (response.error) response = await client.from('agencias').select('*').eq('numero', Number(normalized)).maybeSingle();
-  return response.error ? null : hydrateAgencyGroup(client, response.data);
+  const queryValues = [...new Set([Number(normalized), normalized])];
+  const candidates = [];
+  for (const queryValue of queryValues) {
+    let response = await client.from('agencias').select(selectWithGroup).eq('numero', queryValue).limit(20);
+    if (response.error) response = await client.from('agencias').select('*').eq('numero', queryValue).limit(20);
+    if (!response.error && Array.isArray(response.data)) candidates.push(...response.data);
+    if (candidates.length) break;
+  }
+  const unique = [...new Map(candidates.map((item) => [item.id || `${item.numero}-${item.grupo_id || ''}`, item])).values()];
+  const hydrated = [];
+  for (const item of unique) hydrated.push(await hydrateAgencyGroup(client, item));
+  const wantedGroup = normalizeGroup(groupHint);
+  if (wantedGroup) {
+    const exact = hydrated.find((item) => getAgencyGroup(item, '') === wantedGroup);
+    if (exact) return exact;
+  }
+  return hydrated.length === 1 ? hydrated[0] : (hydrated[0] || null);
 }
 
 function getAgencyNumber(agency, input) {
@@ -594,20 +650,39 @@ async function upsertIntake(client, values) {
 }
 
 async function processSubmission(client, envelope, options = {}) {
-  const payload = unwrapPayload(envelope);
-  const entries = flattenPayload(payload);
-  const meta = getSubmissionMeta(payload, entries);
+  let payload = unwrapPayload(envelope);
+  let entries = flattenPayload(payload);
+  let meta = getSubmissionMeta(payload, entries);
   if (!meta.submissionId) throw Object.assign(new Error('Jotform no envió submissionID.'), { statusCode: 400 });
+
+  let apiWarning = null;
+  if ((!payload.answers || !Object.keys(payload.answers || {}).length) && process.env.JOTFORM_API_KEY) {
+    try {
+      const fullSubmission = await fetchJotformSubmission(meta.submissionId);
+      if (fullSubmission) {
+        payload = mergeJotformSubmission(payload, fullSubmission);
+        entries = flattenPayload(payload);
+        meta = getSubmissionMeta(payload, entries);
+      }
+    } catch (error) {
+      apiWarning = `No se pudo ampliar la submission con Jotform API: ${safeText(error.message || error)}`;
+    }
+  }
 
   const allowedFormId = safeText(process.env.JOTFORM_LEVANTAMIENTOS_FORM_ID);
   if (allowedFormId && meta.formId && allowedFormId !== meta.formId) throw Object.assign(new Error('El formulario recibido no está autorizado.'), { statusCode: 403 });
 
   const campaignInput = options.forcedCampaignId || firstValue(entries, ['levantamiento_id', 'campana_id', 'levantamiento_codigo', 'codigo_levantamiento']);
   const agencyIdInput = safeText(firstValue(entries, ['agencia_id']));
-  const agencyNumberInput = firstValue(entries, ['agencia_numero', 'codigo_agencia', 'numero_agencia', 'agencia']);
-  const agency = await resolveAgency(client, agencyIdInput, agencyNumberInput);
+  const receivedGroup = normalizeGroup(
+    firstValue(entries, ['grupo_codigo', 'grupo', 'codigo_grupo']) ||
+    firstEntryMatching(entries, /(?:^|\b)(?:grupo|group)(?:\b|$)/i)
+  );
+  const agencyNumberInput =
+    firstValue(entries, ['agencia_numero', 'codigo_agencia', 'numero_agencia', 'agencia']) ||
+    firstEntryMatching(entries, /(?:^|\b)(?:agencia|agency)(?:\b|$)/i);
+  const agency = await resolveAgency(client, agencyIdInput, agencyNumberInput, receivedGroup);
   const agencyNumber = getAgencyNumber(agency, agencyNumberInput);
-  const receivedGroup = normalizeGroup(firstValue(entries, ['grupo_codigo', 'grupo', 'codigo_grupo']));
   const officialGroup = getAgencyGroup(agency, '');
   const technician = safeText(firstValue(entries, ['tecnico', 'responsable', 'nombre_tecnico', 'realizado_por']));
   const inspectionDate = parseDate(firstValue(entries, ['fecha_inspeccion', 'fecha_visita', 'fecha_levantamiento', 'fecha'])) || new Date().toISOString().slice(0, 10);
@@ -618,7 +693,7 @@ async function processSubmission(client, envelope, options = {}) {
 
   let campaign = null;
   let routingMode = 'EXPLICITO';
-  let routingWarning = null;
+  let routingWarning = apiWarning;
   let automaticCreated = false;
 
   if (safeText(campaignInput)) {
@@ -636,7 +711,8 @@ async function processSubmission(client, envelope, options = {}) {
     automaticCreated = automatic.created;
     routingMode = automatic.created ? 'AUTOMATICO_CREADO' : 'AUTOMATICO_EXISTENTE';
     if (receivedGroup && receivedGroup !== officialGroup) {
-      routingWarning = `Jotform indicó Grupo ${receivedGroup}; se utilizó el Grupo oficial ${officialGroup} de la agencia ${agencyNumber}.`;
+      const mismatch = `Jotform indicó Grupo ${receivedGroup}; se utilizó el Grupo oficial ${officialGroup} de la agencia ${agencyNumber}.`;
+      routingWarning = routingWarning ? `${routingWarning} | ${mismatch}` : mismatch;
     }
   }
 
@@ -876,6 +952,30 @@ async function retryEvidence(client, expedienteId) {
   return { retried: pending.length, migrated: results.filter(Boolean).length, errors: results.filter((value) => !value).length };
 }
 
+async function recordWebhookFailure(client, envelope, error) {
+  try {
+    const payload = unwrapPayload(envelope || {});
+    const entries = flattenPayload(payload);
+    const meta = getSubmissionMeta(payload, entries);
+    const fallback = crypto.createHash('sha256').update(JSON.stringify(envelope || {})).digest('hex').slice(0, 20);
+    const submissionId = meta.submissionId || `ERROR-${Date.now()}-${fallback}`;
+    await upsertIntake(client, {
+      form_id: meta.formId || null,
+      submission_id: submissionId,
+      campana_id: null,
+      expediente_id: null,
+      levantamiento_codigo_recibido: safeText(firstValue(entries, ['levantamiento_id', 'levantamiento_codigo', 'codigo_levantamiento'])) || null,
+      estado: 'ERROR',
+      error: safeText(error?.message || error || 'Error desconocido al recibir webhook.'),
+      payload: { envelope, payload, diagnostico: true },
+      recibido_en: new Date().toISOString(),
+      procesado_en: new Date().toISOString()
+    });
+  } catch (diagnosticError) {
+    console.error('[Jotform Levantamientos v807.04 diagnóstico]', diagnosticError);
+  }
+}
+
 export default async function handler(req, res) {
   const client = makeServerClient();
   const action = safeText(req.query?.action).toLowerCase();
@@ -883,7 +983,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     return sendJson(res, 200, {
       ok: true,
-      service: 'jotform-levantamientos-automaticos-v807.03',
+      service: 'jotform-levantamientos-automaticos-v807.04',
       webhookConfigured: Boolean(process.env.JOTFORM_WEBHOOK_SECRET),
       formConfigured: Boolean(process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL),
       r2Configured: Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET && process.env.R2_PUBLIC_BASE_URL)
@@ -891,6 +991,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, message: 'Method Not Allowed' });
 
+  let receivedEnvelope = null;
   try {
     if (action === 'link' || action === 'retry') {
       const user = await requireUser(req, client);
@@ -915,12 +1016,13 @@ export default async function handler(req, res) {
     const expectedSecret = safeText(process.env.JOTFORM_WEBHOOK_SECRET);
     const receivedSecret = req.query?.token || req.headers['x-go-jotform-token'] || '';
     if (!expectedSecret || !timingSafeMatch(receivedSecret, expectedSecret)) return sendJson(res, 401, { ok: false, message: 'Webhook no autorizado.' });
-    const envelope = await parseBody(req);
-    const result = await processSubmission(client, envelope, { deferEvidence: true });
+    receivedEnvelope = await parseBody(req);
+    const result = await processSubmission(client, receivedEnvelope, { deferEvidence: true });
     if (!result.pendingLink && result.evidencePending) waitUntil(retryEvidence(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 background]', error)));
     return sendJson(res, result.pendingLink ? 202 : 200, { ok: true, ...result });
   } catch (error) {
-    console.error('[Jotform Levantamientos v807.03]', error);
+    console.error('[Jotform Levantamientos v807.04]', error);
+    if (receivedEnvelope) await recordWebhookFailure(client, receivedEnvelope, error);
     return sendJson(res, error.statusCode || 500, { ok: false, message: error.message || 'No se pudo procesar la solicitud.' });
   }
 }
