@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v807.04-diagnostico-recepcion-robusta",
-  "name": "v807.04 · Diagnóstico y recepción robusta de Jotform",
+  "version": "2026-07-31-v807.05-correccion-evidencias-r2",
+  "name": "v807.05 · Corrección de fotografías Jotform y R2",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,12 +8,11 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Carga automáticamente los levantamientos al entrar al submódulo, sin depender del botón Actualizar",
-    "Integra el puente de navegación heredado levRender para evitar la vista vacía",
-    "Consulta la submission completa mediante Jotform API cuando el webhook no incluye respuestas etiquetadas",
-    "Detecta correctamente números de agencia aunque el campo incluya grupo u otro texto",
-    "Registra errores reales del webhook en la pestaña Jotform sin vincular",
-    "Muestra formularios con estado ERROR y su motivo en la interfaz",
-    "No requiere cambios de SQL ni cambios adicionales en el formulario"
+    "Ignora webhookURL y uploadServerUrl: ya no se registran como fotografías",
+    "Acepta evidencias solamente desde preguntas reales de foto, cámara o carga de archivos",
+    "Deduplica una misma fotografía aunque Jotform la repita en rawRequest y en la API",
+    "Corrige la lectura de submissions de Jotform API usando el campo content",
+    "Agrega Reconstruir desde Jotform para limpiar y recuperar las fotos reales de una agencia",
+    "Incluye SQL quirúrgico para retirar las evidencias técnicas falsas ya guardadas"
   ]
 }
