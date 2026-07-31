@@ -299,15 +299,28 @@ async function resolveCampaign(client, idOrCode) {
   return response.data || null;
 }
 
+async function hydrateAgencyGroup(client, agency) {
+  if (!agency) return null;
+  const nested = Array.isArray(agency.grupos) ? agency.grupos[0] : agency.grupos;
+  if (nested?.codigo) return { ...agency, grupos: nested };
+  if (!agency.grupo_id) return agency;
+  const groupResponse = await client.from('grupos').select('id,codigo,nombre').eq('id', agency.grupo_id).maybeSingle();
+  if (!groupResponse.error && groupResponse.data) return { ...agency, grupos: groupResponse.data };
+  return agency;
+}
+
 async function resolveAgency(client, id, number) {
+  const selectWithGroup = '*, grupos(id,codigo,nombre)';
   if (/^[0-9a-f-]{36}$/i.test(safeText(id))) {
-    const response = await client.from('agencias').select('*').eq('id', safeText(id)).maybeSingle();
-    if (!response.error && response.data) return response.data;
+    let response = await client.from('agencias').select(selectWithGroup).eq('id', safeText(id)).maybeSingle();
+    if (response.error) response = await client.from('agencias').select('*').eq('id', safeText(id)).maybeSingle();
+    if (!response.error && response.data) return hydrateAgencyGroup(client, response.data);
   }
   const normalized = normalizeAgency(number);
   if (!normalized) return null;
-  const response = await client.from('agencias').select('*').eq('numero', Number(normalized)).maybeSingle();
-  return response.error ? null : response.data;
+  let response = await client.from('agencias').select(selectWithGroup).eq('numero', Number(normalized)).maybeSingle();
+  if (response.error) response = await client.from('agencias').select('*').eq('numero', Number(normalized)).maybeSingle();
+  return response.error ? null : hydrateAgencyGroup(client, response.data);
 }
 
 function getAgencyNumber(agency, input) {
@@ -315,7 +328,57 @@ function getAgencyNumber(agency, input) {
 }
 
 function getAgencyGroup(agency, input) {
-  return normalizeGroup(agency?.grupo_codigo ?? agency?.codigo_grupo ?? input);
+  const nested = Array.isArray(agency?.grupos) ? agency.grupos[0] : agency?.grupos;
+  return normalizeGroup(nested?.codigo ?? agency?.grupo_codigo ?? agency?.codigo_grupo ?? input);
+}
+
+async function findOpenAutomaticCampaign(client, groupCode) {
+  const response = await client.from('ops_levantamiento_campanas')
+    .select('*')
+    .eq('origen', 'MANUAL')
+    .eq('grupo_codigo', normalizeGroup(groupCode))
+    .in('estado', ['ABIERTO', 'EN_REVISION'])
+    .order('creado_en', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (response.error) throw response.error;
+  return response.data || null;
+}
+
+async function resolveOrCreateAutomaticCampaign(client, context) {
+  const groupCode = normalizeGroup(context.groupCode);
+  if (!groupCode) throw new Error('No se pudo determinar el grupo oficial de la agencia.');
+  const existing = await findOpenAutomaticCampaign(client, groupCode);
+  if (existing) return { campaign: existing, created: false };
+
+  const payload = {
+    grupo_id: context.groupId || null,
+    grupo_codigo: groupCode,
+    nombre: 'Levantamiento general de agencias',
+    descripcion: 'Creado automáticamente al recibir el primer formulario general de Jotform para este grupo.',
+    responsable_nombre: context.technician || null,
+    origen: 'MANUAL',
+    origen_id: null,
+    estado: 'ABIERTO',
+    fecha_inicio: context.inspectionDate || new Date().toISOString().slice(0, 10),
+    jotform_form_id: context.formId || null,
+    jotform_form_url: process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL || null,
+    metadata: {
+      creado_automaticamente: true,
+      fuente: 'JOTFORM_GENERAL',
+      primera_submission_id: context.submissionId || null
+    }
+  };
+  const inserted = await client.from('ops_levantamiento_campanas').insert(payload).select('*').single();
+  if (!inserted.error) return { campaign: inserted.data, created: true };
+
+  // Dos formularios pueden llegar al mismo tiempo. El índice único decide cuál crea
+  // la campaña y el segundo vuelve a consultar la campaña ya creada.
+  if (inserted.error.code === '23505') {
+    const concurrent = await findOpenAutomaticCampaign(client, groupCode);
+    if (concurrent) return { campaign: concurrent, created: false };
+  }
+  throw inserted.error;
 }
 
 function getSubmissionMeta(payload, entries) {
@@ -540,53 +603,99 @@ async function processSubmission(client, envelope, options = {}) {
   if (allowedFormId && meta.formId && allowedFormId !== meta.formId) throw Object.assign(new Error('El formulario recibido no está autorizado.'), { statusCode: 403 });
 
   const campaignInput = options.forcedCampaignId || firstValue(entries, ['levantamiento_id', 'campana_id', 'levantamiento_codigo', 'codigo_levantamiento']);
-  const campaign = await resolveCampaign(client, campaignInput);
+  const agencyIdInput = safeText(firstValue(entries, ['agencia_id']));
+  const agencyNumberInput = firstValue(entries, ['agencia_numero', 'codigo_agencia', 'numero_agencia', 'agencia']);
+  const agency = await resolveAgency(client, agencyIdInput, agencyNumberInput);
+  const agencyNumber = getAgencyNumber(agency, agencyNumberInput);
+  const receivedGroup = normalizeGroup(firstValue(entries, ['grupo_codigo', 'grupo', 'codigo_grupo']));
+  const officialGroup = getAgencyGroup(agency, '');
+  const technician = safeText(firstValue(entries, ['tecnico', 'responsable', 'nombre_tecnico', 'realizado_por']));
+  const inspectionDate = parseDate(firstValue(entries, ['fecha_inspeccion', 'fecha_visita', 'fecha_levantamiento', 'fecha'])) || new Date().toISOString().slice(0, 10);
+  const observation = safeText(firstValue(entries, ['comentario_observacion', 'comentario', 'observacion_general', 'observaciones_generales']));
+  const source = safeText(firstValue(entries, ['origen'])).toUpperCase();
+  const origin = ['MANTENIMIENTO_PREVENTIVO', 'CONTROL_TECNICO'].includes(source) ? source : 'JOTFORM';
+  const originRecordId = safeText(firstValue(entries, ['origen_id', 'origen_registro_id', 'registro_origen_id'])) || null;
+
+  let campaign = null;
+  let routingMode = 'EXPLICITO';
+  let routingWarning = null;
+  let automaticCreated = false;
+
+  if (safeText(campaignInput)) {
+    campaign = await resolveCampaign(client, campaignInput);
+  } else if (agency && agencyNumber && officialGroup) {
+    const automatic = await resolveOrCreateAutomaticCampaign(client, {
+      groupId: agency.grupo_id || (Array.isArray(agency.grupos) ? agency.grupos[0]?.id : agency.grupos?.id) || null,
+      groupCode: officialGroup,
+      technician,
+      inspectionDate,
+      formId: meta.formId,
+      submissionId: meta.submissionId
+    });
+    campaign = automatic.campaign;
+    automaticCreated = automatic.created;
+    routingMode = automatic.created ? 'AUTOMATICO_CREADO' : 'AUTOMATICO_EXISTENTE';
+    if (receivedGroup && receivedGroup !== officialGroup) {
+      routingWarning = `Jotform indicó Grupo ${receivedGroup}; se utilizó el Grupo oficial ${officialGroup} de la agencia ${agencyNumber}.`;
+    }
+  }
+
   const intakeBase = {
     form_id: meta.formId || null,
     submission_id: meta.submissionId,
     campana_id: campaign?.id || null,
-    levantamiento_codigo_recibido: safeText(campaignInput) || null,
-    payload: { envelope, payload },
+    levantamiento_codigo_recibido: safeText(campaignInput) || campaign?.codigo || null,
+    payload: {
+      envelope,
+      payload,
+      routing: {
+        modo: routingMode,
+        agencia_numero_detectada: agencyNumber || null,
+        grupo_recibido: receivedGroup || null,
+        grupo_oficial: officialGroup || null,
+        advertencia: routingWarning,
+        campana_creada_automaticamente: automaticCreated
+      }
+    },
     recibido_en: new Date().toISOString()
   };
 
+  const savePending = async (reason) => {
+    const intake = await upsertIntake(client, { ...intakeBase, estado: 'PENDIENTE_VINCULO', error: reason });
+    return { pendingLink: true, intakeId: intake.id, submissionId: meta.submissionId, reason };
+  };
+
+  if (!agency || !agencyNumber) {
+    return savePending('La agencia indicada en Jotform no existe o no pudo identificarse en el catálogo oficial.');
+  }
+  if (!officialGroup) {
+    return savePending(`La agencia ${agencyNumber} existe, pero no tiene un grupo oficial asignado.`);
+  }
+  if (safeText(campaignInput) && !campaign) {
+    return savePending('Se recibió un código de levantamiento explícito, pero no existe o no es válido.');
+  }
   if (!campaign) {
-    const intake = await upsertIntake(client, { ...intakeBase, estado: 'PENDIENTE_VINCULO', error: 'No se recibió un código de levantamiento válido.' });
-    return { pendingLink: true, intakeId: intake.id, submissionId: meta.submissionId };
+    return savePending('No se pudo encontrar ni crear el levantamiento abierto para el grupo oficial de la agencia.');
   }
   if (!['ABIERTO', 'EN_REVISION'].includes(campaign.estado) && !options.allowClosed) {
-    const intake = await upsertIntake(client, { ...intakeBase, estado: 'PENDIENTE_VINCULO', error: `El levantamiento ${campaign.codigo} está ${campaign.estado}.` });
-    return { pendingLink: true, intakeId: intake.id, submissionId: meta.submissionId, campaignCode: campaign.codigo };
+    return savePending(`El levantamiento ${campaign.codigo} está ${campaign.estado}.`);
   }
 
-  const intake = await upsertIntake(client, { ...intakeBase, estado: 'PROCESANDO', error: null });
+  const campaignGroup = normalizeGroup(campaign.grupo_codigo);
+  if (campaignGroup !== officialGroup) {
+    return savePending(`La agencia ${agencyNumber} pertenece oficialmente al Grupo ${officialGroup}, pero el levantamiento ${campaign.codigo} corresponde al Grupo ${campaignGroup}.`);
+  }
+
+  const intake = await upsertIntake(client, { ...intakeBase, estado: 'PROCESANDO', error: routingWarning });
   try {
-    const agencyIdInput = safeText(firstValue(entries, ['agencia_id']));
-    const agencyNumberInput = firstValue(entries, ['agencia_numero', 'codigo_agencia', 'numero_agencia', 'agencia']);
-    const agency = await resolveAgency(client, agencyIdInput, agencyNumberInput);
-    const agencyNumber = getAgencyNumber(agency, agencyNumberInput);
-    if (!agencyNumber) throw new Error('No se pudo identificar la agencia. El formulario necesita agencia_id o agencia_numero.');
-
-    const receivedGroup = getAgencyGroup(agency, firstValue(entries, ['grupo_codigo', 'grupo', 'codigo_grupo']));
-    if (receivedGroup && normalizeGroup(campaign.grupo_codigo) !== receivedGroup) {
-      throw new Error(`La agencia/formulario indica el grupo ${receivedGroup}, pero el levantamiento pertenece al grupo ${campaign.grupo_codigo}.`);
-    }
-
-    const technician = safeText(firstValue(entries, ['tecnico', 'responsable', 'nombre_tecnico', 'realizado_por']));
-    const inspectionDate = parseDate(firstValue(entries, ['fecha_inspeccion', 'fecha_visita', 'fecha_levantamiento', 'fecha'])) || new Date().toISOString().slice(0, 10);
-    const observation = safeText(firstValue(entries, ['comentario_observacion', 'comentario', 'observacion_general', 'observaciones_generales']));
-    const source = safeText(firstValue(entries, ['origen'])).toUpperCase();
-    const origin = ['MANTENIMIENTO_PREVENTIVO', 'CONTROL_TECNICO'].includes(source) ? source : 'JOTFORM';
-    const originRecordId = safeText(firstValue(entries, ['origen_id', 'origen_registro_id', 'registro_origen_id'])) || null;
-
     const existingResponse = await client.from('ops_levantamiento_agencias').select('*').eq('campana_id', campaign.id).eq('agencia_numero', agencyNumber).maybeSingle();
     if (existingResponse.error) throw existingResponse.error;
     const expedientePayload = {
       campana_id: campaign.id,
-      agencia_id: agency?.id || (agencyIdInput || null),
+      agencia_id: agency.id || (agencyIdInput || null),
       agencia_numero: agencyNumber,
-      grupo_id: agency?.grupo_id || campaign.grupo_id || null,
-      grupo_codigo: normalizeGroup(campaign.grupo_codigo),
+      grupo_id: agency.grupo_id || campaign.grupo_id || null,
+      grupo_codigo: campaignGroup,
       tecnico_nombre: technician || campaign.responsable_nombre || null,
       fecha_inspeccion: inspectionDate,
       fecha_recepcion: new Date().toISOString(),
@@ -597,7 +706,7 @@ async function processSubmission(client, envelope, options = {}) {
       jotform_submission_id: meta.submissionId,
       origen: origin,
       origen_registro_id: originRecordId,
-      raw_payload: { envelope, payload }
+      raw_payload: { envelope, payload, routing: intakeBase.payload.routing }
     };
 
     let expediente;
@@ -774,7 +883,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     return sendJson(res, 200, {
       ok: true,
-      service: 'jotform-levantamientos-grupo-v807',
+      service: 'jotform-levantamientos-automaticos-v807.03',
       webhookConfigured: Boolean(process.env.JOTFORM_WEBHOOK_SECRET),
       formConfigured: Boolean(process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL),
       r2Configured: Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET && process.env.R2_PUBLIC_BASE_URL)
@@ -811,7 +920,7 @@ export default async function handler(req, res) {
     if (!result.pendingLink && result.evidencePending) waitUntil(retryEvidence(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 background]', error)));
     return sendJson(res, result.pendingLink ? 202 : 200, { ok: true, ...result });
   } catch (error) {
-    console.error('[Jotform Levantamientos v807]', error);
+    console.error('[Jotform Levantamientos v807.03]', error);
     return sendJson(res, error.statusCode || 500, { ok: false, message: error.message || 'No se pudo procesar la solicitud.' });
   }
 }
