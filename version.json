@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v807.01-carga-grupos-levantamientos",
-  "name": "v807.01 · Corrección de catálogo de grupos en Levantamientos",
+  "version": "2026-07-31-v807.02-creacion-levantamientos",
+  "name": "v807.02 · Corrección de permisos y creación de Levantamientos",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,9 +8,11 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Carga los grupos y agencias directamente desde Supabase cuando el catálogo global todavía no está disponible",
-    "Evita que el selector Nuevo levantamiento de grupo aparezca vacío",
-    "Mantiene compatibilidad con el catálogo local y crea respaldo por códigos de grupo de las agencias",
-    "No modifica ni elimina los levantamientos heredados de Control técnico"
+    "Corrige la detección del puesto Auxiliar de Operaciones desde el perfil real y la barra superior",
+    "Evita que el botón Nuevo levantamiento desaparezca al pulsar Actualizar",
+    "Corrige el bloqueo silencioso que impedía crear levantamientos",
+    "Muestra en pantalla cualquier error real devuelto por Supabase",
+    "Valida y recarga el catálogo de grupos antes de abrir el formulario de creación",
+    "No modifica datos ni requiere ejecutar SQL"
   ]
 }
