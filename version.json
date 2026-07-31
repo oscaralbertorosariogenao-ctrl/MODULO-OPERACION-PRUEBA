@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v807.02-creacion-levantamientos",
-  "name": "v807.02 · Corrección de permisos y creación de Levantamientos",
+  "version": "2026-07-31-v807.03-recepcion-automatica-jotform",
+  "name": "v807.03 · Recepción automática de Jotform por grupo",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,11 +8,14 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Corrige la detección del puesto Auxiliar de Operaciones desde el perfil real y la barra superior",
-    "Evita que el botón Nuevo levantamiento desaparezca al pulsar Actualizar",
-    "Corrige el bloqueo silencioso que impedía crear levantamientos",
-    "Muestra en pantalla cualquier error real devuelto por Supabase",
-    "Valida y recarga el catálogo de grupos antes de abrir el formulario de creación",
-    "No modifica datos ni requiere ejecutar SQL"
+    "El técnico utiliza el enlace general de Jotform sin entrar al sistema",
+    "Identifica la agencia usando el catálogo oficial de Supabase",
+    "Obtiene el grupo oficial desde la relación agencias → grupos y no confía únicamente en el grupo escrito",
+    "Vincula automáticamente al levantamiento manual abierto del grupo",
+    "Crea automáticamente un nuevo levantamiento de grupo cuando no existe uno abierto",
+    "Envía agencias desconocidas, sin grupo o con código explícito inválido a Jotform sin vincular",
+    "Elimina de la interfaz principal la obligación de abrir Jotform agencia por agencia",
+    "Mantiene la vinculación precargada para flujos especiales de Mantenimiento preventivo y Control técnico",
+    "No requiere SQL adicional"
   ]
 }
