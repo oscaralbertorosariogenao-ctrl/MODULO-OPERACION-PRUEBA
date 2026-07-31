@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '807.03') return;
+  if (global.GOLevantamientosGrupos?.version === '807.04') return;
 
-  const VERSION = '807.03';
+  const VERSION = '807.04';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
     agencies: 'ops_levantamiento_agencias',
@@ -35,6 +35,8 @@
     reportProblem: null,
     sourceContext: null,
     realtime: null,
+    legacyLoadTimer: null,
+    loadingAll: false,
     catalogGroups: [],
     catalogAgencies: [],
     catalogLoaded: false
@@ -364,7 +366,7 @@
       const [campaigns, reports, intakes] = await Promise.all([
         connected.from(TABLES.campaigns).select('*').order('actualizado_en', { ascending: false }),
         connected.from(TABLES.reports).select('*, ops_levantamiento_campanas(codigo,grupo_codigo,nombre)').order('creado_en', { ascending: false }),
-        connected.from(TABLES.intakes).select('*').eq('estado', 'PENDIENTE_VINCULO').order('recibido_en', { ascending: false })
+        connected.from(TABLES.intakes).select('*').in('estado', ['PENDIENTE_VINCULO', 'ERROR']).order('recibido_en', { ascending: false }).limit(100)
       ]);
       if (campaigns.error) throw campaigns.error;
       if (reports.error) throw reports.error;
@@ -925,8 +927,8 @@
 
   function renderPending() {
     const holder = $('#golevg-pending');
-    if (!state.intakes.length) { holder.innerHTML = '<div class="golevg-empty">No hay formularios pendientes de vincular.</div>'; return; }
-    holder.innerHTML = `<div class="golevg-table-wrap"><table class="golevg-table"><thead><tr><th>Submission</th><th>Fecha recibida</th><th>Código recibido</th><th>Motivo</th><th>Acción</th></tr></thead><tbody>${state.intakes.map((item) => `<tr><td><b>${esc(item.submission_id)}</b></td><td>${formatDate(item.recibido_en, true)}</td><td>${esc(item.levantamiento_codigo_recibido || '-')}</td><td>${esc(item.error || 'Sin levantamiento válido')}</td><td><button class="golevg-btn primary small" data-link-intake="${item.id}">Vincular</button></td></tr>`).join('')}</tbody></table></div>`;
+    if (!state.intakes.length) { holder.innerHTML = '<div class="golevg-empty">No hay formularios pendientes ni errores de recepción.</div>'; return; }
+    holder.innerHTML = `<div class="golevg-table-wrap"><table class="golevg-table"><thead><tr><th>Submission</th><th>Estado</th><th>Fecha recibida</th><th>Código recibido</th><th>Motivo</th><th>Acción</th></tr></thead><tbody>${state.intakes.map((item) => `<tr><td><b>${esc(item.submission_id)}</b></td><td><span class="golevg-badge ${item.estado === 'ERROR' ? 'warn' : 'wait'}">${esc(item.estado)}</span></td><td>${formatDate(item.recibido_en, true)}</td><td>${esc(item.levantamiento_codigo_recibido || '-')}</td><td>${esc(item.error || 'Sin levantamiento válido')}</td><td>${item.estado === 'PENDIENTE_VINCULO' ? `<button class="golevg-btn primary small" data-link-intake="${item.id}">Vincular</button>` : '<span style="font-size:11px;color:#7b8f9c">Corrige el motivo y reenvía desde Jotform.</span>'}</td></tr>`).join('')}</tbody></table></div>`;
     $$('[data-link-intake]', holder).forEach((button) => { button.onclick = () => openLinkModal(button.dataset.linkIntake); });
   }
 
@@ -1060,8 +1062,35 @@
     };
   }
 
+  function scheduleLegacyLoad() {
+    clearTimeout(state.legacyLoadTimer);
+    state.legacyLoadTimer = setTimeout(async () => {
+      const host = $('#vista-ops-levantamientos');
+      if (!host || host.classList.contains('hidden') || state.loadingAll) return;
+      state.loadingAll = true;
+      try {
+        injectStyles(); injectView(); bind();
+        await Promise.all([loadConfig(), loadCatalog()]);
+        await loadAll();
+      } finally {
+        state.loadingAll = false;
+      }
+    }, 70);
+  }
+
+  function installLegacyNavigationBridge() {
+    global.levRender = scheduleLegacyLoad;
+    const host = $('#vista-ops-levantamientos');
+    if (!host || host.dataset.golevgObserverReady) return;
+    host.dataset.golevgObserverReady = '1';
+    const observer = new MutationObserver(() => {
+      if (!host.classList.contains('hidden')) scheduleLegacyLoad();
+    });
+    observer.observe(host, { attributes: true, attributeFilter: ['class'] });
+  }
+
   function init() {
-    injectStyles(); injectView(); installNavigation(); bind(); installAgencyDetailBridge();
+    injectStyles(); injectView(); installNavigation(); bind(); installAgencyDetailBridge(); installLegacyNavigationBridge();
     try { runtime()?.modules?.register?.('levantamientos-grupos', { version: VERSION, open, refresh: loadAll }); } catch (_error) {}
   }
 
