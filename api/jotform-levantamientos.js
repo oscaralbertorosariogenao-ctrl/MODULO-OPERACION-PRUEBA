@@ -13,6 +13,16 @@ const MAX_REMOTE_FILE_BYTES = 20 * 1024 * 1024;
 const REMOTE_TIMEOUT_MS = 9000;
 const URL_RE = /^https?:\/\//i;
 const IMAGE_RE = /\.(?:png|jpe?g|webp|gif|bmp|heic|heif)(?:\?|#|$)/i;
+const PHOTO_FIELD_RE = /foto|fotografia|imagen|evidencia|adjunto|archivo|camera|captura/i;
+const PHOTO_TYPE_RE = /control_(?:fileupload|camera|image|imagecapture)|file\s*upload|camera/i;
+const NON_ANSWER_KEYS = new Set([
+  'rawrequest', 'raw_request', 'pretty', 'webhookurl', 'webhook_url',
+  'uploadserverurl', 'upload_server_url', 'formid', 'form_id',
+  'submissionid', 'submission_id', 'username', 'ip', 'type', 'formtitle',
+  'event', 'documentid', 'teamid', 'subject', 'issilent', 'custombody',
+  'slug', 'path', 'submitsource', 'builddate', 'jsexecutiontracker',
+  'eventobserver', 'event_id', 'timetosubmit', 'validatednewrequiredfieldids'
+]);
 
 function sendJson(res, status, data) {
   res.statusCode = status;
@@ -193,7 +203,7 @@ async function fetchJotformSubmission(submissionId) {
     });
     if (!response.ok) throw new Error(`Jotform API respondió ${response.status}.`);
     const body = await response.json();
-    return body?.response || null;
+    return body?.content || body?.response || null;
   } finally {
     clearTimeout(timer);
   }
@@ -234,7 +244,8 @@ function flattenPayload(payload) {
   };
 
   for (const [key, value] of Object.entries(payload || {})) {
-    if (['_webhookEnvelope', 'answers', 'temp_upload'].includes(key)) continue;
+    const normalizedKey = normalize(key);
+    if (['_webhookEnvelope', 'answers', 'temp_upload'].includes(key) || NON_ANSWER_KEYS.has(normalizedKey)) continue;
     add(key, value, key);
   }
 
@@ -264,6 +275,21 @@ function firstValue(entries, aliases) {
   return '';
 }
 
+function isReservedTransportUrl(value) {
+  const raw = safeText(value);
+  if (!raw) return true;
+  try {
+    const parsed = new URL(raw);
+    const host = parsed.hostname.toLowerCase();
+    const pathname = parsed.pathname.replace(/\/+$/, '') || '/';
+    if (host === 'upload.jotform.com' && pathname === '/upload') return true;
+    if (/\/api\/jotform-levantamientos$/i.test(pathname)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function collectUrls(value, output = []) {
   if (value == null) return output;
   if (Array.isArray(value)) { value.forEach((item) => collectUrls(item, output)); return output; }
@@ -280,13 +306,22 @@ function collectUrls(value, output = []) {
     } catch {}
   }
   raw.split(/[\n,|;]+/).map((item) => item.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean).forEach((item) => {
-    if (URL_RE.test(item) && (IMAGE_RE.test(item) || /jotform|upload|attachment|file/i.test(item))) output.push(item);
+    if (URL_RE.test(item) && !isReservedTransportUrl(item) && (IMAGE_RE.test(item) || /jotform|uploads?|attachment|file/i.test(item))) output.push(item);
   });
   return output;
 }
 
+function isSystemMetadataEntry(entry) {
+  const keys = [entry?.key, entry?.originalKey, entry?.label].map(normalize).filter(Boolean);
+  return keys.some((key) => NON_ANSWER_KEYS.has(key));
+}
+
 function isPhotoEntry(entry) {
-  return /foto|imagen|evidencia|archivo|upload/i.test(`${entry.key} ${entry.label} ${entry.type}`) || collectUrls(entry.value, []).length > 0;
+  if (!entry || isSystemMetadataEntry(entry)) return false;
+  const descriptor = `${entry.key || ''} ${entry.label || ''}`;
+  const type = safeText(entry.type);
+  const urls = collectUrls(entry.value, []);
+  return PHOTO_TYPE_RE.test(type) || (PHOTO_FIELD_RE.test(descriptor) && urls.length > 0);
 }
 
 function nearestDescription(entries, conditionEntry, nextConditionOrder) {
@@ -613,6 +648,18 @@ async function mapWithConcurrency(items, limit, worker) {
   return results;
 }
 
+function evidenceUrlIdentity(value) {
+  const raw = safeText(value);
+  if (!raw || isReservedTransportUrl(raw)) return '';
+  try {
+    const parsed = new URL(raw);
+    const pathname = decodeURIComponent(parsed.pathname).replace(/\/+$/, '').toLowerCase();
+    return pathname || raw.toLowerCase();
+  } catch {
+    return raw.toLowerCase().replace(/[?#].*$/, '');
+  }
+}
+
 function evidenceDrafts(entries, findings, base) {
   const byUrl = new Map();
   const findingByPhotoOrder = [];
@@ -621,14 +668,16 @@ function evidenceDrafts(entries, findings, base) {
   }
 
   for (const entry of entries) {
+    if (!isPhotoEntry(entry)) continue;
     const urls = collectUrls(entry.value, []);
     for (const url of urls) {
-      if (byUrl.has(url)) continue;
+      const identity = evidenceUrlIdentity(url);
+      if (!identity || byUrl.has(identity)) continue;
       let problemKey = null;
       const direct = findings.find((finding) => normalizeLoose(`${entry.key} ${entry.label}`).includes(normalizeLoose(finding.elemento_etiqueta)) || normalizeLoose(`${entry.key} ${entry.label}`).includes(normalizeLoose(finding.problema_etiqueta)));
       if (direct) problemKey = direct.problema_clave;
       if (!problemKey) problemKey = findingByPhotoOrder.find((item) => item.order === entry.order)?.problemKey || null;
-      byUrl.set(url, {
+      byUrl.set(identity, {
         ...base,
         problemKey,
         campo_clave: entry.key,
@@ -921,6 +970,73 @@ async function processSubmission(client, envelope, options = {}) {
   }
 }
 
+async function rebuildEvidenceFromJotform(client, expedienteId) {
+  const expedienteResponse = await client.from('ops_levantamiento_agencias')
+    .select('*, ops_levantamiento_campanas(*)')
+    .eq('id', expedienteId)
+    .single();
+  if (expedienteResponse.error) throw expedienteResponse.error;
+  const expediente = expedienteResponse.data;
+  const campaign = expediente.ops_levantamiento_campanas;
+  if (!expediente.jotform_submission_id) throw new Error('Este expediente no tiene submission ID de Jotform.');
+  if (!process.env.JOTFORM_API_KEY) throw new Error('Falta JOTFORM_API_KEY para reconstruir las fotografías.');
+
+  const submission = await fetchJotformSubmission(expediente.jotform_submission_id);
+  if (!submission) throw new Error('Jotform no devolvió la submission solicitada.');
+  const payload = mergeJotformSubmission({}, submission);
+  const entries = flattenPayload(payload);
+  const formId = safeText(submission.form_id || submission.formID || expediente.jotform_form_id);
+  const mappings = await loadMappings(client, formId);
+  const findingDraftList = makeFindingDrafts(entries, mappings, {
+    campana_id: campaign.id,
+    expediente_id: expediente.id,
+    agencia_id: expediente.agencia_id,
+    agencia_numero: expediente.agencia_numero,
+    grupo_codigo: normalizeGroup(campaign.grupo_codigo)
+  });
+
+  const currentFindings = await client.from('ops_levantamiento_hallazgos')
+    .select('id,problema_clave')
+    .eq('expediente_id', expediente.id);
+  if (currentFindings.error) throw currentFindings.error;
+  const findingIdByKey = new Map((currentFindings.data || []).map((item) => [item.problema_clave, item.id]));
+
+  const removed = await client.from('ops_levantamiento_evidencias')
+    .delete()
+    .eq('expediente_id', expediente.id)
+    .eq('origen', 'JOTFORM');
+  if (removed.error) throw removed.error;
+
+  const evidenceInput = evidenceDrafts(entries, findingDraftList, {
+    campana_id: campaign.id,
+    expediente_id: expediente.id,
+    agencia_numero: expediente.agencia_numero,
+    origen: 'JOTFORM'
+  });
+  const rows = evidenceInput.map((evidence) => ({
+    campana_id: evidence.campana_id,
+    expediente_id: evidence.expediente_id,
+    hallazgo_id: evidence.problemKey ? findingIdByKey.get(evidence.problemKey) || null : null,
+    agencia_numero: evidence.agencia_numero,
+    campo_clave: evidence.campo_clave,
+    etiqueta: evidence.etiqueta,
+    url_origen: evidence.url_origen,
+    nombre_archivo: evidence.nombre_archivo,
+    origen: 'JOTFORM',
+    estado_r2: 'PENDIENTE',
+    orden: evidence.orden,
+    metadata: { ...evidence.metadata, problema_clave: evidence.problemKey || null, reconstruida_desde_api: true }
+  }));
+  if (rows.length) {
+    const inserted = await client.from('ops_levantamiento_evidencias').insert(rows);
+    if (inserted.error) throw inserted.error;
+  }
+  const migration = rows.length ? await retryEvidence(client, expediente.id) : { retried: 0, migrated: 0, errors: 0 };
+  await client.rpc('ops_levantamiento_recalcular_expediente', { p_expediente_id: expediente.id });
+  await client.rpc('ops_levantamiento_recalcular_campana', { p_campana_id: campaign.id });
+  return { rebuilt: rows.length, ...migration };
+}
+
 async function retryEvidence(client, expedienteId) {
   const expedienteResponse = await client.from('ops_levantamiento_agencias').select('*, ops_levantamiento_campanas(*)').eq('id', expedienteId).single();
   if (expedienteResponse.error) throw expedienteResponse.error;
@@ -972,7 +1088,7 @@ async function recordWebhookFailure(client, envelope, error) {
       procesado_en: new Date().toISOString()
     });
   } catch (diagnosticError) {
-    console.error('[Jotform Levantamientos v807.04 diagnóstico]', diagnosticError);
+    console.error('[Jotform Levantamientos v807.05 diagnóstico]', diagnosticError);
   }
 }
 
@@ -983,9 +1099,10 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     return sendJson(res, 200, {
       ok: true,
-      service: 'jotform-levantamientos-automaticos-v807.04',
+      service: 'jotform-levantamientos-automaticos-v807.05',
       webhookConfigured: Boolean(process.env.JOTFORM_WEBHOOK_SECRET),
       formConfigured: Boolean(process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL),
+      jotformApiConfigured: Boolean(process.env.JOTFORM_API_KEY),
       r2Configured: Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET && process.env.R2_PUBLIC_BASE_URL)
     });
   }
@@ -1000,7 +1117,7 @@ export default async function handler(req, res) {
       if (action === 'retry') {
         const expedienteId = safeText(body.expedienteId || body.expediente_id);
         if (!expedienteId) return sendJson(res, 400, { ok: false, message: 'Falta expedienteId.' });
-        return sendJson(res, 200, { ok: true, ...(await retryEvidence(client, expedienteId)) });
+        return sendJson(res, 200, { ok: true, ...(await rebuildEvidenceFromJotform(client, expedienteId)) });
       }
       const intakeId = safeText(body.intakeId || body.intake_id);
       const campaignId = safeText(body.campaignId || body.campana_id);
@@ -1021,7 +1138,7 @@ export default async function handler(req, res) {
     if (!result.pendingLink && result.evidencePending) waitUntil(retryEvidence(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 background]', error)));
     return sendJson(res, result.pendingLink ? 202 : 200, { ok: true, ...result });
   } catch (error) {
-    console.error('[Jotform Levantamientos v807.04]', error);
+    console.error('[Jotform Levantamientos v807.05]', error);
     if (receivedEnvelope) await recordWebhookFailure(client, receivedEnvelope, error);
     return sendJson(res, error.statusCode || 500, { ok: false, message: error.message || 'No se pudo procesar la solicitud.' });
   }
