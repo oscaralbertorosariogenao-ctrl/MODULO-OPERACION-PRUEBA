@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v807.03-recepcion-automatica-jotform",
-  "name": "v807.03 · Recepción automática de Jotform por grupo",
+  "version": "2026-07-31-v807.04-diagnostico-recepcion-robusta",
+  "name": "v807.04 · Diagnóstico y recepción robusta de Jotform",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,14 +8,12 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "El técnico utiliza el enlace general de Jotform sin entrar al sistema",
-    "Identifica la agencia usando el catálogo oficial de Supabase",
-    "Obtiene el grupo oficial desde la relación agencias → grupos y no confía únicamente en el grupo escrito",
-    "Vincula automáticamente al levantamiento manual abierto del grupo",
-    "Crea automáticamente un nuevo levantamiento de grupo cuando no existe uno abierto",
-    "Envía agencias desconocidas, sin grupo o con código explícito inválido a Jotform sin vincular",
-    "Elimina de la interfaz principal la obligación de abrir Jotform agencia por agencia",
-    "Mantiene la vinculación precargada para flujos especiales de Mantenimiento preventivo y Control técnico",
-    "No requiere SQL adicional"
+    "Carga automáticamente los levantamientos al entrar al submódulo, sin depender del botón Actualizar",
+    "Integra el puente de navegación heredado levRender para evitar la vista vacía",
+    "Consulta la submission completa mediante Jotform API cuando el webhook no incluye respuestas etiquetadas",
+    "Detecta correctamente números de agencia aunque el campo incluya grupo u otro texto",
+    "Registra errores reales del webhook en la pestaña Jotform sin vincular",
+    "Muestra formularios con estado ERROR y su motivo en la interfaz",
+    "No requiere cambios de SQL ni cambios adicionales en el formulario"
   ]
 }
