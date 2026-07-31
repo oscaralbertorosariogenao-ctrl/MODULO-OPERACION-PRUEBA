@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '807.04') return;
+  if (global.GOLevantamientosGrupos?.version === '807.05') return;
 
-  const VERSION = '807.04';
+  const VERSION = '807.05';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
     agencies: 'ops_levantamiento_agencias',
@@ -829,17 +829,19 @@
     const photos = evidenceForExpedient(id);
     $('#golevg-problem-title').textContent = `Agencia ${agencyDisplay(item.agencia_numero)}`;
     $('#golevg-problem-subtitle').textContent = `${state.selectedCampaign.codigo} · Inspección ${formatDate(item.fecha_inspeccion)}`;
-    $('#golevg-problem-content').innerHTML = `<div class="golevg-grid"><div class="golevg-card"><span class="golevg-code">Técnico</span><h3>${esc(item.tecnico_nombre || '-')}</h3></div><div class="golevg-card"><span class="golevg-code">Resultado</span><h3>${esc(item.estado.replace(/_/g, ' '))}</h3></div></div><div class="golevg-card" style="margin-top:12px"><h3>Observación general</h3><p>${esc(item.observacion_general || 'Sin observación.')}</p></div><div class="golevg-card" style="margin-top:12px"><h3>Problemas detectados</h3>${findings.length ? findings.map((finding) => `<p><b>${esc(finding.problema_etiqueta)}</b>: ${esc(finding.descripcion)}</p>`).join('') : '<p>Sin hallazgos activos.</p>'}</div><div class="golevg-card" style="margin-top:12px"><h3>Fotografías almacenadas en R2</h3>${photos.length ? `<div class="golevg-photo-grid">${photos.map((photo) => `<a class="golevg-photo" href="${esc(photo.r2_url)}" target="_blank"><img src="${esc(photo.r2_url)}"><div>${esc(photo.etiqueta)}</div></a>`).join('')}</div>` : '<div class="golevg-empty">No hay fotos migradas.</div>'}</div>`;
+    $('#golevg-problem-content').innerHTML = `<div class="golevg-grid"><div class="golevg-card"><span class="golevg-code">Técnico</span><h3>${esc(item.tecnico_nombre || '-')}</h3></div><div class="golevg-card"><span class="golevg-code">Resultado</span><h3>${esc(item.estado.replace(/_/g, ' '))}</h3></div></div><div class="golevg-card" style="margin-top:12px"><h3>Observación general</h3><p>${esc(item.observacion_general || 'Sin observación.')}</p></div><div class="golevg-card" style="margin-top:12px"><h3>Problemas detectados</h3>${findings.length ? findings.map((finding) => `<p><b>${esc(finding.problema_etiqueta)}</b>: ${esc(finding.descripcion)}</p>`).join('') : '<p>Sin hallazgos activos.</p>'}</div><div class="golevg-card" style="margin-top:12px"><div class="golevg-card-head"><h3>Fotografías almacenadas en R2</h3>${item.jotform_submission_id ? `<button class="golevg-btn small" id="golevg-rebuild-evidence">Reconstruir desde Jotform</button>` : ''}</div>${photos.length ? `<div class="golevg-photo-grid">${photos.map((photo) => `<a class="golevg-photo" href="${esc(photo.r2_url)}" target="_blank"><img src="${esc(photo.r2_url)}"><div>${esc(photo.etiqueta)}</div></a>`).join('')}</div>` : '<div class="golevg-empty">No hay fotos migradas.</div>'}</div>`;
+    const rebuildButton = $('#golevg-rebuild-evidence');
+    if (rebuildButton) rebuildButton.onclick = () => retryR2(item.id);
     $('#golevg-problem-modal').classList.add('open');
   }
 
   async function retryR2(expedientId) {
     if (!requireManage()) return;
-    toast('Reintentando traslado de fotografías a R2…', 'info');
+    toast('Reconstruyendo las fotografías reales desde Jotform y trasladándolas a R2…', 'info');
     const response = await fetch('/api/jotform-levantamientos?action=retry', { method: 'POST', headers: await apiHeaders(true), body: JSON.stringify({ expedienteId: expedientId }) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) return toast(data.message || 'No se pudieron reprocesar las fotos.', 'error');
-    toast(`${data.migrated} foto(s) migradas; ${data.errors} con error.`, data.errors ? 'info' : 'success');
+    toast(`${data.rebuilt ?? data.retried ?? 0} archivo(s) real(es) encontrados; ${data.migrated || 0} migrado(s) a R2; ${data.errors || 0} con error.`, data.errors ? 'info' : 'success');
     openCampaign(state.selectedCampaign.id);
   }
 
