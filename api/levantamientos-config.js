@@ -11,7 +11,7 @@ export default function handler(req, res) {
   const webhookPath = '/api/jotform-levantamientos';
   return sendJson(res, 200, {
     ok: true,
-    version: '807.03',
+    version: '807.04',
     formId: process.env.JOTFORM_LEVANTAMIENTOS_FORM_ID || '',
     formUrl: process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL || '',
     webhookPath,
