@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v805.33-control-tecnico-levantamientos",
-  "name": "v805.33 · Control técnico con levantamientos",
+  "version": "2026-07-31-v807.00-levantamientos-de-grupo",
+  "name": "v807.00 · Levantamientos de grupo con Jotform y R2",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,10 +8,11 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Agrega Levantamientos dentro de Control técnico con registro fotográfico en R2",
-    "Mueve automáticamente los registros resueltos fuera de Instalaciones, Averías y Levantamientos hacia Resueltos",
-    "Detecta agencias nuevas y crea su levantamiento inicial sin duplicar expedientes activos",
-    "Corrige cinco referencias de scripts inexistentes en index.html",
-    "Corrige el total activo para excluir los registros resueltos"
+    "Reconstruye Levantamientos alrededor de un código único por grupo, sin agrupar por fecha",
+    "Vincula formularios individuales de Jotform al mismo levantamiento aunque se envíen durante varios días",
+    "Clasifica hallazgos y agrupa agencias con el mismo problema únicamente dentro del levantamiento seleccionado",
+    "Genera reportes históricos, PDF imprimible y Excel con fotografías alojadas en Cloudflare R2",
+    "Integra Mantenimiento preventivo y Control técnico con el expediente central de Levantamientos",
+    "Envía formularios sin código válido a una bandeja pendiente de vincular para evitar mezcla de información"
   ]
 }
