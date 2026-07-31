@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '807.01') return;
+  if (global.GOLevantamientosGrupos?.version === '807.02') return;
 
-  const VERSION = '807.01';
+  const VERSION = '807.02';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
     agencies: 'ops_levantamiento_agencias',
@@ -71,28 +71,47 @@
   }
 
   function toast(message, tone = 'info') {
-    try { if (global.showToast) return global.showToast(message, tone); } catch (_error) {}
+    const title = 'Levantamientos';
+    try { if (typeof global.showToastNotification === 'function') return global.showToastNotification(title, message, tone); } catch (_error) {}
+    try { if (typeof global.lotekaToast === 'function') return global.lotekaToast(title, message, tone); } catch (_error) {}
+    try { if (typeof global.notify === 'function') return global.notify(message, tone); } catch (_error) {}
+    try { if (typeof global.showToast === 'function') return global.showToast(title, message, tone); } catch (_error) {}
     (tone === 'error' ? console.error : console.log)('[Levantamientos de grupo]', message);
+    if (tone === 'error') try { global.alert(message); } catch (_error) {}
   }
 
   function currentProfileText() {
-    const profile = runtime()?.state?.get?.('perfil') || {};
-    return [profile.rol_nombre, profile.rol, profile.puesto_nombre, profile.puesto].map(text).join(' ').toLowerCase();
+    const runtimeProfile = runtime()?.state?.get?.('perfil') || {};
+    const authProfile = global.lotekaAuthState?.perfil || global.lotekaAuthState?.profile || {};
+    const domRole = text($('.loteka-topbar-user-role')?.textContent);
+    const domTitle = text($('.loteka-topbar-user')?.getAttribute('title'));
+    const values = [
+      runtimeProfile.rol_nombre, runtimeProfile.rol, runtimeProfile.puesto_nombre, runtimeProfile.puesto,
+      runtimeProfile.roles?.nombre, runtimeProfile.puestos?.nombre,
+      authProfile.rol_nombre, authProfile.rol, authProfile.puesto_nombre, authProfile.puesto,
+      authProfile.roles?.nombre, authProfile.puestos?.nombre,
+      domRole, domTitle
+    ];
+    return values.map(text).join(' ').toLowerCase();
   }
 
   function permissionSet() {
-    const values = runtime()?.state?.get?.('permissions') || [];
-    return new Set(Array.isArray(values) ? values.map(String) : []);
+    const values = runtime()?.state?.get?.('permissions') || global.lotekaAuthState?.permissions || [];
+    return new Set(Array.isArray(values) ? values.map((value) => String(value?.codigo || value)) : []);
+  }
+
+  function hasPermission(code) {
+    const permissions = permissionSet();
+    if (permissions.has('*') || permissions.has(code)) return true;
+    try { return typeof global.lotekaHasPermission === 'function' && global.lotekaHasPermission(code); } catch (_error) { return false; }
   }
 
   function canView() {
-    const permissions = permissionSet();
-    return permissions.has('ver_levantamientos') || permissions.has('gestionar_levantamientos') || /administrador|auxiliar de operaciones|gerente|supervisor/.test(currentProfileText());
+    return hasPermission('ver_operaciones') || hasPermission('ver_levantamientos') || hasPermission('gestionar_levantamientos') || /administrador|auxiliar de operaciones|gerente|supervisor/.test(currentProfileText());
   }
 
   function canManage() {
-    const permissions = permissionSet();
-    return permissions.has('gestionar_levantamientos') || /administrador|auxiliar de operaciones|gerente de operaciones/.test(currentProfileText());
+    return hasPermission('gestionar_levantamientos') || hasPermission('gestionar_operaciones') || /administrador|auxiliar de operaciones|gerente de operaciones/.test(currentProfileText());
   }
 
   function requireManage() {
@@ -280,7 +299,7 @@
         <section id="golevg-detail" style="display:none"></section>
       </div>
 
-      <div class="golevg-modal" id="golevg-campaign-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Nuevo levantamiento de grupo</h3><small>Puede durar todos los días que sean necesarios.</small></div><button class="golevg-btn" data-close="golevg-campaign-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field"><label>Grupo</label><select class="golevg-select" id="golevg-f-group"></select></div><div class="golevg-field"><label>Responsable</label><input class="golevg-input" id="golevg-f-responsible" placeholder="Técnico o encargado"></div><div class="golevg-field full"><label>Nombre</label><input class="golevg-input" id="golevg-f-name" value="Levantamiento general de agencias"></div><div class="golevg-field"><label>Fecha de inicio</label><input class="golevg-input" id="golevg-f-start" type="date"></div><div class="golevg-field"><label>Agencias esperadas (opcional)</label><input class="golevg-input" id="golevg-f-expected" type="number" min="0"></div><div class="golevg-field full"><label>Descripción</label><textarea class="golevg-textarea" id="golevg-f-description" rows="3"></textarea></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-campaign-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-save-campaign">Crear levantamiento</button></div></div></div>
+      <div class="golevg-modal" id="golevg-campaign-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Nuevo levantamiento de grupo</h3><small>Puede durar todos los días que sean necesarios.</small></div><button class="golevg-btn" data-close="golevg-campaign-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field"><label>Grupo</label><select class="golevg-select" id="golevg-f-group"></select></div><div class="golevg-field"><label>Responsable</label><input class="golevg-input" id="golevg-f-responsible" placeholder="Técnico o encargado"></div><div class="golevg-field full"><label>Nombre</label><input class="golevg-input" id="golevg-f-name" value="Levantamiento general de agencias"></div><div class="golevg-field"><label>Fecha de inicio</label><input class="golevg-input" id="golevg-f-start" type="date"></div><div class="golevg-field"><label>Agencias esperadas (opcional)</label><input class="golevg-input" id="golevg-f-expected" type="number" min="0"></div><div class="golevg-field full"><label>Descripción</label><textarea class="golevg-textarea" id="golevg-f-description" rows="3"></textarea></div></div><div class="golevg-help" id="golevg-campaign-status" style="display:none;margin-top:14px"></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-campaign-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-save-campaign">Crear levantamiento</button></div></div></div>
 
       <div class="golevg-modal" id="golevg-jotform-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Abrir formulario de agencia</h3><small id="golevg-jotform-campaign"></small></div><button class="golevg-btn" data-close="golevg-jotform-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field full"><label>Agencia del grupo</label><select class="golevg-select" id="golevg-j-agency"></select></div><div class="golevg-field"><label>Técnico / responsable</label><input class="golevg-input" id="golevg-j-tech"></div><div class="golevg-field"><label>Fecha de inspección</label><input class="golevg-input" type="date" id="golevg-j-date"></div><div class="golevg-field full"><div class="golevg-help" id="golevg-j-help">El formulario recibirá ocultamente el código del levantamiento, grupo, agencia y origen. Así podrá enviarse hoy o varios días después sin mezclarse.</div></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-jotform-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-open-jotform"><i class="fas fa-up-right-from-square"></i> Abrir Jotform</button></div></div></div>
 
@@ -402,14 +421,29 @@
     $$('[data-toggle-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => toggleCampaign(button.dataset.toggleCampaign, button.dataset.next); });
   }
 
+  function setCampaignStatus(message, tone = 'info') {
+    const holder = $('#golevg-campaign-status');
+    if (!holder) return;
+    holder.style.display = message ? 'block' : 'none';
+    holder.textContent = message || '';
+    holder.style.borderColor = tone === 'error' ? '#f0b7b7' : '#d7e8f1';
+    holder.style.background = tone === 'error' ? '#fff3f3' : '#f4f9fc';
+    holder.style.color = tone === 'error' ? '#a12622' : '#5d788c';
+  }
+
   async function createCampaign() {
     if (!requireManage()) return;
+    const button = $('#golevg-save-campaign');
+    const originalButton = button?.innerHTML || 'Crear levantamiento';
     const selected = $('#golevg-f-group');
     const option = selected?.selectedOptions?.[0];
     const groupIdValue = selected?.value || '';
     const groupCode = option?.dataset?.code || '';
     const name = text($('#golevg-f-name').value);
-    if (!groupCode || !name) return toast('Selecciona el grupo y escribe el nombre.', 'error');
+    if (!groupCode || !name) {
+      setCampaignStatus('Selecciona el grupo y escribe el nombre del levantamiento.', 'error');
+      return toast('Selecciona el grupo y escribe el nombre.', 'error');
+    }
     const activeExisting = state.campaigns.find((item) => item.origen === 'MANUAL' && normalizeGroup(item.grupo_codigo) === normalizeGroup(groupCode) && ['ABIERTO', 'EN_REVISION'].includes(item.estado));
     if (activeExisting) {
       closeModal('golevg-campaign-modal');
@@ -428,23 +462,45 @@
       fecha_inicio: $('#golevg-f-start').value || today(),
       agencias_esperadas: Number($('#golevg-f-expected').value) || null
     };
-    const response = await client().from(TABLES.campaigns).insert(payload).select('*').single();
-    if (response.error) return toast(response.error.message, 'error');
-    closeModal('golevg-campaign-modal');
-    toast(`Levantamiento ${response.data.codigo} creado.`, 'success');
-    await loadAll();
-    openCampaign(response.data.id);
+    try {
+      const connected = client();
+      if (!connected?.from) throw new Error('La conexión con Supabase no está disponible. Recarga el sistema e inicia sesión nuevamente.');
+      if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando…'; }
+      setCampaignStatus(`Creando levantamiento para el Grupo ${groupCode}…`);
+      const response = await connected.from(TABLES.campaigns).insert(payload).select('*').single();
+      if (response.error) throw response.error;
+      if (!response.data?.id) throw new Error('Supabase no devolvió el levantamiento creado.');
+      closeModal('golevg-campaign-modal');
+      toast(`Levantamiento ${response.data.codigo} creado correctamente.`, 'success');
+      await loadAll();
+      await openCampaign(response.data.id);
+    } catch (error) {
+      console.error('[Levantamientos de grupo] Error creando levantamiento:', error, payload);
+      const message = text(error?.message || error) || 'No se pudo crear el levantamiento.';
+      setCampaignStatus(message, 'error');
+      toast(message, 'error');
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = originalButton; }
+    }
   }
 
-  function openCampaignModal() {
-    fillGroupOptions();
-    if (!groups().length) toast('No se encontraron grupos activos. Recarga el módulo e inténtalo nuevamente.', 'error');
+  async function openCampaignModal() {
+    if (!requireManage()) return;
+    if (!groups().length) {
+      await loadCatalog(true);
+      fillGroupOptions();
+    } else fillGroupOptions();
+    if (!groups().length) {
+      toast('No se encontraron grupos activos en Supabase.', 'error');
+      return;
+    }
     $('#golevg-f-group').value = '';
     $('#golevg-f-name').value = 'Levantamiento general de agencias';
     $('#golevg-f-responsible').value = '';
     $('#golevg-f-description').value = '';
     $('#golevg-f-start').value = today();
     $('#golevg-f-expected').value = '';
+    setCampaignStatus('');
     $('#golevg-campaign-modal').classList.add('open');
   }
 
