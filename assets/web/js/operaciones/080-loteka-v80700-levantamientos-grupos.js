@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '807.02') return;
+  if (global.GOLevantamientosGrupos?.version === '807.03') return;
 
-  const VERSION = '807.02';
+  const VERSION = '807.03';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
     agencies: 'ops_levantamiento_agencias',
@@ -286,8 +286,8 @@
     host.innerHTML = `
       <div id="golevg-root">
         <section class="golevg-hero">
-          <div><span class="golevg-kicker"><i class="fas fa-layer-group"></i> Levantamientos por grupo</span><h2>Levantamientos de agencias</h2><p>Cada levantamiento tiene un código único, pertenece a un grupo y puede permanecer abierto durante varios días. Los formularios de Jotform solo se mezclan cuando comparten ese mismo código.</p></div>
-          <div class="golevg-actions"><button class="golevg-btn" id="golevg-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn primary" id="golevg-new"><i class="fas fa-plus"></i> Nuevo levantamiento de grupo</button></div>
+          <div><span class="golevg-kicker"><i class="fas fa-layer-group"></i> Levantamientos por grupo</span><h2>Levantamientos de agencias</h2><p>El técnico utiliza siempre el mismo enlace general de Jotform. El sistema identifica la agencia, consulta su grupo oficial y la coloca automáticamente en el levantamiento abierto correspondiente, aunque el trabajo dure varios días.</p></div>
+          <div class="golevg-actions"><button class="golevg-btn" id="golevg-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn" id="golevg-copy-form"><i class="fas fa-link"></i> Copiar enlace Jotform</button><button class="golevg-btn primary" id="golevg-new"><i class="fas fa-plus"></i> Nuevo levantamiento de grupo</button></div>
         </section>
         <div class="golevg-tabs" id="golevg-main-tabs"><button class="golevg-tab active" data-main="CAMPAIGNS">Levantamientos</button><button class="golevg-tab" data-main="PENDING">Jotform sin vincular <span id="golevg-pending-badge"></span></button><button class="golevg-tab" data-main="REPORTS">Reportes guardados</button></div>
         <section class="golevg-panel active" data-main-panel="CAMPAIGNS">
@@ -414,10 +414,9 @@
     }
     $('#golevg-campaigns').innerHTML = state.filteredCampaigns.map((item) => {
       const expected = item.agencias_esperadas == null ? '-' : item.agencias_esperadas;
-      return `<article class="golevg-campaign"><span class="golevg-code">${esc(item.codigo)}</span><h3>Grupo ${esc(item.grupo_codigo)} · ${esc(item.nombre)}</h3><p>${esc(item.descripcion || 'Sin descripción adicional.')}</p><div class="golevg-metrics"><div class="golevg-metric"><span>Agencias</span><b>${item.agencias_recibidas}/${expected}</b></div><div class="golevg-metric"><span>Problemas activos</span><b>${item.hallazgos_activos || 0}</b></div><div class="golevg-metric"><span>Fotos en R2</span><b>${item.evidencias_count || 0}</b></div></div><div class="golevg-inline" style="justify-content:space-between"><span class="golevg-badge ${badgeClass(item.estado)}">${campaignStatusLabel(item.estado)}</span><span style="font-size:11px;color:#73899a">Inicio: ${formatDate(item.fecha_inicio)}</span></div><div class="golevg-actions" style="margin-top:13px"><button class="golevg-btn primary small" data-open-campaign="${item.id}">Abrir</button>${item.estado === 'ABIERTO' ? `<button class="golevg-btn small" data-jotform-campaign="${item.id}"><i class="fas fa-clipboard-check"></i> Formulario</button>` : ''}<button class="golevg-btn small" data-toggle-campaign="${item.id}" data-next="${item.estado === 'CERRADO' ? 'ABIERTO' : 'CERRADO'}">${item.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar'}</button></div></article>`;
+      return `<article class="golevg-campaign"><span class="golevg-code">${esc(item.codigo)}</span><h3>Grupo ${esc(item.grupo_codigo)} · ${esc(item.nombre)}</h3><p>${esc(item.descripcion || 'Sin descripción adicional.')}</p><div class="golevg-metrics"><div class="golevg-metric"><span>Agencias</span><b>${item.agencias_recibidas}/${expected}</b></div><div class="golevg-metric"><span>Problemas activos</span><b>${item.hallazgos_activos || 0}</b></div><div class="golevg-metric"><span>Fotos en R2</span><b>${item.evidencias_count || 0}</b></div></div><div class="golevg-inline" style="justify-content:space-between"><span class="golevg-badge ${badgeClass(item.estado)}">${campaignStatusLabel(item.estado)}</span><span style="font-size:11px;color:#73899a">Inicio: ${formatDate(item.fecha_inicio)}</span></div><div class="golevg-actions" style="margin-top:13px"><button class="golevg-btn primary small" data-open-campaign="${item.id}">Abrir</button><button class="golevg-btn small" data-toggle-campaign="${item.id}" data-next="${item.estado === 'CERRADO' ? 'ABIERTO' : 'CERRADO'}">${item.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar'}</button></div></article>`;
     }).join('');
     $$('[data-open-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => openCampaign(button.dataset.openCampaign); });
-    $$('[data-jotform-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => openJotformModal(button.dataset.jotformCampaign); });
     $$('[data-toggle-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => toggleCampaign(button.dataset.toggleCampaign, button.dataset.next); });
   }
 
@@ -509,7 +508,7 @@
     const item = state.campaigns.find((row) => row.id === id);
     if (!item) return;
     const message = next === 'CERRADO'
-      ? `¿Cerrar ${item.codigo}? Los formularios nuevos ya no entrarán automáticamente hasta reabrirlo.`
+      ? `¿Cerrar ${item.codigo}? Los próximos formularios generales de este grupo crearán o utilizarán otro levantamiento abierto.`
       : `¿Reabrir ${item.codigo}?`;
     if (!global.confirm(message)) return;
     const response = await client().from(TABLES.campaigns).update({ estado: next }).eq('id', id);
@@ -553,12 +552,13 @@
     if (!c) return;
     const activeFindings = state.findings.filter((item) => ['PENDIENTE', 'EN_COORDINACION', 'EN_PROCESO'].includes(item.estado));
     $('#golevg-detail').innerHTML = `
-      <div class="golevg-detail-head"><div><a class="golevg-link" id="golevg-back">← Volver a levantamientos</a><h2>${esc(c.codigo)} · Grupo ${esc(c.grupo_codigo)}</h2><div class="golevg-detail-meta"><span class="golevg-badge ${badgeClass(c.estado)}">${campaignStatusLabel(c.estado)}</span><span class="golevg-badge wait">Responsable: ${esc(c.responsable_nombre || 'Sin asignar')}</span><span class="golevg-badge wait">Inicio: ${formatDate(c.fecha_inicio)}</span>${c.fecha_cierre ? `<span class="golevg-badge ok">Cierre: ${formatDate(c.fecha_cierre)}</span>` : ''}</div></div><div class="golevg-actions">${c.estado === 'ABIERTO' ? `<button class="golevg-btn primary" id="golevg-detail-form"><i class="fas fa-clipboard-check"></i> Abrir Jotform para agencia</button>` : ''}<button class="golevg-btn" id="golevg-detail-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn" id="golevg-detail-close">${c.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar levantamiento'}</button></div></div>
+      <div class="golevg-detail-head"><div><a class="golevg-link" id="golevg-back">← Volver a levantamientos</a><h2>${esc(c.codigo)} · Grupo ${esc(c.grupo_codigo)}</h2><div class="golevg-detail-meta"><span class="golevg-badge ${badgeClass(c.estado)}">${campaignStatusLabel(c.estado)}</span><span class="golevg-badge wait">Responsable: ${esc(c.responsable_nombre || 'Sin asignar')}</span><span class="golevg-badge wait">Inicio: ${formatDate(c.fecha_inicio)}</span>${c.fecha_cierre ? `<span class="golevg-badge ok">Cierre: ${formatDate(c.fecha_cierre)}</span>` : ''}</div></div><div class="golevg-actions"><button class="golevg-btn primary" id="golevg-detail-form"><i class="fas fa-link"></i> Copiar enlace general de Jotform</button><button class="golevg-btn" id="golevg-detail-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn" id="golevg-detail-close">${c.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar levantamiento'}</button></div></div>
+      <div class="golevg-help" style="margin-bottom:13px"><b>Recepción automática:</b> el técnico no necesita entrar al sistema ni escoger este levantamiento. Envía el formulario general; la agencia entra aquí cuando su grupo oficial coincide y este es el levantamiento manual abierto del grupo.</div>
       <div class="golevg-stats"><div class="golevg-stat"><span>Agencias inspeccionadas</span><strong>${state.expedients.length}</strong></div><div class="golevg-stat"><span>Problemas activos</span><strong>${activeFindings.length}</strong></div><div class="golevg-stat"><span>Problemas resueltos</span><strong>${state.findings.filter((item) => item.estado === 'RESUELTO').length}</strong></div><div class="golevg-stat"><span>Fotos en R2</span><strong>${state.evidence.filter((item) => item.estado_r2 === 'MIGRADO').length}</strong></div><div class="golevg-stat"><span>Reportes</span><strong>${state.campaignReports.length}</strong></div></div>
       <div class="golevg-tabs" id="golevg-campaign-tabs"><button class="golevg-tab active" data-campaign-tab="AGENCIES">Agencias</button><button class="golevg-tab" data-campaign-tab="PROBLEMS">Agencias por problema</button><button class="golevg-tab" data-campaign-tab="RESOLVED">Resueltos / descartados</button><button class="golevg-tab" data-campaign-tab="REPORTS">Reportes</button></div>
       <div class="golevg-card" id="golevg-campaign-content"></div>`;
     $('#golevg-back').onclick = closeCampaignDetail;
-    $('#golevg-detail-form')?.addEventListener('click', () => openJotformModal(c.id));
+    $('#golevg-detail-form')?.addEventListener('click', copyGeneralJotformLink);
     $('#golevg-detail-refresh').onclick = () => openCampaign(c.id);
     $('#golevg-detail-close').onclick = () => toggleCampaign(c.id, c.estado === 'CERRADO' ? 'ABIERTO' : 'CERRADO');
     $$('[data-campaign-tab]', $('#golevg-campaign-tabs')).forEach((button) => {
@@ -841,6 +841,28 @@
     openCampaign(state.selectedCampaign.id);
   }
 
+  async function copyGeneralJotformLink() {
+    const config = await loadConfig(true);
+    const url = text(config?.formUrl);
+    if (!url) return toast('Falta configurar JOTFORM_LEVANTAMIENTOS_FORM_URL en Vercel.', 'error');
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(url);
+      else {
+        const area = document.createElement('textarea');
+        area.value = url;
+        area.style.position = 'fixed';
+        area.style.opacity = '0';
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        area.remove();
+      }
+      toast('Enlace general de Jotform copiado. Este mismo enlace se comparte con todos los técnicos.', 'success');
+    } catch (_error) {
+      global.prompt('Copia el enlace general de Jotform:', url);
+    }
+  }
+
   function agenciesForCampaign(campaign) {
     const expectedGroup = normalizeGroup(campaign.grupo_codigo);
     return agencies().filter((agency) => agencyGroupCode(agency) === expectedGroup);
@@ -1010,6 +1032,7 @@
     state.initialized = true;
     $('#golevg-refresh').onclick = () => state.selectedCampaign ? openCampaign(state.selectedCampaign.id) : loadAll();
     $('#golevg-new').onclick = openCampaignModal;
+    $('#golevg-copy-form').onclick = copyGeneralJotformLink;
     $('#golevg-save-campaign').onclick = createCampaign;
     $('#golevg-open-jotform').onclick = launchJotform;
     $('#golevg-save-report').onclick = saveReport;
@@ -1050,7 +1073,8 @@
     refresh: loadAll,
     openCampaign: async (id) => { await open($('#navLevantamientos')); return openCampaign(id); },
     openFromMaintenance,
-    openFromControl
+    openFromControl,
+    copyGeneralJotformLink
   };
   global.GOLevantamientos = global.GOLevantamientosGrupos;
 })(window);
