@@ -1,17 +1,17 @@
 {
-  "version": "2026-07-28-v805.30-selector-agencias-movil",
-  "name": "v805.24 · Selector profesional de agencias",
-  "released_at": "2026-07-28",
+  "version": "2026-07-31-v805.33-control-tecnico-levantamientos",
+  "name": "v805.33 · Control técnico con levantamientos",
+  "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
     "app": "app.html",
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Reemplaza el selector nativo de agencias por un componente móvil claro y buscable",
-    "Oculta completamente los UUID internos y muestra código, nombre y grupo de la agencia",
-    "Ordena las agencias por número y permite buscarlas por número o nombre",
-    "Aplica el mismo selector al envío de equipos y a la creación móvil de operaciones",
-    "Mantiene los identificadores reales internamente para guardar los movimientos correctamente"
+    "Agrega Levantamientos dentro de Control técnico con registro fotográfico en R2",
+    "Mueve automáticamente los registros resueltos fuera de Instalaciones, Averías y Levantamientos hacia Resueltos",
+    "Detecta agencias nuevas y crea su levantamiento inicial sin duplicar expedientes activos",
+    "Corrige cinco referencias de scripts inexistentes en index.html",
+    "Corrige el total activo para excluir los registros resueltos"
   ]
 }
