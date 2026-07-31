@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '807.00') return;
+  if (global.GOLevantamientosGrupos?.version === '807.01') return;
 
-  const VERSION = '807.00';
+  const VERSION = '807.01';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
     agencies: 'ops_levantamiento_agencias',
@@ -34,7 +34,10 @@
     reportSnapshot: [],
     reportProblem: null,
     sourceContext: null,
-    realtime: null
+    realtime: null,
+    catalogGroups: [],
+    catalogAgencies: [],
+    catalogLoaded: false
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -112,15 +115,66 @@
     return headers;
   }
 
+  function rawAgencies() {
+    if (Array.isArray(state.catalogAgencies) && state.catalogAgencies.length) return state.catalogAgencies;
+    return Array.isArray(global.agencias) ? global.agencias : [];
+  }
+
   function agencies() {
-    return (Array.isArray(global.agencias) ? global.agencias : []).filter((agency) => {
+    return rawAgencies().filter((agency) => {
       const status = text(agency?.estado || agency?.estado_operativo);
       return agency?.activo !== false && !/cerrad|inactiv|desactiv/i.test(status);
     });
   }
 
+  function rawGroups() {
+    if (Array.isArray(state.catalogGroups) && state.catalogGroups.length) return state.catalogGroups;
+    const globals = Array.isArray(global.grupos) ? global.grupos : [];
+    if (globals.length) return globals;
+
+    const codes = [...new Set(rawAgencies().map((agency) => normalizeGroup(
+      agency?.grupo_codigo || agency?.codigo_grupo || agency?.grupo_numero || agency?.grupo_nombre || agency?.grupo
+    )).filter(Boolean))];
+    return codes.map((code) => ({ codigo: code, numero: code, nombre: `Grupo ${code}`, activo: true, _synthetic: true }));
+  }
+
   function groups() {
-    return (Array.isArray(global.grupos) ? global.grupos : []).filter((group) => group?.activo !== false && !/prueba|test|desactiv/i.test(text(group?.nombre || group?.codigo)));
+    return rawGroups().filter((group) => group?.activo !== false && !/prueba|test|desactiv/i.test(text(group?.nombre || group?.codigo)));
+  }
+
+  async function fetchAllCatalogRows(tableName) {
+    const connected = client();
+    if (!connected) return [];
+    const pageSize = 1000;
+    const rows = [];
+    for (let from = 0; from < 50000; from += pageSize) {
+      const response = await connected.from(tableName).select('*').order('id', { ascending: true }).range(from, from + pageSize - 1);
+      if (response.error) throw response.error;
+      const batch = response.data || [];
+      rows.push(...batch);
+      if (batch.length < pageSize) break;
+    }
+    return rows;
+  }
+
+  async function loadCatalog(force = false) {
+    if (state.catalogLoaded && !force && groups().length) return;
+    const globalGroups = Array.isArray(global.grupos) ? global.grupos : [];
+    const globalAgencies = Array.isArray(global.agencias) ? global.agencias : [];
+    try {
+      const [groupRows, agencyRows] = await Promise.all([
+        fetchAllCatalogRows('grupos'),
+        fetchAllCatalogRows('agencias')
+      ]);
+      state.catalogGroups = groupRows.length ? groupRows : globalGroups;
+      state.catalogAgencies = agencyRows.length ? agencyRows : globalAgencies;
+      state.catalogLoaded = true;
+    } catch (error) {
+      state.catalogGroups = globalGroups;
+      state.catalogAgencies = globalAgencies;
+      state.catalogLoaded = true;
+      console.warn('[Levantamientos de grupo] No se pudo cargar el catálogo directo desde Supabase:', error);
+    }
   }
 
   function agencyId(agency) {
@@ -278,12 +332,14 @@
   async function open(navElement) {
     if (!canView()) return toast('No tienes permiso para abrir Levantamientos.', 'error');
     injectStyles(); injectView(); installNavigation(); bind(); showModuleView(navElement);
-    await Promise.all([loadConfig(), loadAll()]);
+    await Promise.all([loadConfig(), loadCatalog()]);
+    await loadAll();
   }
 
   async function loadAll() {
     const connected = client();
     if (!connected) return toast('Supabase todavía no está disponible.', 'error');
+    await loadCatalog();
     $('#golevg-campaigns').innerHTML = '<div class="golevg-empty">Cargando levantamientos…</div>';
     try {
       const [campaigns, reports, intakes] = await Promise.all([
@@ -361,7 +417,7 @@
       return openCampaign(activeExisting.id);
     }
     const payload = {
-      grupo_id: groupIdValue || null,
+      grupo_id: uuid(groupIdValue) ? groupIdValue : null,
       grupo_codigo: groupCode,
       nombre: name,
       descripcion: text($('#golevg-f-description').value) || null,
@@ -381,6 +437,8 @@
   }
 
   function openCampaignModal() {
+    fillGroupOptions();
+    if (!groups().length) toast('No se encontraron grupos activos. Recarga el módulo e inténtalo nuevamente.', 'error');
     $('#golevg-f-group').value = '';
     $('#golevg-f-name').value = 'Levantamiento general de agencias';
     $('#golevg-f-responsible').value = '';
