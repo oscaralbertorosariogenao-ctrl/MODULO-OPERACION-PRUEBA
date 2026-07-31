@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v807.00-levantamientos-de-grupo",
-  "name": "v807.00 · Levantamientos de grupo con Jotform y R2",
+  "version": "2026-07-31-v807.01-carga-grupos-levantamientos",
+  "name": "v807.01 · Corrección de catálogo de grupos en Levantamientos",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,11 +8,9 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Reconstruye Levantamientos alrededor de un código único por grupo, sin agrupar por fecha",
-    "Vincula formularios individuales de Jotform al mismo levantamiento aunque se envíen durante varios días",
-    "Clasifica hallazgos y agrupa agencias con el mismo problema únicamente dentro del levantamiento seleccionado",
-    "Genera reportes históricos, PDF imprimible y Excel con fotografías alojadas en Cloudflare R2",
-    "Integra Mantenimiento preventivo y Control técnico con el expediente central de Levantamientos",
-    "Envía formularios sin código válido a una bandeja pendiente de vincular para evitar mezcla de información"
+    "Carga los grupos y agencias directamente desde Supabase cuando el catálogo global todavía no está disponible",
+    "Evita que el selector Nuevo levantamiento de grupo aparezca vacío",
+    "Mantiene compatibilidad con el catálogo local y crea respaldo por códigos de grupo de las agencias",
+    "No modifica ni elimina los levantamientos heredados de Control técnico"
   ]
 }
