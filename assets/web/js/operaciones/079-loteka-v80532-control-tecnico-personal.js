@@ -1,12 +1,11 @@
 (function (global) {
   'use strict';
 
-  if (global.GOControlTecnico && global.GOControlTecnico.version === '805.33') return;
+  if (global.GOControlTecnico && global.GOControlTecnico.version === '807.00') return;
 
-  const VERSION = '805.33';
+  const VERSION = '807.00';
   const TABLE = 'control_tecnico_personal';
   const PAGE_SIZES = [10, 20, 50];
-  const KNOWN_AGENCIES_KEY = 'goct_known_agencies_v1';
   const MAX_EVIDENCE_FILES = 12;
   const MAX_EVIDENCE_BYTES = 15 * 1024 * 1024;
 
@@ -33,14 +32,12 @@
   const CAT_LABEL = {
     INSTALACION: 'Instalación pendiente',
     AVERIA_CAMARA: 'Avería de cámara',
-    LEVANTAMIENTO: 'Levantamiento pendiente',
     OTRO: 'Otro seguimiento'
   };
 
   const CATEGORY_DEFAULT_SUBJECT = {
     INSTALACION: 'Instalación pendiente',
     AVERIA_CAMARA: 'Avería de cámara pendiente',
-    LEVANTAMIENTO: 'Levantamiento inicial de agencia nueva',
     OTRO: 'Seguimiento técnico pendiente'
   };
 
@@ -56,8 +53,7 @@
     activeCategory: '',
     formEvidence: [],
     pendingFiles: [],
-    saving: false,
-    syncingAgencies: false
+    saving: false
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -205,7 +201,7 @@
     const style = document.createElement('style');
     style.id = 'goct-style';
     style.textContent = `
-      #goct-root{font-family:Inter,system-ui;color:#103b5b;padding-bottom:34px}.goct-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:24px;border-radius:22px;border:1px solid #cde2ef;background:linear-gradient(135deg,#f7fcff,#e8f7ff);box-shadow:0 15px 34px rgba(18,73,109,.08);margin-bottom:15px}.goct-hero h2{margin:0;font-size:28px;color:#0b4166}.goct-hero p{margin:7px 0 0;color:#647f93}.goct-actions,.goct-tabs,.goct-pagination{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.goct-btn{border:1px solid #c9ddea;background:#fff;color:#086796;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer;transition:.16s ease}.goct-btn:hover:not(:disabled){transform:translateY(-1px)}.goct-btn:disabled{opacity:.5;cursor:not-allowed}.goct-btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#087dbb,#05a8d4)}.goct-btn.danger{color:#b42318}.goct-btn.small{padding:7px 9px;font-size:12px}.goct-tabs{background:#edf6fb;padding:5px;border-radius:13px;width:max-content;max-width:100%;margin-bottom:14px}.goct-tab{border:0;background:transparent;color:#607b8e;padding:9px 14px;border-radius:9px;font-weight:900;cursor:pointer}.goct-tab.active{background:#fff;color:#0870a4;box-shadow:0 4px 13px #aac6d655}.goct-stats{display:grid;grid-template-columns:repeat(6,minmax(125px,1fr));gap:11px;margin-bottom:14px}.goct-stat,.goct-card{background:#fff;border:1px solid #d6e5ef;border-radius:17px;padding:16px;box-shadow:0 10px 24px rgba(11,61,95,.055)}.goct-stat span{font-size:11px;color:#6b8497;font-weight:900;text-transform:uppercase}.goct-stat strong{display:block;font-size:26px;margin-top:4px;color:#0b456d}.goct-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.goct-card h3{margin:0}.goct-toolbar{display:grid;grid-template-columns:2fr repeat(3,minmax(150px,1fr)) auto;gap:10px;margin-bottom:12px}.goct-input,.goct-select,.goct-textarea{width:100%;box-sizing:border-box;border:1px solid #c8dce8;border-radius:11px;padding:10px 11px;font:inherit;background:#fff}.goct-table-wrap{overflow:auto;border:1px solid #dbe8f0;border-radius:14px}.goct-table{width:100%;border-collapse:collapse;min-width:1120px}.goct-table th,.goct-table td{padding:11px;border-bottom:1px solid #e7eff4;text-align:left;font-size:13px;vertical-align:top}.goct-table th{background:#eff8fc;color:#5e788c;font-size:11px;text-transform:uppercase;position:sticky;top:0}.goct-table tr:hover td{background:#f9fdff}.goct-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.goct-badge.ok{background:#e5f8ed;color:#087448}.goct-badge.bad{background:#fff0ef;color:#b42318}.goct-badge.run{background:#e7f5ff;color:#08689c}.goct-badge.wait{background:#fff7dc;color:#876400}.goct-empty{text-align:center;padding:35px;color:#71899a}.goct-pagination{justify-content:space-between;margin-top:12px}.goct-pages{display:flex;gap:6px;align-items:center}.goct-page{min-width:34px;height:34px;border:1px solid #d0e0e9;border-radius:9px;background:#fff;font-weight:900;cursor:pointer}.goct-page.active{background:#0786bd;color:#fff;border-color:#0786bd}.goct-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#072c4775;z-index:11000;padding:20px}.goct-modal.open{display:flex}.goct-dialog{width:min(920px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #071c2c66}.goct-dialog.viewer{width:min(1040px,96vw)}.goct-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.goct-field.full{grid-column:1/-1}.goct-field label{display:block;font-size:11px;font-weight:1000;color:#5c7588;text-transform:uppercase;margin-bottom:6px}.goct-preview{max-height:380px;overflow:auto;border:1px solid #d8e6ef;border-radius:13px}.goct-preview-row{display:grid;grid-template-columns:95px 120px 1fr 125px;gap:8px;padding:9px 11px;border-bottom:1px solid #eaf1f5;font-size:12px}.goct-private{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#e9f8ee;color:#087449;font-weight:900;font-size:12px}.goct-help{padding:11px 13px;border-radius:12px;background:#f4f9fc;border:1px solid #d7e8f1;color:#5d788c;font-size:12px;line-height:1.5}.goct-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;margin-top:10px}.goct-evidence-card{position:relative;border:1px solid #d4e4ed;border-radius:13px;overflow:hidden;background:#f6fbfd;min-height:125px}.goct-evidence-card img{display:block;width:100%;height:105px;object-fit:cover}.goct-evidence-card span{display:block;padding:7px 8px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goct-evidence-remove{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:999px;background:#a61b1bea;color:#fff;cursor:pointer;font-weight:900}.goct-viewer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px}.goct-viewer-item{border:1px solid #d7e5ed;border-radius:14px;overflow:hidden;background:#f8fcfe}.goct-viewer-item img{display:block;width:100%;height:210px;object-fit:contain;background:#0b1d2b}.goct-viewer-item div{padding:9px;font-size:12px}.goct-upload-status{display:none;padding:10px 12px;border-radius:11px;background:#e9f7ff;color:#075f8c;font-weight:900;margin-top:10px}.goct-upload-status.show{display:block}@media(max-width:1100px){.goct-stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.goct-hero{align-items:flex-start;flex-direction:column}.goct-stats{grid-template-columns:repeat(2,1fr)}.goct-toolbar{grid-template-columns:1fr}.goct-grid{grid-template-columns:1fr}.goct-field.full{grid-column:auto}.goct-tabs{width:100%;overflow:auto;flex-wrap:nowrap}.goct-tab{white-space:nowrap}}
+      #goct-root{font-family:Inter,system-ui;color:#103b5b;padding-bottom:34px}.goct-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:24px;border-radius:22px;border:1px solid #cde2ef;background:linear-gradient(135deg,#f7fcff,#e8f7ff);box-shadow:0 15px 34px rgba(18,73,109,.08);margin-bottom:15px}.goct-hero h2{margin:0;font-size:28px;color:#0b4166}.goct-hero p{margin:7px 0 0;color:#647f93}.goct-actions,.goct-tabs,.goct-pagination{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.goct-btn{border:1px solid #c9ddea;background:#fff;color:#086796;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer;transition:.16s ease}.goct-btn:hover:not(:disabled){transform:translateY(-1px)}.goct-btn:disabled{opacity:.5;cursor:not-allowed}.goct-btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#087dbb,#05a8d4)}.goct-btn.danger{color:#b42318}.goct-btn.small{padding:7px 9px;font-size:12px}.goct-tabs{background:#edf6fb;padding:5px;border-radius:13px;width:max-content;max-width:100%;margin-bottom:14px}.goct-tab{border:0;background:transparent;color:#607b8e;padding:9px 14px;border-radius:9px;font-weight:900;cursor:pointer}.goct-tab.active{background:#fff;color:#0870a4;box-shadow:0 4px 13px #aac6d655}.goct-stats{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:11px;margin-bottom:14px}.goct-stat,.goct-card{background:#fff;border:1px solid #d6e5ef;border-radius:17px;padding:16px;box-shadow:0 10px 24px rgba(11,61,95,.055)}.goct-stat span{font-size:11px;color:#6b8497;font-weight:900;text-transform:uppercase}.goct-stat strong{display:block;font-size:26px;margin-top:4px;color:#0b456d}.goct-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.goct-card h3{margin:0}.goct-toolbar{display:grid;grid-template-columns:2fr repeat(3,minmax(150px,1fr)) auto;gap:10px;margin-bottom:12px}.goct-input,.goct-select,.goct-textarea{width:100%;box-sizing:border-box;border:1px solid #c8dce8;border-radius:11px;padding:10px 11px;font:inherit;background:#fff}.goct-table-wrap{overflow:auto;border:1px solid #dbe8f0;border-radius:14px}.goct-table{width:100%;border-collapse:collapse;min-width:1120px}.goct-table th,.goct-table td{padding:11px;border-bottom:1px solid #e7eff4;text-align:left;font-size:13px;vertical-align:top}.goct-table th{background:#eff8fc;color:#5e788c;font-size:11px;text-transform:uppercase;position:sticky;top:0}.goct-table tr:hover td{background:#f9fdff}.goct-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.goct-badge.ok{background:#e5f8ed;color:#087448}.goct-badge.bad{background:#fff0ef;color:#b42318}.goct-badge.run{background:#e7f5ff;color:#08689c}.goct-badge.wait{background:#fff7dc;color:#876400}.goct-empty{text-align:center;padding:35px;color:#71899a}.goct-pagination{justify-content:space-between;margin-top:12px}.goct-pages{display:flex;gap:6px;align-items:center}.goct-page{min-width:34px;height:34px;border:1px solid #d0e0e9;border-radius:9px;background:#fff;font-weight:900;cursor:pointer}.goct-page.active{background:#0786bd;color:#fff;border-color:#0786bd}.goct-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#072c4775;z-index:11000;padding:20px}.goct-modal.open{display:flex}.goct-dialog{width:min(920px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #071c2c66}.goct-dialog.viewer{width:min(1040px,96vw)}.goct-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.goct-field.full{grid-column:1/-1}.goct-field label{display:block;font-size:11px;font-weight:1000;color:#5c7588;text-transform:uppercase;margin-bottom:6px}.goct-preview{max-height:380px;overflow:auto;border:1px solid #d8e6ef;border-radius:13px}.goct-preview-row{display:grid;grid-template-columns:95px 120px 1fr 125px;gap:8px;padding:9px 11px;border-bottom:1px solid #eaf1f5;font-size:12px}.goct-private{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#e9f8ee;color:#087449;font-weight:900;font-size:12px}.goct-help{padding:11px 13px;border-radius:12px;background:#f4f9fc;border:1px solid #d7e8f1;color:#5d788c;font-size:12px;line-height:1.5}.goct-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;margin-top:10px}.goct-evidence-card{position:relative;border:1px solid #d4e4ed;border-radius:13px;overflow:hidden;background:#f6fbfd;min-height:125px}.goct-evidence-card img{display:block;width:100%;height:105px;object-fit:cover}.goct-evidence-card span{display:block;padding:7px 8px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goct-evidence-remove{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:999px;background:#a61b1bea;color:#fff;cursor:pointer;font-weight:900}.goct-viewer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px}.goct-viewer-item{border:1px solid #d7e5ed;border-radius:14px;overflow:hidden;background:#f8fcfe}.goct-viewer-item img{display:block;width:100%;height:210px;object-fit:contain;background:#0b1d2b}.goct-viewer-item div{padding:9px;font-size:12px}.goct-upload-status{display:none;padding:10px 12px;border-radius:11px;background:#e9f7ff;color:#075f8c;font-weight:900;margin-top:10px}.goct-upload-status.show{display:block}@media(max-width:1100px){.goct-stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.goct-hero{align-items:flex-start;flex-direction:column}.goct-stats{grid-template-columns:repeat(2,1fr)}.goct-toolbar{grid-template-columns:1fr}.goct-grid{grid-template-columns:1fr}.goct-field.full{grid-column:auto}.goct-tabs{width:100%;overflow:auto;flex-wrap:nowrap}.goct-tab{white-space:nowrap}}
     `;
     document.head.appendChild(style);
   }
@@ -216,12 +212,12 @@
     host.dataset.ready = '1';
     host.innerHTML = `
       <div id="goct-root">
-        <section class="goct-hero"><div><span class="goct-private"><i class="fas fa-lock"></i> Control interno</span><h2>Control técnico</h2><p>Seguimiento de instalaciones, averías de cámaras y levantamientos fotográficos de agencias nuevas.</p></div><div class="goct-actions"><button class="goct-btn" id="goct-sync-agencies"><i class="fas fa-building-circle-check"></i> Detectar agencias nuevas</button><button class="goct-btn" id="goct-import"><i class="fas fa-paste"></i> Entrada rápida</button><button class="goct-btn primary" id="goct-new"><i class="fas fa-plus"></i> Nuevo registro</button></div></section>
-        <div class="goct-tabs"><button class="goct-tab active" data-cat="">Todos activos</button><button class="goct-tab" data-cat="INSTALACION">Instalaciones</button><button class="goct-tab" data-cat="AVERIA_CAMARA">Averías de cámaras</button><button class="goct-tab" data-cat="LEVANTAMIENTO">Levantamientos</button><button class="goct-tab" data-cat="RESUELTO">Resueltos</button></div>
-        <div class="goct-stats"><div class="goct-stat"><span>Total activo</span><strong id="goct-s-total">0</strong></div><div class="goct-stat"><span>Pendientes</span><strong id="goct-s-pending">0</strong></div><div class="goct-stat"><span>En proceso</span><strong id="goct-s-process">0</strong></div><div class="goct-stat"><span>Falta equipo/cambio</span><strong id="goct-s-equipment">0</strong></div><div class="goct-stat"><span>Levantamientos</span><strong id="goct-s-surveys">0</strong></div><div class="goct-stat"><span>Resueltos</span><strong id="goct-s-resolved">0</strong></div></div>
+        <section class="goct-hero"><div><span class="goct-private"><i class="fas fa-lock"></i> Control interno</span><h2>Control técnico</h2><p>Seguimiento de instalaciones, averías de cámaras y acciones técnicas. Los levantamientos fotográficos se administran en el módulo Levantamientos por grupo.</p></div><div class="goct-actions"><button class="goct-btn" id="goct-open-surveys"><i class="fas fa-clipboard-check"></i> Abrir Levantamientos</button><button class="goct-btn" id="goct-import"><i class="fas fa-paste"></i> Entrada rápida</button><button class="goct-btn primary" id="goct-new"><i class="fas fa-plus"></i> Nuevo registro</button></div></section>
+        <div class="goct-tabs"><button class="goct-tab active" data-cat="">Todos activos</button><button class="goct-tab" data-cat="INSTALACION">Instalaciones</button><button class="goct-tab" data-cat="AVERIA_CAMARA">Averías de cámaras</button><button class="goct-tab" data-cat="RESUELTO">Resueltos</button></div>
+        <div class="goct-stats"><div class="goct-stat"><span>Total activo</span><strong id="goct-s-total">0</strong></div><div class="goct-stat"><span>Pendientes</span><strong id="goct-s-pending">0</strong></div><div class="goct-stat"><span>En proceso</span><strong id="goct-s-process">0</strong></div><div class="goct-stat"><span>Falta equipo/cambio</span><strong id="goct-s-equipment">0</strong></div><div class="goct-stat"><span>Resueltos</span><strong id="goct-s-resolved">0</strong></div></div>
         <section class="goct-card"><div class="goct-card-head"><div><h3 id="goct-list-title">Seguimiento activo</h3><small id="goct-count-label">0 registros</small></div><button class="goct-btn small" id="goct-refresh"><i class="fas fa-rotate"></i> Actualizar</button></div><div class="goct-toolbar"><input class="goct-input" id="goct-search" placeholder="Buscar agencia, problema, equipo o nota"><select class="goct-select" id="goct-state"><option value="">Todos los estados</option>${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select><select class="goct-select" id="goct-group"><option value="">Todos los grupos</option></select><select class="goct-select" id="goct-priority"><option value="">Todas las prioridades</option><option>ALTA</option><option>MEDIA</option><option>BAJA</option></select><button class="goct-btn" id="goct-clear">Limpiar</button></div><div id="goct-table"></div><div class="goct-pagination"><div><select class="goct-select" id="goct-size" style="width:auto">${PAGE_SIZES.map((size) => `<option ${size === 10 ? 'selected' : ''}>${size}</option>`).join('')}</select> <small>por página</small></div><div class="goct-pages" id="goct-pages"></div></div></section>
       </div>
-      <div class="goct-modal" id="goct-form-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-form-title">Nuevo registro</h3><small>Control técnico interno</small></div><button class="goct-btn" data-close="goct-form-modal">Cerrar</button></div><div class="goct-grid"><div class="goct-field"><label>Categoría</label><select class="goct-select" id="goct-f-cat"><option value="INSTALACION">Instalación pendiente</option><option value="AVERIA_CAMARA">Avería de cámara</option><option value="LEVANTAMIENTO">Levantamiento pendiente</option><option value="OTRO">Otro seguimiento</option></select></div><div class="goct-field"><label>Agencia</label><select class="goct-select" id="goct-f-agency"></select></div><div class="goct-field"><label>Tipo / equipo</label><input class="goct-input" id="goct-f-equipment" placeholder="Ej. Registro fotográfico, cámara domo, PTZ"></div><div class="goct-field"><label>Estado</label><select class="goct-select" id="goct-f-state">${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select></div><div class="goct-field"><label>Prioridad</label><select class="goct-select" id="goct-f-priority"><option>MEDIA</option><option>ALTA</option><option>BAJA</option></select></div><div class="goct-field"><label>Fecha reportada</label><input class="goct-input" type="date" id="goct-f-date"></div><div class="goct-field full"><label>Problema / trabajo pendiente</label><textarea class="goct-textarea" rows="3" id="goct-f-subject" placeholder="Describe la instalación, avería o levantamiento pendiente"></textarea></div><div class="goct-field full"><label>Observaciones</label><textarea class="goct-textarea" rows="3" id="goct-f-notes"></textarea></div><div class="goct-field full"><label>Fotos del levantamiento / evidencias</label><input class="goct-input" type="file" id="goct-f-files" accept="image/*" multiple><div class="goct-help">Puedes tomar o seleccionar hasta ${MAX_EVIDENCE_FILES} fotos. Un levantamiento no podrá marcarse como resuelto sin al menos una evidencia fotográfica.</div><div class="goct-upload-status" id="goct-upload-status"></div><div class="goct-evidence-grid" id="goct-form-evidence"></div></div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:16px"><button class="goct-btn" data-close="goct-form-modal">Cancelar</button><button class="goct-btn primary" id="goct-save">Guardar</button></div></div></div>
+      <div class="goct-modal" id="goct-form-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-form-title">Nuevo registro</h3><small>Control técnico interno</small></div><button class="goct-btn" data-close="goct-form-modal">Cerrar</button></div><div class="goct-grid"><div class="goct-field"><label>Categoría</label><select class="goct-select" id="goct-f-cat"><option value="INSTALACION">Instalación pendiente</option><option value="AVERIA_CAMARA">Avería de cámara</option><option value="OTRO">Otro seguimiento</option></select></div><div class="goct-field"><label>Agencia</label><select class="goct-select" id="goct-f-agency"></select></div><div class="goct-field"><label>Tipo / equipo</label><input class="goct-input" id="goct-f-equipment" placeholder="Ej. Registro fotográfico, cámara domo, PTZ"></div><div class="goct-field"><label>Estado</label><select class="goct-select" id="goct-f-state">${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select></div><div class="goct-field"><label>Prioridad</label><select class="goct-select" id="goct-f-priority"><option>MEDIA</option><option>ALTA</option><option>BAJA</option></select></div><div class="goct-field"><label>Fecha reportada</label><input class="goct-input" type="date" id="goct-f-date"></div><div class="goct-field full"><label>Problema / trabajo pendiente</label><textarea class="goct-textarea" rows="3" id="goct-f-subject" placeholder="Describe la instalación, avería o levantamiento pendiente"></textarea></div><div class="goct-field full"><label>Observaciones</label><textarea class="goct-textarea" rows="3" id="goct-f-notes"></textarea></div><div class="goct-field full"><label>Fotos / evidencias técnicas</label><input class="goct-input" type="file" id="goct-f-files" accept="image/*" multiple><div class="goct-help">Puedes tomar o seleccionar hasta ${MAX_EVIDENCE_FILES} fotos para documentar la instalación o avería.</div><div class="goct-upload-status" id="goct-upload-status"></div><div class="goct-evidence-grid" id="goct-form-evidence"></div></div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:16px"><button class="goct-btn" data-close="goct-form-modal">Cancelar</button><button class="goct-btn primary" id="goct-save">Guardar</button></div></div></div>
       <div class="goct-modal" id="goct-import-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-import-title">Entrada rápida</h3><small>Pega listas desde WhatsApp o Bloc de notas</small></div><button class="goct-btn" data-close="goct-import-modal">Cerrar</button></div><div id="goct-import-rule" class="goct-help" style="margin-bottom:12px">Todos los registros se guardarán en la categoría seleccionada.</div><div class="goct-field"><label>Texto</label><textarea class="goct-textarea" rows="9" id="goct-import-text" placeholder="1502 (DOMO)\n1576 (PTZ)\n1175 G-11 (verificar)\n1058 G-11: 17-7-2026"></textarea></div><div class="goct-actions" style="margin:12px 0"><div id="goct-import-category-label" class="goct-private">Categoría</div><button class="goct-btn" id="goct-preview-btn">Analizar lista</button></div><div class="goct-preview" id="goct-preview"><div class="goct-empty">Pega una lista y pulsa Analizar.</div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:14px"><button class="goct-btn primary" id="goct-import-save" disabled>Guardar registros válidos</button></div></div></div>
       <div class="goct-modal" id="goct-viewer-modal"><div class="goct-dialog viewer"><div class="goct-card-head"><div><h3 id="goct-viewer-title">Evidencias</h3><small id="goct-viewer-subtitle"></small></div><button class="goct-btn" data-close="goct-viewer-modal">Cerrar</button></div><div class="goct-viewer-grid" id="goct-viewer-grid"></div></div></div>
     `;
@@ -249,10 +245,10 @@
     const category = state.activeCategory;
     if (listTitle) listTitle.textContent = category === 'RESUELTO' ? 'Registros resueltos' : (category ? CAT_LABEL[category] : 'Seguimiento activo');
     if (!importButton) return;
-    const importable = ['INSTALACION', 'AVERIA_CAMARA', 'LEVANTAMIENTO'].includes(category);
+    const importable = ['INSTALACION', 'AVERIA_CAMARA'].includes(category);
     importButton.disabled = !importable;
-    importButton.title = importable ? '' : 'Selecciona Instalaciones, Averías o Levantamientos para usar la entrada rápida.';
-    importButton.innerHTML = category === 'AVERIA_CAMARA' ? '<i class="fas fa-paste"></i> Entrada rápida de averías' : category === 'INSTALACION' ? '<i class="fas fa-paste"></i> Entrada rápida de instalaciones' : category === 'LEVANTAMIENTO' ? '<i class="fas fa-paste"></i> Entrada rápida de levantamientos' : '<i class="fas fa-paste"></i> Entrada rápida';
+    importButton.title = importable ? '' : 'Selecciona Instalaciones o Averías para usar la entrada rápida.';
+    importButton.innerHTML = category === 'AVERIA_CAMARA' ? '<i class="fas fa-paste"></i> Entrada rápida de averías' : category === 'INSTALACION' ? '<i class="fas fa-paste"></i> Entrada rápida de instalaciones' : '<i class="fas fa-paste"></i> Entrada rápida';
   }
 
   function open(navElement) {
@@ -276,8 +272,8 @@
     try {
       const response = await connected.from(TABLE).select('*').order('creado_en', { ascending: false });
       if (response.error) throw response.error;
-      state.items = (response.data || []).map((item) => ({ ...item, evidencias: normalizeEvidence(item.evidencias) }));
-      applyFilters(); renderStats(); await syncNewAgencies({ notify: false });
+      state.items = (response.data || []).filter((item) => item.categoria !== 'LEVANTAMIENTO').map((item) => ({ ...item, evidencias: normalizeEvidence(item.evidencias) }));
+      applyFilters(); renderStats();
     } catch (error) {
       toast(error.message || 'No se pudo cargar Control técnico.', 'error');
       $('#goct-table').innerHTML = '<div class="goct-empty">No se pudieron cargar los registros.</div>';
@@ -290,7 +286,6 @@
     $('#goct-s-pending').textContent = activeItems.filter((item) => ['PENDIENTE', 'POR_VERIFICAR', 'EN_COORDINACION'].includes(item.estado)).length;
     $('#goct-s-process').textContent = activeItems.filter((item) => ['PROGRAMADO', 'EN_PROCESO'].includes(item.estado)).length;
     $('#goct-s-equipment').textContent = activeItems.filter((item) => ['FALTA_EQUIPO', 'REQUIERE_CAMBIO'].includes(item.estado)).length;
-    $('#goct-s-surveys').textContent = activeItems.filter((item) => item.categoria === 'LEVANTAMIENTO').length;
     $('#goct-s-resolved').textContent = state.items.filter(isResolved).length;
   }
 
@@ -324,10 +319,11 @@
     if (!list.length) { $('#goct-table').innerHTML = '<div class="goct-empty">No hay registros para estos filtros.</div>'; return; }
     $('#goct-table').innerHTML = `<div class="goct-table-wrap"><table class="goct-table"><thead><tr><th>Agencia</th><th>Grupo</th><th>Categoría</th><th>Equipo / tipo</th><th>Problema o pendiente</th><th>Fecha</th><th>Fotos</th><th>Estado</th><th>Prioridad</th><th>Acciones</th></tr></thead><tbody>${list.map((item) => {
       const evidence = normalizeEvidence(item.evidencias);
-      return `<tr><td><b>AG ${esc(item.agencia_numero || '-')}</b></td><td>${esc(item.grupo_codigo || '-')}</td><td>${esc(CAT_LABEL[item.categoria] || item.categoria)}</td><td>${esc(item.equipo || '-')}</td><td>${esc(item.asunto || '-')}${item.observaciones ? `<br><small>${esc(item.observaciones)}</small>` : ''}</td><td>${formatDate(item.fecha_reportada)}</td><td>${evidence.length ? `<button class="goct-btn small" data-view="${item.id}"><i class="fas fa-images"></i> ${evidence.length}</button>` : '<span>-</span>'}</td><td><span class="goct-badge ${badgeClass(item.estado)}">${esc(STATE_LABEL[item.estado] || item.estado)}</span></td><td>${esc(item.prioridad || 'MEDIA')}</td><td><div class="goct-actions"><button class="goct-btn small" data-edit="${item.id}">Editar</button>${!isResolved(item) ? `<button class="goct-btn small" data-resolve="${item.id}">Resolver</button>` : ''}<button class="goct-btn small danger" data-delete="${item.id}">Eliminar</button></div></td></tr>`;
+      return `<tr><td><b>AG ${esc(item.agencia_numero || '-')}</b></td><td>${esc(item.grupo_codigo || '-')}</td><td>${esc(CAT_LABEL[item.categoria] || item.categoria)}</td><td>${esc(item.equipo || '-')}</td><td>${esc(item.asunto || '-')}${item.observaciones ? `<br><small>${esc(item.observaciones)}</small>` : ''}</td><td>${formatDate(item.fecha_reportada)}</td><td>${evidence.length ? `<button class="goct-btn small" data-view="${item.id}"><i class="fas fa-images"></i> ${evidence.length}</button>` : '<span>-</span>'}</td><td><span class="goct-badge ${badgeClass(item.estado)}">${esc(STATE_LABEL[item.estado] || item.estado)}</span></td><td>${esc(item.prioridad || 'MEDIA')}</td><td><div class="goct-actions"><button class="goct-btn small" data-edit="${item.id}">Editar</button>${!isResolved(item) ? `<button class="goct-btn small" data-control-survey="${item.id}">Levantamiento</button><button class="goct-btn small" data-resolve="${item.id}">Resolver</button>` : ''}<button class="goct-btn small danger" data-delete="${item.id}">Eliminar</button></div></td></tr>`;
     }).join('')}</tbody></table></div>`;
     const table = $('#goct-table');
     $$('[data-edit]', table).forEach((button) => { button.onclick = () => editItem(button.dataset.edit); });
+    $$('[data-control-survey]', table).forEach((button) => { button.onclick = () => openControlSurvey(button.dataset.controlSurvey); });
     $$('[data-resolve]', table).forEach((button) => { button.onclick = () => quickResolve(button.dataset.resolve); });
     $$('[data-delete]', table).forEach((button) => { button.onclick = () => deleteItem(button.dataset.delete); });
     $$('[data-view]', table).forEach((button) => { button.onclick = () => viewEvidence(button.dataset.view); });
@@ -345,14 +341,14 @@
   }
 
   function categoryForNewItem() {
-    return ['INSTALACION', 'AVERIA_CAMARA', 'LEVANTAMIENTO'].includes(state.activeCategory) ? state.activeCategory : 'INSTALACION';
+    return ['INSTALACION', 'AVERIA_CAMARA'].includes(state.activeCategory) ? state.activeCategory : 'INSTALACION';
   }
 
   function newItem() {
     state.editing = null; state.formEvidence = []; state.pendingFiles = [];
     const category = categoryForNewItem();
     $('#goct-form-title').textContent = 'Nuevo registro'; $('#goct-f-cat').value = category; $('#goct-f-agency').value = '';
-    $('#goct-f-equipment').value = category === 'LEVANTAMIENTO' ? 'Registro fotográfico y validación técnica' : '';
+    $('#goct-f-equipment').value = '';
     $('#goct-f-state').value = 'PENDIENTE'; $('#goct-f-priority').value = 'MEDIA'; $('#goct-f-date').value = today();
     $('#goct-f-subject').value = CATEGORY_DEFAULT_SUBJECT[category]; $('#goct-f-notes').value = ''; $('#goct-f-files').value = '';
     setUploadStatus(''); renderFormEvidence(); $('#goct-form-modal').classList.add('open');
@@ -426,7 +422,6 @@
     const category = $('#goct-f-cat').value, selectedStatus = $('#goct-f-state').value, subject = text($('#goct-f-subject').value);
     const totalEvidence = state.formEvidence.length + state.pendingFiles.length;
     if (!subject) return toast('Describe el trabajo o problema.', 'error');
-    if (category === 'LEVANTAMIENTO' && selectedStatus === 'RESUELTO' && totalEvidence === 0) return toast('Agrega al menos una foto antes de resolver el levantamiento.', 'error');
     const group = groupFor(agency), saveButton = $('#goct-save'); state.saving = true; saveButton.disabled = true; saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando';
     try {
       const uploaded = await uploadPendingEvidence(agencyNum(agency));
@@ -447,7 +442,6 @@
 
   async function quickResolve(id) {
     const item = state.items.find((record) => record.id === id); if (!item) return;
-    if (item.categoria === 'LEVANTAMIENTO' && normalizeEvidence(item.evidencias).length === 0) return toast('Este levantamiento necesita al menos una foto. Ábrelo en Editar, agrega las evidencias y luego resuélvelo.', 'error');
     if (!global.confirm('¿Marcar este registro como resuelto? Se quitará de las listas activas y pasará a Resueltos.')) return;
     try {
       const response = await client().from(TABLE).update({ estado: 'RESUELTO', fecha_resolucion: new Date().toISOString() }).eq('id', id);
@@ -470,6 +464,25 @@
     $('#goct-viewer-modal').classList.add('open');
   }
 
+  function openControlSurvey(id) {
+    const item = state.items.find((record) => record.id === id);
+    if (!item) return toast('No se encontró el registro técnico.', 'error');
+    const agency = agencies().find((record) => agencyId(record) === text(item.agencia_id) || agencyNum(record) === padAgency(item.agencia_numero));
+    const group = agency ? groupFor(agency) : groups().find((record) => normalizeGroupKey(groupLabel(record)) === normalizeGroupKey(item.grupo_codigo));
+    if (!agency || !group) return toast('No se pudo identificar la agencia o su grupo.', 'error');
+    if (!global.GOLevantamientosGrupos) return toast('El módulo Levantamientos todavía no está disponible.', 'error');
+    global.GOLevantamientosGrupos.openFromControl({
+      controlId: item.id,
+      originId: item.id,
+      agencyId: agencyId(agency),
+      groupId: groupId(group),
+      groupCode: groupLabel(group),
+      responsible: '',
+      name: `Levantamiento técnico · ${item.asunto || CAT_LABEL[item.categoria] || 'Control técnico'}`,
+      metadata: { control_categoria: item.categoria, control_equipo: item.equipo || null, control_prioridad: item.prioridad || null }
+    });
+  }
+
   function parseDate(line) {
     const match = line.match(/\b(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})\b/); if (!match) return null;
     let year = Number(match[3]); if (year < 100) year += 2000;
@@ -478,11 +491,11 @@
 
   function parseImport() {
     const category = state.importCategory;
-    if (!['INSTALACION', 'AVERIA_CAMARA', 'LEVANTAMIENTO'].includes(category)) return toast('La categoría de entrada rápida no está definida.', 'error');
+    if (!['INSTALACION', 'AVERIA_CAMARA'].includes(category)) return toast('La categoría de entrada rápida no está definida.', 'error');
     state.importRows = text($('#goct-import-text').value).split(/\n+/).map(text).filter(Boolean).map((line, index) => {
       const agencyNumber = padAgency((line.match(/^\s*(\d{1,5})/) || [])[1]);
       const groupMatch = line.match(/G\s*[-:]?\s*(\d{1,3})/i), reportedDate = parseDate(line);
-      let equipment = category === 'LEVANTAMIENTO' ? 'Registro fotográfico y validación técnica' : '';
+      let equipment = '';
       const parenthesis = line.match(/\(([^)]+)\)/); if (parenthesis) equipment = text(parenthesis[1]);
       if (/\bDOMO\b/i.test(line)) equipment = 'Cámara domo'; if (/\bPTZ\b/i.test(line)) equipment = 'Cámara PTZ';
       const agency = agencies().find((item) => agencyNum(item) === agencyNumber && agencyId(item)); const group = agency ? groupFor(agency) : null;
@@ -512,38 +525,11 @@
 
   function openImport(category) {
     const chosen = category || state.activeCategory;
-    if (!['INSTALACION', 'AVERIA_CAMARA', 'LEVANTAMIENTO'].includes(chosen)) return toast('Selecciona primero Instalaciones, Averías de cámaras o Levantamientos.', 'error');
+    if (!['INSTALACION', 'AVERIA_CAMARA'].includes(chosen)) return toast('Selecciona primero Instalaciones o Averías de cámaras.', 'error');
     state.importCategory = chosen; state.importRows = [];
     const label = CAT_LABEL[chosen] || chosen;
     $('#goct-import-title').textContent = `Entrada rápida — ${label}`; $('#goct-import-category-label').textContent = label; $('#goct-import-rule').textContent = `Todos los registros de esta entrada se guardarán en ${label}.`;
     $('#goct-preview').innerHTML = '<div class="goct-empty">Pega una lista y pulsa Analizar.</div>'; $('#goct-import-save').disabled = true; $('#goct-import-modal').classList.add('open');
-  }
-
-  function knownAgencyKeys() {
-    try { const parsed = JSON.parse(localStorage.getItem(KNOWN_AGENCIES_KEY) || '[]'); return new Set(Array.isArray(parsed) ? parsed : []); }
-    catch (_error) { return new Set(); }
-  }
-  function saveKnownAgencyKeys(keys) { try { localStorage.setItem(KNOWN_AGENCIES_KEY, JSON.stringify(Array.from(keys))); } catch (_error) {} }
-  function agencyKey(agency) { return agencyId(agency) || `AG:${agencyNum(agency)}`; }
-
-  async function syncNewAgencies({ notify = true } = {}) {
-    if (state.syncingAgencies) return;
-    const currentAgencies = agencies().filter((agency) => agencyId(agency));
-    const currentKeys = new Set(currentAgencies.map(agencyKey));
-    const known = knownAgencyKeys();
-    if (!known.size) { saveKnownAgencyKeys(currentKeys); if (notify) toast('Base inicial registrada. Desde ahora, las agencias nuevas se detectarán automáticamente.', 'success'); return; }
-    const newAgencies = currentAgencies.filter((agency) => !known.has(agencyKey(agency)));
-    if (!newAgencies.length) { saveKnownAgencyKeys(currentKeys); if (notify) toast('No se detectaron agencias nuevas pendientes de registrar.', 'info'); return; }
-    const existingAgencyIds = new Set(state.items.filter((item) => item.categoria === 'LEVANTAMIENTO').map((item) => text(item.agencia_id)).filter(Boolean));
-    const rows = newAgencies.filter((agency) => !existingAgencyIds.has(agencyId(agency))).map((agency) => {
-      const group = groupFor(agency);
-      return { categoria: 'LEVANTAMIENTO', agencia_id: agencyId(agency), agencia_numero: agencyNum(agency), grupo_id: group ? groupId(group) || null : null, grupo_codigo: group ? groupLabel(group) : null, equipo: 'Registro fotográfico y validación técnica', asunto: 'Levantamiento inicial de agencia nueva', estado: 'PENDIENTE', prioridad: 'MEDIA', fecha_reportada: today(), observaciones: 'Creado automáticamente al detectar una agencia nueva.', evidencias: [] };
-    });
-    if (!rows.length) { saveKnownAgencyKeys(currentKeys); if (notify) toast('Las agencias nuevas ya tenían un levantamiento registrado.', 'info'); return; }
-    state.syncingAgencies = true;
-    try { const response = await client().from(TABLE).insert(rows); if (response.error) throw response.error; saveKnownAgencyKeys(currentKeys); toast(`${rows.length} agencia(s) nueva(s) agregadas a Levantamientos.`, 'success'); await load(); }
-    catch (error) { if (notify) toast(error.message || 'No se pudieron registrar las agencias nuevas.', 'error'); else console.warn('[Control técnico] No se pudo sincronizar agencias nuevas:', error); }
-    finally { state.syncingAgencies = false; }
   }
 
   function closeModal(id) {
@@ -554,7 +540,7 @@
 
   function bind() {
     if (state.ready) return; state.ready = true; state.activeCategory = $('.goct-tab.active', $('#goct-root'))?.dataset.cat || '';
-    $('#goct-new').onclick = newItem; $('#goct-import').onclick = () => openImport(); $('#goct-sync-agencies').onclick = () => syncNewAgencies({ notify: true }); $('#goct-refresh').onclick = load; $('#goct-save').onclick = saveItem; $('#goct-preview-btn').onclick = parseImport; $('#goct-import-save').onclick = saveImport; $('#goct-f-files').onchange = (event) => addPendingFiles(event.target.files);
+    $('#goct-new').onclick = newItem; $('#goct-import').onclick = () => openImport(); $('#goct-open-surveys').onclick = () => global.GOLevantamientosGrupos ? global.GOLevantamientosGrupos.open($('#navLevantamientos')) : toast('El módulo Levantamientos todavía no está disponible.','error'); $('#goct-refresh').onclick = load; $('#goct-save').onclick = saveItem; $('#goct-preview-btn').onclick = parseImport; $('#goct-import-save').onclick = saveImport; $('#goct-f-files').onchange = (event) => addPendingFiles(event.target.files);
     $('#goct-search').oninput = () => { state.page = 1; applyFilters(); };
     ['#goct-state', '#goct-group', '#goct-priority'].forEach((selector) => { $(selector).onchange = () => { state.page = 1; applyFilters(); }; });
     $('#goct-clear').onclick = () => { $('#goct-search').value = ''; $('#goct-state').value = ''; $('#goct-group').value = ''; $('#goct-priority').value = ''; state.page = 1; applyFilters(); };
@@ -571,5 +557,5 @@
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else setTimeout(init, 0);
-  global.GOControlTecnico = { version: VERSION, open, refresh: load, syncNewAgencies: () => syncNewAgencies({ notify: true }) };
+  global.GOControlTecnico = { version: VERSION, open, refresh: load, openLevantamiento: openControlSurvey };
 })(window);
