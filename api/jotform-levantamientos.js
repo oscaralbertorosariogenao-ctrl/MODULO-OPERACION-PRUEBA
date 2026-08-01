@@ -598,7 +598,7 @@ async function downloadRemoteCandidate(candidateUrl, apiKey = '') {
   try {
     const headers = {
       Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-      'User-Agent': 'Grupo-Ortiz-Levantamientos/807.06'
+      'User-Agent': 'Grupo-Ortiz-Levantamientos/807.07'
     };
     if (apiKey) headers.APIKEY = apiKey;
     const response = await fetch(candidateUrl, { signal: controller.signal, redirect: 'follow', headers, cache: 'no-store' });
@@ -647,31 +647,45 @@ async function fetchRemoteFile(url) {
   throw lastError || new Error('No se pudo descargar la fotografía desde Jotform.');
 }
 
-async function copyUrlToR2(r2, context) {
-  const { url, campaign, agencyNumber, problemKey, submissionId } = context;
+async function prepareRemoteImage(url) {
   const originalName = fileNameFromUrl(url);
   const remote = await fetchRemoteFile(url);
-  const ext = extensionFrom(remote.contentType, originalName);
-  const hash = crypto.createHash('sha1').update(`${submissionId}:${url}`).digest('hex').slice(0, 18);
+  const contentHash = crypto.createHash('sha256').update(remote.buffer).digest('hex');
+  return { ...remote, originalName, contentHash };
+}
+
+async function uploadPreparedImageToR2(r2, context, remote) {
+  const { campaign, agencyNumber, problemKey, submissionId } = context;
+  const ext = extensionFrom(remote.contentType, remote.originalName);
+  const stableHash = remote.contentHash.slice(0, 20);
   const key = [
     'levantamientos',
     `grupo-${safePathPart(campaign.grupo_codigo)}`,
     safePathPart(campaign.codigo),
     `agencia-${safePathPart(agencyNumber)}`,
     safePathPart(problemKey || 'general'),
-    `${hash}${ext}`
+    `${stableHash}${ext}`
   ].join('/');
   await r2.send(new PutObjectCommand({
     Bucket: process.env.R2_BUCKET,
     Key: key,
     Body: remote.buffer,
     ContentType: remote.contentType,
-    CacheControl: 'public, max-age=31536000, immutable'
+    CacheControl: 'public, max-age=31536000, immutable',
+    Metadata: {
+      submission: safePathPart(submissionId || 'jotform'),
+      sha256: remote.contentHash
+    }
   }));
   const base = safeText(process.env.R2_PUBLIC_BASE_URL).replace(/\/+$/, '');
-  return { r2Key: key, r2Url: `${base}/${key}`, contentType: remote.contentType, originalName };
+  return {
+    r2Key: key,
+    r2Url: `${base}/${key}`,
+    contentType: remote.contentType,
+    originalName: remote.originalName,
+    contentHash: remote.contentHash
+  };
 }
-
 async function mapWithConcurrency(items, limit, worker) {
   const results = new Array(items.length);
   let cursor = 0;
@@ -1118,32 +1132,88 @@ async function retryEvidence(client, expedienteId) {
   if (expedienteResponse.error) throw expedienteResponse.error;
   const expediente = expedienteResponse.data;
   const campaign = expediente.ops_levantamiento_campanas;
-  const pendingResponse = await client.from('ops_levantamiento_evidencias').select('*').eq('expediente_id', expedienteId).neq('estado_r2', 'MIGRADO');
-  if (pendingResponse.error) throw pendingResponse.error;
-  const pending = pendingResponse.data || [];
-  if (!pending.length) return { retried: 0, migrated: 0, errors: 0 };
+  const evidenceResponse = await client.from('ops_levantamiento_evidencias')
+    .select('*')
+    .eq('expediente_id', expedienteId)
+    .order('orden', { ascending: true })
+    .order('creado_en', { ascending: true });
+  if (evidenceResponse.error) throw evidenceResponse.error;
+
+  const allEvidence = evidenceResponse.data || [];
+  const pending = allEvidence.filter((item) => item.estado_r2 !== 'MIGRADO');
+  if (!pending.length) return { retried: 0, migrated: 0, errors: 0, deduplicated: 0 };
+
   const r2 = makeR2Client();
-  const results = await mapWithConcurrency(pending, 3, async (item) => {
+  const seenHashes = new Map();
+  for (const item of allEvidence.filter((row) => row.estado_r2 === 'MIGRADO')) {
+    const hash = safeText(item.metadata?.content_hash);
+    if (hash) seenHashes.set(hash, item.id);
+  }
+
+  let migrated = 0;
+  let errors = 0;
+  let deduplicated = 0;
+
+  // Se procesa en orden del formulario. Si Jotform repite el mismo archivo en
+  // varios campos ocultos/condicionales, se conserva únicamente la primera
+  // aparición real y se elimina la copia técnica.
+  for (const item of pending) {
     try {
-      const result = await copyUrlToR2(r2, {
-        url: item.url_origen,
+      const remote = await prepareRemoteImage(item.url_origen);
+      const existingId = seenHashes.get(remote.contentHash);
+      if (existingId && existingId !== item.id) {
+        const removed = await client.from('ops_levantamiento_evidencias').delete().eq('id', item.id);
+        if (removed.error) throw removed.error;
+        deduplicated += 1;
+        continue;
+      }
+
+      const result = await uploadPreparedImageToR2(r2, {
         campaign,
         agencyNumber: expediente.agencia_numero,
         problemKey: item.metadata?.problema_clave,
         submissionId: expediente.jotform_submission_id || expediente.id
-      });
-      const update = await client.from('ops_levantamiento_evidencias').update({ r2_url: result.r2Url, r2_key: result.r2Key, mime_type: result.contentType, estado_r2: 'MIGRADO', error_r2: null }).eq('id', item.id);
+      }, remote);
+      const update = await client.from('ops_levantamiento_evidencias').update({
+        r2_url: result.r2Url,
+        r2_key: result.r2Key,
+        mime_type: result.contentType,
+        estado_r2: 'MIGRADO',
+        error_r2: null,
+        metadata: { ...(item.metadata || {}), content_hash: result.contentHash }
+      }).eq('id', item.id);
       if (update.error) throw update.error;
-      return true;
+      seenHashes.set(result.contentHash, item.id);
+      migrated += 1;
     } catch (error) {
+      errors += 1;
       await client.from('ops_levantamiento_evidencias').update({ estado_r2: 'ERROR', error_r2: safeText(error.message || error) }).eq('id', item.id);
-      return false;
     }
-  });
+  }
   await client.rpc('ops_levantamiento_recalcular_expediente', { p_expediente_id: expedienteId });
-  return { retried: pending.length, migrated: results.filter(Boolean).length, errors: results.filter((value) => !value).length };
+  await client.rpc('ops_levantamiento_recalcular_campana', { p_campana_id: campaign.id });
+  return { retried: pending.length, migrated, errors, deduplicated };
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function recoverEvidenceAutomatically(client, expedienteId) {
+  if (!process.env.JOTFORM_API_KEY) return { skipped: true };
+  const delays = [3500, 8000, 14000];
+  let last = { rebuilt: 0, migrated: 0, errors: 0, deduplicated: 0 };
+  for (const delay of delays) {
+    await sleep(delay);
+    try {
+      last = await rebuildEvidenceFromJotform(client, expedienteId);
+      if ((last.migrated || 0) > 0 && (last.errors || 0) === 0) return last;
+    } catch (error) {
+      console.error('[Levantamientos v807.07 recuperación automática]', error);
+    }
+  }
+  return last;
+}
 async function recordWebhookFailure(client, envelope, error) {
   try {
     const payload = unwrapPayload(envelope || {});
@@ -1164,7 +1234,7 @@ async function recordWebhookFailure(client, envelope, error) {
       procesado_en: new Date().toISOString()
     });
   } catch (diagnosticError) {
-    console.error('[Jotform Levantamientos v807.06 diagnóstico]', diagnosticError);
+    console.error('[Jotform Levantamientos v807.07 diagnóstico]', diagnosticError);
   }
 }
 
@@ -1175,7 +1245,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     return sendJson(res, 200, {
       ok: true,
-      service: 'jotform-levantamientos-automaticos-v807.06',
+      service: 'jotform-levantamientos-automaticos-v807.07',
       webhookConfigured: Boolean(process.env.JOTFORM_WEBHOOK_SECRET),
       formConfigured: Boolean(process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL),
       jotformApiConfigured: Boolean(process.env.JOTFORM_API_KEY),
@@ -1202,7 +1272,7 @@ export default async function handler(req, res) {
       if (intakeResponse.error) throw intakeResponse.error;
       const envelope = intakeResponse.data.payload?.envelope || intakeResponse.data.payload || {};
       const result = await processSubmission(client, envelope, { forcedCampaignId: campaignId, allowClosed: false, deferEvidence: true });
-      if (!result.pendingLink && result.evidencePending) waitUntil(retryEvidence(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 background]', error)));
+      if (!result.pendingLink) waitUntil(recoverEvidenceAutomatically(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 automático]', error)));
       return sendJson(res, 200, { ok: true, ...result });
     }
 
@@ -1211,10 +1281,10 @@ export default async function handler(req, res) {
     if (!expectedSecret || !timingSafeMatch(receivedSecret, expectedSecret)) return sendJson(res, 401, { ok: false, message: 'Webhook no autorizado.' });
     receivedEnvelope = await parseBody(req);
     const result = await processSubmission(client, receivedEnvelope, { deferEvidence: true });
-    if (!result.pendingLink && result.evidencePending) waitUntil(retryEvidence(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 background]', error)));
+    if (!result.pendingLink) waitUntil(recoverEvidenceAutomatically(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 automático]', error)));
     return sendJson(res, result.pendingLink ? 202 : 200, { ok: true, ...result });
   } catch (error) {
-    console.error('[Jotform Levantamientos v807.06]', error);
+    console.error('[Jotform Levantamientos v807.07]', error);
     if (receivedEnvelope) await recordWebhookFailure(client, receivedEnvelope, error);
     return sendJson(res, error.statusCode || 500, { ok: false, message: error.message || 'No se pudo procesar la solicitud.' });
   }
