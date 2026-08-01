@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '807.05') return;
+  if (global.GOLevantamientosGrupos?.version === '807.06') return;
 
-  const VERSION = '807.05';
+  const VERSION = '807.06';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
     agencies: 'ops_levantamiento_agencias',
@@ -587,8 +587,14 @@
   }
 
   function evidenceForFinding(finding) {
-    const direct = state.evidence.filter((item) => item.hallazgo_id === finding.id && item.estado_r2 === 'MIGRADO' && item.r2_url);
-    return direct.length ? direct : evidenceForExpedient(finding.expediente_id).slice(0, 2);
+    // Un reporte por problema nunca debe heredar fotografías generales del
+    // expediente. Solo acepta evidencia vinculada al hallazgo exacto o marcada
+    // explícitamente con la misma problema_clave por el webhook.
+    return state.evidence.filter((item) => {
+      if (item.estado_r2 !== 'MIGRADO' || !item.r2_url) return false;
+      if (item.hallazgo_id === finding.id) return true;
+      return !item.hallazgo_id && item.metadata?.problema_clave === finding.problema_clave;
+    });
   }
 
   function renderCampaignContent() {
