@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-07-31-v807.05-correccion-evidencias-r2";
+const SW_VERSION = "2026-07-31-v807.06-fotos-por-problema";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
