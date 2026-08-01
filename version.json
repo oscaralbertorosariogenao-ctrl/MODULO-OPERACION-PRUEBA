@@ -1,18 +1,13 @@
 {
-  "version": "2026-07-31-v807.06-fotos-por-problema",
-  "name": "v807.06 · Fotografías vinculadas por problema",
-  "released_at": "2026-07-31",
-  "html": {
-    "index": "index.html",
-    "app": "app.html",
-    "pantalla": "pantalla.html"
-  },
+  "version": "2026-08-01-v807.07-evidencias-agrupadas-automaticas",
+  "name": "v807.07 · Evidencias agrupadas y automáticas",
+  "released_at": "2026-08-01",
+  "html": {"index":"index.html","app":"app.html","pantalla":"pantalla.html"},
   "changes": [
-    "Cada fotografía se vincula únicamente al elemento y hallazgo que la originó",
-    "Los reportes por problema ya no heredan fotos generales de la agencia",
-    "Las fotos de Inversor y Baterías no aparecen en reportes de Publicidad",
-    "La submission completa de Jotform se consulta automáticamente para recuperar fotos sin reconstrucción manual",
-    "Valida que Jotform devuelva una imagen real antes de copiarla a R2",
-    "Incluye SQL quirúrgico para corregir evidencias ya vinculadas al problema equivocado"
+    "El expediente de agencia muestra cada fotografía dentro del hallazgo exacto que la originó",
+    "Las fotografías informativas sin hallazgo aparecen separadas y no contaminan reportes",
+    "El sistema recupera automáticamente las fotos desde Jotform sin depender del botón Reconstruir",
+    "Deduplica por contenido real cuando Jotform repite la misma fotografía en varios campos",
+    "Mantiene el botón de sincronización como respaldo manual"
   ]
 }
