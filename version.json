@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-31-v807.05-correccion-evidencias-r2",
-  "name": "v807.05 · Corrección de fotografías Jotform y R2",
+  "version": "2026-07-31-v807.06-fotos-por-problema",
+  "name": "v807.06 · Fotografías vinculadas por problema",
   "released_at": "2026-07-31",
   "html": {
     "index": "index.html",
@@ -8,11 +8,11 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Ignora webhookURL y uploadServerUrl: ya no se registran como fotografías",
-    "Acepta evidencias solamente desde preguntas reales de foto, cámara o carga de archivos",
-    "Deduplica una misma fotografía aunque Jotform la repita en rawRequest y en la API",
-    "Corrige la lectura de submissions de Jotform API usando el campo content",
-    "Agrega Reconstruir desde Jotform para limpiar y recuperar las fotos reales de una agencia",
-    "Incluye SQL quirúrgico para retirar las evidencias técnicas falsas ya guardadas"
+    "Cada fotografía se vincula únicamente al elemento y hallazgo que la originó",
+    "Los reportes por problema ya no heredan fotos generales de la agencia",
+    "Las fotos de Inversor y Baterías no aparecen en reportes de Publicidad",
+    "La submission completa de Jotform se consulta automáticamente para recuperar fotos sin reconstrucción manual",
+    "Valida que Jotform devuelva una imagen real antes de copiarla a R2",
+    "Incluye SQL quirúrgico para corregir evidencias ya vinculadas al problema equivocado"
   ]
 }
