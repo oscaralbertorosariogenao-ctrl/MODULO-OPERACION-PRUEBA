@@ -578,17 +578,31 @@ function safePathPart(value, fallback = 'general') {
   return result || fallback;
 }
 
-async function fetchRemoteFile(url) {
+function sniffImageContentType(buffer, declaredType = '', fileName = '') {
+  const declared = safeText(declaredType).toLowerCase().split(';')[0];
+  const bytes = buffer || Buffer.alloc(0);
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+  if (bytes.length >= 8 && bytes.slice(0, 8).equals(Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]))) return 'image/png';
+  if (bytes.length >= 6 && ['GIF87a','GIF89a'].includes(bytes.slice(0, 6).toString('ascii'))) return 'image/gif';
+  if (bytes.length >= 12 && bytes.slice(0, 4).toString('ascii') === 'RIFF' && bytes.slice(8, 12).toString('ascii') === 'WEBP') return 'image/webp';
+  if (bytes.length >= 2 && bytes.slice(0, 2).toString('ascii') === 'BM') return 'image/bmp';
+  if (bytes.length >= 12 && bytes.slice(4, 8).toString('ascii') === 'ftyp') return declared.startsWith('image/') ? declared : 'image/heic';
+  if (declared.startsWith('image/')) return declared;
+  if (declared === 'application/octet-stream' && IMAGE_RE.test(fileName)) return extensionFrom('', fileName) === '.png' ? 'image/png' : 'image/jpeg';
+  return '';
+}
+
+async function downloadRemoteCandidate(candidateUrl, apiKey = '') {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REMOTE_TIMEOUT_MS);
   try {
-    let response = await fetch(url, { signal: controller.signal, redirect: 'follow' });
-    if (!response.ok && process.env.JOTFORM_API_KEY) {
-      const parsed = new URL(url);
-      parsed.searchParams.set('apiKey', process.env.JOTFORM_API_KEY);
-      response = await fetch(parsed.toString(), { signal: controller.signal, redirect: 'follow' });
-    }
-    if (!response.ok) throw new Error(`No se pudo descargar (${response.status}).`);
+    const headers = {
+      Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      'User-Agent': 'Grupo-Ortiz-Levantamientos/807.06'
+    };
+    if (apiKey) headers.APIKEY = apiKey;
+    const response = await fetch(candidateUrl, { signal: controller.signal, redirect: 'follow', headers, cache: 'no-store' });
+    if (!response.ok) throw new Error(`Jotform respondió ${response.status}.`);
     const declaredSize = Number(response.headers.get('content-length') || 0);
     if (declaredSize > MAX_REMOTE_FILE_BYTES) throw new Error('La fotografía excede el límite de 20 MB.');
     if (!response.body) throw new Error('La fotografía llegó sin contenido.');
@@ -605,8 +619,32 @@ async function fetchRemoteFile(url) {
       }
       chunks.push(Buffer.from(value));
     }
-    return { buffer: Buffer.concat(chunks), contentType: response.headers.get('content-type') || 'image/jpeg' };
+    const buffer = Buffer.concat(chunks);
+    const contentType = sniffImageContentType(buffer, response.headers.get('content-type') || '', fileNameFromUrl(candidateUrl));
+    if (!contentType) throw new Error(`La URL no devolvió una imagen válida (${response.headers.get('content-type') || 'sin content-type'}).`);
+    return { buffer, contentType };
   } finally { clearTimeout(timer); }
+}
+
+async function fetchRemoteFile(url) {
+  const rawUrl = safeText(url).replace(/&amp;/gi, '&');
+  const apiKey = safeText(process.env.JOTFORM_API_KEY);
+  const attempts = [{ url: rawUrl, apiKey: '' }];
+  if (apiKey) {
+    try {
+      const parsed = new URL(rawUrl);
+      parsed.searchParams.set('apiKey', apiKey);
+      attempts.push({ url: parsed.toString(), apiKey });
+    } catch {
+      attempts.push({ url: rawUrl, apiKey });
+    }
+  }
+  let lastError = null;
+  for (const attempt of attempts) {
+    try { return await downloadRemoteCandidate(attempt.url, attempt.apiKey); }
+    catch (error) { lastError = error; }
+  }
+  throw lastError || new Error('No se pudo descargar la fotografía desde Jotform.');
 }
 
 async function copyUrlToR2(r2, context) {
@@ -660,23 +698,52 @@ function evidenceUrlIdentity(value) {
   }
 }
 
-function evidenceDrafts(entries, findings, base) {
-  const byUrl = new Map();
-  const findingByPhotoOrder = [];
-  for (const finding of findings) {
-    for (const entry of finding.photoEntries || []) findingByPhotoOrder.push({ order: entry.order, problemKey: finding.problema_clave });
+function photoMappingScore(entry, mapping) {
+  const descriptor = normalizeLoose(`${entry.key || ''} ${entry.originalKey || ''} ${entry.label || ''}`);
+  if (!descriptor) return 0;
+  const candidates = [
+    mapping.elemento_clave,
+    mapping.elemento_etiqueta,
+    mapping.campo_patron,
+    mapping.etiqueta_patron
+  ].map(normalizeLoose).filter((value) => value && value.length >= 3);
+  let score = 0;
+  for (const candidate of candidates) {
+    if (descriptor === candidate) score = Math.max(score, 100);
+    else if (descriptor.includes(candidate)) score = Math.max(score, 70 + Math.min(candidate.length, 20));
+    else {
+      const words = candidate.split(/\s+/).filter((word) => word.length >= 4);
+      const matches = words.filter((word) => descriptor.includes(word)).length;
+      if (matches) score = Math.max(score, matches * 10);
+    }
   }
+  return score;
+}
+
+function mappingForPhotoEntry(entry, mappings) {
+  let best = null;
+  let bestScore = 0;
+  for (const mapping of mappings || []) {
+    const score = photoMappingScore(entry, mapping);
+    if (score > bestScore) { best = mapping; bestScore = score; }
+  }
+  return bestScore >= 10 ? best : null;
+}
+
+function evidenceDrafts(entries, findings, mappings, base) {
+  const byUrl = new Map();
+  const findingsByProblem = new Map(findings.map((finding) => [finding.problema_clave, finding]));
 
   for (const entry of entries) {
     if (!isPhotoEntry(entry)) continue;
     const urls = collectUrls(entry.value, []);
+    const mappedElement = mappingForPhotoEntry(entry, mappings);
+    const linkedFinding = mappedElement ? findingsByProblem.get(mappedElement.problema_clave) : null;
+    const problemKey = linkedFinding?.problema_clave || null;
+
     for (const url of urls) {
       const identity = evidenceUrlIdentity(url);
       if (!identity || byUrl.has(identity)) continue;
-      let problemKey = null;
-      const direct = findings.find((finding) => normalizeLoose(`${entry.key} ${entry.label}`).includes(normalizeLoose(finding.elemento_etiqueta)) || normalizeLoose(`${entry.key} ${entry.label}`).includes(normalizeLoose(finding.problema_etiqueta)));
-      if (direct) problemKey = direct.problema_clave;
-      if (!problemKey) problemKey = findingByPhotoOrder.find((item) => item.order === entry.order)?.problemKey || null;
       byUrl.set(identity, {
         ...base,
         problemKey,
@@ -685,7 +752,13 @@ function evidenceDrafts(entries, findings, base) {
         url_origen: url,
         nombre_archivo: fileNameFromUrl(url),
         orden: entry.order,
-        metadata: { question_id: entry.questionId, original_key: entry.originalKey }
+        metadata: {
+          question_id: entry.questionId,
+          original_key: entry.originalKey,
+          elemento_clave_detectado: mappedElement?.elemento_clave || null,
+          problema_clave_detectado: mappedElement?.problema_clave || null,
+          vinculada_a_hallazgo: Boolean(problemKey)
+        }
       });
     }
   }
@@ -705,7 +778,10 @@ async function processSubmission(client, envelope, options = {}) {
   if (!meta.submissionId) throw Object.assign(new Error('Jotform no envió submissionID.'), { statusCode: 400 });
 
   let apiWarning = null;
-  if ((!payload.answers || !Object.keys(payload.answers || {}).length) && process.env.JOTFORM_API_KEY) {
+  // La submission completa de la API es la fuente más confiable para campos de
+  // fotografía. El webhook puede traer solamente nombres temporales o una URL
+  // todavía no disponible. Se consulta una vez por submission cuando hay API key.
+  if (process.env.JOTFORM_API_KEY) {
     try {
       const fullSubmission = await fetchJotformSubmission(meta.submissionId);
       if (fullSubmission) {
@@ -910,7 +986,7 @@ async function processSubmission(client, envelope, options = {}) {
     const deleteEvidence = await client.from('ops_levantamiento_evidencias').delete().eq('expediente_id', expediente.id).eq('origen', 'JOTFORM');
     if (deleteEvidence.error) throw deleteEvidence.error;
 
-    const evidenceInput = evidenceDrafts(entries, findingDraftList, {
+    const evidenceInput = evidenceDrafts(entries, findingDraftList, mappings, {
       campana_id: campaign.id,
       expediente_id: expediente.id,
       agencia_numero: agencyNumber,
@@ -1007,7 +1083,7 @@ async function rebuildEvidenceFromJotform(client, expedienteId) {
     .eq('origen', 'JOTFORM');
   if (removed.error) throw removed.error;
 
-  const evidenceInput = evidenceDrafts(entries, findingDraftList, {
+  const evidenceInput = evidenceDrafts(entries, findingDraftList, mappings, {
     campana_id: campaign.id,
     expediente_id: expediente.id,
     agencia_numero: expediente.agencia_numero,
@@ -1088,7 +1164,7 @@ async function recordWebhookFailure(client, envelope, error) {
       procesado_en: new Date().toISOString()
     });
   } catch (diagnosticError) {
-    console.error('[Jotform Levantamientos v807.05 diagnóstico]', diagnosticError);
+    console.error('[Jotform Levantamientos v807.06 diagnóstico]', diagnosticError);
   }
 }
 
@@ -1099,7 +1175,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     return sendJson(res, 200, {
       ok: true,
-      service: 'jotform-levantamientos-automaticos-v807.05',
+      service: 'jotform-levantamientos-automaticos-v807.06',
       webhookConfigured: Boolean(process.env.JOTFORM_WEBHOOK_SECRET),
       formConfigured: Boolean(process.env.JOTFORM_LEVANTAMIENTOS_FORM_URL),
       jotformApiConfigured: Boolean(process.env.JOTFORM_API_KEY),
@@ -1138,7 +1214,7 @@ export default async function handler(req, res) {
     if (!result.pendingLink && result.evidencePending) waitUntil(retryEvidence(client, result.expedienteId).catch((error) => console.error('[Levantamientos R2 background]', error)));
     return sendJson(res, result.pendingLink ? 202 : 200, { ok: true, ...result });
   } catch (error) {
-    console.error('[Jotform Levantamientos v807.05]', error);
+    console.error('[Jotform Levantamientos v807.06]', error);
     if (receivedEnvelope) await recordWebhookFailure(client, receivedEnvelope, error);
     return sendJson(res, error.statusCode || 500, { ok: false, message: error.message || 'No se pudo procesar la solicitud.' });
   }
