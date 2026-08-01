@@ -828,26 +828,49 @@
     downloadExcel(rows, `${report.codigo || 'reporte'}.xls`, report.titulo);
   }
 
+  function photoCards(photos) {
+    if (!photos.length) return '<div class="golevg-empty">Sin fotografía asociada.</div>';
+    return `<div class="golevg-photo-grid">${photos.map((photo) => `<a class="golevg-photo" href="${esc(photo.r2_url)}" target="_blank" rel="noopener"><img src="${esc(photo.r2_url)}" loading="lazy" alt="${esc(photo.etiqueta || 'Evidencia')}"><div>${esc(photo.etiqueta || 'Evidencia')}</div></a>`).join('')}</div>`;
+  }
+
   async function showExpedient(id) {
     const item = state.expedients.find((row) => row.id === id);
     if (!item) return;
     const findings = state.findings.filter((row) => row.expediente_id === id);
     const photos = evidenceForExpedient(id);
+    const usedPhotoIds = new Set();
+
+    const findingSections = findings.map((finding) => {
+      const linkedPhotos = evidenceForFinding(finding).filter((photo) => photo.expediente_id === id);
+      linkedPhotos.forEach((photo) => usedPhotoIds.add(photo.id));
+      return `<section class="golevg-card" style="margin-top:12px">
+        <div class="golevg-card-head"><div><span class="golevg-code">${esc(finding.area_etiqueta || 'Hallazgo')}</span><h3>${esc(finding.problema_etiqueta)}</h3></div><span class="golevg-badge ${badgeClass(finding.estado)}">${esc((finding.estado || '').replace(/_/g, ' '))}</span></div>
+        <p><b>Elemento:</b> ${esc(finding.elemento_etiqueta || '-')}</p>
+        <p><b>Condición:</b> ${esc(finding.condicion_reportada || '-')}</p>
+        <p><b>Descripción:</b> ${esc(finding.descripcion || 'Sin descripción.')}</p>
+        <div style="margin-top:10px"><b>Evidencias de este problema</b>${photoCards(linkedPhotos)}</div>
+      </section>`;
+    }).join('');
+
+    const generalPhotos = photos.filter((photo) => !usedPhotoIds.has(photo.id));
     $('#golevg-problem-title').textContent = `Agencia ${agencyDisplay(item.agencia_numero)}`;
     $('#golevg-problem-subtitle').textContent = `${state.selectedCampaign.codigo} · Inspección ${formatDate(item.fecha_inspeccion)}`;
-    $('#golevg-problem-content').innerHTML = `<div class="golevg-grid"><div class="golevg-card"><span class="golevg-code">Técnico</span><h3>${esc(item.tecnico_nombre || '-')}</h3></div><div class="golevg-card"><span class="golevg-code">Resultado</span><h3>${esc(item.estado.replace(/_/g, ' '))}</h3></div></div><div class="golevg-card" style="margin-top:12px"><h3>Observación general</h3><p>${esc(item.observacion_general || 'Sin observación.')}</p></div><div class="golevg-card" style="margin-top:12px"><h3>Problemas detectados</h3>${findings.length ? findings.map((finding) => `<p><b>${esc(finding.problema_etiqueta)}</b>: ${esc(finding.descripcion)}</p>`).join('') : '<p>Sin hallazgos activos.</p>'}</div><div class="golevg-card" style="margin-top:12px"><div class="golevg-card-head"><h3>Fotografías almacenadas en R2</h3>${item.jotform_submission_id ? `<button class="golevg-btn small" id="golevg-rebuild-evidence">Reconstruir desde Jotform</button>` : ''}</div>${photos.length ? `<div class="golevg-photo-grid">${photos.map((photo) => `<a class="golevg-photo" href="${esc(photo.r2_url)}" target="_blank"><img src="${esc(photo.r2_url)}"><div>${esc(photo.etiqueta)}</div></a>`).join('')}</div>` : '<div class="golevg-empty">No hay fotos migradas.</div>'}</div>`;
+    $('#golevg-problem-content').innerHTML = `
+      <div class="golevg-grid"><div class="golevg-card"><span class="golevg-code">Técnico</span><h3>${esc(item.tecnico_nombre || '-')}</h3></div><div class="golevg-card"><span class="golevg-code">Resultado</span><h3>${esc(item.estado.replace(/_/g, ' '))}</h3></div></div>
+      <div class="golevg-card" style="margin-top:12px"><h3>Observación general</h3><p>${esc(item.observacion_general || 'Sin observación.')}</p></div>
+      <div class="golevg-card" style="margin-top:12px"><div class="golevg-card-head"><div><h3>Hallazgos y evidencias asociadas</h3><small>Cada fotografía aparece únicamente en el problema que la originó.</small></div>${item.jotform_submission_id ? `<button class="golevg-btn small" id="golevg-rebuild-evidence">Sincronizar evidencias desde Jotform</button>` : ''}</div>${findings.length ? findingSections : '<div class="golevg-empty">Sin hallazgos detectados.</div>'}</div>
+      ${generalPhotos.length ? `<div class="golevg-card" style="margin-top:12px"><h3>Otras fotografías del levantamiento</h3><p style="font-size:12px;color:#6d8394">Son evidencias informativas de elementos que no generaron un problema. No se incluyen en reportes de otros hallazgos.</p>${photoCards(generalPhotos)}</div>` : ''}`;
     const rebuildButton = $('#golevg-rebuild-evidence');
     if (rebuildButton) rebuildButton.onclick = () => retryR2(item.id);
     $('#golevg-problem-modal').classList.add('open');
   }
-
   async function retryR2(expedientId) {
     if (!requireManage()) return;
     toast('Reconstruyendo las fotografías reales desde Jotform y trasladándolas a R2…', 'info');
     const response = await fetch('/api/jotform-levantamientos?action=retry', { method: 'POST', headers: await apiHeaders(true), body: JSON.stringify({ expedienteId: expedientId }) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) return toast(data.message || 'No se pudieron reprocesar las fotos.', 'error');
-    toast(`${data.rebuilt ?? data.retried ?? 0} archivo(s) real(es) encontrados; ${data.migrated || 0} migrado(s) a R2; ${data.errors || 0} con error.`, data.errors ? 'info' : 'success');
+    toast(`${data.rebuilt ?? data.retried ?? 0} archivo(s) detectado(s); ${data.migrated || 0} migrado(s) a R2; ${data.deduplicated || 0} duplicado(s) técnico(s) eliminado(s); ${data.errors || 0} con error.`, data.errors ? 'info' : 'success');
     openCampaign(state.selectedCampaign.id);
   }
 
