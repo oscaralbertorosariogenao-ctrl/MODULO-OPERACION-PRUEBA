@@ -1,12 +1,14 @@
-import { OPERATION_STATUSES, OPERATION_TYPES, PRIORITIES } from '../config.js';
-import { getNextOperationCode, safeInsertOperation, safeUpdateOperation, getOperation } from '../api/operations-api.js';
+import { OPERATION_STATUSES, OPERATION_TYPES } from '../config.js';
+import { reportOperation, safeUpdateOperation, getOperation } from '../api/operations-api.js';
 function text(value){ return String(value ?? '').trim(); }
 export function normalizeStatus(value){
-  const raw = text(value).toLowerCase();
+  const raw=text(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  if(raw.includes('soporte') || raw.includes('remot')) return 'Resuelto por soporte remoto';
+  if(raw.includes('incid')) return 'En incidencia';
   if(raw.includes('complet') || raw.includes('cerrad') || raw.includes('finaliz')) return 'Completado';
   if(raw.includes('proceso') || raw.includes('inici')) return 'En proceso';
-  if(raw.includes('asign')) return 'Asignada';
-  return 'Pendiente';
+  if(raw.includes('asign')) return 'Asignado';
+  return 'Reportado';
 }
 export function normalizeOperation(row = {}){
   const evidence = normalizeMedia(row.fotos_evidencia || row.resultImages || row.evidencias);
@@ -15,13 +17,15 @@ export function normalizeOperation(row = {}){
     ...row,
     id:text(row.id), code:text(row.codigo || row.code || row.id), type:text(row.tipo || row.type || 'Avería'),
     title:text(row.titulo || row.title || row.categoria || 'Operación'), description:text(row.descripcion || row.description || row.detalle),
-    status:normalizeStatus(row.estado || row.status), priority:text(row.prioridad || row.priority || 'Media'),
+    status:normalizeStatus(row.estado || row.status),
     agencyNumber:text(row.agencia || row.agency_number || row.numero_agencia), agencyLabel:text(row.agencia_label || row.agency || row.nombre_agencia),
     group:text(row.grupo || row.grupo_nombre), technician:text(row.tecnico || row.technician || row.asignado_a || 'Sin asignar'),
     manager:text(row.encargado || row.nombre_encargado || row.reportado_por_nombre), managerPhone:text(row.encargado_telefono || row.telefono_encargado || row.whatsapp_encargado),
     creator:text(row.creado_por_nombre || row.reportado_por_nombre || row.creado_por || row.usuario_nombre),
-    createdAt:row.fecha_creacion || row.creado_en || row.created_at || null, assignedAt:row.fecha_asignacion || null,
-    startedAt:row.fecha_inicio || null, completedAt:row.fecha_completado || null,
+    createdAt:row.reportado_at || row.fecha_creacion || row.creado_en || row.created_at || null, assignedAt:row.asignado_at || row.fecha_asignacion || null,
+    startedAt:row.iniciado_at || row.fecha_inicio || null, completedAt:row.completado_at || row.fecha_completado || row.resuelto_remoto_at || null,
+    technicianId:text(row.tecnico_id), reporterId:text(row.reportado_por_id), assignerId:text(row.asignado_por_id),
+    originOperationId:text(row.operacion_origen_id), source:text(row.origen_reporte || row.source),
     diagnosis:text(row.diagnostico || row.diagnosis || row.comentario_diagnostico), work:text(row.trabajo_a_realizar || row.trabajoARealizar),
     reportedMedia:reported, evidenceMedia:evidence, history:Array.isArray(row.historial) ? row.historial : [],
     equipment:Array.isArray(row.equipos) ? row.equipos : [], serials:Array.isArray(row.seriales) ? row.seriales : []
@@ -42,28 +46,30 @@ export function operationElapsed(operation){
   return `${Math.floor(hours / 24)} d ${hours % 24} h`;
 }
 export function isOverdue(operation, hours = 24){
-  if(normalizeStatus(operation.status) === 'Completado') return false;
+  if(['Completado','Resuelto por soporte remoto'].includes(normalizeStatus(operation.status))) return false;
   const created = new Date(operation.createdAt || 0).getTime(); return Boolean(created && Date.now() - created > hours * 3600000);
 }
 export function computeStats(rows){
-  const operations = (rows || []).map(normalizeOperation); const today = new Date();
-  const isToday = value => { const date = new Date(value || 0); return date.toDateString() === today.toDateString(); };
+  const operations=(rows || []).map(normalizeOperation); const today=new Date();
+  const isToday=value => { const date=new Date(value || 0); return date.toDateString() === today.toDateString(); };
   return {
     total:operations.length,
-    pending:operations.filter(op => op.status === 'Pendiente').length,
-    unassigned:operations.filter(op => op.status !== 'Completado' && (!op.technician || /sin asignar/i.test(op.technician))).length,
-    assigned:operations.filter(op => op.status === 'Asignada').length,
+    reported:operations.filter(op => op.status === 'Reportado').length,
+    pending:operations.filter(op => op.status === 'Reportado').length,
+    unassigned:operations.filter(op => op.status === 'Reportado').length,
+    assigned:operations.filter(op => op.status === 'Asignado').length,
     inProgress:operations.filter(op => op.status === 'En proceso').length,
-    completedToday:operations.filter(op => op.status === 'Completado' && isToday(op.completedAt || op.fecha_completado || op.actualizado_en)).length,
-    overdue:operations.filter(op => isOverdue(op)).length,
+    incidents:operations.filter(op => op.status === 'En incidencia').length,
+    completedToday:operations.filter(op => op.status === 'Completado' && isToday(op.completedAt)).length,
+    remoteToday:operations.filter(op => op.status === 'Resuelto por soporte remoto' && isToday(op.completedAt)).length,
     pendingEvidence:operations.filter(op => op.status === 'En proceso' && !op.evidenceMedia.length).length,
-    activeTechnicians:new Set(operations.filter(op => ['Asignada','En proceso'].includes(op.status) && !/sin asignar/i.test(op.technician)).map(op => op.technician)).size
+    activeTechnicians:new Set(operations.filter(op => ['Asignado','En proceso','En incidencia'].includes(op.status) && !/sin asignar/i.test(op.technician)).map(op => op.technician)).size
   };
 }
 export function primaryAction(operation, canAction){
   const op = normalizeOperation(operation);
-  if(op.status === 'Pendiente' && canAction('operations.assign')) return { action:'open-assignment', label:'Asignar operación', tone:'primary' };
-  if(op.status === 'Asignada' && canAction('operations.start')) return { action:'start-operation', label:'Iniciar operación', tone:'primary' };
+  if(op.status === 'Reportado' && canAction('operations.assign')) return { action:'open-assignment', label:'Asignar reporte', tone:'primary' };
+  if(op.status === 'Asignado' && canAction('operations.start')) return { action:'start-operation', label:'Iniciar operación', tone:'primary' };
   if(op.status === 'En proceso' && !op.evidenceMedia.length && canAction('operations.evidence')) return { action:'open-evidence', label:'Agregar evidencia', tone:'primary' };
   if(op.status === 'En proceso' && canAction('operations.finish')) return { action:'finish-operation', label:'Finalizar operación', tone:'success' };
   return null;
@@ -88,33 +94,23 @@ function makeAssignmentCode(){
   return `ASG-${year}-${sequence}`;
 }
 export async function createOperation(input, context){
-  const code = await getNextOperationCode(); const now = new Date().toISOString();
-  const profile = context.profile || {}; const agency = input.agency || {};
-  const operationType = OPERATION_TYPES.includes(input.type) ? input.type : 'Avería';
-  const selectedTypes = [...new Set((Array.isArray(input.selectedTypes) ? input.selectedTypes : [input.selectedTypes]).map(text).filter(Boolean))];
-  const canAssign = Boolean(context.allowAssign);
-  const technician = canAssign && input.technician && !/sin asignar/i.test(input.technician) ? text(input.technician) : 'Sin asignar';
-  const payload = {
-    id:makeClientId(), codigo:code, tipo:operationType, titulo:text(input.title || selectedTypes[0] || 'Operación'),
-    descripcion:text(input.description || selectedTypes.join(', ')), estado:'Pendiente', prioridad:PRIORITIES.includes(input.priority) ? input.priority : 'Media',
-    agencia:text(agency.numero || input.agencyNumber), agencia_label:text(agency.nombre || input.agencyLabel), grupo:text(agency.grupos?.nombre || input.group),
-    tecnico:technician, encargado:text(agency.grupos?.encargado || input.manager),
-    encargado_telefono:text(agency.grupos?.telefono || agency.telefono || input.managerPhone),
-    creado_por:text(profile.usuario_login || profile.correo || context.user?.email), creado_por_nombre:text(profile.nombre_completo || profile.nombre || context.user?.email),
-    reportado_por_nombre:text(profile.nombre_completo || profile.nombre || context.user?.email),
-    fotos_reportadas:input.reportedMedia || [], fotos_evidencia:[], fecha_creacion:now, creado_en:now, actualizado_en:now,
-    source:'app_movil_v805',
-    tipos_seleccionados:selectedTypes,
-    averias_seleccionadas:operationType === 'Avería' ? selectedTypes : [],
-    trabajos_seleccionados:operationType === 'Trabajo' ? selectedTypes : [],
-    trabajo_a_realizar:text(input.work),
-    historial:[historyEntry('Operación creada desde app móvil', profile, text(input.description || selectedTypes.join(', ')), {tipos_seleccionados:selectedTypes})]
-  };
-  if(technician !== 'Sin asignar'){
-    payload.estado = 'Asignada'; payload.fecha_asignacion = now; payload.asignacion_codigo = makeAssignmentCode();
-    payload.historial.push(historyEntry('Operación asignada', profile, technician, { codigo_asignacion:payload.asignacion_codigo }));
-  }
-  return safeInsertOperation(payload);
+  const agency=input.agency || {};
+  const operationType=OPERATION_TYPES.includes(input.type) ? input.type : 'Avería';
+  const selectedTypes=[...new Set((Array.isArray(input.selectedTypes) ? input.selectedTypes : [input.selectedTypes]).map(text).filter(Boolean))];
+  const result=await reportOperation({
+    agencyNumber:text(agency.numero || input.agencyNumber),
+    agencyLabel:text(agency.nombre || input.agencyLabel),
+    group:text(agency.grupos?.nombre || agency.grupo || input.group),
+    type:operationType,
+    title:text(input.title || selectedTypes[0] || `Reporte de ${operationType}`),
+    description:text(input.description || selectedTypes.join(', ')),
+    category:text(input.category || ''),
+    problem:text(input.problem || selectedTypes.join(' | ')),
+    work:text(input.work || (operationType === 'Trabajo' ? selectedTypes.join(' | ') : '')),
+    source:input.originOperationId ? 'TECNICO_EN_OPERACION' : 'APP_MOVIL',
+    originOperationId:text(input.originOperationId)
+  });
+  return await getOperation(result.operacion_id || result.codigo);
 }
 async function updateWithHistory(reference, patch, action, detail, profile, historyExtra = {}){
   const current = normalizeOperation(await getOperation(reference));
@@ -123,11 +119,11 @@ async function updateWithHistory(reference, patch, action, detail, profile, hist
 }
 export function assignOperation(reference, technician, comment, profile){
   const code = makeAssignmentCode(); const now = new Date().toISOString();
-  return updateWithHistory(reference, { tecnico:text(technician), estado:'Asignada', fecha_asignacion:now, asignacion_codigo:code, asignacion_comentario:text(comment) }, 'Operación asignada', `${technician}${comment ? ` · ${comment}` : ''}`, profile, { codigo_asignacion:code });
+  return updateWithHistory(reference, { tecnico:text(technician), estado:'Asignado', fecha_asignacion:now, asignacion_codigo:code, asignacion_comentario:text(comment) }, 'Operación asignada', `${technician}${comment ? ` · ${comment}` : ''}`, profile, { codigo_asignacion:code });
 }
 export function reassignOperation(reference, technician, comment, profile){
   const code = makeAssignmentCode(); const now = new Date().toISOString();
-  return updateWithHistory(reference, { tecnico:text(technician), estado:'Asignada', fecha_asignacion:now, asignacion_codigo:code, asignacion_comentario:text(comment) }, 'Operación reasignada', `${technician}${comment ? ` · ${comment}` : ''}`, profile, { codigo_asignacion:code });
+  return updateWithHistory(reference, { tecnico:text(technician), estado:'Asignado', fecha_asignacion:now, asignacion_codigo:code, asignacion_comentario:text(comment) }, 'Operación reasignada', `${technician}${comment ? ` · ${comment}` : ''}`, profile, { codigo_asignacion:code });
 }
 export function startOperation(reference, profile){ return updateWithHistory(reference, { estado:'En proceso', fecha_inicio:new Date().toISOString() }, 'Operación iniciada', '', profile); }
 export function addComment(reference, comment, profile){ return updateWithHistory(reference, {}, 'Comentario agregado', comment, profile, { tipo:'comentario' }); }
@@ -148,4 +144,4 @@ export async function closeByWhatsApp(reference, { reason, comment, manager, pho
   const detail = { motivo:text(reason), comentario:text(comment), encargado:text(manager), telefono:text(phone), usuario:text(profile?.nombre_completo || profile?.correo), fecha:new Date().toISOString(), evidencia_requerida:false };
   return updateWithHistory(reference, { estado:'Completado', fecha_completado:detail.fecha, cierre_whatsapp:true, cierre_sin_evidencia:true, cierre_whatsapp_detalle:detail, comentario_cierre_whatsapp:detail.comentario }, 'Cierre por WhatsApp', detail.comentario, profile, { tipo:'cierre_whatsapp', ...detail });
 }
-export { OPERATION_STATUSES, OPERATION_TYPES, PRIORITIES };
+export { OPERATION_STATUSES, OPERATION_TYPES };
