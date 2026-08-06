@@ -3,7 +3,8 @@ import { PERMISSIONS, ROUTES } from './config.js';
 const ACTION_PERMISSION = Object.freeze({
   'home.view':PERMISSIONS.home,
   'operations.view':PERMISSIONS.operations,
-  'operations.create':PERMISSIONS.operationCreate,
+  'operations.report':[PERMISSIONS.operationReport,PERMISSIONS.operationCreate],
+  'operations.create':[PERMISSIONS.operationReport,PERMISSIONS.operationCreate],
   'operations.assign':PERMISSIONS.operationAssign,
   'operations.reassign':PERMISSIONS.operationAssign,
   'operations.start':PERMISSIONS.operationStart,
