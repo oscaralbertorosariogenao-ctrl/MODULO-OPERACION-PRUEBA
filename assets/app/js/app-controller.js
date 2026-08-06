@@ -86,6 +86,8 @@ export class AppController{
         await Promise.all(jobs);
         this.operationDraft = await getDraft('create-operation').catch(() => ({})) || {};
         if(route.query.get('agency')) this.operationDraft.agency = route.query.get('agency');
+        if(route.query.get('origin')) this.operationDraft.originOperationId = route.query.get('origin');
+        if(route.query.get('originCode')) this.operationDraft.originOperationCode = route.query.get('originCode');
         break;
       }
       case ROUTES.agencies: await ensureAgencyReferenceData(); await loadAgenciesPage({reset:true}); break;
