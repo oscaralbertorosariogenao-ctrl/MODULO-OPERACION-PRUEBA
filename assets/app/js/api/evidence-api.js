@@ -1,14 +1,21 @@
 import { R2_UPLOAD_ENDPOINT } from '../config.js';
 import { getApiAuthHeaders } from '../supabase-client.js';
 import { AppError, ERROR_TYPES } from '../errors.js';
-export async function uploadEvidenceFile(file, operationCode, { description = '', onProgress = null } = {}){
+
+export async function uploadEvidenceFileDetailed(file, operationReference, {
+  description = '', stage = 'SEGUIMIENTO', incidentId = '', source = 'app-movil-v808.20', onProgress = null
+} = {}){
   if(!file) throw new AppError('Selecciona una evidencia.', { type:ERROR_TYPES.validation });
+  if(!operationReference) throw new AppError('No se pudo identificar el reporte u operación.', { type:ERROR_TYPES.validation });
   const form = new FormData();
   form.append('file', file, file.name || `evidencia-${Date.now()}.jpg`);
-  form.append('codigo', operationCode || 'app-movil-v805');
-  form.append('folder', operationCode || 'operaciones');
-  form.append('origen', 'app-movil-v805');
+  form.append('operacion_id', operationReference);
+  form.append('codigo', operationReference);
+  form.append('folder', operationReference);
+  form.append('etapa', String(stage || 'SEGUIMIENTO').toUpperCase());
+  form.append('origen', source);
   if(description) form.append('descripcion', description);
+  if(incidentId) form.append('incidencia_id', incidentId);
   onProgress?.(10);
   const response = await fetch(R2_UPLOAD_ENDPOINT, { method:'POST', headers:await getApiAuthHeaders(), body:form, cache:'no-store', credentials:'same-origin' });
   onProgress?.(85);
@@ -17,5 +24,11 @@ export async function uploadEvidenceFile(file, operationCode, { description = ''
   if(!response.ok || data.ok === false) throw new AppError(data.message || data.error || 'R2 rechazó la evidencia.', { type:ERROR_TYPES.r2, code:String(response.status) });
   const url = data.url || data.publicUrl || data.public_url || data.location;
   if(!url) throw new AppError('R2 recibió el archivo, pero no devolvió una URL pública.', { type:ERROR_TYPES.r2 });
-  onProgress?.(100); return url;
+  onProgress?.(100);
+  return { ...data, url, publicUrl:url, evidence:data.evidencia || null };
+}
+
+export async function uploadEvidenceFile(file, operationReference, options = {}){
+  const result = await uploadEvidenceFileDetailed(file,operationReference,options);
+  return result.url;
 }
