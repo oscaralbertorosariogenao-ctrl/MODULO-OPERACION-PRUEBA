@@ -10,12 +10,13 @@ export function operationDetailView(state, canAction){
     el('button',{class:'btn btn-ghost btn-sm',type:'button','data-action':'go-back'},'← Volver'),
     el('section',{class:'detail-hero'},el('div',{class:'detail-hero-top'},el('div',{},el('span',{class:'operation-code',text:op.code}),el('h1',{text:op.title}),el('p',{text:op.description || 'Sin descripción'})),statusBadge(op.status)),
       el('div',{class:'detail-grid'},detailStat('Tipo',op.type),detailStat('Agencia',agency),detailStat('Técnico',op.technician),detailStat('Transcurrido',operationElapsed(op)))),
-    section('Información operativa',el('dl',{class:'info-list'},info('Código',op.code),info('Estado',op.status),info('Prioridad',op.priority),info('Grupo',op.group || 'No registrado'),info('Encargado',op.manager || 'No registrado'),info('Contacto',op.managerPhone || 'No registrado'),info('Creada',formatDate(op.createdAt)),info('Asignada',formatDate(op.assignedAt)),info('Iniciada',formatDate(op.startedAt)),info('Finalizada',formatDate(op.completedAt)))),
+    section('Información operativa',el('dl',{class:'info-list'},info('Código',op.code),info('Estado',op.status),info('Grupo',op.group || 'No registrado'),info('Encargado',op.manager || 'No registrado'),info('Contacto',op.managerPhone || 'No registrado'),info('Creada',formatDate(op.createdAt)),info('Asignada',formatDate(op.assignedAt)),info('Iniciada',formatDate(op.startedAt)),info('Finalizada',formatDate(op.completedAt)))),
+    op.originOperationId ? section('Origen del reporte',el('p',{text:`Problema detectado durante la atención de ${op.originOperationId}.`})) : null,
     op.work || op.diagnosis ? section('Trabajo y diagnóstico',el('dl',{class:'info-list'},info('Trabajo',op.work || 'No definido'),info('Diagnóstico',op.diagnosis || 'No registrado'))) : null,
     section('Seguimiento',el('div',{class:'grid grid-2'},
       actionButton('💬','Comentario','open-comment',canAction('operations.comment')),actionButton('🩺','Diagnóstico','open-diagnosis',canAction('operations.diagnose')),
       actionButton('📷','Evidencia','open-evidence',canAction('operations.evidence')),actionButton('♟',/sin asignar/i.test(op.technician) ? 'Asignar' : 'Reasignar',/sin asignar/i.test(op.technician) ? 'open-assignment' : 'open-reassignment',canAction('operations.assign')),
-      actionButton('☎','WhatsApp','open-whatsapp-actions',Boolean(op.managerPhone)),actionButton('⌂','Abrir agencia','open-operation-agency',Boolean(op.agencyNumber))
+      actionButton('⚠','Reportar problema encontrado','report-related-problem',canAction('operations.report') && Boolean(op.agencyNumber) && ['Asignado','En proceso','En incidencia'].includes(op.status)),actionButton('☎','WhatsApp','open-whatsapp-actions',Boolean(op.managerPhone)),actionButton('⌂','Abrir agencia','open-operation-agency',Boolean(op.agencyNumber))
     )),
     section('Evidencias',mediaSection([...op.reportedMedia,...op.evidenceMedia])),
     section('Equipos y seriales',equipmentSection(op)),
