@@ -5,10 +5,9 @@ import { navigate } from './router.js';
 import { signIn, signOut } from './auth.js';
 import { loadOperationsPage, loadAgenciesPage, ensureAgencyReferenceData, loadTechniciansData, loadNotificationsData, loadMapData } from './services/data-service.js';
 import { createOperation, assignOperation, reassignOperation, startOperation, addComment, addDiagnosis, addEvidence, finishOperation, closeByWhatsApp, normalizeOperation } from './services/operations-service.js';
-import { safeUpdateOperation } from './api/operations-api.js';
 import { lookupScannerCode, listActiveProducts, listActiveWarehouses, listActiveAgencies, getGroupManagerEntryContext, registerGroupManagerInventoryEntry, registerInventoryEntry, sendGroupManagerSerialToAgency, receiveGroupManagerSerial, transferInventorySerial, receivePendingSerial, reportReceiptIncident, findSerial } from './api/equipment-api.js';
 import { markNotificationRead, markAllNotificationsRead, createOperationalNotification } from './api/notifications-api.js';
-import { uploadEvidenceBatch, prepareFiles, revokePreviews } from './services/evidence-service.js';
+import { uploadEvidenceBatch, uploadEvidenceBatchDetailed, prepareFiles, revokePreviews } from './services/evidence-service.js';
 import { startScanner, stopScanner, switchScannerCamera, toggleScannerTorch } from './services/scanner-service.js';
 import { validateScannerValue, addRecentScan, createBatchState, addBatchValue, removeBatchValue, signalScannerFeedback } from './services/scanner-inventory-service.js';
 import { openScannerResultSheet, openScannerEntryDialog, openScannerTransferDialog, openScannerReceiveDialog, openScannerIncidentDialog, openScannerHistoryDialog } from './components/scanner-inventory-dialogs.js';
@@ -47,7 +46,7 @@ async function handleClick(event,controller){
       case 'go-back':history.length > 1 ? history.back() : go(ROUTES.home);break;
       case 'go-operations-search':requireAction(controller,'operations.view',() => go(ROUTES.operations));setTimeout(() => document.querySelector('[data-input-action="operations-search"]')?.focus(),450);break;
       case 'go-agencies-search':requireAction(controller,'agencies.view',() => go(ROUTES.agencies));setTimeout(() => document.querySelector('[data-input-action="agencies-search"]')?.focus(),450);break;
-      case 'go-unassigned-operations':requireAction(controller,'operations.assign');updateSlice('operations',{filters:{status:'Pendiente'}},'unassigned-filter');go(ROUTES.operations);break;
+      case 'go-unassigned-operations':requireAction(controller,'operations.assign');updateSlice('operations',{filters:{status:'Reportado'}},'unassigned-filter');go(ROUTES.operations);break;
       case 'toggle-drawer':updateSlice('ui',{drawerOpen:!getState().ui.drawerOpen},'drawer');controller.render();break;
       case 'close-drawer':updateSlice('ui',{drawerOpen:false},'drawer');controller.render();break;
       case 'refresh-view':await withLoader('Actualizando datos…',() => controller.refresh());break;
@@ -116,7 +115,8 @@ async function handleClick(event,controller){
       }
       case 'request-logout':confirmDialog({title:'Cerrar sesión',message:'¿Deseas salir de la aplicación de Operaciones?',confirmLabel:'Cerrar sesión',confirmAction:'confirm-logout',tone:'danger'});break;
       case 'confirm-logout':await withLoader('Cerrando sesión…',async () => { closeModal(); await signOut(); });break;
-      case 'create-operation-from-agency':requireAction(controller,'operations.create',() => go(ROUTES.createOperation,{}, {agency:target.dataset.agencyId}));break;
+      case 'create-operation-from-agency':requireAction(controller,'operations.report',() => go(ROUTES.createOperation,{}, {agency:target.dataset.agencyId}));break;
+      case 'report-related-problem':{const op=selectedOperation();requireAction(controller,'operations.report',() => go(ROUTES.createOperation,{}, {agency:op.agencyNumber,origin:op.id || op.code,originCode:op.code}));break;}
       case 'open-scanned-agency':requireAction(controller,'agencies.detail',() => go(ROUTES.agency,{id:target.dataset.agencyId}));break;
       case 'open-scanned-operation':requireAction(controller,'operations.view',() => go(ROUTES.operation,{id:target.dataset.operationId}));break;
       case 'contact-technician':{const url=whatsappUrl(target.dataset.phone,`Hola ${target.dataset.name || ''}, contacto desde Operaciones Grupo Ortiz.`);if(url) globalThis.open(url,'_blank','noopener');break;}
@@ -219,28 +219,32 @@ async function submitLogin(data,controller){
   controller.setLoginState({loading:false,error:''});
 }
 async function submitCreateOperation(data,controller){
-  requireOnline(); requireAction(controller,'operations.create');
+  requireOnline(); requireAction(controller,'operations.report');
   const agency=findAgency(data.agency); if(!agency) throw new Error('Selecciona una agencia real del sistema.');
   const selectedTypes=[...new Set((Array.isArray(data.selectedTypes) ? data.selectedTypes : [data.selectedTypes]).map(item => String(item || '').trim()).filter(Boolean))];
   if(!selectedTypes.length) throw new Error('Selecciona por lo menos una avería o un trabajo del catálogo.');
   const type=data.type === 'Trabajo' ? 'Trabajo' : 'Avería';
   const title=selectedTypes.length === 1 ? selectedTypes[0] : `${selectedTypes[0]} + ${selectedTypes.length - 1} más`;
   const description=String(data.description || '').trim() || selectedTypes.join(', ');
-  const allowAssign=controller.can('operations.assign');
-  const technician=allowAssign ? String(data.technician || '').trim() : '';
-  await withLoader('Creando operación…',async () => {
-    const state=getState(); const created=await createOperation({...data,type,title,description,selectedTypes,technician,agency},{profile:state.profile,user:state.user,allowAssign});
+  await withLoader('Registrando reporte…',async () => {
+    const state=getState();
+    const created=await createOperation({...data,type,title,description,selectedTypes,agency,originOperationId:data.originOperationId || ''},{profile:state.profile,user:state.user});
+    const op=normalizeOperation(created);
+    const reference=op.code || op.id;
     const files=state.evidence.files.map(item => item.file);
+    let uploaded=0;
     if(files.length){
       try{
-        const urls=await uploadEvidenceBatch(files,created.codigo || created.code,description,progress => updateProgress(progress));
-        const op=normalizeOperation(created); const history=[...op.history,{fecha:new Date().toISOString(),accion:'Evidencia inicial cargada',usuario:state.profile.usuario_login || state.user.email,nombre:state.profile.nombre_completo || state.user.email,detalle:`${urls.length} archivo(s)`,tipo:'evidencia_inicial',urls}];
-        await safeUpdateOperation(created.id || created.codigo,{fotos_reportadas:urls,foto_url:urls[0] || '',evidencia_estado:'confirmada',evidencia_archivos_seleccionados:urls.length,historial:history,actualizado_en:new Date().toISOString()});
-      }catch(error){ showToast('Operación creada','La operación se guardó, pero la evidencia inicial no pudo confirmarse. Puedes reintentar desde el detalle.','warning',8000); }
+        const results=await uploadEvidenceBatchDetailed(files,reference,{description,stage:'REPORTE',source:'app-movil-v808.20',onProgress:progress => updateProgress(progress)});
+        uploaded=results.length;
+      }catch(error){
+        showToast('Reporte creado','El reporte se guardó, pero una evidencia inicial no pudo vincularse. Puedes subirla luego desde el detalle.','warning',8000);
+      }
     }
-    revokePreviews(state.evidence.files); updateSlice('evidence',{files:[],progress:0},'evidence-clear'); await removeDraft('create-operation').catch(() => null);controller.setOperationDraft({});
-    await notifyBestEffort({type:'OPERACION_CREADA',title:'Nueva operación creada',message:`${created.codigo || created.code} fue registrada desde la app móvil.`,importance:'normal',operation:created});
-    showToast('Operación creada',`${created.codigo || created.code} fue registrada correctamente.`,'success');navigate(ROUTES.operation,{id:created.id || created.codigo});
+    revokePreviews(state.evidence.files); updateSlice('evidence',{files:[],progress:0},'evidence-clear');
+    await removeDraft('create-operation').catch(() => null); controller.setOperationDraft({});
+    showToast('Reporte registrado',`${reference} quedó Reportado${uploaded ? ` con ${uploaded} evidencia(s) en R2` : ''}.`,'success');
+    navigate(ROUTES.operation,{id:op.id || reference});
   });
 }
 async function submitAssignment(data,controller,reassign){
