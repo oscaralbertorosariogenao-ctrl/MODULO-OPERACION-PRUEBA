@@ -1,5 +1,5 @@
-export const APP_BUILD = '2026-07-28-v805.24-selector-agencias-movil';
-export const APP_VERSION = 'V805.24';
+export const APP_BUILD = '2026-08-06-v808.20-reportes-unificados';
+export const APP_VERSION = 'V808.20';
 export const SUPABASE_URL = 'https://tnymrjxdhzdmpcbilftj.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRueW1yanhkaHpkbXBjYmlsZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjEwOTksImV4cCI6MjA5MzgzNzA5OX0.YXG9juChbJUUdsdy01Qkoh9X0-MijewD5aQbKnG9Itk';
 export const R2_UPLOAD_ENDPOINT = '/api/r2-upload';
@@ -21,9 +21,8 @@ export const TABLES = Object.freeze({
   agencyInventory: 'inventario_agencia',
   inventoryMovements: 'movimientos_inventario'
 });
-export const OPERATION_STATUSES = Object.freeze(['Pendiente', 'Asignada', 'En proceso', 'Completado']);
+export const OPERATION_STATUSES = Object.freeze(['Reportado', 'Asignado', 'En proceso', 'En incidencia', 'Completado', 'Resuelto por soporte remoto']);
 export const OPERATION_TYPES = Object.freeze(['Avería', 'Trabajo']);
-export const PRIORITIES = Object.freeze(['Baja', 'Media', 'Alta', 'Urgente']);
 export const ROUTES = Object.freeze({
   login: '/login', home: '/home', operations: '/operations', operation: '/operation', createOperation: '/operations/new',
   agencies: '/agencies', agency: '/agency', groupInventory: '/group-inventory', scanner: '/scanner', technicians: '/technicians', notifications: '/notifications', profile: '/profile', map: '/map'
@@ -31,6 +30,7 @@ export const ROUTES = Object.freeze({
 export const PERMISSIONS = Object.freeze({
   home: 'ver_home',
   operations: 'ver_operaciones',
+  operationReport: 'reportar_operacion',
   operationCreate: 'crear_operacion',
   operationEdit: 'editar_operacion',
   operationAssign: 'asignar_operacion',
