@@ -8,7 +8,7 @@ export function appDrawer(state){
   const buttons = [
     drawerButtonIf(state,'home.view','⌂','Inicio','go-home'),
     drawerButtonIf(state,'operations.view','▤','Operaciones','go-operations'),
-    drawerButtonIf(state,'operations.create','＋','Crear operación','go-create-operation'),
+    drawerButtonIf(state,'operations.create','＋','Reportar problema','go-create-operation'),
     drawerButtonIf(state,'agencies.map','⌖','Mapa de agencias','go-map'),
     drawerButtonIf(state,'groupInventory.view','▣','Mi inventario','go-group-inventory'),
     drawerButtonIf(state,'scanner.lookup','⌗','Escáner','go-scanner'),
