@@ -1,13 +1,17 @@
 {
-  "version": "2026-08-01-v807.07-evidencias-agrupadas-automaticas",
-  "name": "v807.07 · Evidencias agrupadas y automáticas",
-  "released_at": "2026-08-01",
-  "html": {"index":"index.html","app":"app.html","pantalla":"pantalla.html"},
+  "version": "2026-08-06-v808.20-reportes-unificados",
+  "name": "v808.20 · Reportes unificados y bandeja operativa",
+  "released_at": "2026-08-06",
+  "html": {
+    "index": "index.html",
+    "app": "app.html",
+    "pantalla": "pantalla.html"
+  },
   "changes": [
-    "El expediente de agencia muestra cada fotografía dentro del hallazgo exacto que la originó",
-    "Las fotografías informativas sin hallazgo aparecen separadas y no contaminan reportes",
-    "El sistema recupera automáticamente las fotos desde Jotform sin depender del botón Reconstruir",
-    "Deduplica por contenido real cuando Jotform repite la misma fotografía en varios campos",
-    "Mantiene el botón de sincronización como respaldo manual"
+    "Técnicos y Encargados pueden reportar problemas sin asignarse operaciones",
+    "Los hallazgos técnicos pueden vincularse con la operación de origen",
+    "Nueva bandeja web para asignar y resolver por soporte remoto",
+    "Evidencias operativas registradas en Supabase y almacenadas físicamente en R2",
+    "Prioridad eliminada de las pantallas operativas actualizadas"
   ]
 }
