@@ -28,7 +28,7 @@ function compactPayload(payload){
 function defaultValueFor(column){
   const now = new Date().toISOString();
   const defaults = {
-    estado:'Pendiente', tipo:'Avería', prioridad:'Media', tecnico:'Sin asignar',
+    estado:'Reportado', tipo:'Avería', tecnico:'Sin asignar',
     titulo:'Operación móvil', descripcion:'Operación creada desde la aplicación móvil',
     agencia:'', grupo:'', encargado:'', creado_por:'app_movil',
     fecha_creacion:now, creado_en:now, actualizado_en:now,
@@ -44,7 +44,7 @@ function isDuplicateCode(error){
 }
 function minimalOperationPayload(payload){
   const allowed = [
-    'id','codigo','tipo','titulo','descripcion','estado','prioridad','agencia','agencia_label','grupo','tecnico','encargado',
+    'id','codigo','tipo','titulo','descripcion','estado','agencia','agencia_label','grupo','tecnico','encargado',
     'encargado_telefono','telefono_encargado','whatsapp_encargado','creado_por','creado_por_nombre','reportado_por',
     'reportado_por_nombre','usuario_nombre','usuario_creador','foto_url','fotos_reportadas','fotos_evidencia','evidencia_estado',
     'evidencia_archivos_seleccionados','trabajos_seleccionados','averias_seleccionadas','tipos_seleccionados','trabajo_a_realizar','origen_reporte','reportado_por_rol',
@@ -96,7 +96,7 @@ export async function listOperationCatalog({ activeOnly = true } = {}){
   const sb = await getSupabase();
   let query = sb
     .from(TABLES.operationCatalog)
-    .select('id,tipo,nombre,descripcion,categoria,prioridad_sugerida,requiere_evidencia,orden,activo')
+    .select('id,tipo,nombre,descripcion,categoria,requiere_evidencia,orden,activo')
     .order('tipo',{ascending:true})
     .order('orden',{ascending:true})
     .order('nombre',{ascending:true});
@@ -109,11 +109,30 @@ export async function listOperationCatalog({ activeOnly = true } = {}){
     name:String(row.nombre || '').trim(),
     description:String(row.descripcion || '').trim(),
     category:String(row.categoria || 'General').trim(),
-    priority:String(row.prioridad_sugerida || 'Media').trim(),
     requiresEvidence:Boolean(row.requiere_evidencia),
     order:Number.isFinite(Number(row.orden)) ? Number(row.orden) : index + 1,
     active:row.activo !== false
   })).filter(item => item.name);
+}
+
+export async function reportOperation(input = {}){
+  const sb = await getSupabase();
+  const args = {
+    p_agencia:String(input.agencyNumber || input.agencia || '').trim(),
+    p_grupo:String(input.group || input.grupo || '').trim(),
+    p_descripcion:String(input.description || input.descripcion || '').trim(),
+    p_tipo:input.type === 'Trabajo' ? 'Trabajo' : 'Avería',
+    p_titulo:String(input.title || input.titulo || '').trim() || null,
+    p_agencia_label:String(input.agencyLabel || input.agenciaLabel || '').trim() || null,
+    p_categoria:String(input.category || input.categoria || '').trim() || null,
+    p_problema:String(input.problem || input.problema || '').trim() || null,
+    p_trabajo_a_realizar:String(input.work || input.trabajo || '').trim() || null,
+    p_origen_reporte:String(input.source || input.origen || 'APP_MOVIL').trim(),
+    p_operacion_origen:String(input.originOperationId || input.operacionOrigen || '').trim() || null
+  };
+  const { data, error } = await sb.rpc('rpc_operacion_reportar_v3',args);
+  if(error) throw error;
+  return data || {};
 }
 
 export async function listOperations({ page = 0, pageSize = PAGE_SIZE, filters = {} } = {}){
@@ -186,8 +205,7 @@ export async function safeInsertOperation(payload){
 
     if(String(error?.code || '') === '23514'){
       const text = errorText(error).toLowerCase();
-      if(text.includes('prioridad')){ current.prioridad = 'Media'; continue; }
-      if(text.includes('estado')){ current.estado = 'Pendiente'; continue; }
+      if(text.includes('estado')){ current.estado = 'Reportado'; continue; }
       if(text.includes('tipo')){ current.tipo = 'Avería'; continue; }
     }
 
