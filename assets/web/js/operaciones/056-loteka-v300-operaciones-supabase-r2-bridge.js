@@ -34,12 +34,13 @@
     });
   }
   function normalizeStatus(value){
-    if(typeof normalizeRemoteStatus === 'function') return normalizeRemoteStatus(value);
-    const v = txt(value).toLowerCase();
-    if(v.includes('complet')) return 'Completado';
-    if(v.includes('proceso')) return 'En proceso';
-    if(v.includes('asign')) return 'Asignada';
-    return 'Pendiente';
+    const v = txt(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(v.includes('soporte') || v.includes('remot')) return 'Resuelto por soporte remoto';
+    if(v.includes('incid')) return 'En incidencia';
+    if(v.includes('complet') || v.includes('cerrad') || v.includes('finaliz')) return 'Completado';
+    if(v.includes('proceso') || v.includes('inici')) return 'En proceso';
+    if(v.includes('asign')) return 'Asignado';
+    return 'Reportado';
   }
   function normalizeAgency(value){
     if(typeof normalizeAgencyNumber === 'function') return normalizeAgencyNumber(value);
@@ -120,7 +121,7 @@
     op = op || {};
     works = Array.isArray(works) ? works : getOperationWorkListForAgencyState(op);
     const operationType = opStateNormText(op.type || op.tipo || '');
-    const operationStatus = normalizeStatus(op.status || op.estado || 'Pendiente');
+    const operationStatus = normalizeStatus(op.status || op.estado || 'Reportado');
     if(!operationType.includes('trab')) return '';
     if(operationStatus === 'Completado') return '';
     const hay = works.map(opStateNormText).join(' | ');
@@ -328,8 +329,7 @@
       tipo: txt(normalized.type || 'Avería').slice(0, 80),
       titulo: txt(normalized.title || normalized.categoria || 'Reporte').slice(0, 500),
       descripcion: txt(normalized.description || normalized.descripcion || '').slice(0, 5000),
-      estado: normalizeStatus(normalized.status || normalized.estado || 'Pendiente'),
-      prioridad: txt(normalized.priority || normalized.prioridad || 'Media').slice(0, 80),
+      estado: normalizeStatus(normalized.status || normalized.estado || 'Reportado'),
       agencia: txt(normalized.agency_number || normalized.agencia || normalizeAgency(normalized.agency || '') || normalized.agency || '').slice(0, 255),
       agencia_label: txt(normalized.agency_label || normalized.agency || '').slice(0, 255),
       grupo: txt(normalized.grupo || '').slice(0, 255),
@@ -372,7 +372,7 @@
   function rowToOp(row, index, existing){
     existing = existing || {};
     const agencyNumber = normalizeAgency(row.agencia || existing.agency_number || existing.agency || '');
-    const createdAt = row.fecha_creacion || existing.createdAt || nowIso();
+    const createdAt = row.reportado_at || row.fecha_creacion || existing.createdAt || nowIso();
     const reported = arr(row.fotos_reportadas).length ? arr(row.fotos_reportadas) : arr(existing.images || row.foto_url);
     const evidence = arr(row.fotos_evidencia).length ? arr(row.fotos_evidencia) : arr(existing.resultImages);
     const op = {
@@ -388,8 +388,7 @@
       agency_label: row.agencia_label || existing.agency_label || '',
       grupo: row.grupo || existing.grupo || '',
       technician: row.tecnico || existing.technician || 'Sin asignar',
-      priority: row.prioridad || existing.priority || 'Media',
-      status: normalizeStatus(row.estado || existing.status || 'Pendiente'),
+            status: normalizeStatus(row.estado || existing.status || 'Reportado'),
       description: row.descripcion || existing.description || '',
       selectedTypes: Array.isArray(existing.selectedTypes) && existing.selectedTypes.length ? existing.selectedTypes : (normalizeWorkArray(row.trabajos_seleccionados).length ? normalizeWorkArray(row.trabajos_seleccionados) : (row.titulo ? [row.titulo] : [])),
       categoria_visible: row.categoria_visible || existing.categoria_visible || existing.categoriaVisible || '',
@@ -410,10 +409,14 @@
       asignacionTrabajoUsuario: row.asignacion_trabajo_usuario || existing.asignacionTrabajoUsuario || existing.asignacion_trabajo_usuario || '',
       asignacion_trabajo_comentario: row.asignacion_trabajo_comentario || existing.asignacion_trabajo_comentario || existing.asignacionTrabajoComentario || '',
       asignacionTrabajoComentario: row.asignacion_trabajo_comentario || existing.asignacionTrabajoComentario || existing.asignacion_trabajo_comentario || '',
-      createdAt,
-      assignedAt: row.fecha_asignacion || existing.assignedAt || null,
-      startedAt: row.fecha_inicio || existing.startedAt || null,
-      completedAt: row.fecha_completado || existing.completedAt || null,
+      createdAt: row.reportado_at || createdAt,
+      assignedAt: row.asignado_at || row.fecha_asignacion || existing.assignedAt || null,
+      startedAt: row.iniciado_at || row.fecha_inicio || existing.startedAt || null,
+      completedAt: row.completado_at || row.fecha_completado || row.resuelto_remoto_at || existing.completedAt || null,
+      technicianId: row.tecnico_id || existing.technicianId || null,
+      reporterId: row.reportado_por_id || existing.reporterId || null,
+      assignerId: row.asignado_por_id || existing.assignerId || null,
+      operationOriginId: row.operacion_origen_id || existing.operationOriginId || null,
       closedAt: row.fecha_completado || existing.closedAt || null,
       responseTime: row.tiempo_respuesta_label || existing.responseTime || '',
       tiempo_respuesta: row.tiempo_respuesta ?? existing.tiempo_respuesta ?? null,
@@ -580,7 +583,7 @@
       opsRealtimeChannel = sb.channel('loteka-operaciones-reportes-operaciones-v300')
         .on('postgres_changes', { event: '*', schema: 'public', table: OPS_TABLE }, function(payload){
           const row = payload.new || payload.old || {};
-          if(payload.eventType === 'INSERT') toast('Nueva operación recibida', (row.codigo || row.id || 'Operación') + ' · ' + (row.agencia || 'Sin agencia'), 'success');
+          if(payload.eventType === 'INSERT') toast('Nuevo reporte recibido', (row.codigo || row.id || 'Operación') + ' · ' + (row.agencia || 'Sin agencia'), 'success');
           if(payload.eventType === 'UPDATE') toast('Operación actualizada', (row.codigo || row.id || 'Operación') + ' · ' + (row.estado || ''), row.estado === 'Completado' ? 'success' : 'info');
           if(payload.eventType === 'DELETE') toast('Operación eliminada', row.codigo || row.id || 'Registro removido', 'warning');
           const appliedIncrementally = applyRealtimeOperationRowV300(payload);
