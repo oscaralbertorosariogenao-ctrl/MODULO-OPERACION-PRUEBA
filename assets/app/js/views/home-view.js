@@ -9,7 +9,7 @@ export function homeView(state){
   const stats = state.operations.stats || emptyStats();
   const recent = state.operations.items.slice(0,6);
   const quickActions = [
-    quickIf(state,'operations.create','＋','Crear operación','go-create-operation'),
+    quickIf(state,'operations.create','＋','Reportar problema','go-create-operation'),
     quickIf(state,'operations.view','⌕','Buscar operación','go-operations-search'),
     quickIf(state,'operations.assign','♟','Asignar','go-unassigned-operations'),
     quickIf(state,'agencies.view','⌂','Buscar agencia','go-agencies-search'),
@@ -18,10 +18,10 @@ export function homeView(state){
     quickIf(state,'groupInventory.view','▣','Mi inventario','go-group-inventory')
   ];
   const metrics = groupManager
-    ? [metric(stats.pending,'Pendientes'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),metric(stats.overdue,'Atrasadas')]
+    ? [metric(stats.reported ?? stats.pending,'Reportados'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),metric(stats.incidents,'En incidencia')]
     : [
-        metric(stats.pending,'Pendientes'),metric(stats.unassigned,'Sin asignar'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),
-        metric(stats.assigned,'Asignadas'),metric(stats.overdue,'Atrasadas'),metric(stats.pendingEvidence,'Evidencia pendiente'),metric(stats.activeTechnicians,'Técnicos activos')
+        metric(stats.reported ?? stats.pending,'Reportados'),metric(stats.unassigned,'Sin asignar'),metric(stats.inProgress,'En proceso'),metric(stats.completedToday,'Completadas hoy'),
+        metric(stats.assigned,'Asignados'),metric(stats.incidents,'En incidencia'),metric(stats.pendingEvidence,'Evidencia pendiente'),metric(stats.activeTechnicians,'Técnicos activos')
       ];
   const alertTitle = groupManager ? 'Avisos de mi grupo' : 'Alertas operativas';
 
@@ -45,7 +45,7 @@ export function homeView(state){
   );
 }
 
-function emptyStats(){ return {pending:0,unassigned:0,inProgress:0,completedToday:0,assigned:0,overdue:0,pendingEvidence:0,activeTechnicians:0}; }
+function emptyStats(){ return {pending:0,unassigned:0,inProgress:0,completedToday:0,assigned:0,incidents:0,remoteToday:0,pendingEvidence:0,activeTechnicians:0}; }
 function firstName(value){ return String(value).trim().split(/\s+/)[0]; }
 function formatDate(date){ return new Intl.DateTimeFormat('es-DO',{weekday:'long',day:'numeric',month:'long'}).format(date); }
 function syncText(value){ if(!value) return 'Sincronizando'; const date = new Date(value); return `Sync ${new Intl.DateTimeFormat('es-DO',{hour:'numeric',minute:'2-digit'}).format(date)}`; }
