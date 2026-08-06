@@ -4,11 +4,11 @@ import { operationCard } from '../components/operation-card.js';
 import { emptyState } from '../components/empty-state.js';
 import { skeletonCards } from '../components/skeleton.js';
 import { can } from '../permissions.js';
-const STATUS_CHIPS = ['Todos','Pendiente','Asignada','En proceso','Completado'];
+const STATUS_CHIPS = ['Todos','Reportado','Asignado','En proceso','En incidencia','Completado','Resuelto por soporte remoto'];
 export function operationsView(state){
   const slice = state.operations; const filters = slice.filters || {};
   return el('div',{class:'page operations-page'},
-    el('div',{class:'page-header'},el('div',{},el('h1',{class:'page-title',text:'Operaciones'}),el('p',{class:'page-subtitle',text:'Consulta, asigna y da seguimiento desde el móvil.'})),can('operations.create',state) ? el('button',{class:'btn btn-primary btn-sm',type:'button','data-action':'go-create-operation'},'＋ Crear') : null),
+    el('div',{class:'page-header'},el('div',{},el('h1',{class:'page-title',text:'Operaciones'}),el('p',{class:'page-subtitle',text:'Consulta, asigna y da seguimiento desde el móvil.'})),can('operations.create',state) ? el('button',{class:'btn btn-primary btn-sm',type:'button','data-action':'go-create-operation'},'＋ Reportar') : null),
     el('section',{class:'filter-bar'},
       el('div',{class:'input-row'},searchInput({value:filters.search || '',placeholder:'Código, agencia o descripción',action:'operations-search',label:'Buscar operaciones'}),el('button',{class:'btn btn-secondary',type:'button','data-action':'open-operation-filters','aria-label':'Abrir filtros'},'Filtros')),
       el('div',{class:'chip-row','aria-label':'Filtro por estado'},STATUS_CHIPS.map(status => el('button',{class:`chip${(filters.status || 'Todos') === status ? ' is-active' : ''}`,type:'button','data-action':'filter-operation-status','data-status':status,text:status}))),
