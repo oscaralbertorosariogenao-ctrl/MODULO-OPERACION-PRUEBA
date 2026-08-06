@@ -12,7 +12,7 @@ export function assignmentDialog(operation, technicians, { reassign = false } = 
   return openModal({id:'assignment-dialog',title:reassign ? 'Reasignar operación' : 'Asignar operación',body:form});
 }
 export function commentDialog(operation){
-  return openModal({id:'comment-dialog',title:'Agregar comentario',body:el('form',{class:'stack','data-form':'add-comment'},el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),field('Comentario',el('textarea',{class:'textarea',name:'comment',required:'',maxlength:'2000',placeholder:'Escribe el avance o seguimiento.'})),el('button',{class:'btn btn-primary btn-block',type:'submit'},'Guardar comentario'))});
+  return openModal({id:'comment-dialog',title:'Agregar comentario',body:el('form',{class:'stack','data-form':'add-comment'},el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),field('Comentario',el('textarea',{class:'textarea',name:'comment',maxlength:'2000',placeholder:'Escribe el avance o seguimiento.'})),el('button',{class:'btn btn-primary btn-block',type:'submit'},'Guardar comentario'))});
 }
 export function diagnosisDialog(operation){
   return openModal({id:'diagnosis-dialog',title:'Registrar diagnóstico',body:el('form',{class:'stack','data-form':'add-diagnosis'},el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),field('Diagnóstico',el('textarea',{class:'textarea',name:'diagnosis',required:'',maxlength:'3000',placeholder:'Describe el diagnóstico técnico confirmado.'})),el('button',{class:'btn btn-primary btn-block',type:'submit'},'Guardar diagnóstico'))});
@@ -21,21 +21,21 @@ export function evidenceDialog(operation, files){
   return openModal({id:'evidence-dialog',title:'Agregar evidencia',body:el('form',{class:'stack','data-form':'add-evidence'},el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),field('Descripción',el('textarea',{class:'textarea',name:'description',maxlength:'1000',placeholder:'Qué muestra esta evidencia.'})),evidenceUploader(files,{prefix:'detail'}),el('div',{class:'progress hidden','data-evidence-progress':'true'},el('span',{style:'width:0%'})),el('button',{class:'btn btn-primary btn-block',type:'submit'},'Subir y relacionar evidencia'))});
 }
 export function finishDialog(operation){
-  return openModal({id:'finish-dialog',title:'Finalizar operación',body:el('form',{class:'stack','data-form':'finish-operation'},el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),el('p',{text:'La operación debe estar en proceso y tener evidencia confirmada.'}),field('Comentario final',el('textarea',{class:'textarea',name:'comment',required:'',maxlength:'2000',placeholder:'Resume la solución aplicada.'})),el('button',{class:'btn btn-success btn-block',type:'submit'},'Confirmar finalización'))});
+  return openModal({id:'finish-dialog',title:'Finalizar operación',body:el('form',{class:'stack','data-form':'finish-operation'},el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),el('p',{text:'La operación debe estar en proceso y tener evidencia confirmada.'}),field('Comentario final (opcional)',el('textarea',{class:'textarea',name:'comment',maxlength:'2000',placeholder:'Resume la solución aplicada.'})),el('button',{class:'btn btn-success btn-block',type:'submit'},'Confirmar finalización'))});
 }
 export function whatsappActionsDialog(operation){
   const phone = operation.managerPhone || '';
   return openModal({id:'whatsapp-actions',title:'Contacto por WhatsApp',body:el('div',{class:'stack'},el('p',{text:phone ? `Contacto registrado: ${phone}` : 'No hay teléfono registrado.'}),waButton('Confirmar si continúa la avería','consulta',operation,phone),waButton('Solicitar foto y video','evidencia',operation,phone),waButton('Enviar pasos rápidos','pasos',operation,phone))});
 }
 export function whatsappCloseDialog(operation){
-  return openModal({id:'whatsapp-close-dialog',title:'Cerrar por soporte WhatsApp',body:el('form',{class:'stack','data-form':'close-whatsapp'},
+  return openModal({id:'whatsapp-close-dialog',title:'Resolver por soporte remoto',body:el('form',{class:'stack','data-form':'close-whatsapp'},
     el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),
     field('Motivo',el('select',{class:'select',name:'reason',required:''},option('','Selecciona el motivo',true),option('Resuelto remotamente','Resuelto remotamente'),option('Orientación al encargado','Orientación al encargado'),option('Reinicio o reconexión','Reinicio o reconexión'),option('Otro soporte remoto','Otro soporte remoto'))),
     field('Encargado',el('input',{class:'input',name:'manager',value:operation.manager || '',required:''})),
     field('Teléfono',el('input',{class:'input',name:'phone',value:operation.managerPhone || '',inputmode:'tel',required:''})),
-    field('Comentario obligatorio',el('textarea',{class:'textarea',name:'comment',required:'',maxlength:'2000',placeholder:'Explica claramente cómo se resolvió.'})),
+    field('Comentario (opcional)',el('textarea',{class:'textarea',name:'comment',maxlength:'2000',placeholder:'Explica claramente cómo se resolvió.'})),
     el('p',{class:'draft-note',text:'Este cierre se registrará en el historial específico de la operación y no exigirá evidencia física.'}),
-    el('button',{class:'btn btn-success btn-block',type:'submit'},'Cerrar operación')
+    el('button',{class:'btn btn-success btn-block',type:'submit'},'Confirmar resolución remota')
   )});
 }
 export function agencyFiltersDialog(groups, filters = {}){
