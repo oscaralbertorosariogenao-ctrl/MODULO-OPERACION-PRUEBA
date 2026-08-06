@@ -1,4 +1,4 @@
-import { uploadEvidenceFile } from '../api/evidence-api.js';
+import { uploadEvidenceFile, uploadEvidenceFileDetailed } from '../api/evidence-api.js';
 export async function compressImage(file, { maxDimension = 1800, quality = .82 } = {}){
   if(!file?.type?.startsWith('image/') || /gif|svg/i.test(file.type)) return file;
   const bitmap = await createImageBitmap(file); const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
@@ -22,4 +22,19 @@ export async function uploadEvidenceBatch(files, operationCode, description, onP
     urls.push(url);
   }
   return urls;
+}
+
+export async function uploadEvidenceBatchDetailed(files, operationReference, {
+  description = '', stage = 'SEGUIMIENTO', incidentId = '', source = 'app-movil-v808.20', onProgress = null
+} = {}){
+  const selected=[...(files || [])]; const results=[];
+  for(let index=0; index<selected.length; index += 1){
+    const compressed=await compressImage(selected[index]);
+    const result=await uploadEvidenceFileDetailed(compressed,operationReference,{
+      description,stage,incidentId,source,
+      onProgress:value => onProgress?.(Math.round(((index + value / 100) / selected.length) * 100))
+    });
+    results.push(result);
+  }
+  return results;
 }
