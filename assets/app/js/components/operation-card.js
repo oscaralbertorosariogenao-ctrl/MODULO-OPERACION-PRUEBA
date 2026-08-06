@@ -1,6 +1,6 @@
 import { el } from './dom.js';
 import { statusBadge } from './status-badge.js';
-import { normalizeOperation, operationElapsed, isOverdue } from '../services/operations-service.js';
+import { normalizeOperation, operationElapsed } from '../services/operations-service.js';
 export function operationCard(row){
   const op = normalizeOperation(row); const agency = op.agencyLabel || (op.agencyNumber ? `Agencia ${op.agencyNumber}` : 'Agencia no indicada');
   return el('article',{class:'card operation-card is-clickable',tabindex:'0',role:'button','data-action':'open-operation','data-operation-id':op.id || op.code,'aria-label':`Abrir ${op.code}, ${op.title}`},
@@ -13,7 +13,7 @@ export function operationCard(row){
       meta('⌂',agency),meta('G',op.group || 'Sin grupo'),meta('♟',op.technician || 'Sin asignar'),meta('◷',operationElapsed(op))
     ),
     el('div',{class:'operation-footer'},
-      el('span',{class:isOverdue(op) ? 'badge badge-danger' : 'badge badge-neutral',text:isOverdue(op) ? 'Atrasada' : op.type}),
+      el('span',{class:'badge badge-neutral',text:op.type}),
       el('span',{class:'muted',text:formatDate(op.createdAt)})
     )
   );
