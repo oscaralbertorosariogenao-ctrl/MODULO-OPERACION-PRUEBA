@@ -533,7 +533,6 @@ function makeFindingDrafts(entries, mappings, base) {
       problema_etiqueta: condition.mapping.problema_etiqueta,
       condicion_reportada: [],
       descripcion: [],
-      prioridad: condition.mapping.prioridad_default || 'MEDIA',
       tipo: condition.findingType,
       estado: 'PENDIENTE',
       metadata: { elementos: [], campos: [] },
