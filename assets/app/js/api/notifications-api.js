@@ -45,6 +45,10 @@ export function markAllNotificationsRead({ userId = '', onlyAssigned = false } =
 
 export async function createOperationalNotification(payload){
   const sb = await getSupabase();
+  if(payload?.evento_clave && payload?.operacion_id && payload?.usuario_id){
+    const existing=await sb.from(TABLES.notifications).select('id').eq('evento_clave',payload.evento_clave).eq('operacion_id',payload.operacion_id).eq('usuario_id',payload.usuario_id).limit(1);
+    if(!existing.error && existing.data?.length) return existing.data[0];
+  }
   let current = {...payload};
   for(let attempt = 0; attempt < 20; attempt += 1){
     const { data, error } = await sb.from(TABLES.notifications).insert(current).select('*').maybeSingle();
