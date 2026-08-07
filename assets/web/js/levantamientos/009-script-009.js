@@ -84,9 +84,7 @@
       return;
     }
     tbody.innerHTML = levs.map(item => {
-      const priority = item.priority || 'Media';
       const status = item.overallStatus || item.workflowStatus || 'Pendiente de revisión';
-      const prClass = /alta|urg/i.test(priority) ? 'gold' : (/baja/i.test(priority) ? 'gray' : 'blue');
       const stClass = /mal|cr[ií]tic|requier/i.test(status) ? 'gold' : (/buen|revis|pend/i.test(status) ? 'blue' : 'gray');
       const id = escapeHtmlSafe(item.id || item.code || '');
       return `<tr>
@@ -94,7 +92,6 @@
         <td>${escapeHtmlSafe(item.type || item.category || 'Levantamiento técnico')}</td>
         <td>${escapeHtmlSafe(item.technician || item.responsible || '-')}</td>
         <td><span class="status-pill ${stClass}">${escapeHtmlSafe(status)}</span></td>
-        <td><span class="status-pill ${prClass}">${escapeHtmlSafe(priority)}</span></td>
         <td>${typeof agencyFmtShortDate === 'function' ? agencyFmtShortDate(item.visitDate || item.submittedAt || item.createdAt || '') : escapeHtmlSafe(item.visitDate || '-')}</td>
         <td>${escapeHtmlSafe(item.findingsCount ?? 0)}</td>
         <td><button class="btn-secondary" type="button" onclick="agencyViewLev('${id}')"><i class="fas fa-eye"></i> Ver</button></td>
@@ -191,7 +188,6 @@
       `Tipo: ${item.type || item.category || '-'}`,
       `Técnico: ${item.technician || item.responsible || '-'}`,
       `Estado general: ${item.overallStatus || '-'}`,
-      `Prioridad: ${item.priority || '-'}`,
       `Fecha: ${typeof agencyFmtShortDate === 'function' ? agencyFmtShortDate(item.visitDate || item.submittedAt || '') : (item.visitDate || '-')}`,
       '',
       item.executiveSummary || item.findings || 'Sin resumen disponible.'
