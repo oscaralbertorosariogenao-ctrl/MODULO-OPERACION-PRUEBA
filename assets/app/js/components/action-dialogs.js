@@ -5,7 +5,7 @@ export function assignmentDialog(operation, technicians, { reassign = false } = 
   const formName = reassign ? 'reassign-operation' : 'assign-operation';
   const form = el('form',{class:'stack','data-form':formName},
     el('input',{type:'hidden',name:'reference',value:operation.id || operation.code}),
-    field('Técnico',el('select',{class:'select',name:'technician',required:''},option('','Selecciona un técnico',true),technicians.map(tech => { const name = tech.nombre_completo || tech.nombre || tech.usuario_login; return option(name,name,false); }))),
+    field('Técnico',el('select',{class:'select',name:'technician',required:''},option('','Selecciona un técnico',true),technicians.map(tech => { const name = tech.nombre_completo || tech.nombre || tech.usuario_login || 'Técnico'; return option(tech.id,name,false); }))),
     field('Comentario',el('textarea',{class:'textarea',name:'comment',placeholder:'Contexto de la asignación o reasignación.',maxlength:'1000'})),
     el('button',{class:'btn btn-primary btn-block',type:'submit'},reassign ? 'Confirmar reasignación' : 'Confirmar asignación')
   );
