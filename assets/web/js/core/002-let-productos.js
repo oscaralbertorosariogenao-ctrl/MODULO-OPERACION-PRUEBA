@@ -2905,7 +2905,6 @@ function ensureAgencyDetailDefaults(agencia){
     parametros: {
       tecnico: agencia.detalle.parametros?.tecnico || '',
       supervisor: agencia.detalle.parametros?.supervisor || '',
-      prioridad: agencia.detalle.parametros?.prioridad || 'Media',
       canal: agencia.detalle.parametros?.canal || 'Operaciones',
       ruta: agencia.detalle.parametros?.ruta || '',
       horarioRuta: agencia.detalle.parametros?.horarioRuta || '',
@@ -2996,7 +2995,6 @@ function agencyRenderLevantamientos(agencia){
     <td>${item.type || item.category || '-'}</td>
     <td>${item.technician || item.responsible || '-'}</td>
     <td><span class="status-pill blue">${item.overallStatus || '-'}</span></td>
-    <td><span class="status-pill ${String(item.priority||'').toLowerCase().includes('alta') || String(item.priority||'').toLowerCase().includes('urg') ? 'gold' : 'gray'}">${item.priority || '-'}</span></td>
     <td>${agencyFmtShortDate(item.visitDate || item.submittedAt || '')}</td>
     <td>${item.findingsCount ?? 0}</td>
     <td><button class="btn-secondary" type="button" onclick="agencyViewLev('${item.id}')">Ver</button></td>
@@ -3010,7 +3008,6 @@ function agencyViewLev(id){
     `Tipo: ${item.type || item.category || '-'}`,
     `Técnico: ${item.technician || item.responsible || '-'}`,
     `Estado general: ${item.overallStatus || '-'}`,
-    `Prioridad: ${item.priority || '-'}`,
     `Fecha: ${agencyFmtShortDate(item.visitDate || item.submittedAt || '')}`,
     '',
     item.executiveSummary || item.findings || 'Sin resumen disponible.'
@@ -3132,7 +3129,6 @@ function cargarFormularioDetalleAgencia(agencia){
   const parametros = d.parametros || {};
   agencySetValue('agencyParamTecnico', parametros.tecnico || '');
   agencySetValue('agencyParamSupervisor', parametros.supervisor || '');
-  agencySetValue('agencyParamPrioridad', parametros.prioridad || 'Media');
   agencySetValue('agencyParamCanal', parametros.canal || 'Operaciones');
   agencySetValue('agencyParamRuta', parametros.ruta || '');
   agencySetValue('agencyParamHorario', parametros.horarioRuta || d.horario || '');
@@ -3215,7 +3211,6 @@ function guardarDetalleAgenciaCompleta(){
   agencia.detalle.parametros = {
     tecnico: document.getElementById('agencyParamTecnico').value.trim(),
     supervisor: document.getElementById('agencyParamSupervisor').value.trim(),
-    prioridad: document.getElementById('agencyParamPrioridad').value,
     canal: (document.getElementById('agencyParamCanal')?.value || 'Operaciones'),
     ruta: (document.getElementById('agencyParamRuta')?.value || '').trim(),
     horarioRuta: (document.getElementById('agencyParamHorario')?.value || '').trim(),
