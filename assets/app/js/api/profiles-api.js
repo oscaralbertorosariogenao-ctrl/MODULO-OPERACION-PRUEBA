@@ -7,22 +7,31 @@ function isActive(profile){
   const status = String(profile?.estado || profile?.estatus || profile?.status || '').toLowerCase();
   return !/inactiv|bloque|suspend|cancel/.test(status);
 }
-function technicianText(profile){
-  return [
-    profile?.roles?.nombre, profile?.puestos?.nombre, profile?.rol, profile?.rol_nombre,
-    profile?.puesto, profile?.puesto_nombre, profile?.departamento, profile?.cargo,
-    profile?.usuario_login, profile?.nombre_completo, profile?.nombre
-  ].filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-}
+function normalized(value){ return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
 
 export async function listTechnicians(){
   const sb = await getSupabase();
-  let response = await sb.from(TABLES.profiles).select('*,roles(nombre),puestos(nombre)').limit(2000);
-  if(response.error) response = await sb.from(TABLES.profiles).select('*').limit(2000);
-  if(response.error) throw response.error;
-  const active = (response.data || []).filter(isActive);
-  const technicians = active.filter(profile => /tecn/i.test(technicianText(profile)));
-  return technicians.length ? technicians : active.filter(profile => !/admin|encargado/i.test(technicianText(profile)));
+  const profilesResult = await sb.from(TABLES.profiles).select('*').limit(2000);
+  if(profilesResult.error) throw profilesResult.error;
+  const active=(profilesResult.data || []).filter(isActive);
+  const roleIds=[...new Set(active.map(p=>p.rol_id).filter(Boolean))];
+  const positionIds=[...new Set(active.map(p=>p.puesto_id).filter(Boolean))];
+  const [rolesResult,positionsResult,permissionsResult]=await Promise.all([
+    roleIds.length?sb.from('roles').select('id,nombre').in('id',roleIds):Promise.resolve({data:[],error:null}),
+    positionIds.length?sb.from('puestos').select('id,nombre').in('id',positionIds):Promise.resolve({data:[],error:null}),
+    roleIds.length?sb.from(TABLES.rolesPermissions).select('rol_id,permisos(codigo)').in('rol_id',roleIds):Promise.resolve({data:[],error:null})
+  ]);
+  const roleMap=new Map((rolesResult.error ? [] : (rolesResult.data || [])).map(row=>[String(row.id),row.nombre]));
+  const positionMap=new Map((positionsResult.error ? [] : (positionsResult.data || [])).map(row=>[String(row.id),row.nombre]));
+  const executionRoles=new Set();
+  if(!permissionsResult.error){
+    (permissionsResult.data || []).forEach(row=>{ const code=String(row?.permisos?.codigo || ''); if(['iniciar_operacion','subir_evidencia_operacion','cerrar_operacion'].includes(code)) executionRoles.add(String(row.rol_id)); });
+  }
+  const decorate=profile=>({...profile,roles:{nombre:roleMap.get(String(profile.rol_id)) || ''},puestos:{nombre:positionMap.get(String(profile.puesto_id)) || ''}});
+  const textFor=profile=>normalized(`${roleMap.get(String(profile.rol_id)) || ''} ${positionMap.get(String(profile.puesto_id)) || ''} ${profile.departamento || ''} ${profile.cargo || ''}`);
+  let technicians=executionRoles.size ? active.filter(profile=>executionRoles.has(String(profile.rol_id))) : [];
+  if(!technicians.length) technicians=active.filter(profile=>/tecnic|soporte|mantenimiento|instalador|auxiliar.*operaci/.test(textFor(profile)));
+  return technicians.map(decorate);
 }
 
 export async function listAssignableProfiles(){ return listTechnicians(); }
