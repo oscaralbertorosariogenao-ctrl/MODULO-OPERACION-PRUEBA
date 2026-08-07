@@ -279,12 +279,12 @@ async function submitEvidence(data,controller){
   await withLoader('Subiendo evidencia protegida…',async () => {const urls=await uploadEvidenceBatch(files,op.code,data.description,progress => updateProgress(progress));await addEvidence(data.reference,urls,data.description,state.profile);revokePreviews(state.evidence.files);updateSlice('evidence',{files:[],progress:0},'evidence-clear');closeModal();showToast('Evidencia guardada',`${urls.length} archivo(s) confirmado(s).`,'success');await controller.reloadSelectedOperation();});
 }
 async function submitFinish(data,controller){
-  requireOnline(); requireAction(controller,'operations.finish'); if(!String(data.comment || '').trim()) throw new Error('Escribe el comentario final.');
-  await withLoader('Finalizando operación…',async () => {const updated=await finishOperation(data.reference,data.comment,getState().profile);await notifyBestEffort({type:'OPERACION_COMPLETADA',title:'Operación completada',message:`${normalizeOperation(updated).code || data.reference} fue finalizada.`,importance:'normal',operation:updated});closeModal();showToast('Operación finalizada','El cierre quedó registrado en el historial.','success');await controller.reloadSelectedOperation();});
+  requireOnline(); requireAction(controller,'operations.finish');
+  await withLoader('Finalizando operación…',async () => {const updated=await finishOperation(data.reference,data.comment,getState().profile);closeModal();showToast('Operación finalizada','El cierre quedó registrado en el historial.','success');await controller.reloadSelectedOperation();});
 }
 async function submitWhatsAppClose(data,controller){
-  requireOnline(); requireAction(controller,'operations.closeWhatsapp'); if(!data.reason || !String(data.comment || '').trim() || !data.manager || !data.phone) throw new Error('Completa motivo, encargado, teléfono y comentario.');
-  await withLoader('Registrando cierre por WhatsApp…',async () => {const updated=await closeByWhatsApp(data.reference,data,getState().profile);await notifyBestEffort({type:'OPERACION_CERRADA_WHATSAPP',title:'Cierre por WhatsApp',message:`${normalizeOperation(updated).code || data.reference} fue cerrada mediante soporte remoto.`,importance:'normal',operation:updated});closeModal();showToast('Operación cerrada','Cierre por soporte WhatsApp registrado.','success');await controller.reloadSelectedOperation();});
+  requireOnline(); requireAction(controller,'operations.closeWhatsapp'); if(!data.reason) throw new Error('Selecciona el motivo de soporte remoto.');
+  await withLoader('Registrando cierre por WhatsApp…',async () => {const updated=await closeByWhatsApp(data.reference,data,getState().profile);await notifyBestEffort({type:'OPERACION_RESUELTA_REMOTO',title:'Resuelto por soporte remoto',message:`${normalizeOperation(updated).code || data.reference} fue cerrada mediante soporte remoto.`,importance:'normal',operation:updated});closeModal();showToast('Operación cerrada','Cierre por soporte WhatsApp registrado.','success');await controller.reloadSelectedOperation();});
 }
 async function applyOperationFilters(data,controller){
   closeModal(); updateSlice('operations',{filters:{...getState().operations.filters,...data}},'operation-filters');await loadOperationsPage({reset:true});controller.render();
@@ -783,11 +783,18 @@ function updateOperationCatalogSelectionDom(){
 
 async function notifyBestEffort({type,title,message,importance='normal',operation}){
   const state=getState(); const op=normalizeOperation(operation || {});
+  const actorId=isUuid(state.user?.id) ? state.user.id : null;
+  const actorName=state.profile?.nombre_completo || state.profile?.nombre || state.user?.email || 'Sistema';
+  const recipientId=isUuid(op.reporterId) && op.reporterId !== actorId ? op.reporterId : null;
+  // Estos avisos son dirigidos al reportante. Si el actor y el reportante son la misma
+  // persona, no insertamos una fila sin destinatario porque eso podría verse como global.
+  if(!recipientId) return;
   const payload={
     modulo:'OPERACIONES',tipo:type,titulo:title,mensaje:message,importancia:importance,
     referencia_tipo:'OPERACION',referencia_id:isUuid(operation?.id) ? operation.id : null,
-    referencia_codigo:op.code || null,usuario_id:isUuid(state.user?.id) ? state.user.id : null,
-    usuario_nombre:state.profile?.nombre_completo || state.profile?.nombre || state.user?.email || 'Sistema',
+    referencia_codigo:op.code || null,operacion_id:isUuid(operation?.id) ? operation.id : null,
+    evento_clave:type,usuario_id:recipientId,actor_id:actorId,actor_nombre:actorName,
+    grupo_codigo:op.group || null,enlace:op.code ? `/app.html#/operation/${encodeURIComponent(op.code)}` : null,
     leida:false,visto_en_panel:false,creado_en:new Date().toISOString()
   };
   try{ await createOperationalNotification(payload); }catch(error){ console.warn('[Grupo Ortiz] La operación se guardó, pero no se pudo crear la notificación.',error?.message || error); }
