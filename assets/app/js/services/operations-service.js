@@ -11,8 +11,11 @@ export function normalizeStatus(value){
   return 'Reportado';
 }
 export function normalizeOperation(row = {}){
-  const evidence = normalizeMedia(row.fotos_evidencia || row.resultImages || row.evidencias);
-  const reported = normalizeMedia(row.fotos_reportadas || row.images || row.foto_url);
+  const r2Rows = Array.isArray(row._r2_evidencias) ? row._r2_evidencias : (Array.isArray(row.evidenciasR2) ? row.evidenciasR2 : []);
+  const r2Reported = r2Rows.filter(item => text(item?.etapa).toUpperCase() === 'REPORTE');
+  const r2Result = r2Rows.filter(item => text(item?.etapa).toUpperCase() !== 'REPORTE');
+  const evidence = normalizeMedia([...(normalizeMedia(row.fotos_evidencia || row.resultImages || row.evidencias)), ...r2Result]);
+  const reported = normalizeMedia([...(normalizeMedia(row.fotos_reportadas || row.images || row.foto_url)), ...r2Reported]);
   return {
     ...row,
     id:text(row.id), code:text(row.codigo || row.code || row.id), type:text(row.tipo || row.type || 'Avería'),
@@ -35,7 +38,10 @@ export function normalizeMedia(value){
   let list = value;
   if(typeof list === 'string'){ try{ list = JSON.parse(list); }catch{ list = [list]; } }
   if(!Array.isArray(list)) list = list ? [list] : [];
-  return [...new Set(list.map(item => typeof item === 'string' ? item : item?.url).map(text).filter(Boolean))];
+  return [...new Set(list.map(item => {
+    if(typeof item === 'string') return item;
+    return item?.url_r2 || item?.url || item?.publicUrl || item?.public_url || '';
+  }).map(text).filter(Boolean))];
 }
 export function operationElapsed(operation){
   const start = new Date(operation.createdAt || Date.now()).getTime();
