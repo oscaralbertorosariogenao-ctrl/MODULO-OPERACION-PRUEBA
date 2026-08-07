@@ -233,24 +233,37 @@ async function submitCreateOperation(data,controller){
     const reference=op.code || op.id;
     const files=state.evidence.files.map(item => item.file);
     let uploaded=0;
+    let evidenceFailure=null;
     if(files.length){
       try{
-        const results=await uploadEvidenceBatchDetailed(files,reference,{description,stage:'REPORTE',source:'app-movil-v808.20',onProgress:progress => updateProgress(progress)});
+        const results=await uploadEvidenceBatchDetailed(files,reference,{description,stage:'REPORTE',source:'app-movil-v808.21',onProgress:progress => updateProgress(progress)});
         uploaded=results.length;
       }catch(error){
-        showToast('Reporte creado','El reporte se guardó, pero una evidencia inicial no pudo vincularse. Puedes subirla luego desde el detalle.','warning',8000);
+        evidenceFailure=error;
       }
     }
     revokePreviews(state.evidence.files); updateSlice('evidence',{files:[],progress:0},'evidence-clear');
     await removeDraft('create-operation').catch(() => null); controller.setOperationDraft({});
-    showToast('Reporte registrado',`${reference} quedó Reportado${uploaded ? ` con ${uploaded} evidencia(s) en R2` : ''}.`,'success');
+    if(evidenceFailure){
+      const detail=classifyError(evidenceFailure).message;
+      showToast('Reporte creado, evidencia no subida',`${reference} quedó Reportado, pero R2 rechazó la evidencia: ${detail}. Ábrelo y vuelve a subirla desde el detalle.`,'warning',12000);
+    }else{
+      showToast('Reporte registrado',`${reference} quedó Reportado${uploaded ? ` con ${uploaded} evidencia(s) confirmada(s) en R2` : ''}.`,'success');
+    }
     navigate(ROUTES.operation,{id:op.id || reference});
   });
 }
 async function submitAssignment(data,controller,reassign){
   requireOnline(); requireAction(controller,reassign?'operations.reassign':'operations.assign');
   if(!data.technician) throw new Error('Selecciona un técnico.');
-  await withLoader(reassign?'Reasignando…':'Asignando…',async () => { const updated=await (reassign?reassignOperation:assignOperation)(data.reference,data.technician,data.comment,getState().profile);await notifyBestEffort({type:reassign?'OPERACION_REASIGNADA':'OPERACION_ASIGNADA',title:reassign?'Operación reasignada':'Operación asignada',message:`${normalizeOperation(updated).code || data.reference} · ${data.technician}`,importance:'normal',operation:updated});closeModal();showToast(reassign?'Operación reasignada':'Operación asignada',`Técnico: ${data.technician}`,'success');await controller.reloadSelectedOperation(); });
+  await withLoader(reassign?'Reasignando…':'Asignando…',async () => {
+    const updated=await (reassign?reassignOperation:assignOperation)(data.reference,data.technician,data.comment);
+    const selected=getState().technicians.items.find(item => String(item.id) === String(data.technician));
+    const technicianName=selected?.nombre_completo || selected?.nombre || selected?.usuario_login || normalizeOperation(updated).technician || 'Responsable';
+    closeModal();
+    showToast(reassign?'Operación reasignada':'Operación asignada',`Técnico: ${technicianName}`,'success');
+    await controller.reloadSelectedOperation();
+  });
 }
 async function submitComment(data,controller){
   requireOnline(); requireAction(controller,'operations.comment'); if(!String(data.comment || '').trim()) throw new Error('Escribe un comentario.');
