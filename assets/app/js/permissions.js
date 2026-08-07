@@ -45,7 +45,7 @@ const ROUTE_ACTION = Object.freeze({
   [ROUTES.profile]:'profile.view'
 });
 
-const ROUTE_PRIORITY = Object.freeze([
+const ROUTE_ORDER = Object.freeze([
   ROUTES.home,
   ROUTES.operations,
   ROUTES.groupInventory,
@@ -108,4 +108,4 @@ export function can(action, state){
 export function permissionFor(action){ return ACTION_PERMISSION[action] || null; }
 export function actionForRoute(path){ return ROUTE_ACTION[path] || null; }
 export function canAccessRoute(route, state){ return can(actionForRoute(route?.path), state); }
-export function firstAllowedRoute(state){ return ROUTE_PRIORITY.find(path => canAccessRoute({path},state)) || ROUTES.profile; }
+export function firstAllowedRoute(state){ return ROUTE_ORDER.find(path => canAccessRoute({path},state)) || ROUTES.profile; }
