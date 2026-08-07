@@ -41,6 +41,30 @@
   };
 
   function val(fn,fallback){ try{ var v=fn(); return (v==null||v==='')?fallback:v; }catch(e){ return fallback; } }
+  function uniqMedia(values){
+    var seen={};
+    return (Array.isArray(values)?values:[]).map(function(item){
+      if(typeof item==='string') return String(item||'').trim();
+      return String((item&&(item.url_r2||item.url||item.publicUrl||item.public_url))||'').trim();
+    }).filter(function(url){ if(!url||seen[url]) return false; seen[url]=1; return true; });
+  }
+  async function fetchR2Evidence(reference){
+    var client=window.lotekaSupabase||window.supabaseClient||window.__supabaseClient||null;
+    if(!client||typeof client.rpc!=='function') return [];
+    var result=await client.rpc('rpc_operacion_evidencias_v2',{p_operacion:String(reference||'').trim()});
+    if(result.error) throw result.error;
+    return Array.isArray(result.data)?result.data:[];
+  }
+  function attachR2EvidenceToDetail(op,rows){
+    rows=(Array.isArray(rows)?rows:[]).filter(function(row){return row&&row.url_r2;});
+    var report=rows.filter(function(row){return String(row.etapa||'').toUpperCase()==='REPORTE';});
+    var result=rows.filter(function(row){return String(row.etapa||'').toUpperCase()!=='REPORTE';});
+    op.images=uniqMedia([].concat(Array.isArray(op.images)?op.images:[],report));
+    op.resultImages=uniqMedia([].concat(Array.isArray(op.resultImages)?op.resultImages:[],result));
+    op.r2Evidence=rows.slice();
+    op.evidenciasR2=rows.slice();
+    return op;
+  }
   function mediaBlock(list,title){ try{ if(Array.isArray(list)&&list.length&&typeof renderMediaGrid==='function') return '<div class="go-detail-media">'+renderMediaGrid(list,{title:'',minWidth:155,height:135})+'</div>'; }catch(e){} return '<div class="go-detail-empty">Sin '+esc(title||'archivos')+' registrados.</div>'; }
   function buildTimeline(op){
     var status=String(op.status||'Pendiente');
@@ -53,12 +77,29 @@
     return '<div class="go-detail-timeline">'+steps.map(function(s){return '<div class="go-detail-step '+s.state+'"><div class="go-detail-step-icon"><i class="fas '+s.icon+'"></i></div><div class="go-detail-step-body"><strong>'+esc(s.label)+'</strong><p>'+esc(s.text)+'</p>'+(s.date?'<small>'+esc(s.date)+'</small>':'')+'</div></div>';}).join('')+'</div>';
   }
   var originalShowDetail = window.showDetail;
-  window.showDetail = function(id){
+  window.showDetail = async function(id){
     try{
-      var loaded = (typeof loadOperations==='function' ? loadOperations() : []).find(function(item){ return String(item.id)===String(id); });
+      var loaded = (typeof loadOperations==='function' ? loadOperations() : []).find(function(item){
+        return String(item.id)===String(id) || String(item.code||item.codigo||'')===String(id);
+      });
       if(!loaded){ if(typeof originalShowDetail==='function') return originalShowDetail(id); return; }
       if(typeof currentDetailOperationId !== 'undefined') currentDetailOperationId=id;
       var op = (typeof enrichOperationWithAgencyContext==='function') ? enrichOperationWithAgencyContext(loaded) : loaded;
+      try{
+        var evidenceRows=await fetchR2Evidence(op.id||op.code||op.codigo||id);
+        attachR2EvidenceToDetail(op,evidenceRows);
+        attachR2EvidenceToDetail(loaded,evidenceRows);
+        try{
+          if(typeof loadOperations==='function' && typeof saveOperations==='function'){
+            var all=loadOperations();
+            var idx=all.findIndex(function(item){return String(item.id)===String(loaded.id)||String(item.code||item.codigo||'')===String(loaded.code||loaded.codigo||id);});
+            if(idx>=0){ all[idx]=loaded; saveOperations(all); }
+          }
+        }catch(cacheError){ console.warn('[Grupo Ortiz] No se pudo actualizar la caché de evidencias:',cacheError); }
+      }catch(evidenceError){
+        console.error('[Grupo Ortiz] No se pudieron consultar las evidencias R2 del expediente:',evidenceError);
+        try{ window.lotekaToast('Evidencias no disponibles',evidenceError.message||String(evidenceError),'warning',6500); }catch(_e){}
+      }
       var agency = val(function(){return findAgencyRecord(op.agency)}, null);
       var assigned = val(function(){return getAssigneeDisplayName(op.technician,op.type)}, op.technician||'Sin asignar');
       var location = val(function(){return getOperationLocation(op)}, op.agency||'-');
