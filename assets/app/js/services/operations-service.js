@@ -1,5 +1,5 @@
 import { OPERATION_STATUSES, OPERATION_TYPES } from '../config.js';
-import { reportOperation, safeUpdateOperation, getOperation } from '../api/operations-api.js';
+import { reportOperation, safeUpdateOperation, getOperation, assignOperationRpc } from '../api/operations-api.js';
 function text(value){ return String(value ?? '').trim(); }
 export function normalizeStatus(value){
   const raw=text(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -117,13 +117,11 @@ async function updateWithHistory(reference, patch, action, detail, profile, hist
   const history = [...current.history, historyEntry(action, profile, detail, historyExtra)];
   return safeUpdateOperation(reference, { ...patch, historial:history, actualizado_en:new Date().toISOString() });
 }
-export function assignOperation(reference, technician, comment, profile){
-  const code = makeAssignmentCode(); const now = new Date().toISOString();
-  return updateWithHistory(reference, { tecnico:text(technician), estado:'Asignado', fecha_asignacion:now, asignacion_codigo:code, asignacion_comentario:text(comment) }, 'Operación asignada', `${technician}${comment ? ` · ${comment}` : ''}`, profile, { codigo_asignacion:code });
+export function assignOperation(reference, technicianId, comment){
+  return assignOperationRpc(reference, technicianId, comment);
 }
-export function reassignOperation(reference, technician, comment, profile){
-  const code = makeAssignmentCode(); const now = new Date().toISOString();
-  return updateWithHistory(reference, { tecnico:text(technician), estado:'Asignado', fecha_asignacion:now, asignacion_codigo:code, asignacion_comentario:text(comment) }, 'Operación reasignada', `${technician}${comment ? ` · ${comment}` : ''}`, profile, { codigo_asignacion:code });
+export function reassignOperation(reference, technicianId, comment){
+  return assignOperationRpc(reference, technicianId, comment);
 }
 export function startOperation(reference, profile){ return updateWithHistory(reference, { estado:'En proceso', fecha_inicio:new Date().toISOString() }, 'Operación iniciada', '', profile); }
 export function addComment(reference, comment, profile){ return updateWithHistory(reference, {}, 'Comentario agregado', comment, profile, { tipo:'comentario' }); }
