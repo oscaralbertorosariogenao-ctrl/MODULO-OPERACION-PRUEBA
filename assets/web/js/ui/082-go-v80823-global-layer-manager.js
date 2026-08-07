@@ -1,8 +1,8 @@
 (function(global){
   'use strict';
 
-  const VERSION='v808.23';
-  const STYLE_ID='go-v80823-global-layer-style';
+  const VERSION='v808.25';
+  const STYLE_ID='go-v80825-global-layer-style';
   const ROOT_VAR='--go-fixed-header-offset';
   let resizeObserver=null;
   let headObserver=null;
@@ -26,9 +26,10 @@
 
   function css(){
     return `
-:root{--go-fixed-header-offset:62px;--go-layer-gap:12px}
+:root{--go-fixed-header-offset:62px;--go-layer-gap:12px;--go-z-content:1;--go-z-sticky:100;--go-z-overlay:999900;--go-z-dialog:999920;--go-z-header:1000000;--go-z-toast:1000020}
+html body .loteka-global-topbar{z-index:var(--go-z-header)!important}
 
-/* v808.23 · Ninguna capa operacional puede empezar debajo de la barra global. */
+/* v808.25 · Ninguna capa operacional puede empezar debajo de la barra global. */
 html body .modal,
 html body .ops-modal-backdrop,
 html body .ops-media-lightbox,
@@ -55,6 +56,7 @@ html body .v808-backdrop{
   height:auto!important;
   max-height:calc(100dvh - var(--go-fixed-header-offset))!important;
   box-sizing:border-box!important;
+  z-index:var(--go-z-overlay)!important;
 }
 
 /* Los backdrops deben poder desplazarse; así el encabezado y los botones nunca quedan inaccesibles. */
@@ -102,10 +104,12 @@ html body .ltk-position-card,
 html body .v808-modal{
   max-height:calc(100dvh - var(--go-fixed-header-offset) - 24px)!important;
   box-sizing:border-box!important;
+  overflow:auto!important;
 }
 
 /* Centro de notificaciones: panel y detalle siempre debajo del header real. */
 html body .ltk-notif-panel{
+  z-index:var(--go-z-dialog)!important;
   top:calc(var(--go-fixed-header-offset) + 8px)!important;
   max-height:calc(100dvh - var(--go-fixed-header-offset) - 16px)!important;
   height:auto!important;
@@ -121,11 +125,13 @@ html body .ltk-notif-detail-card{
 /* Todos los avisos superiores usan el mismo offset en vez de números dispersos. */
 html body .go-toast-wrap,
 html body .ops-toast-wrap{
+  z-index:var(--go-z-toast)!important;
   top:calc(var(--go-fixed-header-offset) + 14px)!important;
 }
 html body .ltk-ann-toast,
 html body .loteka-refresh-toast-v43,
 html body .ltk-access-denied-toast{
+  z-index:var(--go-z-toast)!important;
   top:calc(var(--go-fixed-header-offset) + 12px)!important;
 }
 
