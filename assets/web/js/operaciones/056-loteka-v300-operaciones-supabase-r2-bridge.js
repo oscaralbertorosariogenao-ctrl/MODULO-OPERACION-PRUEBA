@@ -106,23 +106,28 @@
     const extMap = { 'image/jpeg':'jpg', 'image/jpg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' };
     return { contentType: m[1], base64: m[2], extension: extMap[m[1]] || 'jpg' };
   }
-  async function uploadOneToR2(value, folder){
+  async function uploadOneToR2(value, operationReference, stage){
     const raw = txt(value);
     if(!raw || !raw.startsWith('data:')) return raw;
     const info = dataUrlInfo(raw);
     if(!info) return raw;
+    if(!operationReference) throw new Error('No se puede subir evidencia sin una operación persistida.');
     const res = await fetch('/api/r2-upload', {
       method: 'POST',
       headers: await window.lotekaGetApiAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
-        folder: folder || 'operaciones',
+        operacion_id: operationReference,
+        codigo: operationReference,
+        folder: operationReference,
+        etapa: stage || 'SEGUIMIENTO',
+        origen: 'web-legacy-bridge-v80825',
         filename: 'evidencia-' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + info.extension,
         contentType: info.contentType,
         base64: info.base64
       })
     });
     const json = await res.json().catch(function(){ return {}; });
-    if(!res.ok || !json.ok || !json.url) throw new Error(json.error || 'No se pudo subir imagen a R2.');
+    if(!res.ok || !json.ok || !json.url || !json.evidencia) throw new Error(json.message || json.error || 'La evidencia no quedó confirmada en R2 + Supabase.');
     return json.url;
   }
   function opStateNormText(value){
@@ -325,16 +330,9 @@
     }
   }
 
-  async function uploadListToR2(list, folder){
+  async function uploadListToR2(list, operationReference, stage){
     const output = [];
-    for(const item of arr(list)){
-      try{ output.push(await uploadOneToR2(item, folder)); }
-      catch(err){
-        console.warn('[LOTEKA] R2 falló, se conserva la imagen local:', err && err.message ? err.message : err);
-        output.push(item);
-        toast('R2 no subió una foto', 'La operación se guardará, pero revisa variables R2 en Vercel.', 'warning');
-      }
-    }
+    for(const item of arr(list)) output.push(await uploadOneToR2(item, operationReference, stage));
     return output.filter(Boolean);
   }
   function currentOperationReporterName(){
@@ -602,13 +600,23 @@
       const sb = client();
       if(!sb) throw new Error('Supabase no está disponible.');
       if(!op) return null;
-      op.images = await uploadListToR2(op.images, 'operaciones/reportadas');
-      op.resultImages = await uploadListToR2(op.resultImages, 'operaciones/evidencias');
-      const payload = opToPayload(op);
+      const pendingReported = arr(op.images);
+      const pendingEvidence = arr(op.resultImages);
+      // Persistir primero la operación: operacion_evidencias nunca debe apuntar a un registro inexistente.
+      op.images = pendingReported.filter(function(item){ return !txt(item).startsWith('data:'); });
+      op.resultImages = pendingEvidence.filter(function(item){ return !txt(item).startsWith('data:'); });
+      let payload = opToPayload(op);
       op.id = payload.id;
       op.backendCero_id = payload.id;
       op.$id = payload.id;
-      const { data, error } = await safeUpsertOperationPayload(sb, payload);
+      let saved = await safeUpsertOperationPayload(sb, payload);
+      if(saved.error) throw saved.error;
+      const operationReference = txt((saved.data && (saved.data.codigo || saved.data.id)) || payload.codigo || payload.id);
+      op.images = await uploadListToR2(pendingReported, operationReference, 'REPORTE');
+      op.resultImages = await uploadListToR2(pendingEvidence, operationReference, 'SEGUIMIENTO');
+      payload = opToPayload(op);
+      saved = await safeUpsertOperationPayload(sb, payload);
+      const data = saved.data, error = saved.error;
       if(error) throw error;
       try{ await applyAgencyOperationalStateFromPayload(payload, data); }catch(stateError){ console.warn('[LOTEKA] Estado operativo omitido:', stateError); }
       try{ if(typeof syncAgenciesFromBackendCero === 'function') setTimeout(function(){ syncAgenciesFromBackendCero(); }, 450); }catch(e){}
