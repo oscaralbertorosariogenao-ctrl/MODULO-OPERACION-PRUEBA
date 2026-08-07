@@ -49,7 +49,7 @@
     const t = norm([p.categoria, p.nombre, p.codigo, p.descripcion, p.modelo, p.marca].filter(Boolean).join(' '));
     const byText = /pieza|piezas|parte|partes|repuesto|consumible|suministro|rodillo|quemadora|cuchilla|carcaza|engranaje|fuente|board|motor|cabezal|correa|sensor|cable|adaptador|bateria|batería/.test(t);
     if(raw === 'PIEZA') return true;
-    // Prioridad a la categoría/nombre: hay productos viejos guardados como EQUIPO pero realmente son piezas.
+    // Se usa primero la categoría/nombre: hay productos viejos guardados como EQUIPO pero realmente son piezas.
     if(byText) return true;
     return false;
   }
