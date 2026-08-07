@@ -1,5 +1,5 @@
 import { OPERATION_STATUSES, OPERATION_TYPES } from '../config.js';
-import { reportOperation, safeUpdateOperation, getOperation, assignOperationRpc } from '../api/operations-api.js';
+import { reportOperation, safeUpdateOperation, getOperation, assignOperationRpc, startOperationRpc, completeOperationRpc, resolveRemoteOperationRpc } from '../api/operations-api.js';
 function text(value){ return String(value ?? '').trim(); }
 export function normalizeStatus(value){
   const raw=text(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -123,29 +123,43 @@ async function updateWithHistory(reference, patch, action, detail, profile, hist
   const history = [...current.history, historyEntry(action, profile, detail, historyExtra)];
   return safeUpdateOperation(reference, { ...patch, historial:history, actualizado_en:new Date().toISOString() });
 }
+async function appendHistoryBestEffort(reference, action, detail, profile, historyExtra = {}){
+  try{ return await updateWithHistory(reference, {}, action, detail, profile, historyExtra); }
+  catch(error){ console.warn('[Grupo Ortiz] La transición canónica quedó guardada; no se pudo actualizar el historial legacy:',error?.message || error); return null; }
+}
 export function assignOperation(reference, technicianId, comment){
   return assignOperationRpc(reference, technicianId, comment);
 }
 export function reassignOperation(reference, technicianId, comment){
   return assignOperationRpc(reference, technicianId, comment);
 }
-export function startOperation(reference, profile){ return updateWithHistory(reference, { estado:'En proceso', fecha_inicio:new Date().toISOString() }, 'Operación iniciada', '', profile); }
+export async function startOperation(reference, profile){ const updated=await startOperationRpc(reference); await appendHistoryBestEffort(reference, 'Operación iniciada', '', profile); return getOperation(updated?.id || updated?.codigo || reference); }
 export function addComment(reference, comment, profile){ return updateWithHistory(reference, {}, 'Comentario agregado', comment, profile, { tipo:'comentario' }); }
 export function addDiagnosis(reference, diagnosis, profile){ return updateWithHistory(reference, { diagnostico:text(diagnosis) }, 'Diagnóstico registrado', diagnosis, profile, { tipo:'diagnostico' }); }
 export async function addEvidence(reference, urls, description, profile){
   const current = normalizeOperation(await getOperation(reference));
-  return updateWithHistory(reference, { fotos_evidencia:[...current.evidenceMedia, ...urls], evidencia_estado:'confirmada', evidencia_archivos_seleccionados:urls.length }, 'Evidencia cargada', description || `${urls.length} archivo(s)`, profile, { tipo:'evidencia', urls });
+  try{
+    return await updateWithHistory(reference, { fotos_evidencia:[...current.evidenceMedia, ...urls], evidencia_estado:'confirmada', evidencia_archivos_seleccionados:urls.length }, 'Evidencia cargada', description || `${urls.length} archivo(s)`, profile, { tipo:'evidencia', urls });
+  }catch(error){
+    // operacion_evidencias ya fue confirmada por /api/r2-upload; este espejo legacy no puede convertir un éxito canónico en falso error.
+    console.warn('[Grupo Ortiz] Evidencia canónica guardada; no se pudo actualizar el espejo legacy fotos_evidencia:',error?.message || error);
+    return getOperation(reference);
+  }
 }
 export async function finishOperation(reference, finalComment, profile){
   const current = normalizeOperation(await getOperation(reference));
   if(current.status !== 'En proceso') throw new Error('Solo se puede finalizar una operación en proceso.');
   if(!current.evidenceMedia.length) throw new Error('La operación necesita al menos una evidencia confirmada para finalizar.');
-  return updateWithHistory(reference, { estado:'Completado', fecha_completado:new Date().toISOString(), comentario_final:text(finalComment), resuelto_por:text(profile?.nombre_completo || profile?.correo) }, 'Operación finalizada', finalComment, profile, { tipo:'finalizacion' });
+  const updated=await completeOperationRpc(reference,finalComment);
+  await appendHistoryBestEffort(reference, 'Operación finalizada', finalComment, profile, { tipo:'finalizacion' });
+  return getOperation(updated?.id || updated?.codigo || reference);
 }
-export async function closeByWhatsApp(reference, { reason, comment, manager, phone }, profile){
+export async function closeByWhatsApp(reference, { reason, comment, manager, phone, channel = 'WhatsApp' }, profile){
   const current = normalizeOperation(await getOperation(reference));
-  if(current.status === 'Completado') throw new Error('La operación ya está completada.');
-  const detail = { motivo:text(reason), comentario:text(comment), encargado:text(manager), telefono:text(phone), usuario:text(profile?.nombre_completo || profile?.correo), fecha:new Date().toISOString(), evidencia_requerida:false };
-  return updateWithHistory(reference, { estado:'Completado', fecha_completado:detail.fecha, cierre_whatsapp:true, cierre_sin_evidencia:true, cierre_whatsapp_detalle:detail, comentario_cierre_whatsapp:detail.comentario }, 'Cierre por WhatsApp', detail.comentario, profile, { tipo:'cierre_whatsapp', ...detail });
+  if(['Completado','Resuelto por soporte remoto'].includes(current.status)) throw new Error('La operación ya está resuelta.');
+  const detail = { motivo:text(reason), comentario:text(comment), encargado:text(manager), telefono:text(phone), canal:text(channel || 'WhatsApp'), usuario:text(profile?.nombre_completo || profile?.correo), fecha:new Date().toISOString(), evidencia_requerida:false };
+  const updated=await resolveRemoteOperationRpc(reference,{channel:detail.canal,comment:detail.comentario});
+  await appendHistoryBestEffort(reference, 'Resuelto por soporte remoto', detail.comentario, profile, { tipo:'soporte_remoto', ...detail });
+  return getOperation(updated?.id || updated?.codigo || reference);
 }
 export { OPERATION_STATUSES, OPERATION_TYPES };
