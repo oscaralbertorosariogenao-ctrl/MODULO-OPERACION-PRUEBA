@@ -1,6 +1,6 @@
 {
-  "version": "2026-08-06-v808.20-reportes-unificados",
-  "name": "v808.20 · Reportes unificados y bandeja operativa",
+  "version": "2026-08-06-v808.21-correcciones-criticas",
+  "name": "v808.21 · Autoría, asignación, notificaciones y R2",
   "released_at": "2026-08-06",
   "html": {
     "index": "index.html",
@@ -8,10 +8,10 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Técnicos y Encargados pueden reportar problemas sin asignarse operaciones",
-    "Los hallazgos técnicos pueden vincularse con la operación de origen",
-    "Nueva bandeja web para asignar y resolver por soporte remoto",
-    "Evidencias operativas registradas en Supabase y almacenadas físicamente en R2",
-    "Prioridad eliminada de las pantallas operativas actualizadas"
+    "Las notificaciones muestran al autor real del evento y no al destinatario",
+    "Asignación móvil conectada a la RPC segura mediante UUID del técnico",
+    "Modales de asignación y notificaciones colocados debajo de la barra superior",
+    "Carga R2 compatible con HEIC, HEIF, AVIF y reintento con archivo original",
+    "Abrir módulo desde una notificación lleva a Gestión de operaciones y al registro correcto"
   ]
 }
