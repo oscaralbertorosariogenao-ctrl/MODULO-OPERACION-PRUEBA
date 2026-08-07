@@ -135,6 +135,19 @@ export async function reportOperation(input = {}){
   return data || {};
 }
 
+
+export async function assignOperationRpc(reference, technicianId, comment = ''){
+  const sb = await getSupabase();
+  const { data, error } = await sb.rpc('rpc_operacion_asignar_v2', {
+    p_operacion:String(reference || '').trim(),
+    p_tecnico_id:String(technicianId || '').trim() || null,
+    p_comentario:String(comment || '').trim() || null
+  });
+  if(error) throw error;
+  const opRef = data?.operacion_id || data?.codigo || reference;
+  return getOperation(opRef);
+}
+
 export async function listOperations({ page = 0, pageSize = PAGE_SIZE, filters = {} } = {}){
   const response = await queryOperationsPage({page,pageSize,filters});
   return {
