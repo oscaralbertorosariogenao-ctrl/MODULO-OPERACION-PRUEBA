@@ -1,5 +1,5 @@
 import { PAGE_SIZE, TABLES } from '../config.js';
-import { getSupabase } from '../supabase-client.js';
+import { getSupabase, getApiAuthHeaders } from '../supabase-client.js';
 
 function errorText(error){
   return [error?.message,error?.details,error?.hint].filter(Boolean).join(' ');
@@ -165,6 +165,20 @@ async function getOperationEvidence(reference){
   return Array.isArray(data) ? data : [];
 }
 
+async function reconcileOperationEvidence(reference){
+  const clean=String(reference || '').trim();
+  if(!clean) return null;
+  const headers={...(await getApiAuthHeaders()),'Content-Type':'application/json'};
+  const response=await fetch('/api/r2-evidence-reconcile',{
+    method:'POST',headers,credentials:'same-origin',cache:'no-store',
+    body:JSON.stringify({operacion:clean})
+  });
+  const raw=await response.text(); let data={};
+  try{data=raw?JSON.parse(raw):{};}catch{data={};}
+  if(!response.ok && response.status!==207) throw new Error(data.message || data.error || `No se pudieron reconciliar evidencias (HTTP ${response.status}).`);
+  return data;
+}
+
 export async function getOperation(reference){
   const sb = await getSupabase();
   let response = await sb.from(TABLES.operations).select('*').eq('id', reference).maybeSingle();
@@ -175,7 +189,16 @@ export async function getOperation(reference){
   // v808.23: el detalle siempre hidrata la relación canónica operacion_evidencias.
   // Los archivos permanecen físicamente en R2; aquí solo recibimos sus metadatos/URL.
   try{
-    const evidence = await getOperationEvidence(response.data.id || response.data.codigo || reference);
+    const evidenceRef=response.data.id || response.data.codigo || reference;
+    let evidence = await getOperationEvidence(evidenceRef);
+    if(!evidence.length && /report|asign/i.test(String(response.data.estado || ''))){
+      try{
+        const repaired=await reconcileOperationEvidence(response.data.codigo || evidenceRef);
+        if(Number(repaired?.registered || 0)>0) evidence=await getOperationEvidence(evidenceRef);
+      }catch(reconcileError){
+        console.warn('[Grupo Ortiz] La operación no tenía metadatos; no se pudo reconciliar R2 automáticamente:',reconcileError);
+      }
+    }
     return { ...response.data, _r2_evidencias:evidence };
   }catch(error){
     console.error('[Grupo Ortiz] No se pudieron cargar las evidencias R2 de la operación:', error);
