@@ -37,11 +37,8 @@
           if(kind==='done') status.value='Completado';
           if(kind==='open') status.value='Pendiente';
         }
-        if(kind==='urgent'){
-          if(typeof loadOperations==='function'){
-            var urgent=(loadOperations()||[]).find(function(op){return op.priority==='Urgente' && op.status!=='Completado';});
-            if(urgent && agency) agency.value=(urgent.agency||'').replace('Agencia ','');
-          }
+        if(kind==='reported'){
+          if(status) status.value='Reportado';
         }
         if(typeof renderOperations==='function') renderOperations();
       }catch(e){ console.warn('lotekaOpsDashFilter',e); }
