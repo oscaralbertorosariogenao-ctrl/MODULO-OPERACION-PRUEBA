@@ -3,7 +3,7 @@ import { getApiAuthHeaders } from '../supabase-client.js';
 import { AppError, ERROR_TYPES } from '../errors.js';
 
 export async function uploadEvidenceFileDetailed(file, operationReference, {
-  description = '', stage = 'SEGUIMIENTO', incidentId = '', source = 'app-movil-v808.20', onProgress = null
+  description = '', stage = 'SEGUIMIENTO', incidentId = '', source = 'app-movil-v808.21', onProgress = null
 } = {}){
   if(!file) throw new AppError('Selecciona una evidencia.', { type:ERROR_TYPES.validation });
   if(!operationReference) throw new AppError('No se pudo identificar el reporte u operación.', { type:ERROR_TYPES.validation });
@@ -21,7 +21,7 @@ export async function uploadEvidenceFileDetailed(file, operationReference, {
   onProgress?.(85);
   const raw = await response.text(); let data = {};
   try{ data = raw ? JSON.parse(raw) : {}; }catch{ data = {}; }
-  if(!response.ok || data.ok === false) throw new AppError(data.message || data.error || 'R2 rechazó la evidencia.', { type:ERROR_TYPES.r2, code:String(response.status) });
+  if(!response.ok || data.ok === false){ const detail=[data.message,data.error].filter(Boolean).join(' · '); throw new AppError(detail || `R2 rechazó la evidencia (HTTP ${response.status}).`, { type:ERROR_TYPES.r2, code:String(response.status) }); }
   const url = data.url || data.publicUrl || data.public_url || data.location;
   if(!url) throw new AppError('R2 recibió el archivo, pero no devolvió una URL pública.', { type:ERROR_TYPES.r2 });
   onProgress?.(100);
