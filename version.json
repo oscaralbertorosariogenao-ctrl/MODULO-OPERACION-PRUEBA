@@ -1,12 +1,14 @@
 {
-  "version": "2026-08-07-v808.24-reconciliacion-evidencias-r2",
-  "name": "v808.24 · Reconciliación automática de evidencias R2",
+  "version": "2026-08-07-v808.25-operaciones-base-estable",
+  "name": "v808.25 · Base estable de Operaciones",
   "released_at": "2026-08-07",
   "changes": [
-    "El backend ya no permite que una carga dentro de una carpeta OP-XXXX quede silenciosamente sin registro en operacion_evidencias",
-    "Compatibilidad con clientes antiguos que enviaban folder=OP-XXXX sin etapa: el backend identifica la operación e infiere la etapa segura",
-    "Nuevo endpoint autenticado para reconciliar objetos R2 huérfanos de reportes existentes",
-    "App móvil y detalle web reparan automáticamente evidencias iniciales faltantes al abrir un reporte",
-    "Los archivos físicos continúan exclusivamente en Cloudflare R2; Supabase solo conserva la relación y metadatos"
+    "Carga de evidencias de Operaciones: R2 y operacion_evidencias forman una sola transacción lógica con rollback R2 si falla Supabase",
+    "Endpoint autenticado de reconciliación para objetos R2 huérfanos por código de operación",
+    "Asignación de técnicos basada primero en permisos reales de ejecución y no únicamente en el texto del puesto",
+    "Inicio y finalización de operaciones pasan por RPC con UUID; completar exige evidencia canónica no-REPORTE",
+    "Autoría de notificaciones separa actor autenticado de destinatario",
+    "Gestor global de capas usa offset real del header y una escala de z-index coherente",
+    "PWA, Service Worker y frontend comparten la misma versión de despliegue"
   ]
 }
