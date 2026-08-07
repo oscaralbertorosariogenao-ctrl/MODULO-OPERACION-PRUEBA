@@ -3,6 +3,7 @@
   'use strict';
 
   const OPS_TABLE = 'reportes_operaciones';
+  const EVIDENCE_TABLE = 'operacion_evidencias';
   const SUPABASE_URL = 'https://tnymrjxdhzdmpcbilftj.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRueW1yanhkaHpkbXBjYmlsZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjEwOTksImV4cCI6MjA5MzgzNzA5OX0.YXG9juChbJUUdsdy01Qkoh9X0-MijewD5aQbKnG9Itk';
   let opsClient = null;
@@ -22,6 +23,56 @@
   }
   function txt(v){ return String(v == null ? '' : v).trim(); }
   function arr(v){ return Array.isArray(v) ? v.filter(Boolean) : (v ? [v].filter(Boolean) : []); }
+  function uniqueUrls(values){
+    const seen = new Set();
+    return arr(values).map(function(item){
+      if(typeof item === 'string') return txt(item);
+      if(item && typeof item === 'object') return txt(item.url_r2 || item.url || item.publicUrl || item.public_url);
+      return '';
+    }).filter(function(url){
+      if(!url || seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    });
+  }
+  function evidenceRowsForStage(rows, stage){
+    return arr(rows).filter(function(row){ return txt(row && row.etapa).toUpperCase() === stage; });
+  }
+  function attachR2Evidence(op, rows){
+    rows = arr(rows).filter(function(row){ return row && !row.eliminado_en && txt(row.url_r2); });
+    const reportUrls = uniqueUrls(evidenceRowsForStage(rows, 'REPORTE'));
+    const resultUrls = uniqueUrls(rows.filter(function(row){ return txt(row.etapa).toUpperCase() !== 'REPORTE'; }));
+    op.images = uniqueUrls([].concat(arr(op.images), reportUrls));
+    op.resultImages = uniqueUrls([].concat(arr(op.resultImages), resultUrls));
+    op.r2Evidence = rows.slice();
+    op.evidenciasR2 = rows.slice();
+    return op;
+  }
+  async function fetchEvidenceByOperationIds(ids){
+    const sb = client();
+    const map = new Map();
+    const cleanIds = Array.from(new Set(arr(ids).map(txt).filter(Boolean)));
+    if(!sb || !cleanIds.length) return map;
+    for(let i=0;i<cleanIds.length;i+=200){
+      const chunk = cleanIds.slice(i,i+200);
+      const response = await sb.from(EVIDENCE_TABLE)
+        .select('id,operacion_id,incidencia_id,usuario_id,etapa,storage_provider,bucket,object_key,url_r2,nombre_archivo,mime_type,tamano_bytes,comentario,metadata,creado_en,eliminado_en')
+        .in('operacion_id', chunk)
+        .is('eliminado_en', null)
+        .order('creado_en', { ascending:true });
+      if(response.error){
+        console.warn('[LOTEKA] No se pudieron hidratar evidencias R2:', response.error);
+        continue;
+      }
+      (response.data || []).forEach(function(row){
+        const id = txt(row.operacion_id);
+        if(!id) return;
+        if(!map.has(id)) map.set(id, []);
+        map.get(id).push(row);
+      });
+    }
+    return map;
+  }
   function nowIso(){ return new Date().toISOString(); }
   function safeJsonClone(v){ try{ return JSON.parse(JSON.stringify(v)); }catch(e){ return v; } }
   function toast(title, body, tone){
@@ -528,9 +579,13 @@
     opts = opts || {};
     try{
       const rows = await fetchAllOps();
+      const evidenceByOperation = await fetchEvidenceByOperationIds(rows.map(function(row){ return row.id; }));
       const local = (typeof loadOperations === 'function') ? loadOperations() : [];
       const existingById = new Map(local.map(function(op){ return [txt(op.id), op]; }));
-      const merged = rows.map(function(row, index){ return rowToOp(row, index, existingById.get(txt(row.id))); });
+      const merged = rows.map(function(row, index){
+        const op = rowToOp(row, index, existingById.get(txt(row.id)));
+        return attachR2Evidence(op, evidenceByOperation.get(txt(row.id)) || []);
+      });
       if(typeof saveOperations === 'function') saveOperations(merged);
       try{ if(typeof evaluateOperationNotifications === 'function') evaluateOperationNotifications(merged); }catch(e){}
       refreshOpsUI();
@@ -580,7 +635,7 @@
     const sb = client();
     if(!sb || opsRealtimeChannel) return;
     try{
-      opsRealtimeChannel = sb.channel('loteka-operaciones-reportes-operaciones-v300')
+      opsRealtimeChannel = sb.channel('loteka-operaciones-reportes-operaciones-v80822')
         .on('postgres_changes', { event: '*', schema: 'public', table: OPS_TABLE }, function(payload){
           const row = payload.new || payload.old || {};
           if(payload.eventType === 'INSERT') toast('Nuevo reporte recibido', (row.codigo || row.id || 'Operación') + ' · ' + (row.agencia || 'Sin agencia'), 'success');
@@ -592,7 +647,15 @@
             setTimeout(function(){ opsRefreshBusy = false; window.syncOperationsFromBackendCero({ silent:true, skipSuccessToast:true }); }, 1200);
           }
         })
-        .subscribe(function(status){ console.info('[LOTEKA] Realtime Operaciones Supabase:', status); });
+        .on('postgres_changes', { event: '*', schema: 'public', table: EVIDENCE_TABLE }, function(){
+          if(opsRefreshBusy) return;
+          opsRefreshBusy = true;
+          setTimeout(function(){
+            opsRefreshBusy = false;
+            window.syncOperationsFromBackendCero({ silent:true, skipSuccessToast:true });
+          }, 350);
+        })
+        .subscribe(function(status){ console.info('[LOTEKA] Realtime Operaciones/Evidencias Supabase:', status); });
     }catch(error){
       console.error('[LOTEKA] No se pudo activar realtime de operaciones:', error);
     }
