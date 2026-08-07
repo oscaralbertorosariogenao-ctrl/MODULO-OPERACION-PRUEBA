@@ -227,10 +227,10 @@
           if(rep) return rep;
         }
       }
-      var fallback = clean(n && n.usuario_nombre);
-      if(!fallback || /^sistema/i.test(fallback)) return 'Sistema';
-      return fallback;
-    }catch(e){ return clean(n && n.usuario_nombre) || 'Sistema'; }
+      // usuario_nombre es el destinatario, no el autor. Si una fila histórica carece de actor,
+      // es más seguro declararlo que atribuir el evento a la persona equivocada.
+      return 'Actor no identificado';
+    }catch(e){ return 'Actor no identificado'; }
   }
   function renderPanel(){
     ensureDOM(); setBadge(); var list=qs('#ltkNotifList'); if(!list) return; var items=filteredItems();
