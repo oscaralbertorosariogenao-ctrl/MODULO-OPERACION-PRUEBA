@@ -481,7 +481,6 @@ function levFmtDate(v){ if(!v) return '-'; const d = new Date(v.length===10 ? `$
 function levFmtDateTime(v){ if(!v) return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? v : d.toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
 function levCode(index){ return `LEV-${new Date().getFullYear()}-${String(index).padStart(4,'0')}`; }
 function levBadgeClass(value){ const s = levSlug(value); if(s.includes('complet')) return 'green'; if(s.includes('proceso')) return 'blue'; if(s.includes('aprob')) return 'gold'; if(s.includes('revis')) return 'blue'; if(s.includes('pend')) return 'gray'; return 'gray'; }
-function levPriorityClass(value){ const s = levSlug(value); if(s.includes('urg')) return 'red'; if(s.includes('alta')) return 'gold'; if(s.includes('media')) return 'blue'; return 'gray'; }
 function levStateClass(value){ const s = levSlug(value); if(s.includes('buen')) return 'good'; if(s.includes('acept')) return 'ok'; if(s.includes('reg')) return 'warn'; if(s.includes('critic') || s.includes('malo') || s.includes('dañ')) return 'bad'; return 'ok'; }
 function levStateOptions(options, selected=''){ return options.map(option => `<option value="${option}" ${String(selected||'')===option ? 'selected' : ''}>${option}</option>`).join(''); }
 function levSelect(id, options){ const select = document.getElementById(id); if(select) select.innerHTML = levStateOptions(options, select.value || select.dataset.default || ''); }
@@ -531,7 +530,7 @@ function levDefaultRecords(){
   return [
     {
       id:'lev-demo-1019', code:'LEV-2026-0001', category:'Arqueo de agencia', type:'Chequeo técnico integral', agency:'1019', group:'42', technician:'Luis Regalado', responsible:'Luis Regalado', visitDate:'2026-04-20', submittedAt:'2026-04-20T15:38:00',
-      workflowStatus:'Revisado', overallStatus:'Bueno con observaciones menores', priority:'Media', findingsCount:2, evidenceCount:5,
+      workflowStatus:'Revisado', overallStatus:'Bueno con observaciones menores', findingsCount:2, evidenceCount:5,
       executiveSummary:'La agencia 1019 fue inspeccionada satisfactoriamente. La estructura general, el sistema eléctrico y los equipos principales presentan condiciones funcionales. Se identifican puntos aceptables que conviene programar para seguimiento preventivo, sin criticidad inmediata.',
       findings:'Se detectan observaciones menores en puerta enrollable/elétrica, luces y taburete. El resto de los componentes evaluados se mantiene en buen estado.',
       recommendations:'Mantener seguimiento preventivo, reforzar revisión visual de iluminación y confirmar futura intervención estética menor si la agencia presenta desgaste adicional.',
@@ -584,7 +583,7 @@ function levDefaultRecords(){
     },
     {
       id:'lev-demo-1268', code:'LEV-2026-0002', category:'Reparación y estética de cables', type:'Inspección de cableado y presentación técnica', agency:'1268', group:'44', technician:'Técnico 1', responsible:'Técnico 1', visitDate:levToday(), submittedAt:now,
-      workflowStatus:'Aprobado para acción', overallStatus:'Regular con intervención requerida', priority:'Alta', findingsCount:4, evidenceCount:4,
+      workflowStatus:'Aprobado para acción', overallStatus:'Regular con intervención requerida', findingsCount:4, evidenceCount:4,
       executiveSummary:'La visita detectó exposición visual de cables en counter y zona de energía. No se observa riesgo crítico inmediato, pero sí una presentación técnica deficiente que debe corregirse para mejorar seguridad visual y orden operativo.',
       findings:'Cableado visible, canaletas incompletas, fuentes con mala presentación y necesidad de organizar rutas.',
       recommendations:'Ejecutar corrección estética completa, ordenar trayectorias, asegurar canaletas y documentar evidencia final.',
@@ -630,7 +629,6 @@ function levNormalizeItem(item, index){
     submittedAt: item.submittedAt || item.createdAt || levNow(),
     workflowStatus: item.workflowStatus || item.status || 'Pendiente de revisión',
     overallStatus: item.overallStatus || 'Sin evaluación',
-    priority: item.priority || 'Media',
     findingsCount: Number(item.findingsCount ?? 0) || 0,
     evidenceCount: Number(item.evidenceCount ?? 0) || 0,
     executiveSummary: item.executiveSummary || item.findings || 'Sin resumen ejecutivo registrado.',
@@ -684,17 +682,11 @@ function levTopBy(key){
   const first = Object.entries(counts).sort((a,b) => b[1] - a[1])[0];
   return { key: first ? first[0] : '-', total: first ? first[1] : 0 };
 }
-function levGetHighestOpenPriority(){
-  const order = { 'Urgente':4, 'Alta':3, 'Media':2, 'Baja':1 };
-  const open = levRecords.filter(item => !levSlug(item.workflowStatus).includes('complet') && !levSlug(item.workflowStatus).includes('archiv'));
-  if(!open.length) return '-';
-  return open.sort((a,b) => (order[b.priority]||0) - (order[a.priority]||0))[0].priority;
-}
+
 function levApplyFilters(){
   const search = levSlug(document.getElementById('levFilterSearch')?.value || '');
   const category = levSafe(document.getElementById('levFilterCategory')?.value || '');
   const status = levSafe(document.getElementById('levFilterStatus')?.value || '');
-  const priority = levSafe(document.getElementById('levFilterPriority')?.value || '');
   const group = levSafe(document.getElementById('levFilterGroup')?.value || '');
   const agency = levSlug(document.getElementById('levFilterAgency')?.value || '');
   const tech = levSlug(document.getElementById('levFilterOwner')?.value || '');
@@ -703,7 +695,6 @@ function levApplyFilters(){
     if(search && !blob.includes(search)) return false;
     if(category && item.category !== category) return false;
     if(status && item.workflowStatus !== status) return false;
-    if(priority && item.priority !== priority) return false;
     if(group && String(item.group || '') !== group) return false;
     if(agency && !`${item.agency} ${item.group}`.toLowerCase().includes(agency)) return false;
     if(tech && !`${item.technician} ${item.responsible}`.toLowerCase().includes(tech)) return false;
@@ -726,7 +717,6 @@ function levRenderStats(){
   setText('levHeroTech', latestTech ? latestTech.technician || '-' : '-');
   setText('levHeroAgency', levTopBy('agency').key);
   setText('levHeroGroup', levTopBy('group').key);
-  setText('levHeroPriority', levGetHighestOpenPriority());
   setText('levHeroClosed', closedLast ? closedLast.code : '-');
 }
 function levRenderCategoryBars(){
@@ -744,8 +734,8 @@ function levRenderAlerts(){
   const alertList = document.getElementById('levAlertList');
   const agendaList = document.getElementById('levAgendaList');
   if(alertList){
-    const alerts = levRecords.filter(item => item.priority === 'Urgente' || item.priority === 'Alta').slice(0,4);
-    alertList.innerHTML = alerts.length ? alerts.map(item => `<div class="lev-mini-item"><div><strong>${item.code} · Agencia ${item.agency || '-'}</strong><span>${item.executiveSummary}</span></div><b>${item.priority}</b></div>`).join('') : '<div class="lev-empty">No hay alertas prioritarias activas.</div>';
+    const alerts = levRecords.filter(item => !levSlug(item.workflowStatus).includes('complet') && !levSlug(item.workflowStatus).includes('archiv')).slice(0,4);
+    alertList.innerHTML = alerts.length ? alerts.map(item => `<div class="lev-mini-item"><div><strong>${item.code} · Agencia ${item.agency || '-'}</strong><span>${item.executiveSummary}</span></div><b>${item.workflowStatus || '-'}</b></div>`).join('') : '<div class="lev-empty">No hay expedientes abiertos.</div>';
   }
   if(agendaList){
     const agenda = levRecords.filter(item => !levSlug(item.workflowStatus).includes('complet') && !levSlug(item.workflowStatus).includes('archiv')).sort((a,b)=> new Date(a.visitDate) - new Date(b.visitDate)).slice(0,4);
@@ -769,7 +759,6 @@ function levRenderTable(){
       <td><strong>${item.agency || '-'}</strong><br><span class="lev-muted">Grupo ${item.group || '-'}</span></td>
       <td>${item.technician || '-'}</td>
       <td><span class="lev-chip ${levBadgeClass(item.workflowStatus)}">${item.workflowStatus}</span><br><span class="lev-muted">${item.overallStatus}</span></td>
-      <td><span class="lev-chip ${levPriorityClass(item.priority)}">${item.priority}</span></td>
       <td><strong>${item.findingsCount}</strong><br><span class="lev-muted">${item.evidenceCount} evidencias</span></td>
       <td>
         <div class="lev-actions" style="justify-content:flex-start;">
@@ -791,7 +780,6 @@ function levResetForm(){
   levSetSelectValue('levCategory', 'Arqueo de agencia');
   levSetValue('levTitle');
   levSetValue('levResponsible');
-  levSetSelectValue('levPriority', 'Media');
   levSetSelectValue('levStatus', 'Pendiente de revisión');
   levSetValue('levOverallStatus', 'Bueno');
   levSetValue('levFindings');
@@ -835,7 +823,6 @@ function levSyncEditSummaryFromBase(){
   levSetSelectValue('levEditCategory', document.getElementById('levCategory')?.value || 'Arqueo de agencia');
   levSetSelectValue('levEditStatus', document.getElementById('levStatus')?.value || 'Pendiente de revisión');
   levSetValue('levEditOverallStatus', document.getElementById('levOverallStatus')?.value || '');
-  levSetSelectValue('levEditPriority', document.getElementById('levPriority')?.value || 'Media');
   levSetValue('levEditSummary', document.getElementById('levFindings')?.value || '');
 }
 function levSyncBaseFromEditSummary(){
@@ -844,7 +831,6 @@ function levSyncBaseFromEditSummary(){
   levSetSelectValue('levCategory', document.getElementById('levEditCategory')?.value || 'Arqueo de agencia');
   levSetSelectValue('levStatus', document.getElementById('levEditStatus')?.value || 'Pendiente de revisión');
   levSetValue('levOverallStatus', document.getElementById('levEditOverallStatus')?.value || '');
-  levSetSelectValue('levPriority', document.getElementById('levEditPriority')?.value || 'Media');
   levSetValue('levFindings', document.getElementById('levEditSummary')?.value || '');
 }
 function levOpenCreate(){ levResetForm(); levToggleEditLayout(false); levOpenModal(); }
@@ -859,7 +845,6 @@ function levEdit(id){
   levSetSelectValue('levCategory', item.category || 'Otro');
   levSetValue('levTitle', item.type || '');
   levSetValue('levResponsible', item.technician || item.responsible || '');
-  levSetSelectValue('levPriority', item.priority || 'Media');
   levSetSelectValue('levStatus', item.workflowStatus || 'Pendiente de revisión');
   levSetValue('levOverallStatus', item.overallStatus || '');
   levSetValue('levFindings', item.executiveSummary || '');
@@ -904,7 +889,6 @@ function levSaveForm(ev){
     submittedAt: base.submittedAt || levNow(),
     workflowStatus: document.getElementById('levStatus').value,
     overallStatus: document.getElementById('levOverallStatus').value || levEstimateOverall(structure, electrical, equipment),
-    priority: document.getElementById('levPriority').value,
     findingsCount: autoFindings,
     evidenceCount: gallery.filter(item => item.url).length,
     executiveSummary: document.getElementById('levFindings').value,
@@ -967,7 +951,7 @@ function levOpenDetail(id){
         <div class="lev-card"><div class="label">Tipo de levantamiento</div><div class="value" style="font-size:20px;">${item.type}</div><div class="sub">Categoría: ${item.category}</div></div>
         <div class="lev-card"><div class="label">Estado de flujo</div><div class="value" style="font-size:20px;">${item.workflowStatus}</div><div class="sub">Lectura operacional del expediente</div></div>
         <div class="lev-card"><div class="label">Estado general</div><div class="value" style="font-size:20px;">${item.overallStatus}</div><div class="sub">Resultado empresarial del formulario</div></div>
-        <div class="lev-card"><div class="label">Prioridad sugerida</div><div class="value" style="font-size:20px;">${item.priority}</div><div class="sub">${item.findingsCount} hallazgos · ${item.evidenceCount} evidencias</div></div>
+        <div class="lev-card"><div class="label">Hallazgos y evidencias</div><div class="value" style="font-size:20px;">${item.findingsCount} / ${item.evidenceCount}</div><div class="sub">Hallazgos documentados / evidencias registradas</div></div>
       </div>
 
       <div class="lev-exec-box">
@@ -1865,7 +1849,7 @@ function levInitFormControls(){
 }
 function levInit(){
   levLoad(); levPopulateCategoryFilter(); levPopulateGroupFilter(); levFillDatalists(); levInitFormControls();
-  ['levFilterSearch','levFilterCategory','levFilterStatus','levFilterPriority','levFilterGroup','levFilterAgency','levFilterOwner'].forEach(id => {
+  ['levFilterSearch','levFilterCategory','levFilterStatus','levFilterGroup','levFilterAgency','levFilterOwner'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', levRender);
     document.getElementById(id)?.addEventListener('change', levRender);
   });
