@@ -51,9 +51,28 @@
   async function fetchR2Evidence(reference){
     var client=window.lotekaSupabase||window.supabaseClient||window.__supabaseClient||null;
     if(!client||typeof client.rpc!=='function') return [];
-    var result=await client.rpc('rpc_operacion_evidencias_v2',{p_operacion:String(reference||'').trim()});
+    var clean=String(reference||'').trim();
+    var result=await client.rpc('rpc_operacion_evidencias_v2',{p_operacion:clean});
     if(result.error) throw result.error;
-    return Array.isArray(result.data)?result.data:[];
+    var rows=Array.isArray(result.data)?result.data:[];
+    if(rows.length) return rows;
+
+    // v808.24: si R2 tiene archivos creados por clientes antiguos pero faltan
+    // metadatos en operacion_evidencias, el backend los reconcilia una sola vez.
+    try{
+      var headers=typeof window.lotekaGetApiAuthHeaders==='function'?await window.lotekaGetApiAuthHeaders():{};
+      headers=Object.assign({},headers,{'Content-Type':'application/json'});
+      var recovery=await fetch('/api/r2-evidence-reconcile',{method:'POST',headers:headers,credentials:'same-origin',cache:'no-store',body:JSON.stringify({operacion:clean})});
+      var payload=await recovery.json().catch(function(){return {};});
+      if(recovery.ok && Number(payload.registered||0)>0){
+        result=await client.rpc('rpc_operacion_evidencias_v2',{p_operacion:clean});
+        if(result.error) throw result.error;
+        rows=Array.isArray(result.data)?result.data:[];
+      }
+    }catch(recoveryError){
+      console.warn('[Grupo Ortiz] No se pudieron reconciliar evidencias huérfanas de R2:',recoveryError);
+    }
+    return rows;
   }
   function attachR2EvidenceToDetail(op,rows){
     rows=(Array.isArray(rows)?rows:[]).filter(function(row){return row&&row.url_r2;});
