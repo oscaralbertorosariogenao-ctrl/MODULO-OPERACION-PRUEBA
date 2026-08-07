@@ -156,12 +156,31 @@ export async function listOperations({ page = 0, pageSize = PAGE_SIZE, filters =
   };
 }
 
+async function getOperationEvidence(reference){
+  const sb = await getSupabase();
+  const { data, error } = await sb.rpc('rpc_operacion_evidencias_v2', {
+    p_operacion:String(reference || '').trim()
+  });
+  if(error) throw error;
+  return Array.isArray(data) ? data : [];
+}
+
 export async function getOperation(reference){
   const sb = await getSupabase();
   let response = await sb.from(TABLES.operations).select('*').eq('id', reference).maybeSingle();
   if(response.error || !response.data) response = await sb.from(TABLES.operations).select('*').eq('codigo', reference).maybeSingle();
   if(response.error) throw response.error;
-  return response.data;
+  if(!response.data) return response.data;
+
+  // v808.23: el detalle siempre hidrata la relación canónica operacion_evidencias.
+  // Los archivos permanecen físicamente en R2; aquí solo recibimos sus metadatos/URL.
+  try{
+    const evidence = await getOperationEvidence(response.data.id || response.data.codigo || reference);
+    return { ...response.data, _r2_evidencias:evidence };
+  }catch(error){
+    console.error('[Grupo Ortiz] No se pudieron cargar las evidencias R2 de la operación:', error);
+    return { ...response.data, _r2_evidencias:[], _r2_evidencias_error:error?.message || String(error) };
+  }
 }
 
 async function listWithOrderFallback(limit){
