@@ -686,7 +686,6 @@
         element: finding.elemento_etiqueta,
         condition: finding.condicion_reportada,
         description: finding.descripcion,
-        priority: finding.prioridad,
         photos: evidenceForFinding(finding).map((photo) => ({ url: photo.r2_url, label: photo.etiqueta, name: photo.nombre_archivo }))
       };
     });
