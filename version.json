@@ -1,18 +1,12 @@
 {
-  "version": "2026-08-07-v808.23-evidencias-layout-global",
-  "name": "v808.23 · Evidencias R2 end-to-end + layout global",
+  "version": "2026-08-07-v808.24-reconciliacion-evidencias-r2",
+  "name": "v808.24 · Reconciliación automática de evidencias R2",
   "released_at": "2026-08-07",
-  "html": {
-    "index": "index.html",
-    "app": "app.html",
-    "pantalla": "pantalla.html"
-  },
   "changes": [
-    "La app móvil hidrata las evidencias de cada operación desde la relación canónica operacion_evidencias",
-    "El detalle web consulta las evidencias R2 de la operación al abrirse, sin depender de caché local",
-    "Nueva RPC segura rpc_operacion_evidencias_v2 para lectura autorizada de metadatos R2",
-    "La asignación de técnicos usa rol_id y puesto_id reales y deja de depender de relaciones PostgREST frágiles",
-    "Gestor global de capas mide la barra superior y evita que modales, notificaciones y avisos queden debajo",
-    "Las fotografías y videos continúan almacenándose físicamente solo en Cloudflare R2"
+    "El backend ya no permite que una carga dentro de una carpeta OP-XXXX quede silenciosamente sin registro en operacion_evidencias",
+    "Compatibilidad con clientes antiguos que enviaban folder=OP-XXXX sin etapa: el backend identifica la operación e infiere la etapa segura",
+    "Nuevo endpoint autenticado para reconciliar objetos R2 huérfanos de reportes existentes",
+    "App móvil y detalle web reparan automáticamente evidencias iniciales faltantes al abrir un reporte",
+    "Los archivos físicos continúan exclusivamente en Cloudflare R2; Supabase solo conserva la relación y metadatos"
   ]
 }
