@@ -1,6 +1,6 @@
 {
-  "version": "2026-08-07-v808.22-evidencias-web-r2",
-  "name": "v808.22 · Evidencias R2 visibles en Operaciones",
+  "version": "2026-08-07-v808.23-evidencias-layout-global",
+  "name": "v808.23 · Evidencias R2 end-to-end + layout global",
   "released_at": "2026-08-07",
   "html": {
     "index": "index.html",
@@ -8,11 +8,11 @@
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Gestión de Operaciones hidrata las evidencias desde operacion_evidencias",
-    "Las evidencias de REPORTE se muestran como evidencia inicial",
-    "Las demás etapas se muestran como evidencia de seguimiento o resultado",
-    "Se conservan y combinan las evidencias históricas sin duplicarlas",
-    "El detalle de Operaciones deja de mostrar Prioridad",
-    "Realtime refresca el expediente cuando se registra una nueva evidencia R2"
+    "La app móvil hidrata las evidencias de cada operación desde la relación canónica operacion_evidencias",
+    "El detalle web consulta las evidencias R2 de la operación al abrirse, sin depender de caché local",
+    "Nueva RPC segura rpc_operacion_evidencias_v2 para lectura autorizada de metadatos R2",
+    "La asignación de técnicos usa rol_id y puesto_id reales y deja de depender de relaciones PostgREST frágiles",
+    "Gestor global de capas mide la barra superior y evita que modales, notificaciones y avisos queden debajo",
+    "Las fotografías y videos continúan almacenándose físicamente solo en Cloudflare R2"
   ]
 }
