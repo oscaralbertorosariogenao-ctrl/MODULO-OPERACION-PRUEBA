@@ -148,6 +148,34 @@ export async function assignOperationRpc(reference, technicianId, comment = ''){
   return getOperation(opRef);
 }
 
+export async function startOperationRpc(reference){
+  const sb = await getSupabase();
+  const { data, error } = await sb.rpc('rpc_operacion_iniciar_v2', { p_operacion:String(reference || '').trim() });
+  if(error) throw error;
+  return getOperation(data?.id || data?.codigo || reference);
+}
+
+export async function completeOperationRpc(reference, comment = ''){
+  const sb = await getSupabase();
+  const { data, error } = await sb.rpc('rpc_operacion_completar_v2', {
+    p_operacion:String(reference || '').trim(),
+    p_comentario:String(comment || '').trim() || null
+  });
+  if(error) throw error;
+  return getOperation(data?.id || data?.codigo || reference);
+}
+
+export async function resolveRemoteOperationRpc(reference, { channel = 'WhatsApp', comment = '' } = {}){
+  const sb = await getSupabase();
+  const { data, error } = await sb.rpc('rpc_operacion_resolver_soporte_remoto_v2', {
+    p_operacion:String(reference || '').trim(),
+    p_canal:String(channel || 'WhatsApp').trim() || 'WhatsApp',
+    p_comentario:String(comment || '').trim() || null
+  });
+  if(error) throw error;
+  return getOperation(data?.operacion_id || data?.id || data?.codigo || reference);
+}
+
 export async function listOperations({ page = 0, pageSize = PAGE_SIZE, filters = {} } = {}){
   const response = await queryOperationsPage({page,pageSize,filters});
   return {
@@ -186,12 +214,12 @@ export async function getOperation(reference){
   if(response.error) throw response.error;
   if(!response.data) return response.data;
 
-  // v808.23: el detalle siempre hidrata la relación canónica operacion_evidencias.
+  // v808.25: el detalle siempre hidrata la relación canónica operacion_evidencias.
   // Los archivos permanecen físicamente en R2; aquí solo recibimos sus metadatos/URL.
   try{
     const evidenceRef=response.data.id || response.data.codigo || reference;
     let evidence = await getOperationEvidence(evidenceRef);
-    if(!evidence.length && /report|asign/i.test(String(response.data.estado || ''))){
+    if(!evidence.length){
       try{
         const repaired=await reconcileOperationEvidence(response.data.codigo || evidenceRef);
         if(Number(repaired?.registered || 0)>0) evidence=await getOperationEvidence(evidenceRef);
