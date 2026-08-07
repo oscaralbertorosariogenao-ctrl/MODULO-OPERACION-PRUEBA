@@ -1,6 +1,6 @@
 (function(global){
   'use strict';
-  const VERSION='v808.23';
+  const VERSION='v808.25';
   const STATES=['Reportado','Asignado','En proceso','En incidencia','Completado','Resuelto por soporte remoto'];
   let busy=false;
   let techCache=null;
@@ -72,18 +72,12 @@
     const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=String(val);};
     set('statTotal',all.length);set('statPendiente',all.filter(s=>s==='Reportado').length);set('statAsignada',all.filter(s=>s==='Asignado').length);set('statProceso',all.filter(s=>s==='En proceso').length);set('statCompletado',all.filter(s=>s==='Completado'||s==='Resuelto por soporte remoto').length);
   }
-  function hideLegacyPriority(){
-    const ids=['operationPriority','filterPriority','operationPriorityFilter'];
-    ids.forEach(id=>{const el=document.getElementById(id);const wrap=el?.closest('.field,.filter-group,.form-group,.ops-filter');if(wrap)wrap.style.display='none';else if(el)el.style.display='none';});
-    document.querySelectorAll('#operationsView label,#createModalBackdrop label').forEach(label=>{if(/prioridad/i.test(label.textContent||''))label.style.display='none';});
-  }
   function setupDom(){
     const title=document.querySelector('#operationsView .page-title, #operationsView h2'); if(title && /operaciones/i.test(title.textContent)) title.textContent='Reportes y operaciones';
     const open=document.getElementById('openCreateModalBtn'); if(open) open.innerHTML='<i class="fas fa-plus"></i> Reportar problema';
     const modalTitle=document.querySelector('#createModalBackdrop .modal-header h3'); if(modalTitle)modalTitle.textContent='Reportar problema';
     const save=document.getElementById('saveOperationBtn'); if(save)save.textContent='Enviar reporte';
-    ['operationStatus','operationTechnician','operationPriority'].forEach(id=>{const el=document.getElementById(id); const field=el?.closest('.field,.form-group'); if(field)field.style.display='none';});
-    hideLegacyPriority();
+    ['operationStatus','operationTechnician'].forEach(id=>{const el=document.getElementById(id); const field=el?.closest('.field,.form-group'); if(field)field.style.display='none';});
     const state=document.getElementById('operationStatus'); if(state){state.innerHTML='<option value="Reportado">Reportado</option>';state.value='Reportado';}
     const filter=document.getElementById('filterStatus'); if(filter){const current=filter.value;filter.innerHTML='<option value="">Todos los estados</option>'+STATES.map(s=>`<option value="${s}">${s}</option>`).join('');if(STATES.includes(current))filter.value=current;}
     const table=document.querySelector('#operationsTableBody')?.closest('table'); const header=table?.querySelector('thead tr');
@@ -114,7 +108,7 @@
     const results=[];
     for(const file of files){const form=new FormData();form.append('file',file,file.name);form.append('operacion_id',reference);form.append('codigo',reference);form.append('etapa',stage);form.append('origen','web-v808.20');if(description)form.append('descripcion',description);
       const headers=typeof global.lotekaGetApiAuthHeaders==='function'?await global.lotekaGetApiAuthHeaders():{};
-      const response=await fetch('/api/r2-upload',{method:'POST',headers,body:form,credentials:'same-origin',cache:'no-store'});const json=await response.json().catch(()=>({}));if(!response.ok||!json.ok)throw new Error(json.message||json.error||'R2 rechazó la evidencia.');results.push(json);}
+      const response=await fetch('/api/r2-upload',{method:'POST',headers,body:form,credentials:'same-origin',cache:'no-store'});const json=await response.json().catch(()=>({}));if(!response.ok||!json.ok)throw new Error(json.message||json.error||'R2 rechazó la evidencia.');if(!json.evidencia)throw new Error('La evidencia llegó a R2, pero Supabase no confirmó operacion_evidencias.');results.push(json);}
     return results;
   }
   async function createReport(event){
@@ -137,23 +131,28 @@
     if(techCache)return techCache;
     const client=sb();if(!client)throw new Error('Supabase no disponible.');
     const profilesResult=await client.from('perfiles')
-      .select('id,nombre_completo,nombre,usuario_login,activo,rol_id,puesto_id')
+      .select('id,nombre_completo,nombre,usuario_login,activo,rol_id,puesto_id,departamento')
       .eq('activo',true)
       .order('nombre_completo');
     if(profilesResult.error)throw profilesResult.error;
     const profiles=profilesResult.data||[];
     const roleIds=[...new Set(profiles.map(p=>p.rol_id).filter(Boolean))];
     const positionIds=[...new Set(profiles.map(p=>p.puesto_id).filter(Boolean))];
-    const [rolesResult,positionsResult]=await Promise.all([
+    const [rolesResult,positionsResult,permissionsResult]=await Promise.all([
       roleIds.length?client.from('roles').select('id,nombre').in('id',roleIds):Promise.resolve({data:[],error:null}),
-      positionIds.length?client.from('puestos').select('id,nombre').in('id',positionIds):Promise.resolve({data:[],error:null})
+      positionIds.length?client.from('puestos').select('id,nombre').in('id',positionIds):Promise.resolve({data:[],error:null}),
+      roleIds.length?client.from('roles_permisos').select('rol_id,permisos(codigo)').in('rol_id',roleIds):Promise.resolve({data:[],error:null})
     ]);
-    if(rolesResult.error)throw rolesResult.error;
-    if(positionsResult.error)throw positionsResult.error;
-    const roleMap=new Map((rolesResult.data||[]).map(row=>[txt(row.id),txt(row.nombre)]));
-    const positionMap=new Map((positionsResult.data||[]).map(row=>[txt(row.id),txt(row.nombre)]));
-    techCache=profiles.filter(p=>/tecnic/i.test(`${roleMap.get(txt(p.rol_id))||''} ${positionMap.get(txt(p.puesto_id))||''}`))
-      .map(p=>({id:p.id,name:p.nombre_completo||p.nombre||p.usuario_login||'Responsable'}));
+    const roleMap=new Map((rolesResult.error?[]:(rolesResult.data||[])).map(row=>[txt(row.id),txt(row.nombre)]));
+    const positionMap=new Map((positionsResult.error?[]:(positionsResult.data||[])).map(row=>[txt(row.id),txt(row.nombre)]));
+    const executionRoles=new Set();
+    if(!permissionsResult.error){
+      (permissionsResult.data||[]).forEach(row=>{const code=txt(row?.permisos?.codigo);if(['iniciar_operacion','subir_evidencia_operacion','cerrar_operacion'].includes(code))executionRoles.add(txt(row.rol_id));});
+    }
+    const technicalText=p=>`${roleMap.get(txt(p.rol_id))||''} ${positionMap.get(txt(p.puesto_id))||''} ${txt(p.departamento)}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    let assignable=executionRoles.size?profiles.filter(p=>executionRoles.has(txt(p.rol_id))):[];
+    if(!assignable.length)assignable=profiles.filter(p=>/tecnic|soporte|mantenimiento|instalador|auxiliar.*operaci/.test(technicalText(p)));
+    techCache=assignable.map(p=>({id:p.id,name:p.nombre_completo||p.nombre||p.usuario_login||'Responsable'}));
     return techCache;
   }
   function modal({title,body,onSubmit}){let back=document.getElementById('v808Modal');if(back)back.remove();back=document.createElement('div');back.id='v808Modal';back.className='v808-backdrop';back.innerHTML=`<div class="v808-modal"><div class="v808-head"><h3>${esc(title)}</h3><button type="button" data-v808-close>×</button></div><form class="v808-body">${body}<div class="v808-actions"><button type="button" class="btn btn-secondary" data-v808-close>Cancelar</button><button type="submit" class="btn btn-primary">Confirmar</button></div></form></div>`;document.body.appendChild(back);back.querySelectorAll('[data-v808-close]').forEach(b=>b.addEventListener('click',()=>back.remove()));back.querySelector('form').addEventListener('submit',async e=>{e.preventDefault();const submit=e.submitter;submit.disabled=true;try{await onSubmit(new FormData(e.currentTarget));back.remove();}catch(error){toast('No se pudo completar',error.message||String(error),'warning');submit.disabled=false;}});}
