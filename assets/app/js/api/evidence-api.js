@@ -24,8 +24,9 @@ export async function uploadEvidenceFileDetailed(file, operationReference, {
   if(!response.ok || data.ok === false){ const detail=[data.message,data.error].filter(Boolean).join(' · '); throw new AppError(detail || `R2 rechazó la evidencia (HTTP ${response.status}).`, { type:ERROR_TYPES.r2, code:String(response.status) }); }
   const url = data.url || data.publicUrl || data.public_url || data.location;
   if(!url) throw new AppError('R2 recibió el archivo, pero no devolvió una URL pública.', { type:ERROR_TYPES.r2 });
+  if(!data.evidencia) throw new AppError('La carga no quedó confirmada en operacion_evidencias. El servidor debe revertir el objeto de R2 y devolver error.', { type:ERROR_TYPES.r2 });
   onProgress?.(100);
-  return { ...data, url, publicUrl:url, evidence:data.evidencia || null };
+  return { ...data, url, publicUrl:url, evidence:data.evidencia };
 }
 
 export async function uploadEvidenceFile(file, operationReference, options = {}){
