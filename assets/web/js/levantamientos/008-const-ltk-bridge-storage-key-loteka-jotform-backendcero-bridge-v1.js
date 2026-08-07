@@ -114,7 +114,6 @@ function ltkBuildLevRecord(row, detailsByLev, position){
     submittedAt: row?.created_at || levNow(),
     workflowStatus: row?.workflow_status || row?.estado || 'Pendiente de revisión',
     overallStatus,
-    priority: row?.prioridad || (findingsCount >= 3 ? 'Alta' : 'Media'),
     findingsCount,
     evidenceCount: Number(row?.evidence_count ?? 0) || 0,
     executiveSummary,
