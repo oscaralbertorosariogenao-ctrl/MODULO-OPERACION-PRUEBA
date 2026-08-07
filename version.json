@@ -1,17 +1,18 @@
 {
-  "version": "2026-08-06-v808.21-correcciones-criticas",
-  "name": "v808.21 · Autoría, asignación, notificaciones y R2",
-  "released_at": "2026-08-06",
+  "version": "2026-08-07-v808.22-evidencias-web-r2",
+  "name": "v808.22 · Evidencias R2 visibles en Operaciones",
+  "released_at": "2026-08-07",
   "html": {
     "index": "index.html",
     "app": "app.html",
     "pantalla": "pantalla.html"
   },
   "changes": [
-    "Las notificaciones muestran al autor real del evento y no al destinatario",
-    "Asignación móvil conectada a la RPC segura mediante UUID del técnico",
-    "Modales de asignación y notificaciones colocados debajo de la barra superior",
-    "Carga R2 compatible con HEIC, HEIF, AVIF y reintento con archivo original",
-    "Abrir módulo desde una notificación lleva a Gestión de operaciones y al registro correcto"
+    "Gestión de Operaciones hidrata las evidencias desde operacion_evidencias",
+    "Las evidencias de REPORTE se muestran como evidencia inicial",
+    "Las demás etapas se muestran como evidencia de seguimiento o resultado",
+    "Se conservan y combinan las evidencias históricas sin duplicarlas",
+    "El detalle de Operaciones deja de mostrar Prioridad",
+    "Realtime refresca el expediente cuando se registra una nueva evidencia R2"
   ]
 }
