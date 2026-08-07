@@ -570,30 +570,6 @@ textarea{resize:vertical;min-height:90px}
   line-height:1.15;
 }
 
-.ops-scope .priority-baja{
-  background:#eef2f6;
-  color:#475467;
-  border:1px solid #dce5ee;
-}
-
-.ops-scope .priority-media{
-  background:#fff7cc;
-  color:#8a5b00;
-  border:1px solid #f2dc7b;
-}
-
-.ops-scope .priority-alta{
-  background:#ffe8df;
-  color:#b42318;
-  border:1px solid #fec4b3;
-}
-
-.ops-scope .priority-urgente{
-  background:#ffe1e1;
-  color:#991b1b;
-  border:1px solid #fecaca;
-}
-
 .ops-scope .chip.averia{
   background:#eef5fb;
   color:#3f6d98;
