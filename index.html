@@ -647,30 +647,6 @@ textarea{resize:vertical;min-height:90px}
   line-height:1.15;
 }
 
-.ops-scope .priority-baja{
-  background:#eef2f6;
-  color:#475467;
-  border:1px solid #dce5ee;
-}
-
-.ops-scope .priority-media{
-  background:#fff7cc;
-  color:#8a5b00;
-  border:1px solid #f2dc7b;
-}
-
-.ops-scope .priority-alta{
-  background:#ffe8df;
-  color:#b42318;
-  border:1px solid #fec4b3;
-}
-
-.ops-scope .priority-urgente{
-  background:#ffe1e1;
-  color:#991b1b;
-  border:1px solid #fecaca;
-}
-
 .ops-scope .chip.averia{
   background:#eef5fb;
   color:#3f6d98;
@@ -10744,7 +10720,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <button class="opdash-kpi-v46 green" onclick="lotekaOpsDashFilter('done')" type="button">
 <i class="fas fa-circle-check"></i><span>Cerradas</span><strong id="dashOpsCompleted">0</strong><small>completadas</small>
 </button>
-<button class="opdash-kpi-v46 red" onclick="lotekaOpsDashFilter('urgent')" type="button">
+<button class="opdash-kpi-v46 red" onclick="lotekaOpsDashFilter('reported')" type="button">
 <i class="fas fa-triangle-exclamation"></i><span>Urgentes</span><strong id="dashUrgentOpen">0</strong><small>abiertas</small>
 </button>
 </div>
@@ -10790,15 +10766,15 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <div class="opdash-panel-head-v46"><h3>Suplidores</h3><span>abrir reporte por responsable</span></div>
 <div class="dashboard-mini-list" id="dashboardTopSuppliers"></div>
 </button>
-<button class="opdash-panel-v46 alert" onclick="lotekaOpsDashFilter('urgent')" type="button">
-<div class="opdash-panel-head-v46"><h3>Alertas</h3><span>abrir urgentes</span></div>
+<button class="opdash-panel-v46 alert" onclick="lotekaOpsDashFilter('reported')" type="button">
+<div class="opdash-panel-head-v46"><h3>Sin asignar</h3><span>abrir reportados</span></div>
 <div class="dashboard-mini-list" id="dashboardAlerts"></div>
 </button>
 </div>
 <div class="opdash-critical-v46">
 <div class="opdash-critical-head-v46">
-<div><h3>Seguimiento inmediato</h3><p>Operaciones activas con prioridad alta o urgente.</p></div>
-<button onclick="lotekaOpsDashFilter('urgent')" type="button">Abrir listado</button>
+<div><h3>Reportes sin asignar</h3><p>Operaciones en estado Reportado pendientes de asignación.</p></div>
+<button onclick="lotekaOpsDashFilter('reported')" type="button">Abrir listado</button>
 </div>
 <div class="table-wrap"><table class="dashboard-table opdash-table-v46"><thead><tr><th>Código</th><th>Reporte</th><th>Agencia</th><th>Estado</th><th>Responsable</th></tr></thead><tbody id="dashboardCriticalTable"></tbody></table></div>
 </div>
@@ -10820,7 +10796,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <div class="hidden" id="vista-ops-operaciones"><div class="ops-scope"><div class="view" id="operationsView">
 <div class="topbar"><div><h2>Módulo de Operaciones</h2><p>Registro, seguimiento y control de averías y trabajos por agencia.</p></div><button class="btn btn-primary" id="openCreateModalBtn">+ Nueva operación</button></div>
 <div class="stats"><div class="stat-card"><span>Total de operaciones</span><strong id="statTotal">0</strong></div><div class="stat-card"><span>En proceso</span><strong id="statProceso">0</strong></div><div class="stat-card"><span>Completadas</span><strong id="statCompletado">0</strong></div><div class="stat-card"><span>Pendientes</span><strong id="statPendiente">0</strong></div></div>
-<div class="panel"><div class="panel-header"><h3>Listado de operaciones</h3><button class="btn btn-secondary" id="resetDataBtn">Restablecer datos</button></div><div class="filters"><select class="select" id="filterType"><option value="">Todos los tipos</option><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select><select class="select" id="filterStatus"><option value="">Todos los estados</option><option value="Pendiente">Pendiente</option><option value="Asignada">Asignada</option><option value="En proceso">En proceso</option><option value="Completado">Completado</option></select><input class="input" id="filterAgency" placeholder="Filtrar por agencia"/><input class="input" id="filterTech" placeholder="Filtrar por técnico / suplidor"/><input class="input" id="filterDateFrom" type="date"/><input class="input" id="filterDateTo" type="date"/></div><div class="table-wrap"><table><thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Asignado</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="operationsTableBody"></tbody></table></div></div>
+<div class="panel"><div class="panel-header"><h3>Listado de operaciones</h3><button class="btn btn-secondary" id="resetDataBtn">Restablecer datos</button></div><div class="filters"><select class="select" id="filterType"><option value="">Todos los tipos</option><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select><select class="select" id="filterStatus"><option value="">Todos los estados</option><option value="Pendiente">Pendiente</option><option value="Asignada">Asignada</option><option value="En proceso">En proceso</option><option value="Completado">Completado</option></select><input class="input" id="filterAgency" placeholder="Filtrar por agencia"/><input class="input" id="filterTech" placeholder="Filtrar por técnico / suplidor"/><input class="input" id="filterDateFrom" type="date"/><input class="input" id="filterDateTo" type="date"/></div><div class="table-wrap"><table><thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Asignado</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="operationsTableBody"></tbody></table></div></div>
 </div></div></div>
 <div class="hidden" id="vista-ops-levantamientos"></div>
 <div class="hidden" id="vista-ops-mantenimiento"></div>
@@ -11257,13 +11233,6 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <input class="input" id="reportFilterGroup" placeholder="Filtrar por grupo"/>
 <select class="select" id="reportFilterReporter">
 <option value="">Todos los encargados</option>
-</select>
-<select class="select" id="reportFilterPriority">
-<option value="">Todas las prioridades</option>
-<option value="Baja">Baja</option>
-<option value="Media">Media</option>
-<option value="Alta">Alta</option>
-<option value="Urgente">Urgente</option>
 </select>
 <input class="input" id="reportFilterFrom" type="date"/>
 <input class="input" id="reportFilterTo" type="date"/>
@@ -11718,7 +11687,6 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <th>Tipo</th>
 <th>Técnico</th>
 <th>Estado general</th>
-<th>Prioridad</th>
 <th>Fecha</th>
 <th>Hallazgos</th>
 <th>Ver</th>
@@ -11801,7 +11769,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <div class="agency-form-grid">
 <div class="agency-form-field"><label>Técnico frecuente</label><input id="agencyParamTecnico" type="text"/></div>
 <div class="agency-form-field"><label>Supervisor</label><input id="agencyParamSupervisor" type="text"/></div>
-<div class="agency-form-field"><label>Prioridad operativa</label><select id="agencyParamPrioridad"><option>Baja</option><option>Media</option><option>Alta</option></select></div>
+
 <div class="agency-form-field" style="display:none"><label>Canal de soporte</label><select id="agencyParamCanal"><option>Operaciones</option><option>Infraestructura</option></select></div>
 <div class="agency-form-field"><label>Última visita</label><input id="agencyParamUltimaVisita" type="date"/></div>
 <div class="agency-form-field"><label>Próxima revisión</label><input id="agencyParamProximaRevision" type="date"/></div>
@@ -12362,14 +12330,14 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <option value="Asignada">Asignada</option>
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
-</select></div><div class="field"><label for="operationTitle">Título</label><input class="input" id="operationTitle" placeholder="Ej. Cambio de printer en caja"/></div><div class="field"><label for="operationAgency">Agencia</label><input autocomplete="off" class="input" id="operationAgency" list="operationAgencyOptions" placeholder="Selecciona o escribe una agencia"/><datalist id="operationAgencyOptions"></datalist></div><div class="field"><label for="operationTechnician" id="labelTechnician">Técnico asignado</label><select class="select" id="operationTechnician"></select></div><div class="field"><label for="operationPriority">Prioridad</label><select class="select" id="operationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea class="textarea" id="operationDescription" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Clasificación de la operación</label><div class="multi-select"><button class="multi-select-trigger" id="operationTypeOptionsBtn" type="button"><span class="multi-select-value is-placeholder" id="operationTypeOptionsValue">Selecciona uno o varios trabajos</span><span class="multi-select-chevron">▾</span></button><div class="multi-select-menu" id="operationTypeOptionsMenu"></div></div></div><div class="field"><label>Archivos reportados (imagen o video, opcional)</label><input accept="image/*,video/*" class="input" id="operationImage" multiple="" type="file"/></div><div class="error hidden" id="createError"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button class="btn btn-primary" id="saveOperationBtn">Guardar operación</button></div></div></div>
+</select></div><div class="field"><label for="operationTitle">Título</label><input class="input" id="operationTitle" placeholder="Ej. Cambio de printer en caja"/></div><div class="field"><label for="operationAgency">Agencia</label><input autocomplete="off" class="input" id="operationAgency" list="operationAgencyOptions" placeholder="Selecciona o escribe una agencia"/><datalist id="operationAgencyOptions"></datalist></div><div class="field"><label for="operationTechnician" id="labelTechnician">Técnico asignado</label><select class="select" id="operationTechnician"></select></div></div><div class="field"><label for="operationDescription">Descripción</label><textarea class="textarea" id="operationDescription" placeholder="Describe la avería o el trabajo a realizar..."></textarea></div><div class="field"><label for="operationTypeOptions">Clasificación de la operación</label><div class="multi-select"><button class="multi-select-trigger" id="operationTypeOptionsBtn" type="button"><span class="multi-select-value is-placeholder" id="operationTypeOptionsValue">Selecciona uno o varios trabajos</span><span class="multi-select-chevron">▾</span></button><div class="multi-select-menu" id="operationTypeOptionsMenu"></div></div></div><div class="field"><label>Archivos reportados (imagen o video, opcional)</label><input accept="image/*,video/*" class="input" id="operationImage" multiple="" type="file"/></div><div class="error hidden" id="createError"></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeCreateModal()">Cancelar</button><button class="btn btn-primary" id="saveOperationBtn">Guardar operación</button></div></div></div>
 <div class="ops-modal-backdrop hidden" id="detailModalBackdrop"><div class="ops-modal"><div class="modal-header"><h3>Detalle de la operación</h3><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div><div class="modal-body" id="detailContent"></div><div class="footer-actions"><button class="btn btn-primary" id="detailPrintBtn" type="button">Imprimir operación</button><button class="btn btn-secondary" onclick="closeDetailModal()">Cerrar</button></div></div></div>
 <div class="ops-modal-backdrop hidden" id="editModalBackdrop"><div class="ops-modal"><div class="modal-header"><h3>Editar operación</h3><button class="btn btn-secondary" onclick="closeEditModal()">Cerrar</button></div><div class="modal-body"><input id="editOperationId" type="hidden"/><div class="grid-2"><div class="field"><label for="editOperationType">Tipo</label><select class="select" id="editOperationType"><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select></div><div class="field"><label for="editOperationStatus">Estado</label><select class="select" id="editOperationStatus">
 <option value="Pendiente">Pendiente</option>
 <option value="Asignada">Asignada</option>
 <option value="En proceso">En proceso</option>
 <option value="Completado">Completado</option>
-</select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input autocomplete="off" class="input" id="editOperationAgency" list="editOperationAgencyOptions" placeholder="Selecciona o escribe una agencia"/><datalist id="editOperationAgencyOptions"></datalist></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div><div class="field"><label for="editOperationPriority">Prioridad</label><select class="select" id="editOperationPriority"><option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta">Alta</option><option value="Urgente">Urgente</option></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Clasificación de la operación</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value is-placeholder" id="editOperationTypeOptionsValue">Selecciona uno o varios trabajos</span><span class="multi-select-chevron">▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div></div><div class="field"><label for="editResultImage">Evidencias de resultado (imagen o video)</label><input accept="image/*,video/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
+</select></div><div class="field"><label for="editOperationTitle">Título</label><input class="input" id="editOperationTitle"/></div><div class="field"><label for="editOperationAgency">Agencia</label><input autocomplete="off" class="input" id="editOperationAgency" list="editOperationAgencyOptions" placeholder="Selecciona o escribe una agencia"/><datalist id="editOperationAgencyOptions"></datalist></div><div class="field"><label for="editOperationTechnician" id="editLabelTechnician">Técnico asignado</label><select class="select" id="editOperationTechnician"></select></div></div><div class="field"><label for="editOperationDescription">Descripción</label><textarea class="textarea" id="editOperationDescription"></textarea></div><div class="field"><label for="editOperationTypeOptions">Clasificación de la operación</label><div class="multi-select"><button class="multi-select-trigger" id="editOperationTypeOptionsBtn" type="button"><span class="multi-select-value is-placeholder" id="editOperationTypeOptionsValue">Selecciona uno o varios trabajos</span><span class="multi-select-chevron">▾</span></button><div class="multi-select-menu" id="editOperationTypeOptionsMenu"></div></div></div><div class="field"><label for="editResultImage">Evidencias de resultado (imagen o video)</label><input accept="image/*,video/*" class="input" id="editResultImage" multiple="" type="file"/></div><div class="hidden" id="editImagesPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Imágenes reportadas actuales</label><div class="image-grid" id="editImagesPreviewGrid"></div></div><div class="hidden" id="editResultPreview" style="margin-top:12px;"><label style="display:block; margin-bottom:8px; font-size:14px; font-weight:600;">Evidencias actuales</label><div class="image-grid" id="editResultPreviewGrid"></div></div></div><div class="footer-actions"><button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEditedOperation()">Guardar cambios</button></div></div></div>
 <div class="hidden" id="vista-dashboard-rrhh">
 <div class="rrhh-dashboard-final">
 <section class="rrhh-final-hero">
