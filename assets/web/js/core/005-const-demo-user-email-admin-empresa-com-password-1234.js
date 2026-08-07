@@ -56,11 +56,10 @@
           const phone = typeof item.phone === 'string' ? item.phone.trim() : '';
           const id = typeof item.id === 'string' ? item.id : '';
           const category = typeof item.category === 'string' ? item.category.trim() : '';
-          const priority = typeof item.priority === 'string' ? item.priority.trim() : 'Media';
           const requiresEvidence = Boolean(item.requiresEvidence);
           const order = Number.isFinite(Number(item.order)) ? Number(item.order) : 0;
           const active = item.active !== false;
-          return name ? { id, name, [descriptionKey]: extra, phone, category, priority, requiresEvidence, order, active } : null;
+          return name ? { id, name, [descriptionKey]: extra, phone, category, requiresEvidence, order, active } : null;
         }
         return null;
       }).filter(Boolean);
@@ -151,7 +150,6 @@
         name: String(row?.nombre || '').trim(),
         description: String(row?.descripcion || '').trim(),
         category: String(row?.categoria || 'General').trim(),
-        priority: String(row?.prioridad_sugerida || 'Media').trim(),
         requiresEvidence: Boolean(row?.requiere_evidencia),
         order: Number.isFinite(Number(row?.orden)) ? Number(row.orden) : 0,
         active: row?.activo !== false
@@ -177,7 +175,7 @@
             p_nombre: item.name,
             p_descripcion: item.description || '',
             p_categoria: item.category || 'General',
-            p_prioridad_sugerida: item.priority || 'Media',
+            p_prioridad_sugerida: null,
             p_requiere_evidencia: Boolean(item.requiresEvidence),
             p_orden: Number(item.order || existing.size + index + 1),
             p_activo: item.active !== false
@@ -200,7 +198,7 @@
         if (options.migrate !== false) await migrateLocalOperationCatalogs(client);
         const response = await client
           .from(OPERATION_CATALOG_TABLE)
-          .select('id,tipo,nombre,descripcion,categoria,prioridad_sugerida,requiere_evidencia,orden,activo')
+.select('id,tipo,nombre,descripcion,categoria,requiere_evidencia,orden,activo')
           .eq('activo', true)
           .order('tipo', {ascending:true})
           .order('orden', {ascending:true})
@@ -232,7 +230,7 @@
         p_nombre: item.name,
         p_descripcion: item.description || '',
         p_categoria: item.category || 'General',
-        p_prioridad_sugerida: item.priority || 'Media',
+        p_prioridad_sugerida: null,
         p_requiere_evidencia: Boolean(item.requiresEvidence),
         p_orden: Number(item.order || 0),
         p_activo: true
@@ -453,7 +451,6 @@ const demoOperations = [
         title: 'Toldo y publicidad de cambio',
         agency: 'Agencia 1268',
         technician: 'E-Gret Servicios',
-        priority: 'Baja',
         status: 'Completado',
         description: 'Instalación de publicidad y toldo nuevo',
         selectedTypes: ['Instalación de publicidad en pecho (ACM)', 'Fabricación de toldo'],
@@ -500,7 +497,6 @@ const demoOperations = [
     const reportFilterOwner = document.getElementById('reportFilterOwner');
     const reportFilterGroup = document.getElementById('reportFilterGroup');
     const reportFilterReporter = document.getElementById('reportFilterReporter');
-    const reportFilterPriority = document.getElementById('reportFilterPriority');
         const reportFilterFrom = document.getElementById('reportFilterFrom');
     const reportFilterTo = document.getElementById('reportFilterTo');
     const reportFilterSummary = document.getElementById('reportFilterSummary');
@@ -1161,7 +1157,7 @@ function saveOperations(operations) {
       }
     }
 
-    function getOperationsByFilters({ typeValue = '', statusValue = '', specificTypeValue = '', agencyValue = '', ownerValue = '', groupValue = '', reporterValue = '', priorityValue = '', evidenceValue = '', sourceValue = '', fromValue = '', toValue = '' } = {}) {
+    function getOperationsByFilters({ typeValue = '', statusValue = '', specificTypeValue = '', agencyValue = '', ownerValue = '', groupValue = '', reporterValue = '', evidenceValue = '', sourceValue = '', fromValue = '', toValue = '' } = {}) {
       const operations = loadOperations();
       return operations.filter(op => {
         const locationText = getOperationLocation(op).toLowerCase();
@@ -1192,11 +1188,10 @@ function saveOperations(operations) {
         const matchOwner = !ownerNeedle || ownerKeywords.some(value => value.includes(ownerNeedle) || slugifyUsername(value) === ownerNeedleSlug);
         const matchGroup = !groupValue || groupText.includes(groupValue.toLowerCase()) || locationText.includes(groupValue.toLowerCase());
         const matchReporter = !reporterNeedle || reporterKeywords.some(value => value.includes(reporterNeedle) || slugifyUsername(value) === reporterNeedleSlug);
-        const matchPriority = !priorityValue || String(op.priority || '') === priorityValue;
         const createdDate = new Date(op.createdAt);
         const fromOk = !fromValue || createdDate >= new Date(fromValue + 'T00:00:00');
         const toOk = !toValue || createdDate <= new Date(toValue + 'T23:59:59');
-        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && matchGroup && matchReporter && matchPriority && fromOk && toOk;
+        return matchType && matchStatus && matchSpecificType && matchAgency && matchOwner && matchGroup && matchReporter && fromOk && toOk;
       });
     }
 
@@ -1209,7 +1204,6 @@ function saveOperations(operations) {
         ownerValue: reportFilterOwner.value,
         groupValue: reportFilterGroup.value,
         reporterValue: reportFilterReporter.value,
-        priorityValue: reportFilterPriority.value,
         fromValue: reportFilterFrom.value,
         toValue: reportFilterTo.value
       });
@@ -1413,7 +1407,6 @@ function saveOperations(operations) {
           <td>
             <strong>${op.title}</strong>
             <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
-              <span class="chip priority-${String(op.priority || 'media').toLowerCase()}">${op.priority || 'Media'}</span>
               ${operationHasAnyEvidence(op) ? '<span class="chip">Con evidencia</span>' : '<span class="chip">Sin evidencia</span>'}
             </div>
           </td>
@@ -1441,7 +1434,6 @@ function saveOperations(operations) {
         reportFilterOwner.value ? { label: 'Técnico', value: reportFilterOwner.options[reportFilterOwner.selectedIndex]?.text || reportFilterOwner.value } : null,
         reportFilterGroup.value ? { label: 'Grupo', value: reportFilterGroup.value } : null,
         reportFilterReporter.value ? { label: 'Encargado', value: reportFilterReporter.options[reportFilterReporter.selectedIndex]?.text || reportFilterReporter.value } : null,
-        reportFilterPriority.value ? { label: 'Prioridad', value: reportFilterPriority.value } : null,
         reportFilterFrom.value ? { label: 'Desde', value: reportFilterFrom.value } : null,
         reportFilterTo.value ? { label: 'Hasta', value: reportFilterTo.value } : null
       ].filter(Boolean));
@@ -1653,10 +1645,6 @@ function saveOperations(operations) {
       </td>
 
       <td>
-        <span class="chip priority-${String(op.priority || '').toLowerCase()}">${op.priority || 'N/D'}</span>
-      </td>
-
-      <td>
         ${statusBadge(op.status)}
       </td>
 
@@ -1748,7 +1736,7 @@ function saveOperations(operations) {
       const pending = operations.filter(op => op.status === 'Pendiente' || op.status === 'Asignada').length;
       const inProcess = operations.filter(op => op.status === 'En proceso').length;
       const completed = operations.filter(op => op.status === 'Completado').length;
-      const urgentOpen = operations.filter(op => op.priority === 'Urgente' && op.status !== 'Completado').length;
+      const reportedOpen = operations.filter(op => ['Reportado','Pendiente'].includes(op.status)).length;
 
       const avgAssignValues = operations.map(getAssignmentMinutes).filter(v => Number.isFinite(v) && v >= 0);
       const avgResolutionValues = operations.map(getResolutionMinutes).filter(v => Number.isFinite(v) && v >= 0);
@@ -1782,7 +1770,7 @@ function saveOperations(operations) {
       setText('dashTopTechHero', topTech ? getAssigneeDisplayName(topTech.owner, 'Avería') : '-');
       setText('dashTopSupplierHero', topSupplier ? getAssigneeDisplayName(topSupplier.owner, 'Trabajo') : '-');
       setText('dashTopAgencyHero', topAgency ? topAgency.agency : '-');
-      setText('dashUrgentOpen', urgentOpen);
+      setText('dashUrgentOpen', reportedOpen);
 
       const renderBars = (containerId, rows) => {
         const container = document.getElementById(containerId);
@@ -1826,7 +1814,7 @@ function saveOperations(operations) {
       renderMiniList('dashboardTopSuppliers', supplierGroups, 'Trabajo');
 
       const alerts = [];
-      if (urgentOpen) alerts.push({title:'Urgentes abiertas', text:`${urgentOpen} operaciones urgentes siguen sin completar.`});
+      if (reportedOpen) alerts.push({title:'Reportes sin asignar', text:`${reportedOpen} reportes siguen pendientes de asignación.`});
       if (topAgency) alerts.push({title:'Agencias con más incidencias reportadas', text:`${topAgency.agency} lidera con ${topAgency.total} reportes.`});
       if (topTech) alerts.push({title:'Técnico con más carga', text:`${getAssigneeDisplayName(topTech.owner, 'Avería')} lleva ${topTech.total} averías asignadas.`});
       if (topSupplier) alerts.push({title:'Suplidor con más carga', text:`${getAssigneeDisplayName(topSupplier.owner, 'Trabajo')} lleva ${topSupplier.total} trabajos activos o completados.`});
@@ -1853,7 +1841,7 @@ function saveOperations(operations) {
       renderOwnerTable('dashboardTechTable', techGroups, 'Avería', 'No hay técnicos con actividad aún.');
       renderOwnerTable('dashboardSupplierTable', supplierGroups, 'Trabajo', 'No hay suplidores con actividad aún.');
 
-      const criticalOps = operations.filter(op => ['Alta','Urgente'].includes(op.priority) && op.status !== 'Completado').slice(0,6);
+      const criticalOps = operations.filter(op => ['Reportado','Pendiente'].includes(op.status)).slice(0,6);
       const criticalTable = document.getElementById('dashboardCriticalTable');
       if (criticalTable) {
         criticalTable.innerHTML = criticalOps.length ? criticalOps.map(op => `
@@ -1863,7 +1851,7 @@ function saveOperations(operations) {
             <td>${getOperationLocation(op)}</td>
             <td>${statusBadge(op.status)}</td>
             <td>${getAssigneeDisplayName(op.technician, op.type)}</td>
-          </tr>`).join('') : '<tr><td colspan="5"><div class="dashboard-empty">No hay operaciones críticas activas.</div></td></tr>';
+          </tr>`).join('') : '<tr><td colspan="5"><div class="dashboard-empty">No hay reportes pendientes de asignación.</div></td></tr>';
       }
 
       const activityEl = document.getElementById('dashboardActivityTimeline');
@@ -2086,7 +2074,6 @@ function saveOperations(operations) {
         creado_por: normalized.created_by || normalized.nombre_encargado || getCurrentUserEmail(),
         fecha_reporte: normalized.createdAt || nowIso(),
         estado: normalizeRemoteStatus(normalized.status),
-        prioridad: normalized.priority || 'Media',
         asignado_a: normalized.type === 'Trabajo' ? (normalized.technician || 'Sin asignar') : normalizeStoredAssignee(normalized.technician, normalized.type),
         selected_types: Array.isArray(normalized.selectedTypes) ? normalized.selectedTypes : getOperationSpecificTypes(normalized),
         images: getSafeMediaList(normalized.images),
@@ -2110,7 +2097,6 @@ function saveOperations(operations) {
         titulo: String(normalized.title || normalized.categoria || 'Reporte').slice(0, 500),
         descripcion: String(normalized.description || normalized.descripcion || '').slice(0, 5000),
         estado: normalizeRemoteStatus(normalized.status || normalized.estado || 'Pendiente'),
-        prioridad: String(normalized.priority || normalized.prioridad || 'Media'),
         agencia: String(normalized.agency_number || normalized.agencia || normalizeAgencyNumber(normalized.agency || '') || normalized.agency || '').slice(0, 255),
         grupo: String(normalized.grupo || '').slice(0, 255),
         tecnico: String(normalized.technician || normalized.asignado_a || 'Sin asignar').slice(0, 255),
@@ -2139,7 +2125,6 @@ function saveOperations(operations) {
         agency_number: agencyNumber,
         agency_label: existing?.agency_label || (agencyNumber ? normalizeAgencyLabel(agencyNumber) : (item.agencia || '')),
         technician,
-        priority: item.prioridad || existing?.priority || 'Media',
         status,
         description: item.descripcion || existing?.description || '',
         selectedTypes: Array.isArray(existing?.selectedTypes) && existing.selectedTypes.length ? existing.selectedTypes : (title ? [title] : []),
@@ -2475,7 +2460,6 @@ function saveOperations(operations) {
       document.getElementById('operationStatus').value = 'Pendiente';
       document.getElementById('operationTitle').value = '';
       populateOperationAgencyOptions('');
-      document.getElementById('operationPriority').value = 'Baja';
       document.getElementById('operationDescription').value = '';
       document.getElementById('operationImage').value = '';
       renderTypeOptions('operationTypeOptions', 'Avería', []);
@@ -2504,7 +2488,6 @@ function saveOperations(operations) {
       const agencyNumber = normalizeAgencyNumber(agencyInput);
       const agency = agencyNumber ? normalizeAgencyLabel(agencyNumber) : agencyInput;
       const technician = (type === 'Trabajo' ? document.getElementById('operationTechnician').value.trim() : normalizeStoredAssignee(document.getElementById('operationTechnician').value.trim(), type)) || 'Sin asignar';
-      const priority = document.getElementById('operationPriority').value;
       const description = document.getElementById('operationDescription').value.trim();
       const imageFiles = Array.from(document.getElementById('operationImage').files || []);
       const selectedTypes = getSelectedValues('operationTypeOptions');
@@ -2549,7 +2532,6 @@ function saveOperations(operations) {
         agency_number: agencyNumber,
         agency_label: agency,
         technician,
-        priority,
         status,
         description,
         selectedTypes,
@@ -5410,7 +5392,6 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
     <div class="meta-item"><span>Título</span><div>${escapeHtml(op.title)}</div></div>
     <div class="meta-item"><span>Agencia / Grupo</span><div>${escapeHtml(getOperationLocation(op))}</div></div>
     <div class="meta-item"><span>${escapeHtml(assignedLabel)}</span><div>${escapeHtml(op.technician)}</div></div>
-    <div class="meta-item"><span>Prioridad</span><div>${escapeHtml(op.priority)}</div></div>
     <div class="meta-item"><span>Tiempo de asignación</span><div>${escapeHtml(getAssignmentTimeLabel(op))}</div></div>
     <div class="meta-item"><span>Tiempo de respuesta</span><div>${escapeHtml(getResponseTimeLabel(op))}</div></div>
     <div class="meta-item"><span>Tiempo de resolución</span><div>${escapeHtml(getResolutionTimeLabel(op))}</div></div>
@@ -5440,7 +5421,6 @@ function openEditModal(id) {
       document.getElementById('editOperationStatus').value = op.status;
       document.getElementById('editOperationTitle').value = op.title;
       populateEditOperationAgencyOptions(op.agency_label || op.agency || op.agencia || '');
-      document.getElementById('editOperationPriority').value = op.priority;
       document.getElementById('editOperationDescription').value = op.description;
       document.getElementById('editResultImage').value = '';
       renderTypeOptions('editOperationTypeOptions', op.type, op.selectedTypes || []);
@@ -5487,7 +5467,6 @@ function openEditModal(id) {
       const newAgencyNumber = normalizeAgencyNumber(newAgencyInput);
       const newAgency = newAgencyNumber ? normalizeAgencyLabel(newAgencyNumber) : newAgencyInput;
       const newTechnician = (newType === 'Trabajo' ? document.getElementById('editOperationTechnician').value.trim() : normalizeStoredAssignee(document.getElementById('editOperationTechnician').value.trim(), newType)) || 'Sin asignar';
-      const newPriority = document.getElementById('editOperationPriority').value;
       const newDescription = document.getElementById('editOperationDescription').value.trim();
       const newSelectedTypes = getSelectedValues('editOperationTypeOptions');
       const resultImageFiles = Array.from(document.getElementById('editResultImage').files || []);
@@ -5540,7 +5519,6 @@ function openEditModal(id) {
       operations[index].agency_number = newAgencyNumber;
       operations[index].agency_label = newAgency;
       operations[index].technician = newTechnician;
-      operations[index].priority = newPriority || operations[index].priority || 'Media';
       operations[index].description = newDescription;
       operations[index].selectedTypes = newSelectedTypes;
       operations[index].created_by = operations[index].created_by || operations[index].reportado_por_nombre || getCurrentOperationUserDisplayName();
@@ -5865,7 +5843,7 @@ saveOperations([]);
       el.addEventListener('change', renderOperations);
     });
 
-    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterGroup, reportFilterReporter, reportFilterPriority, reportFilterFrom, reportFilterTo].forEach(el => {
+    [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterGroup, reportFilterReporter, reportFilterFrom, reportFilterTo].forEach(el => {
       el.addEventListener('input', renderReports);
       el.addEventListener('change', renderReports);
     });
@@ -5898,7 +5876,6 @@ saveOperations([]);
       reportFilterOwner.value = '';
       reportFilterGroup.value = '';
       reportFilterReporter.value = '';
-      reportFilterPriority.value = '';
       reportFilterFrom.value = '';
       reportFilterTo.value = '';
       populateReportSpecificTypeOptions();
@@ -5946,14 +5923,13 @@ saveOperations([]);
       const operations = getReportFilteredOperations();
       exportRowsToCsv(
         'reportes_operaciones.csv',
-        ['Código', 'Tipo', 'Título', 'Agencia', 'Responsable', 'Prioridad', 'Estado', 'Fecha', 'Tipos específicos', 'Tiempo de resolución'],
+        ['Código', 'Tipo', 'Título', 'Agencia', 'Responsable', 'Estado', 'Fecha', 'Tipos específicos', 'Tiempo de resolución'],
         operations.map(op => [
           op.code,
           op.type,
           op.title,
           op.agency,
           op.technician,
-          op.priority,
           op.status,
           formatDate(op.createdAt),
           (op.selectedTypes || []).join(' | '),
