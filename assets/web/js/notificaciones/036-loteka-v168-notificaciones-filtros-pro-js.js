@@ -456,6 +456,11 @@
         return;
       }
       if(ref==='agencias'){ if(typeof cambiarVista==='function') cambiarVista('agencias'); return; }
+      if(ref==='levantamiento' || ref==='levantamientos' || ref==='ops_levantamiento_campanas'){
+        if(window.GOLevantamientosGrupos && typeof window.GOLevantamientosGrupos.open==='function') window.GOLevantamientosGrupos.open(document.getElementById('navLevantamientos'));
+        else if(typeof cambiarVista==='function') cambiarVista('ops-levantamientos');
+        return;
+      }
       if(ref==='movimientos_inventario'){ if(typeof cambiarVista==='function') cambiarVista('inventario'); return; }
       if(ref==='operacion' || ref==='operaciones' || ref==='reportes_operaciones'){
         if(typeof cambiarVista==='function') cambiarVista('ops-operaciones');
