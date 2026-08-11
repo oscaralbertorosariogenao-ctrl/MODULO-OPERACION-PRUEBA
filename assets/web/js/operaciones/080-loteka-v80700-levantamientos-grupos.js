@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '808.27') return;
+  if (global.GOLevantamientosGrupos?.version === '808.28') return;
 
-  const VERSION = '808.27';
+  const VERSION = '808.28';
   const UI_STATE_KEY = 'go-levantamientos-ui-v1';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
@@ -30,7 +30,7 @@
     intakes: [],
     config: null,
     campaignTab: 'AGENCIES',
-    mainTab: 'CAMPAIGNS',
+    mainTab: 'SUMMARY',
     reportEditing: null,
     reportSnapshot: [],
     reportProblem: null,
@@ -45,7 +45,21 @@
     loadingAll: false,
     catalogGroups: [],
     catalogAgencies: [],
-    catalogLoaded: false
+    catalogLoaded: false,
+    summary: null,
+    summaryRecent: [],
+    recentActivity: [],
+    campaignTotal: 0,
+    currentListStatus: null,
+    openPage: 0,
+    closedPage: 0,
+    listPageSize: 20,
+    reportPage: 0,
+    reportPageSize: 24,
+    reportTotal: 0,
+    globalSearchResults: [],
+    listSearchTimer: null,
+    detailReturnTab: 'SUMMARY'
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -84,13 +98,26 @@
 
   function captureUiState(scrollOverride) {
     return {
-      version: 1,
-      mainTab: state.mainTab || 'CAMPAIGNS',
+      version: 2,
+      mainTab: state.mainTab || 'SUMMARY',
       campaignTab: state.campaignTab || 'AGENCIES',
       selectedCampaignId: state.selectedCampaign?.id || null,
-      search: $('#golevg-search')?.value || '',
-      status: $('#golevg-status')?.value || '',
-      group: $('#golevg-group')?.value || '',
+      open: {
+        search: $('#golevg-open-search')?.value || '',
+        group: $('#golevg-open-group')?.value || '',
+        date: $('#golevg-open-date')?.value || '',
+        sort: $('#golevg-open-sort')?.value || 'ULTIMA_ACTIVIDAD',
+        page: state.openPage || 0
+      },
+      closed: {
+        search: $('#golevg-closed-search')?.value || '',
+        group: $('#golevg-closed-group')?.value || '',
+        date: $('#golevg-closed-date')?.value || '',
+        sort: $('#golevg-closed-sort')?.value || 'RECIENTES',
+        page: state.closedPage || 0
+      },
+      reports: { page: state.reportPage || 0 },
+      globalSearch: $('#golevg-global-search')?.value || '',
       scrollY: Number.isFinite(Number(scrollOverride)) ? Number(scrollOverride) : Math.max(0, Number(global.scrollY || 0)),
       savedAt: Date.now()
     };
@@ -103,13 +130,30 @@
 
   function applyStoredFilters(saved) {
     if (!saved) return;
-    if ($('#golevg-search')) $('#golevg-search').value = text(saved.search);
-    if ($('#golevg-status')) $('#golevg-status').value = text(saved.status);
-    if ($('#golevg-group')) {
-      const wanted = normalizeGroup(saved.group);
-      const optionExists = [...$('#golevg-group').options].some((option) => normalizeGroup(option.value) === wanted);
-      $('#golevg-group').value = wanted && optionExists ? wanted : '';
-    }
+    const legacySearch = text(saved.search);
+    const legacyGroup = normalizeGroup(saved.group);
+    const open = saved.open || {};
+    const closed = saved.closed || {};
+    if ($('#golevg-open-search')) $('#golevg-open-search').value = text(open.search || legacySearch);
+    if ($('#golevg-open-date')) $('#golevg-open-date').value = text(open.date);
+    if ($('#golevg-open-sort')) $('#golevg-open-sort').value = text(open.sort) || 'ULTIMA_ACTIVIDAD';
+    if ($('#golevg-closed-search')) $('#golevg-closed-search').value = text(closed.search || legacySearch);
+    if ($('#golevg-closed-date')) $('#golevg-closed-date').value = text(closed.date);
+    if ($('#golevg-closed-sort')) $('#golevg-closed-sort').value = text(closed.sort) || 'RECIENTES';
+    if ($('#golevg-global-search')) $('#golevg-global-search').value = text(saved.globalSearch);
+    state.openPage = Math.max(0, Number(open.page || 0));
+    state.closedPage = Math.max(0, Number(closed.page || 0));
+    state.reportPage = Math.max(0, Number(saved.reports?.page || 0));
+
+    const setGroup = (selector, wantedRaw) => {
+      const element = $(selector);
+      if (!element) return;
+      const wanted = normalizeGroup(wantedRaw || legacyGroup);
+      const optionExists = [...element.options].some((option) => normalizeGroup(option.value) === wanted);
+      element.value = wanted && optionExists ? wanted : '';
+    };
+    setGroup('#golevg-open-group', open.group);
+    setGroup('#golevg-closed-group', closed.group);
   }
 
   function restoreScroll(saved) {
@@ -340,6 +384,52 @@
     } catch (_error) { return text(value); }
   }
 
+  function formatDateTime(value) {
+    return formatDate(value, true);
+  }
+
+  function relativeTime(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return formatDateTime(value);
+    const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+    if (seconds < 60) return 'Hace menos de 1 minuto';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `Hace ${minutes} minuto${minutes === 1 ? '' : 's'}`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `Hace ${hours} hora${hours === 1 ? '' : 's'}`;
+    const days = Math.floor(hours / 24);
+    return `Hace ${days} día${days === 1 ? '' : 's'}`;
+  }
+
+  function durationText(startValue, endValue = null, precise = true) {
+    if (!startValue) return '-';
+    const raw = String(startValue);
+    const start = new Date(raw.length === 10 ? `${raw}T00:00:00` : raw);
+    const endRaw = endValue ? String(endValue) : '';
+    const end = endValue ? new Date(endRaw.length === 10 ? `${endRaw}T23:59:59` : endRaw) : new Date();
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return '-';
+    const totalHours = Math.max(0, Math.floor((end.getTime() - start.getTime()) / 3600000));
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    if (!precise) {
+      const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      const daysBetween = Math.max(0, Math.round((endDay.getTime() - startDay.getTime()) / 86400000));
+      return `${daysBetween} día${daysBetween === 1 ? '' : 's'}`;
+    }
+    if (!days) return `${hours} hora${hours === 1 ? '' : 's'}`;
+    return `${days} día${days === 1 ? '' : 's'}${hours ? ` ${hours} hora${hours === 1 ? '' : 's'}` : ''}`;
+  }
+
+  function debounce(fn, wait = 320) {
+    let timer = null;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), wait);
+    };
+  }
+
   function campaignStatusLabel(status) {
     return ({ BORRADOR: 'Borrador', ABIERTO: 'Abierto', EN_REVISION: 'En revisión', CERRADO: 'Cerrado', ARCHIVADO: 'Archivado' })[status] || status;
   }
@@ -351,7 +441,7 @@
   function badgeClass(status) {
     if (/CERRADO|RESUELTO|SIN_HALLAZGOS/.test(status)) return 'ok';
     if (/ABIERTO|RECIBIDO|EN_REVISION|EN_PROCESO/.test(status)) return 'run';
-    if (/CON_HALLAZGOS|PENDIENTE|URGENTE|ALTA/.test(status)) return 'warn';
+    if (/CON_HALLAZGOS|PENDIENTE/.test(status)) return 'warn';
     if (/ARCHIVADO|ANULADO|DESCARTADO/.test(status)) return 'muted';
     return 'wait';
   }
@@ -362,38 +452,68 @@
     style.id = 'golevg-style';
     style.textContent = `
       #golevg-root{font-family:Inter,system-ui;color:#103b5b;padding-bottom:36px}.golevg-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:25px;border:1px solid #cfe2ee;border-radius:22px;background:linear-gradient(135deg,#f8fdff,#e9f7ff);box-shadow:0 16px 38px rgba(10,63,97,.08);margin-bottom:15px}.golevg-hero h2{margin:7px 0 0;color:#073e64;font-size:29px}.golevg-hero p{margin:7px 0 0;color:#637e92;max-width:830px;line-height:1.55}.golevg-kicker{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#dff5ff;color:#06709f;font-size:11px;font-weight:1000;text-transform:uppercase}.golevg-actions,.golevg-tabs,.golevg-inline{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.golevg-btn{border:1px solid #c8dce8;background:#fff;color:#086895;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer;transition:.15s}.golevg-btn:hover:not(:disabled){transform:translateY(-1px)}.golevg-btn:disabled{opacity:.5;cursor:not-allowed}.golevg-btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#087fba,#05a9d4)}.golevg-btn.success{border:0;color:#fff;background:#07875a}.golevg-btn.danger{color:#b42318}.golevg-btn.danger.solid{border-color:#b42318;background:#b42318;color:#fff}.golevg-cleanup-banner{display:none;margin:0 0 14px;padding:12px 14px;border:1px solid #f2c26b;border-radius:13px;background:#fff8e8;color:#7a5410}.golevg-cleanup-banner.show{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.golevg-delete-summary{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:9px;margin:14px 0}.golevg-delete-summary div{border:1px solid #e1e9ee;border-radius:11px;padding:10px;background:#fafcfd}.golevg-delete-summary span{display:block;font-size:10px;text-transform:uppercase;font-weight:1000;color:#728796}.golevg-delete-summary b{display:block;margin-top:3px;color:#173f59}.golevg-danger-box{border:1px solid #f1b7b2;background:#fff4f3;color:#8e281f;border-radius:12px;padding:12px;line-height:1.5}.golevg-btn.small{padding:7px 9px;font-size:12px}.golevg-tabs{background:#edf6fb;border-radius:13px;padding:5px;width:max-content;max-width:100%;margin-bottom:14px}.golevg-tab{border:0;background:transparent;color:#607b8e;padding:9px 14px;border-radius:9px;font-weight:900;cursor:pointer}.golevg-tab.active{background:#fff;color:#0871a3;box-shadow:0 4px 13px #aac6d655}.golevg-panel{display:none}.golevg-panel.active{display:block}.golevg-stats{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:10px;margin-bottom:14px}.golevg-stat,.golevg-card{background:#fff;border:1px solid #d6e5ee;border-radius:17px;padding:16px;box-shadow:0 10px 24px rgba(11,61,95,.05)}.golevg-stat span{display:block;color:#6b8496;font-size:10px;font-weight:1000;text-transform:uppercase}.golevg-stat strong{display:block;color:#0a456c;font-size:27px;margin-top:5px}.golevg-card-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.golevg-card-head h3{margin:0}.golevg-card-head small{color:#718a9b}.golevg-filter{display:grid;grid-template-columns:2fr repeat(2,minmax(150px,1fr)) auto;gap:9px;margin-bottom:13px}.golevg-input,.golevg-select,.golevg-textarea{width:100%;box-sizing:border-box;border:1px solid #c9dce8;border-radius:11px;padding:10px 11px;background:#fff;font:inherit}.golevg-campaign-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px}.golevg-campaign{border:1px solid #d4e4ed;border-radius:18px;padding:17px;background:#fff;box-shadow:0 10px 24px rgba(11,61,95,.05)}.golevg-campaign h3{margin:7px 0 4px;font-size:18px;color:#0a4167}.golevg-campaign p{margin:0;color:#6d8495;font-size:12px;line-height:1.45}.golevg-code{font-size:11px;font-weight:1000;color:#0874a6;text-transform:uppercase}.golevg-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:13px 0}.golevg-metric{border:1px solid #dce9f0;border-radius:11px;padding:9px;background:#f8fcfe}.golevg-metric span{display:block;font-size:9px;text-transform:uppercase;font-weight:1000;color:#738b9d}.golevg-metric b{display:block;margin-top:3px;color:#104766}.golevg-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.golevg-badge.ok{background:#e5f8ed;color:#087448}.golevg-badge.run{background:#e7f5ff;color:#08689c}.golevg-badge.warn{background:#fff3d7;color:#8a6200}.golevg-badge.muted{background:#edf1f4;color:#667986}.golevg-badge.wait{background:#f0f5f8;color:#587486}.golevg-table-wrap{overflow:auto;border:1px solid #dbe8ef;border-radius:14px}.golevg-table{width:100%;border-collapse:collapse;min-width:1080px}.golevg-table th,.golevg-table td{padding:11px;border-bottom:1px solid #e7eff4;text-align:left;font-size:13px;vertical-align:top}.golevg-table th{background:#eff8fc;color:#5e788c;font-size:10px;text-transform:uppercase}.golevg-table tr:hover td{background:#f9fdff}.golevg-empty{text-align:center;padding:38px;color:#71899a}.golevg-detail-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:14px}.golevg-detail-head h2{margin:3px 0 5px;color:#0a4166}.golevg-detail-meta{display:flex;gap:8px;flex-wrap:wrap}.golevg-problem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}.golevg-problem{border:1px solid #d5e5ee;border-radius:16px;padding:15px;background:#fff}.golevg-problem h4{margin:5px 0 6px;color:#0a4166;font-size:16px}.golevg-problem p{margin:0;color:#6b8294;font-size:12px}.golevg-report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.golevg-report{border:1px solid #d6e5ed;border-radius:17px;padding:15px;background:#fff}.golevg-report h4{margin:7px 0;color:#0a4167}.golevg-report-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.golevg-report-info div{padding:9px;border:1px solid #dce9f0;border-radius:10px;background:#f8fcfe}.golevg-report-info span{display:block;font-size:9px;text-transform:uppercase;font-weight:1000;color:#71899a}.golevg-report-info b{display:block;margin-top:3px}.golevg-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#062d4875;z-index:12000;padding:20px}.golevg-modal.open{display:flex}.golevg-dialog{width:min(950px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #071c2c66}.golevg-dialog.wide{width:min(1160px,97vw)}.golevg-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.golevg-field.full{grid-column:1/-1}.golevg-field label{display:block;font-size:10px;font-weight:1000;color:#5e778a;text-transform:uppercase;margin-bottom:6px}.golevg-help{padding:11px 13px;border-radius:12px;background:#f4f9fc;border:1px solid #d7e8f1;color:#5d788c;font-size:12px;line-height:1.5}.golevg-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.golevg-photo{border:1px solid #d7e5ed;border-radius:13px;overflow:hidden;background:#f8fcfe}.golevg-photo img{width:100%;height:160px;object-fit:contain;background:#0b1d2b;display:block}.golevg-photo div{padding:8px;font-size:11px}.golevg-agency-result{border:1px solid #d7e5ed;border-radius:14px;margin-bottom:10px;overflow:hidden}.golevg-agency-result-head{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#e9f6fd;padding:10px 13px;font-weight:1000}.golevg-agency-result-body{padding:13px}.golevg-check-row{display:grid;grid-template-columns:34px 100px 1fr 100px;gap:8px;align-items:center;padding:10px;border-bottom:1px solid #e8eff3}.golevg-link{color:#0675a8;font-weight:900;cursor:pointer;text-decoration:none}@media(max-width:1000px){.golevg-stats{grid-template-columns:repeat(2,1fr)}.golevg-filter{grid-template-columns:1fr 1fr}.golevg-hero,.golevg-detail-head{flex-direction:column}.golevg-grid{grid-template-columns:1fr}.golevg-field.full{grid-column:auto}}@media(max-width:650px){.golevg-filter{grid-template-columns:1fr}.golevg-tabs{width:100%;overflow:auto;flex-wrap:nowrap}.golevg-tab{white-space:nowrap}.golevg-campaign-grid,.golevg-problem-grid,.golevg-report-grid{grid-template-columns:1fr}.golevg-report-info{grid-template-columns:1fr}}
+
+      .golevg-summary-stats{grid-template-columns:repeat(6,minmax(125px,1fr))}.golevg-detail-stats{grid-template-columns:repeat(4,minmax(125px,1fr))}.golevg-section-stack{display:grid;gap:14px}.golevg-section-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:12px}.golevg-section-title h3{margin:0;color:#0a4167}.golevg-section-title p{margin:4px 0 0;color:#71899a;font-size:12px}.golevg-list-filter{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) minmax(145px,1fr) minmax(175px,1fr) auto;gap:9px;margin-bottom:13px}.golevg-list-meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0 12px;color:#71899a;font-size:12px}.golevg-campaign-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.golevg-campaign-details div{border:1px solid #e0ebf1;background:#fbfdfe;border-radius:10px;padding:9px}.golevg-campaign-details span{display:block;color:#738b9d;font-size:9px;font-weight:1000;text-transform:uppercase}.golevg-campaign-details b{display:block;color:#174967;margin-top:3px;font-size:12px}.golevg-activity{display:grid;gap:8px}.golevg-activity-item{display:grid;grid-template-columns:115px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #e8f0f4}.golevg-activity-item:last-child{border-bottom:0}.golevg-activity-time{font-size:11px;font-weight:900;color:#0b709e}.golevg-activity-title{font-weight:900;color:#173f59}.golevg-activity-detail{margin-top:2px;color:#708697;font-size:12px}.golevg-search-results{display:grid;gap:8px;margin-top:12px}.golevg-search-result{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #dce8ef;border-radius:12px;padding:11px;background:#fbfdfe}.golevg-search-result strong{display:block;color:#0a4167}.golevg-search-result small{color:#71899a}.golevg-pager{display:flex;justify-content:center;align-items:center;gap:9px;margin-top:14px}.golevg-report-meta{font-size:11px;color:#71899a;line-height:1.55}.golevg-subtle{color:#71899a;font-size:12px}.golevg-stat.is-clickable{cursor:pointer}.golevg-stat.is-clickable:hover{border-color:#8bc8e3;transform:translateY(-1px)}
+      @media(max-width:1180px){.golevg-summary-stats{grid-template-columns:repeat(3,1fr)}.golevg-detail-stats{grid-template-columns:repeat(2,1fr)}.golevg-list-filter{grid-template-columns:1fr 1fr 1fr}}
+      @media(max-width:700px){.golevg-summary-stats{grid-template-columns:repeat(2,1fr)}.golevg-detail-stats{grid-template-columns:1fr 1fr}.golevg-list-filter{grid-template-columns:1fr}.golevg-campaign-details{grid-template-columns:1fr}.golevg-activity-item{grid-template-columns:1fr;gap:3px}.golevg-search-result{align-items:flex-start;flex-direction:column}}
     `;
     document.head.appendChild(style);
   }
 
   function injectView() {
     const host = $('#vista-ops-levantamientos');
-    if (!host || host.dataset.golevgReady) return;
-    host.dataset.golevgReady = '1';
+    if (!host || host.dataset.golevgReady === VERSION) return;
+    host.dataset.golevgReady = VERSION;
     host.innerHTML = `
       <div id="golevg-root">
         <section class="golevg-hero">
-          <div><span class="golevg-kicker"><i class="fas fa-layer-group"></i> Levantamientos por grupo</span><h2>Levantamientos de agencias</h2><p>El técnico utiliza siempre el mismo enlace general de Jotform. El sistema identifica la agencia, consulta su grupo oficial y la coloca automáticamente en el levantamiento abierto correspondiente, aunque el trabajo dure varios días.</p></div>
-          <div class="golevg-actions"><button class="golevg-btn" id="golevg-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn" id="golevg-copy-form"><i class="fas fa-link"></i> Copiar enlace Jotform</button><button class="golevg-btn primary" id="golevg-new"><i class="fas fa-plus"></i> Nuevo levantamiento de grupo</button></div>
+          <div><span class="golevg-kicker"><i class="fas fa-layer-group"></i> Operaciones · Levantamientos</span><h2>Levantamientos de agencias</h2><p>Centro de control para recibir inspecciones, identificar hallazgos y generar los documentos PDF/Excel que se entregan a los departamentos correspondientes.</p></div>
+          <div class="golevg-actions"><button class="golevg-btn" id="golevg-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn" id="golevg-copy-form"><i class="fas fa-link"></i> Copiar enlace Jotform</button><button class="golevg-btn primary" id="golevg-new"><i class="fas fa-plus"></i> Nuevo levantamiento</button></div>
         </section>
-        <div class="golevg-tabs" id="golevg-main-tabs"><button class="golevg-tab active" data-main="CAMPAIGNS">Levantamientos</button><button class="golevg-tab" data-main="PENDING">Jotform sin vincular <span id="golevg-pending-badge"></span></button><button class="golevg-tab" data-main="REPORTS">Reportes guardados</button></div>
+        <div class="golevg-tabs" id="golevg-main-tabs">
+          <button class="golevg-tab active" data-main="SUMMARY">Resumen</button>
+          <button class="golevg-tab" data-main="OPEN">Abiertos</button>
+          <button class="golevg-tab" data-main="CLOSED">Cerrados</button>
+          <button class="golevg-tab" data-main="PENDING">Jotform sin vincular <span id="golevg-pending-badge"></span></button>
+          <button class="golevg-tab" data-main="REPORTS">Reportes generados</button>
+        </div>
         <div class="golevg-cleanup-banner" id="golevg-cleanup-banner"></div>
-        <section class="golevg-panel active" data-main-panel="CAMPAIGNS">
-          <div class="golevg-stats" id="golevg-stats"></div>
-          <div class="golevg-card"><div class="golevg-card-head"><div><h3>Levantamientos de grupo</h3><small id="golevg-count">0 levantamientos</small></div></div><div class="golevg-filter"><input class="golevg-input" id="golevg-search" placeholder="Buscar código, grupo, responsable o nombre"><select class="golevg-select" id="golevg-status"><option value="">Todos los estados</option><option value="ABIERTO">Abiertos</option><option value="EN_REVISION">En revisión</option><option value="CERRADO">Cerrados</option><option value="ARCHIVADO">Archivados</option></select><select class="golevg-select" id="golevg-group"><option value="">Todos los grupos</option></select><button class="golevg-btn" id="golevg-clear">Limpiar</button></div><div class="golevg-campaign-grid" id="golevg-campaigns"></div></div>
+
+        <section class="golevg-panel active" data-main-panel="SUMMARY">
+          <div class="golevg-stats golevg-summary-stats" id="golevg-summary-stats"></div>
+          <div class="golevg-section-stack">
+            <div class="golevg-card"><div class="golevg-section-title"><div><h3>Levantamientos abiertos</h3><p>Trabajo actual más reciente. Solo se muestran algunos para mantener el Resumen ligero.</p></div><button class="golevg-btn small" id="golevg-summary-open-all">Ver todos</button></div><div class="golevg-campaign-grid" id="golevg-summary-open"></div></div>
+            <div class="golevg-card"><div class="golevg-section-title"><div><h3>Actividad reciente</h3><p>Eventos que pueden reconstruirse con fecha/hora real desde Supabase.</p></div></div><div class="golevg-activity" id="golevg-activity"></div></div>
+            <div class="golevg-card"><div class="golevg-section-title"><div><h3>Buscar en Levantamientos</h3><p>Busca por código, grupo o número exacto de agencia sin descargar todo el histórico.</p></div></div><div class="golevg-inline"><input class="golevg-input" id="golevg-global-search" placeholder="Ej.: 1088, G-44 o LEV-G44-2026-0001" style="flex:1;min-width:240px"><button class="golevg-btn primary" id="golevg-global-search-btn">Buscar</button></div><div class="golevg-search-results" id="golevg-global-results"></div></div>
+          </div>
         </section>
-        <section class="golevg-panel" data-main-panel="PENDING"><div class="golevg-card"><div class="golevg-card-head"><div><h3>Formularios pendientes de vincular</h3><small>Ninguno de estos formularios entra en reportes hasta asignarlo a un levantamiento.</small></div></div><div id="golevg-pending"></div></div></section>
-        <section class="golevg-panel" data-main-panel="REPORTS"><div class="golevg-card"><div class="golevg-card-head"><div><h3>Reportes guardados</h3><small>Documentos históricos generados desde un levantamiento específico.</small></div></div><div class="golevg-report-grid" id="golevg-all-reports"></div></div></section>
+
+        <section class="golevg-panel" data-main-panel="OPEN">
+          <div class="golevg-card"><div class="golevg-section-title"><div><h3>Levantamientos abiertos</h3><p>Trabajo actual. Esta pantalla consulta únicamente estado ABIERTO.</p></div><small id="golevg-open-count">0 levantamientos</small></div>
+            <div class="golevg-list-filter"><input class="golevg-input" id="golevg-open-search" placeholder="Buscar código o agencia"><select class="golevg-select" id="golevg-open-group"><option value="">Todos los grupos</option></select><input class="golevg-input" id="golevg-open-date" type="date"><select class="golevg-select" id="golevg-open-sort"><option value="ULTIMA_ACTIVIDAD">Última actividad</option><option value="RECIENTES">Más recientes</option><option value="ANTIGUOS">Más antiguos</option><option value="GRUPO">Grupo</option><option value="MAS_AGENCIAS">Más agencias</option><option value="MAS_HALLAZGOS">Más hallazgos</option></select><button class="golevg-btn" id="golevg-open-clear">Limpiar</button></div>
+            <div class="golevg-campaign-grid" id="golevg-open-campaigns"></div><div class="golevg-pager" id="golevg-open-pager"></div>
+          </div>
+        </section>
+
+        <section class="golevg-panel" data-main-panel="CLOSED">
+          <div class="golevg-card"><div class="golevg-section-title"><div><h3>Levantamientos cerrados</h3><p>Histórico de campañas terminadas. Cerrado significa que ya no se esperan más inspecciones dentro del levantamiento.</p></div><small id="golevg-closed-count">0 levantamientos</small></div>
+            <div class="golevg-list-filter"><input class="golevg-input" id="golevg-closed-search" placeholder="Buscar código o agencia"><select class="golevg-select" id="golevg-closed-group"><option value="">Todos los grupos</option></select><input class="golevg-input" id="golevg-closed-date" type="date"><select class="golevg-select" id="golevg-closed-sort"><option value="RECIENTES">Más recientes</option><option value="ANTIGUOS">Más antiguos</option><option value="ULTIMA_ACTIVIDAD">Última actividad</option><option value="GRUPO">Grupo</option><option value="MAS_AGENCIAS">Más agencias</option><option value="MAS_HALLAZGOS">Más hallazgos</option></select><button class="golevg-btn" id="golevg-closed-clear">Limpiar</button></div>
+            <div class="golevg-campaign-grid" id="golevg-closed-campaigns"></div><div class="golevg-pager" id="golevg-closed-pager"></div>
+          </div>
+        </section>
+
+        <section class="golevg-panel" data-main-panel="PENDING"><div class="golevg-card"><div class="golevg-card-head"><div><h3>Jotform sin vincular</h3><small>Bandeja de excepciones: formularios que no pudieron completar el flujo automático.</small></div></div><div id="golevg-pending"></div></div></section>
+        <section class="golevg-panel" data-main-panel="REPORTS"><div class="golevg-card"><div class="golevg-card-head"><div><h3>Reportes generados</h3><small>Archivo documental de los entregables PDF/Excel creados desde los hallazgos.</small></div><small id="golevg-report-count">0 reportes</small></div><div class="golevg-report-grid" id="golevg-all-reports"></div><div class="golevg-pager" id="golevg-report-pager"></div></div></section>
         <section id="golevg-detail" style="display:none"></section>
       </div>
 
       <div class="golevg-modal" id="golevg-campaign-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Nuevo levantamiento de grupo</h3><small>Puede durar todos los días que sean necesarios.</small></div><button class="golevg-btn" data-close="golevg-campaign-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field"><label>Grupo</label><select class="golevg-select" id="golevg-f-group"></select></div><div class="golevg-field"><label>Responsable</label><input class="golevg-input" id="golevg-f-responsible" placeholder="Técnico o encargado"></div><div class="golevg-field full"><label>Nombre</label><input class="golevg-input" id="golevg-f-name" value="Levantamiento general de agencias"></div><div class="golevg-field"><label>Fecha de inicio</label><input class="golevg-input" id="golevg-f-start" type="date"></div><div class="golevg-field"><label>Agencias esperadas (opcional)</label><input class="golevg-input" id="golevg-f-expected" type="number" min="0"></div><div class="golevg-field full"><label>Descripción</label><textarea class="golevg-textarea" id="golevg-f-description" rows="3"></textarea></div></div><div class="golevg-help" id="golevg-campaign-status" style="display:none;margin-top:14px"></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-campaign-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-save-campaign">Crear levantamiento</button></div></div></div>
 
-      <div class="golevg-modal" id="golevg-jotform-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Abrir formulario de agencia</h3><small id="golevg-jotform-campaign"></small></div><button class="golevg-btn" data-close="golevg-jotform-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field full"><label>Agencia del grupo</label><select class="golevg-select" id="golevg-j-agency"></select></div><div class="golevg-field"><label>Técnico / responsable</label><input class="golevg-input" id="golevg-j-tech"></div><div class="golevg-field"><label>Fecha de inspección</label><input class="golevg-input" type="date" id="golevg-j-date"></div><div class="golevg-field full"><div class="golevg-help" id="golevg-j-help">El formulario recibirá ocultamente el código del levantamiento, grupo, agencia y origen. Así podrá enviarse hoy o varios días después sin mezclarse.</div></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-jotform-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-open-jotform"><i class="fas fa-up-right-from-square"></i> Abrir Jotform</button></div></div></div>
+      <div class="golevg-modal" id="golevg-jotform-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Abrir formulario de agencia</h3><small id="golevg-jotform-campaign"></small></div><button class="golevg-btn" data-close="golevg-jotform-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field full"><label>Agencia del grupo</label><select class="golevg-select" id="golevg-j-agency"></select></div><div class="golevg-field"><label>Técnico / responsable</label><input class="golevg-input" id="golevg-j-tech"></div><div class="golevg-field"><label>Fecha de inspección</label><input class="golevg-input" type="date" id="golevg-j-date"></div><div class="golevg-field full"><div class="golevg-help" id="golevg-j-help">El formulario general conserva el flujo actual: agencia → grupo oficial → levantamiento abierto del grupo.</div></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-jotform-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-open-jotform"><i class="fas fa-up-right-from-square"></i> Abrir Jotform</button></div></div></div>
 
-      <div class="golevg-modal" id="golevg-problem-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3 id="golevg-problem-title">Agencias con problemas</h3><small id="golevg-problem-subtitle"></small></div><button class="golevg-btn" data-close="golevg-problem-modal">Cerrar</button></div><div id="golevg-problem-content"></div></div></div>
+      <div class="golevg-modal" id="golevg-problem-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3 id="golevg-problem-title">Agencias por hallazgo</h3><small id="golevg-problem-subtitle"></small></div><button class="golevg-btn" data-close="golevg-problem-modal">Cerrar</button></div><div id="golevg-problem-content"></div></div></div>
 
-      <div class="golevg-modal" id="golevg-report-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3>Preparar reporte</h3><small>Selecciona las agencias que formarán parte del documento.</small></div><button class="golevg-btn" data-close="golevg-report-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field full"><label>Título</label><input class="golevg-input" id="golevg-r-title"></div><div class="golevg-field"><label>Responsable</label><input class="golevg-input" id="golevg-r-responsible"></div><div class="golevg-field"><label>Estado del reporte</label><select class="golevg-select" id="golevg-r-status"><option value="BORRADOR">Borrador</option><option value="FINAL">Final</option></select></div><div class="golevg-field full"><label>Observación</label><textarea class="golevg-textarea" id="golevg-r-observation" rows="2"></textarea></div><div class="golevg-field full"><label>Agencias incluidas</label><div id="golevg-r-items" style="border:1px solid #d7e5ed;border-radius:13px;max-height:390px;overflow:auto"></div></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-report-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-save-report">Guardar reporte</button></div></div></div>
+      <div class="golevg-modal" id="golevg-report-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3>Preparar reporte</h3><small>Selecciona las agencias incluidas en este entregable documental.</small></div><button class="golevg-btn" data-close="golevg-report-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field full"><label>Título</label><input class="golevg-input" id="golevg-r-title"></div><div class="golevg-field"><label>Responsable</label><input class="golevg-input" id="golevg-r-responsible"></div><div class="golevg-field"><label>Estado del reporte</label><select class="golevg-select" id="golevg-r-status"><option value="BORRADOR">Borrador</option><option value="FINAL">Final</option></select></div><div class="golevg-field full"><label>Observación</label><textarea class="golevg-textarea" id="golevg-r-observation" rows="2"></textarea></div><div class="golevg-field full"><label>Agencias incluidas</label><div id="golevg-r-items" style="border:1px solid #d7e5ed;border-radius:13px;max-height:390px;overflow:auto"></div></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-report-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-save-report">Guardar reporte</button></div></div></div>
 
       <div class="golevg-modal" id="golevg-link-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Vincular formulario</h3><small>El formulario se reprocesará dentro del levantamiento seleccionado.</small></div><button class="golevg-btn" data-close="golevg-link-modal">Cerrar</button></div><div class="golevg-field"><label>Levantamiento abierto</label><select class="golevg-select" id="golevg-link-campaign"></select></div><input type="hidden" id="golevg-link-intake"><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn primary" id="golevg-link-save">Vincular y procesar</button></div></div></div>
 
@@ -460,13 +580,244 @@
   }
 
   function fillGroupOptions() {
-    const current = $('#golevg-group')?.value || '';
-    const labels = [...new Set([...groups().map(groupLabel), ...state.campaigns.map((item) => normalizeGroup(item.grupo_codigo)).filter(Boolean)])]
+    const labels = [...new Set(groups().map(groupLabel).filter(Boolean))]
       .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
-    const html = '<option value="">Todos los grupos</option>' + labels.map((label) => `<option value="${esc(label)}">Grupo ${esc(label)}</option>`).join('');
-    if ($('#golevg-group')) { $('#golevg-group').innerHTML = html; $('#golevg-group').value = labels.includes(current) ? current : ''; }
+    const filterHtml = '<option value="">Todos los grupos</option>' + labels.map((label) => `<option value="${esc(label)}">Grupo ${esc(label)}</option>`).join('');
+    for (const selector of ['#golevg-open-group', '#golevg-closed-group']) {
+      const element = $(selector);
+      if (!element) continue;
+      const current = normalizeGroup(element.value);
+      element.innerHTML = filterHtml;
+      element.value = labels.includes(current) ? current : '';
+    }
     const create = $('#golevg-f-group');
     if (create) create.innerHTML = '<option value="">Selecciona un grupo</option>' + groups().sort((a, b) => groupLabel(a).localeCompare(groupLabel(b), 'es', { numeric: true })).map((group) => `<option value="${groupId(group)}" data-code="${esc(groupLabel(group))}">Grupo ${esc(groupLabel(group))}</option>`).join('');
+  }
+
+
+  function normalizedMainTab(tab) {
+    const value = text(tab).toUpperCase();
+    if (value === 'CAMPAIGNS') return 'SUMMARY';
+    return ['SUMMARY','OPEN','CLOSED','PENDING','REPORTS'].includes(value) ? value : 'SUMMARY';
+  }
+
+  function normalizedCampaignTab(tab) {
+    const value = text(tab).toUpperCase();
+    if (value === 'PROBLEMS' || value === 'RESOLVED') return 'FINDINGS';
+    return ['AGENCIES','FINDINGS','REPORTS'].includes(value) ? value : 'AGENCIES';
+  }
+
+  function listFilters(status) {
+    const prefix = status === 'CERRADO' ? 'closed' : 'open';
+    return {
+      search: text($(`#golevg-${prefix}-search`)?.value),
+      group: normalizeGroup($(`#golevg-${prefix}-group`)?.value),
+      date: text($(`#golevg-${prefix}-date`)?.value) || null,
+      sort: text($(`#golevg-${prefix}-sort`)?.value) || (status === 'CERRADO' ? 'RECIENTES' : 'ULTIMA_ACTIVIDAD')
+    };
+  }
+
+  async function loadPendingCount() {
+    const connected = client();
+    if (!connected?.from) return 0;
+    const result = await connected.from(TABLES.intakes).select('id', { count: 'exact', head: true }).in('estado', ['PENDIENTE_VINCULO','ERROR']);
+    const count = result.error ? 0 : Number(result.count || 0);
+    if ($('#golevg-pending-badge')) $('#golevg-pending-badge').textContent = count ? `(${count})` : '(0)';
+    return count;
+  }
+
+  async function loadSummary() {
+    const connected = client();
+    if (!connected?.rpc) throw new Error('Supabase no está disponible.');
+    $('#golevg-summary-open').innerHTML = '<div class="golevg-empty">Cargando trabajo actual…</div>';
+    $('#golevg-activity').innerHTML = '<div class="golevg-empty">Cargando actividad…</div>';
+    const [summary, recent, activity] = await Promise.all([
+      connected.rpc('ops_levantamiento_resumen_v1'),
+      connected.rpc('ops_levantamiento_listar_v1', { p_estado: 'ABIERTO', p_buscar: null, p_grupo: null, p_fecha_inicio: null, p_orden: 'ULTIMA_ACTIVIDAD', p_limit: 6, p_offset: 0 }),
+      connected.rpc('ops_levantamiento_actividad_reciente_v1', { p_limit: 8 })
+    ]);
+    for (const result of [summary, recent, activity]) if (result.error) throw result.error;
+    state.summary = Array.isArray(summary.data) ? (summary.data[0] || {}) : (summary.data || {});
+    state.summaryRecent = recent.data || [];
+    state.recentActivity = activity.data || [];
+    renderStats();
+    renderSummaryOpen();
+    renderActivity();
+    if ($('#golevg-pending-badge')) $('#golevg-pending-badge').textContent = `(${Number(state.summary.jotform_sin_vincular || 0)})`;
+  }
+
+  async function loadCampaignList(status, options = {}) {
+    const connected = client();
+    if (!connected?.rpc) throw new Error('Supabase no está disponible.');
+    const closed = status === 'CERRADO';
+    const pageKey = closed ? 'closedPage' : 'openPage';
+    if (options.resetPage) state[pageKey] = 0;
+    const page = Math.max(0, Number(state[pageKey] || 0));
+    const filters = listFilters(status);
+    const holder = $(closed ? '#golevg-closed-campaigns' : '#golevg-open-campaigns');
+    if (holder) holder.innerHTML = '<div class="golevg-empty">Cargando levantamientos…</div>';
+    const result = await connected.rpc('ops_levantamiento_listar_v1', {
+      p_estado: status,
+      p_buscar: filters.search || null,
+      p_grupo: filters.group || null,
+      p_fecha_inicio: filters.date,
+      p_orden: filters.sort,
+      p_limit: state.listPageSize,
+      p_offset: page * state.listPageSize
+    });
+    if (result.error) throw result.error;
+    state.campaigns = result.data || [];
+    if (!state.campaigns.length && page > 0) { state[pageKey] = 0; return loadCampaignList(status); }
+    state.filteredCampaigns = state.campaigns;
+    state.campaignTotal = Number(state.campaigns[0]?.total_count || 0);
+    state.currentListStatus = status;
+    renderCampaigns();
+    saveUiState();
+  }
+
+  async function loadPending() {
+    const connected = client();
+    const result = await connected.from(TABLES.intakes).select('*', { count: 'exact' }).in('estado', ['PENDIENTE_VINCULO','ERROR']).order('recibido_en', { ascending: false }).limit(100);
+    if (result.error) throw result.error;
+    state.intakes = result.data || [];
+    renderPending();
+    if ($('#golevg-pending-badge')) $('#golevg-pending-badge').textContent = `(${Number(result.count || state.intakes.length)})`;
+  }
+
+  async function enrichReportCreators(rows) {
+    const list = Array.isArray(rows) ? rows : [];
+    const ids = [...new Set(list.map((item) => item.creado_por).filter(uuid))];
+    const names = new Map();
+    if (ids.length) {
+      const profiles = await client().from('perfiles').select('id,nombre_completo').in('id', ids);
+      if (!profiles.error) (profiles.data || []).forEach((item) => names.set(item.id, item.nombre_completo));
+    }
+    list.forEach((item) => { item._creator_name = item.creado_por ? (names.get(item.creado_por) || 'No registrado') : 'No registrado'; });
+    return list;
+  }
+
+  async function loadReports() {
+    const connected = client();
+    const start = state.reportPage * state.reportPageSize;
+    const end = start + state.reportPageSize - 1;
+    const result = await connected.from(TABLES.reports)
+      .select('*, ops_levantamiento_campanas(id,codigo,grupo_codigo,nombre,estado)', { count: 'exact' })
+      .order('creado_en', { ascending: false })
+      .range(start, end);
+    if (result.error) throw result.error;
+    state.allReports = result.data || [];
+    state.reportTotal = Number(result.count || 0);
+    if (!state.allReports.length && state.reportPage > 0) { state.reportPage = 0; return loadReports(); }
+    await enrichReportCreators(state.allReports);
+    renderAllReports();
+  }
+
+  async function loadMainTab(tab = state.mainTab) {
+    const normalized = normalizedMainTab(tab);
+    if (normalized === 'SUMMARY') await loadSummary();
+    else if (normalized === 'OPEN') await loadCampaignList('ABIERTO');
+    else if (normalized === 'CLOSED') await loadCampaignList('CERRADO');
+    else if (normalized === 'PENDING') await loadPending();
+    else if (normalized === 'REPORTS') await loadReports();
+    if (normalized !== 'SUMMARY' && normalized !== 'PENDING') await loadPendingCount();
+    await loadPendingCleanups();
+  }
+
+  function renderStats() {
+    const summary = state.summary || {};
+    const items = [
+      ['Levantamientos abiertos', Number(summary.levantamientos_abiertos || 0), 'OPEN'],
+      ['Agencias recibidas hoy', Number(summary.agencias_recibidas_hoy || 0), null],
+      ['Hallazgos detectados', Number(summary.hallazgos_detectados || 0), null],
+      ['Fotos en R2', Number(summary.fotos_r2 || 0), null],
+      ['Jotform sin vincular', Number(summary.jotform_sin_vincular || 0), 'PENDING'],
+      ['Reportes generados', Number(summary.reportes_generados || 0), 'REPORTS']
+    ];
+    const holder = $('#golevg-summary-stats');
+    if (holder) holder.innerHTML = items.map(([label, value, tab]) => `<div class="golevg-stat ${tab ? 'is-clickable' : ''}" ${tab ? `data-summary-tab="${tab}"` : ''}><span>${label}</span><strong>${value}</strong></div>`).join('');
+    $$('[data-summary-tab]', holder).forEach((item) => { item.onclick = () => switchMainTab(item.dataset.summaryTab); });
+    if ($('#golevg-new')) $('#golevg-new').style.display = canManage() ? '' : 'none';
+  }
+
+  function campaignCard(item, mode = 'LIST') {
+    const isClosed = item.estado === 'CERRADO';
+    const hallazgos = Number(item.hallazgos_detectados ?? (Number(item.hallazgos_activos || 0) + Number(item.hallazgos_resueltos || 0)));
+    const photos = Number(item.fotos_r2 ?? item.evidencias_count ?? 0);
+    const reports = Number(item.reportes_generados || 0);
+    const startMoment = item.creado_en || item.fecha_inicio;
+    const timeLabel = isClosed ? 'Duración' : 'Tiempo abierto';
+    const timeValue = isClosed ? durationText(item.fecha_inicio || startMoment, item.fecha_cierre, false) : durationText(startMoment);
+    const actions = mode === 'SUMMARY'
+      ? `<button class="golevg-btn primary small" data-open-campaign="${item.id}">Abrir</button>`
+      : `<button class="golevg-btn primary small" data-open-campaign="${item.id}">Abrir</button>${canManage() ? `<button class="golevg-btn small" data-toggle-campaign="${item.id}" data-next="${isClosed ? 'ABIERTO' : 'CERRADO'}">${isClosed ? 'Reabrir' : 'Cerrar'}</button>` : ''}${canDelete() ? `<button class="golevg-btn danger small" data-delete-campaign="${item.id}">Eliminar</button>` : ''}`;
+    return `<article class="golevg-campaign"><div class="golevg-inline" style="justify-content:space-between"><span class="golevg-code">${esc(item.codigo || '-')}</span><span class="golevg-badge ${badgeClass(item.estado)}">${campaignStatusLabel(item.estado)}</span></div><h3>Grupo ${esc(item.grupo_codigo)} · ${esc(item.nombre || 'Levantamiento')}</h3><div class="golevg-campaign-details"><div><span>Inicio</span><b>${formatDate(item.fecha_inicio)}</b></div>${isClosed ? `<div><span>Cierre</span><b>${formatDate(item.fecha_cierre)}</b></div>` : `<div><span>Última actividad</span><b>${formatDateTime(item.actualizado_en)}</b><small class="golevg-subtle">${relativeTime(item.actualizado_en)}</small></div>`}<div><span>${timeLabel}</span><b>${timeValue}</b></div><div><span>Agencias</span><b>${Number(item.agencias_recibidas || 0)}</b></div><div><span>Hallazgos</span><b>${hallazgos}</b></div><div><span>Fotos R2</span><b>${photos}</b></div><div><span>Reportes generados</span><b>${reports}</b></div></div><div class="golevg-actions">${actions}</div></article>`;
+  }
+
+  function bindCampaignCards(holder) {
+    $$('[data-open-campaign]', holder).forEach((button) => { button.onclick = () => openCampaign(button.dataset.openCampaign); });
+    $$('[data-toggle-campaign]', holder).forEach((button) => { button.onclick = () => toggleCampaign(button.dataset.toggleCampaign, button.dataset.next); });
+    $$('[data-delete-campaign]', holder).forEach((button) => { button.onclick = () => openDeleteModal(button.dataset.deleteCampaign); });
+  }
+
+  function renderSummaryOpen() {
+    const holder = $('#golevg-summary-open');
+    if (!holder) return;
+    if (!state.summaryRecent.length) { holder.innerHTML = '<div class="golevg-empty">No hay levantamientos abiertos.</div>'; return; }
+    holder.innerHTML = state.summaryRecent.map((item) => campaignCard(item, 'SUMMARY')).join('');
+    bindCampaignCards(holder);
+  }
+
+  function renderActivity() {
+    const holder = $('#golevg-activity');
+    if (!holder) return;
+    if (!state.recentActivity.length) { holder.innerHTML = '<div class="golevg-empty">Todavía no hay actividad reciente disponible.</div>'; return; }
+    holder.innerHTML = state.recentActivity.map((item) => `<div class="golevg-activity-item"><div class="golevg-activity-time">${formatDateTime(item.ocurrido_en)}</div><div><div class="golevg-activity-title">${esc(item.titulo || 'Actividad')}</div><div class="golevg-activity-detail">${esc(item.detalle || '')}${item.campana_codigo ? ` · ${esc(item.campana_codigo)}` : ''}</div></div></div>`).join('');
+  }
+
+  function renderPager(holderId, page, total, pageSize, onPage) {
+    const holder = $(holderId);
+    if (!holder) return;
+    const pages = Math.max(1, Math.ceil(Number(total || 0) / pageSize));
+    if (pages <= 1) { holder.innerHTML = ''; return; }
+    holder.innerHTML = `<button class="golevg-btn small" data-page-prev ${page <= 0 ? 'disabled' : ''}>Anterior</button><span class="golevg-subtle">Página ${page + 1} de ${pages}</span><button class="golevg-btn small" data-page-next ${page >= pages - 1 ? 'disabled' : ''}>Siguiente</button>`;
+    $('[data-page-prev]', holder)?.addEventListener('click', () => onPage(Math.max(0, page - 1)));
+    $('[data-page-next]', holder)?.addEventListener('click', () => onPage(Math.min(pages - 1, page + 1)));
+  }
+
+  function applyCampaignFilters() {
+    const status = state.mainTab === 'CLOSED' ? 'CERRADO' : 'ABIERTO';
+    return loadCampaignList(status, { resetPage: true });
+  }
+
+  function renderCampaigns() {
+    const closed = state.currentListStatus === 'CERRADO';
+    const holder = $(closed ? '#golevg-closed-campaigns' : '#golevg-open-campaigns');
+    const count = $(closed ? '#golevg-closed-count' : '#golevg-open-count');
+    if (count) count.textContent = `${state.campaignTotal} levantamiento(s)`;
+    if (!holder) return;
+    if (!state.campaigns.length) holder.innerHTML = `<div class="golevg-empty">No hay levantamientos ${closed ? 'cerrados' : 'abiertos'} con estos filtros.</div>`;
+    else { holder.innerHTML = state.campaigns.map((item) => campaignCard(item, 'LIST')).join(''); bindCampaignCards(holder); }
+    const pageKey = closed ? 'closedPage' : 'openPage';
+    renderPager(closed ? '#golevg-closed-pager' : '#golevg-open-pager', state[pageKey], state.campaignTotal, state.listPageSize, async (nextPage) => {
+      state[pageKey] = nextPage;
+      await loadCampaignList(closed ? 'CERRADO' : 'ABIERTO');
+      window.scrollTo({ top: Math.max(0, (holder?.getBoundingClientRect().top || 0) + window.scrollY - 120), behavior: 'smooth' });
+    });
+  }
+
+  async function searchGlobal() {
+    const term = text($('#golevg-global-search')?.value);
+    const holder = $('#golevg-global-results');
+    if (!holder) return;
+    if (!term) { holder.innerHTML = '<div class="golevg-empty">Escribe un código, grupo o agencia.</div>'; return; }
+    holder.innerHTML = '<div class="golevg-empty">Buscando…</div>';
+    const result = await client().rpc('ops_levantamiento_listar_v1', { p_estado: null, p_buscar: term, p_grupo: null, p_fecha_inicio: null, p_orden: 'ULTIMA_ACTIVIDAD', p_limit: 50, p_offset: 0 });
+    if (result.error) { holder.innerHTML = '<div class="golevg-empty">No se pudo realizar la búsqueda.</div>'; return toast(result.error.message, 'error'); }
+    state.globalSearchResults = result.data || [];
+    if (!state.globalSearchResults.length) { holder.innerHTML = '<div class="golevg-empty">No se encontraron levantamientos.</div>'; return; }
+    holder.innerHTML = state.globalSearchResults.map((item) => `<div class="golevg-search-result"><div><strong>${esc(item.codigo)} · Grupo ${esc(item.grupo_codigo)}</strong><small>${campaignStatusLabel(item.estado)} · Inicio ${formatDate(item.fecha_inicio)} · ${Number(item.agencias_recibidas || 0)} agencias · ${Number(item.hallazgos_detectados || 0)} hallazgos</small></div><button class="golevg-btn small" data-search-open="${item.id}">Abrir</button></div>`).join('');
+    $$('[data-search-open]', holder).forEach((button) => { button.onclick = () => openCampaign(button.dataset.searchOpen, { returnTab: 'SUMMARY' }); });
+    saveUiState();
   }
 
   async function open(navElement) {
@@ -474,58 +825,40 @@
     const saved = readUiState();
     injectStyles(); injectView(); installNavigation(); bind(); showModuleView(navElement);
     await Promise.all([loadConfig(), loadCatalog()]);
-    await loadAll();
+    fillGroupOptions();
     await restoreUiState(saved);
   }
 
   async function loadAll() {
-    const connected = client();
-    if (!connected) return toast('Supabase todavía no está disponible.', 'error');
-    await loadCatalog();
-    $('#golevg-campaigns').innerHTML = '<div class="golevg-empty">Cargando levantamientos…</div>';
     try {
-      const [campaigns, reports, intakes] = await Promise.all([
-        connected.from(TABLES.campaigns).select('*').order('actualizado_en', { ascending: false }),
-        connected.from(TABLES.reports).select('*, ops_levantamiento_campanas(codigo,grupo_codigo,nombre)').order('creado_en', { ascending: false }),
-        connected.from(TABLES.intakes).select('*').in('estado', ['PENDIENTE_VINCULO', 'ERROR']).order('recibido_en', { ascending: false }).limit(100)
-      ]);
-      if (campaigns.error) throw campaigns.error;
-      if (reports.error) throw reports.error;
-      if (intakes.error) throw intakes.error;
-      state.campaigns = campaigns.data || [];
-      state.allReports = reports.data || [];
-      state.intakes = intakes.data || [];
-      fillGroupOptions(); applyCampaignFilters(); renderStats(); renderPending(); renderAllReports();
-      $('#golevg-pending-badge').textContent = state.intakes.length ? `(${state.intakes.length})` : '';
-      await loadPendingCleanups();
+      await loadMainTab(state.mainTab || 'SUMMARY');
     } catch (error) {
-      toast(error.message || 'No se pudieron cargar los levantamientos.', 'error');
-      $('#golevg-campaigns').innerHTML = '<div class="golevg-empty">No fue posible cargar los datos. Ejecuta primero el SQL del parche.</div>';
+      console.error('[Levantamientos] Error cargando pestaña:', error);
+      toast(error.message || 'No se pudieron cargar los datos de Levantamientos.', 'error');
     }
   }
 
   async function restoreUiState(saved) {
-    if (!saved || !isModuleVisible()) return;
     state.uiRestoring = true;
     try {
-      applyStoredFilters(saved);
-      applyCampaignFilters();
-      switchMainTab(['CAMPAIGNS', 'PENDING', 'REPORTS'].includes(saved.mainTab) ? saved.mainTab : 'CAMPAIGNS', { persist: false });
-
-      const selectedId = text(saved.selectedCampaignId);
-      if (selectedId && saved.mainTab === 'CAMPAIGNS' && state.campaigns.some((item) => item.id === selectedId)) {
+      applyStoredFilters(saved || {});
+      const tab = normalizedMainTab(saved?.mainTab || 'SUMMARY');
+      state.mainTab = tab;
+      await switchMainTab(tab, { persist: false, load: true });
+      if (tab === 'SUMMARY' && text(saved?.globalSearch)) await searchGlobal();
+      const selectedId = text(saved?.selectedCampaignId);
+      if (selectedId) {
         await openCampaign(selectedId, {
-          tab: ['AGENCIES', 'PROBLEMS', 'RESOLVED', 'REPORTS'].includes(saved.campaignTab) ? saved.campaignTab : 'AGENCIES',
+          tab: normalizedCampaignTab(saved?.campaignTab),
           scroll: false,
-          persist: false
+          persist: false,
+          returnTab: tab
         });
-      } else if (selectedId && !state.campaigns.some((item) => item.id === selectedId)) {
-        state.selectedCampaign = null;
       }
-      restoreScroll(saved);
+      restoreScroll(saved || {});
     } finally {
       state.uiRestoring = false;
-      saveUiState(saved.scrollY);
+      saveUiState(saved?.scrollY || 0);
     }
   }
 
@@ -534,16 +867,11 @@
     const snapshot = captureUiState();
     state.loadingAll = true;
     try {
-      await loadAll();
       applyStoredFilters(snapshot);
-      applyCampaignFilters();
-      switchMainTab(snapshot.mainTab || 'CAMPAIGNS', { persist: false });
-      if (snapshot.selectedCampaignId && snapshot.mainTab === 'CAMPAIGNS' && state.campaigns.some((item) => item.id === snapshot.selectedCampaignId)) {
-        await openCampaign(snapshot.selectedCampaignId, { tab: snapshot.campaignTab, scroll: false, persist: false });
-      } else if (snapshot.selectedCampaignId && !state.campaigns.some((item) => item.id === snapshot.selectedCampaignId)) {
-        state.selectedCampaign = null;
-        $('#golevg-detail').style.display = 'none';
-        $('[data-main-panel="CAMPAIGNS"]')?.classList.add('active');
+      await loadMainTab(snapshot.mainTab || 'SUMMARY');
+      switchMainTab(snapshot.mainTab || 'SUMMARY', { persist: false, load: false });
+      if (snapshot.selectedCampaignId) {
+        await openCampaign(snapshot.selectedCampaignId, { tab: normalizedCampaignTab(snapshot.campaignTab), scroll: false, persist: false, returnTab: snapshot.mainTab });
       }
       restoreScroll(snapshot);
     } catch (error) {
@@ -552,48 +880,6 @@
       state.loadingAll = false;
       saveUiState(snapshot.scrollY);
     }
-  }
-
-  function renderStats() {
-    const active = state.campaigns.filter((item) => ['ABIERTO', 'EN_REVISION'].includes(item.estado));
-    const items = [
-      ['Levantamientos abiertos', active.length],
-      ['Agencias recibidas', state.campaigns.reduce((sum, item) => sum + Number(item.agencias_recibidas || 0), 0)],
-      ['Problemas activos', state.campaigns.reduce((sum, item) => sum + Number(item.hallazgos_activos || 0), 0)],
-      ['Problemas resueltos', state.campaigns.reduce((sum, item) => sum + Number(item.hallazgos_resueltos || 0), 0)],
-      ['Reportes guardados', state.allReports.length]
-    ];
-    $('#golevg-stats').innerHTML = items.map(([label, value]) => `<div class="golevg-stat"><span>${label}</span><strong>${value}</strong></div>`).join('');
-    if ($('#golevg-new')) $('#golevg-new').style.display = canManage() ? '' : 'none';
-  }
-
-  function applyCampaignFilters() {
-    const search = normalize($('#golevg-search')?.value || '');
-    const status = $('#golevg-status')?.value || '';
-    const group = normalizeGroup($('#golevg-group')?.value || '');
-    state.filteredCampaigns = state.campaigns.filter((item) => {
-      if (status && item.estado !== status) return false;
-      if (group && normalizeGroup(item.grupo_codigo) !== group) return false;
-      if (search && !normalize([item.codigo, item.grupo_codigo, item.nombre, item.responsable_nombre, item.descripcion].join(' ')).includes(search)) return false;
-      return true;
-    });
-    renderCampaigns();
-    saveUiState();
-  }
-
-  function renderCampaigns() {
-    $('#golevg-count').textContent = `${state.filteredCampaigns.length} levantamiento(s)`;
-    if (!state.filteredCampaigns.length) {
-      $('#golevg-campaigns').innerHTML = '<div class="golevg-empty">No hay levantamientos con estos filtros.</div>';
-      return;
-    }
-    $('#golevg-campaigns').innerHTML = state.filteredCampaigns.map((item) => {
-      const expected = item.agencias_esperadas == null ? '-' : item.agencias_esperadas;
-      return `<article class="golevg-campaign"><span class="golevg-code">${esc(item.codigo)}</span><h3>Grupo ${esc(item.grupo_codigo)} · ${esc(item.nombre)}</h3><p>${esc(item.descripcion || 'Sin descripción adicional.')}</p><div class="golevg-metrics"><div class="golevg-metric"><span>Agencias</span><b>${item.agencias_recibidas}/${expected}</b></div><div class="golevg-metric"><span>Problemas activos</span><b>${item.hallazgos_activos || 0}</b></div><div class="golevg-metric"><span>Fotos en R2</span><b>${item.evidencias_count || 0}</b></div></div><div class="golevg-inline" style="justify-content:space-between"><span class="golevg-badge ${badgeClass(item.estado)}">${campaignStatusLabel(item.estado)}</span><span style="font-size:11px;color:#73899a">Inicio: ${formatDate(item.fecha_inicio)}</span></div><div class="golevg-actions" style="margin-top:13px"><button class="golevg-btn primary small" data-open-campaign="${item.id}">Abrir</button><button class="golevg-btn small" data-toggle-campaign="${item.id}" data-next="${item.estado === 'CERRADO' ? 'ABIERTO' : 'CERRADO'}">${item.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar'}</button>${canDelete() ? `<button class="golevg-btn danger small" data-delete-campaign="${item.id}">Eliminar</button>` : ''}</div></article>`;
-    }).join('');
-    $$('[data-open-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => openCampaign(button.dataset.openCampaign); });
-    $$('[data-toggle-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => toggleCampaign(button.dataset.toggleCampaign, button.dataset.next); });
-    $$('[data-delete-campaign]', $('#golevg-campaigns')).forEach((button) => { button.onclick = () => openDeleteModal(button.dataset.deleteCampaign); });
   }
 
   function setCampaignStatus(message, tone = 'info') {
@@ -619,38 +905,36 @@
       setCampaignStatus('Selecciona el grupo y escribe el nombre del levantamiento.', 'error');
       return toast('Selecciona el grupo y escribe el nombre.', 'error');
     }
-    const activeExisting = state.campaigns.find((item) => item.origen === 'MANUAL' && normalizeGroup(item.grupo_codigo) === normalizeGroup(groupCode) && ['ABIERTO', 'EN_REVISION'].includes(item.estado));
-    if (activeExisting) {
-      closeModal('golevg-campaign-modal');
-      toast(`El grupo ${groupCode} ya tiene el levantamiento abierto ${activeExisting.codigo}.`, 'info');
-      return openCampaign(activeExisting.id);
-    }
-    const payload = {
-      grupo_id: uuid(groupIdValue) ? groupIdValue : null,
-      grupo_codigo: groupCode,
-      nombre: name,
-      descripcion: text($('#golevg-f-description').value) || null,
-      responsable_nombre: text($('#golevg-f-responsible').value) || null,
-      origen: 'MANUAL',
-      origen_id: null,
-      estado: 'ABIERTO',
-      fecha_inicio: $('#golevg-f-start').value || today(),
-      agencias_esperadas: Number($('#golevg-f-expected').value) || null
-    };
     try {
       const connected = client();
-      if (!connected?.from) throw new Error('La conexión con Supabase no está disponible. Recarga el sistema e inicia sesión nuevamente.');
+      if (!connected?.from) throw new Error('La conexión con Supabase no está disponible.');
+      const existing = await connected.from(TABLES.campaigns).select('*').eq('origen', 'MANUAL').eq('grupo_codigo', groupCode).in('estado', ['ABIERTO','EN_REVISION']).order('creado_en', { ascending: false }).limit(1).maybeSingle();
+      if (existing.error) throw existing.error;
+      if (existing.data) {
+        closeModal('golevg-campaign-modal');
+        toast(`El grupo ${groupCode} ya tiene el levantamiento activo ${existing.data.codigo}.`, 'info');
+        return openCampaign(existing.data.id, { returnTab: 'OPEN' });
+      }
+      const payload = {
+        grupo_id: uuid(groupIdValue) ? groupIdValue : null,
+        grupo_codigo: groupCode,
+        nombre,
+        descripcion: text($('#golevg-f-description').value) || null,
+        responsable_nombre: text($('#golevg-f-responsible').value) || null,
+        origen: 'MANUAL', origen_id: null, estado: 'ABIERTO',
+        fecha_inicio: $('#golevg-f-start').value || today(),
+        agencias_esperadas: Number($('#golevg-f-expected').value) || null
+      };
       if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando…'; }
       setCampaignStatus(`Creando levantamiento para el Grupo ${groupCode}…`);
       const response = await connected.from(TABLES.campaigns).insert(payload).select('*').single();
       if (response.error) throw response.error;
-      if (!response.data?.id) throw new Error('Supabase no devolvió el levantamiento creado.');
       closeModal('golevg-campaign-modal');
       toast(`Levantamiento ${response.data.codigo} creado correctamente.`, 'success');
-      await loadAll();
-      await openCampaign(response.data.id);
+      await switchMainTab('OPEN', { load: true });
+      await openCampaign(response.data.id, { returnTab: 'OPEN' });
     } catch (error) {
-      console.error('[Levantamientos de grupo] Error creando levantamiento:', error, payload);
+      console.error('[Levantamientos de grupo] Error creando levantamiento:', error);
       const message = text(error?.message || error) || 'No se pudo crear el levantamiento.';
       setCampaignStatus(message, 'error');
       toast(message, 'error');
@@ -681,29 +965,32 @@
 
   async function toggleCampaign(id, next) {
     if (!requireManage()) return;
-    const item = state.campaigns.find((row) => row.id === id);
-    if (!item) return;
+    let item = state.campaigns.find((row) => row.id === id) || state.summaryRecent.find((row) => row.id === id) || state.globalSearchResults.find((row) => row.id === id) || (state.selectedCampaign?.id === id ? state.selectedCampaign : null);
+    if (!item) {
+      const lookup = await client().from(TABLES.campaigns).select('*').eq('id', id).single();
+      if (lookup.error) return toast(lookup.error.message, 'error');
+      item = lookup.data;
+    }
     const message = next === 'CERRADO'
-      ? `¿Cerrar ${item.codigo}? Los próximos formularios generales de este grupo crearán o utilizarán otro levantamiento abierto.`
-      : `¿Reabrir ${item.codigo}?`;
+      ? `¿Cerrar ${item.codigo}? Cerrado significa que ya no esperamos más inspecciones dentro de esta campaña.`
+      : `¿Reabrir ${item.codigo}? Volverá a aparecer como trabajo actual.`;
     if (!global.confirm(message)) return;
     const response = await client().from(TABLES.campaigns).update({ estado: next }).eq('id', id);
     if (response.error) return toast(response.error.message, 'error');
     toast(next === 'CERRADO' ? 'Levantamiento cerrado.' : 'Levantamiento reabierto.', 'success');
-    await loadAll();
-    if (state.selectedCampaign?.id === id) await openCampaign(id, { scroll: false });
+    if (state.selectedCampaign?.id === id) closeCampaignDetail({ scroll: false, persist: false });
+    await loadMainTab(state.mainTab);
     saveUiState();
   }
 
   async function openCampaign(id, options = {}) {
-    const requestedTab = options.tab || (state.selectedCampaign?.id === id ? state.campaignTab : 'AGENCIES');
+    const requestedTab = normalizedCampaignTab(options.tab || (state.selectedCampaign?.id === id ? state.campaignTab : 'AGENCIES'));
     const connected = client();
-    state.mainTab = 'CAMPAIGNS';
-    $$('.golevg-tab[data-main]', $('#golevg-main-tabs')).forEach((button) => button.classList.toggle('active', button.dataset.main === 'CAMPAIGNS'));
-    $$('[data-main-panel]').forEach((panel) => panel.classList.toggle('active', panel.dataset.mainPanel === 'CAMPAIGNS'));
+    state.detailReturnTab = normalizedMainTab(options.returnTab || state.mainTab || 'SUMMARY');
+    $$('.golevg-tab[data-main]', $('#golevg-main-tabs')).forEach((button) => button.classList.toggle('active', button.dataset.main === state.detailReturnTab));
+    $$('[data-main-panel]').forEach((panel) => panel.classList.remove('active'));
     $('#golevg-detail').style.display = 'block';
     $('#golevg-detail').innerHTML = '<div class="golevg-card"><div class="golevg-empty">Cargando detalle del levantamiento…</div></div>';
-    $('[data-main-panel="CAMPAIGNS"]').classList.remove('active');
     try {
       const [campaign, expedients, findings, evidence, reports] = await Promise.all([
         connected.from(TABLES.campaigns).select('*').eq('id', id).single(),
@@ -718,6 +1005,7 @@
       state.findings = findings.data || [];
       state.evidence = evidence.data || [];
       state.campaignReports = reports.data || [];
+      await enrichReportCreators(state.campaignReports);
       state.campaignTab = requestedTab;
       renderCampaignDetail();
       if (options.scroll !== false) $('#golevg-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -731,17 +1019,18 @@
   function renderCampaignDetail() {
     const c = state.selectedCampaign;
     if (!c) return;
-    const activeFindings = state.findings.filter((item) => ['PENDIENTE', 'EN_COORDINACION', 'EN_PROCESO'].includes(item.estado));
+    const detected = state.findings.filter((item) => item.estado !== 'DESCARTADO');
+    const migratedPhotos = state.evidence.filter((item) => item.estado_r2 === 'MIGRADO').length;
     $('#golevg-detail').innerHTML = `
-      <div class="golevg-detail-head"><div><a class="golevg-link" id="golevg-back">← Volver a levantamientos</a><h2>${esc(c.codigo)} · Grupo ${esc(c.grupo_codigo)}</h2><div class="golevg-detail-meta"><span class="golevg-badge ${badgeClass(c.estado)}">${campaignStatusLabel(c.estado)}</span><span class="golevg-badge wait">Responsable: ${esc(c.responsable_nombre || 'Sin asignar')}</span><span class="golevg-badge wait">Inicio: ${formatDate(c.fecha_inicio)}</span>${c.fecha_cierre ? `<span class="golevg-badge ok">Cierre: ${formatDate(c.fecha_cierre)}</span>` : ''}</div></div><div class="golevg-actions"><button class="golevg-btn primary" id="golevg-detail-form"><i class="fas fa-link"></i> Copiar enlace general de Jotform</button><button class="golevg-btn" id="golevg-detail-refresh"><i class="fas fa-rotate"></i> Actualizar</button><button class="golevg-btn" id="golevg-detail-close">${c.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar levantamiento'}</button>${canDelete() ? '<button class="golevg-btn danger" id="golevg-detail-delete">Eliminar</button>' : ''}</div></div>
-      <div class="golevg-help" style="margin-bottom:13px"><b>Recepción automática:</b> el técnico no necesita entrar al sistema ni escoger este levantamiento. Envía el formulario general; la agencia entra aquí cuando su grupo oficial coincide y este es el levantamiento manual abierto del grupo.</div>
-      <div class="golevg-stats"><div class="golevg-stat"><span>Agencias inspeccionadas</span><strong>${state.expedients.length}</strong></div><div class="golevg-stat"><span>Problemas activos</span><strong>${activeFindings.length}</strong></div><div class="golevg-stat"><span>Problemas resueltos</span><strong>${state.findings.filter((item) => item.estado === 'RESUELTO').length}</strong></div><div class="golevg-stat"><span>Fotos en R2</span><strong>${state.evidence.filter((item) => item.estado_r2 === 'MIGRADO').length}</strong></div><div class="golevg-stat"><span>Reportes</span><strong>${state.campaignReports.length}</strong></div></div>
-      <div class="golevg-tabs" id="golevg-campaign-tabs"><button class="golevg-tab ${state.campaignTab === 'AGENCIES' ? 'active' : ''}" data-campaign-tab="AGENCIES">Agencias</button><button class="golevg-tab ${state.campaignTab === 'PROBLEMS' ? 'active' : ''}" data-campaign-tab="PROBLEMS">Agencias por problema</button><button class="golevg-tab ${state.campaignTab === 'RESOLVED' ? 'active' : ''}" data-campaign-tab="RESOLVED">Resueltos / descartados</button><button class="golevg-tab ${state.campaignTab === 'REPORTS' ? 'active' : ''}" data-campaign-tab="REPORTS">Reportes</button></div>
+      <div class="golevg-detail-head"><div><a class="golevg-link" id="golevg-back">← Volver a ${state.detailReturnTab === 'CLOSED' ? 'cerrados' : state.detailReturnTab === 'OPEN' ? 'abiertos' : state.detailReturnTab === 'REPORTS' ? 'reportes generados' : 'resumen'}</a><h2>${esc(c.codigo)} · Grupo ${esc(c.grupo_codigo)}</h2><div class="golevg-detail-meta"><span class="golevg-badge ${badgeClass(c.estado)}">${campaignStatusLabel(c.estado)}</span><span class="golevg-badge wait">Responsable: ${esc(c.responsable_nombre || 'Sin asignar')}</span><span class="golevg-badge wait">Inicio: ${formatDate(c.fecha_inicio)}</span>${c.fecha_cierre ? `<span class="golevg-badge ok">Cierre: ${formatDate(c.fecha_cierre)}</span>` : ''}</div></div><div class="golevg-actions"><button class="golevg-btn primary" id="golevg-detail-form"><i class="fas fa-link"></i> Copiar enlace general de Jotform</button><button class="golevg-btn" id="golevg-detail-refresh"><i class="fas fa-rotate"></i> Actualizar</button>${canManage() ? `<button class="golevg-btn" id="golevg-detail-close">${c.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar levantamiento'}</button>` : ''}${canDelete() ? '<button class="golevg-btn danger" id="golevg-detail-delete">Eliminar</button>' : ''}</div></div>
+      <div class="golevg-help" style="margin-bottom:13px"><b>Flujo actual:</b> el levantamiento detecta hallazgos y permite generar PDF/Excel. El seguimiento de reparación o resolución no forma parte de esta fase.</div>
+      <div class="golevg-stats golevg-detail-stats"><div class="golevg-stat"><span>Agencias inspeccionadas</span><strong>${state.expedients.length}</strong></div><div class="golevg-stat"><span>Hallazgos detectados</span><strong>${detected.length}</strong></div><div class="golevg-stat"><span>Fotos en R2</span><strong>${migratedPhotos}</strong></div><div class="golevg-stat"><span>Reportes generados</span><strong>${state.campaignReports.length}</strong></div></div>
+      <div class="golevg-tabs" id="golevg-campaign-tabs"><button class="golevg-tab ${state.campaignTab === 'AGENCIES' ? 'active' : ''}" data-campaign-tab="AGENCIES">Agencias</button><button class="golevg-tab ${state.campaignTab === 'FINDINGS' ? 'active' : ''}" data-campaign-tab="FINDINGS">Hallazgos por tipo</button><button class="golevg-tab ${state.campaignTab === 'REPORTS' ? 'active' : ''}" data-campaign-tab="REPORTS">Reportes generados</button></div>
       <div class="golevg-card" id="golevg-campaign-content"></div>`;
     $('#golevg-back').onclick = closeCampaignDetail;
     $('#golevg-detail-form')?.addEventListener('click', copyGeneralJotformLink);
-    $('#golevg-detail-refresh').onclick = () => openCampaign(c.id, { scroll: false });
-    $('#golevg-detail-close').onclick = () => toggleCampaign(c.id, c.estado === 'CERRADO' ? 'ABIERTO' : 'CERRADO');
+    $('#golevg-detail-refresh').onclick = () => openCampaign(c.id, { scroll: false, returnTab: state.detailReturnTab });
+    if ($('#golevg-detail-close')) $('#golevg-detail-close').onclick = () => toggleCampaign(c.id, c.estado === 'CERRADO' ? 'ABIERTO' : 'CERRADO');
     if ($('#golevg-detail-delete')) $('#golevg-detail-delete').onclick = () => openDeleteModal(c.id);
     $$('[data-campaign-tab]', $('#golevg-campaign-tabs')).forEach((button) => {
       button.onclick = () => {
@@ -759,8 +1048,11 @@
     state.selectedCampaign = null;
     $('#golevg-detail').style.display = 'none';
     $('#golevg-detail').innerHTML = '';
-    $('[data-main-panel="CAMPAIGNS"]').classList.add('active');
-    if (options.scroll !== false) window.scrollTo({ top: $('#golevg-root').offsetTop - 20, behavior: 'smooth' });
+    const tab = normalizedMainTab(state.detailReturnTab || state.mainTab || 'SUMMARY');
+    state.mainTab = tab;
+    $$('[data-main-panel]').forEach((panel) => panel.classList.toggle('active', panel.dataset.mainPanel === tab));
+    $$('.golevg-tab[data-main]', $('#golevg-main-tabs')).forEach((button) => button.classList.toggle('active', button.dataset.main === tab));
+    if (options.scroll !== false) window.scrollTo({ top: Math.max(0, $('#golevg-root').offsetTop - 20), behavior: 'smooth' });
     if (options.persist !== false) saveUiState();
   }
 
@@ -783,22 +1075,20 @@
     const holder = $('#golevg-campaign-content');
     if (!holder) return;
     if (state.campaignTab === 'AGENCIES') return renderAgencyTable(holder);
-    if (state.campaignTab === 'PROBLEMS') return renderProblemGroups(holder, false);
-    if (state.campaignTab === 'RESOLVED') return renderProblemGroups(holder, true);
+    if (state.campaignTab === 'FINDINGS') return renderProblemGroups(holder, false);
     renderCampaignReports(holder);
   }
 
   function renderAgencyTable(holder) {
     if (!state.expedients.length) { holder.innerHTML = '<div class="golevg-empty">Todavía no se han recibido formularios para este levantamiento.</div>'; return; }
-    holder.innerHTML = `<div class="golevg-card-head"><div><h3>Agencias inspeccionadas</h3><small>Cada agencia conserva su propia fecha, aunque el levantamiento dure varios días.</small></div></div><div class="golevg-table-wrap"><table class="golevg-table"><thead><tr><th>Agencia</th><th>Fecha de inspección</th><th>Técnico</th><th>Estado</th><th>Problemas activos</th><th>Fotos R2</th><th>Acciones</th></tr></thead><tbody>${state.expedients.map((item) => `<tr><td><b>AG ${esc(agencyDisplay(item.agencia_numero))}</b><br><small>Grupo ${esc(item.grupo_codigo)}</small></td><td>${formatDate(item.fecha_inspeccion)}</td><td>${esc(item.tecnico_nombre || '-')}</td><td><span class="golevg-badge ${badgeClass(item.estado)}">${esc(item.estado.replace(/_/g, ' '))}</span></td><td>${item.hallazgos_activos || 0}</td><td>${item.evidencias_count || 0}${state.evidence.some((e) => e.expediente_id === item.id && e.estado_r2 === 'ERROR') ? ' ⚠️' : ''}</td><td><div class="golevg-actions"><button class="golevg-btn small" data-exp-detail="${item.id}">Ver</button>${state.evidence.some((e) => e.expediente_id === item.id && e.estado_r2 !== 'MIGRADO') ? `<button class="golevg-btn small" data-retry-r2="${item.id}">Reintentar fotos</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div>`;
+    holder.innerHTML = `<div class="golevg-card-head"><div><h3>Agencias inspeccionadas</h3><small>Cada agencia conserva su fecha de recepción e inspección dentro de esta campaña.</small></div></div><div class="golevg-table-wrap"><table class="golevg-table"><thead><tr><th>Agencia</th><th>Fecha de inspección</th><th>Técnico</th><th>Hallazgos</th><th>Fotos R2</th><th>Acciones</th></tr></thead><tbody>${state.expedients.map((item) => { const findings = state.findings.filter((finding) => finding.expediente_id === item.id && finding.estado !== 'DESCARTADO').length; return `<tr><td><b>AG ${esc(agencyDisplay(item.agencia_numero))}</b><br><small>Grupo ${esc(item.grupo_codigo)}</small></td><td>${formatDate(item.fecha_inspeccion)}</td><td>${esc(item.tecnico_nombre || '-')}</td><td>${findings}</td><td>${item.evidencias_count || 0}${state.evidence.some((e) => e.expediente_id === item.id && e.estado_r2 === 'ERROR') ? ' ⚠️' : ''}</td><td><div class="golevg-actions"><button class="golevg-btn small" data-exp-detail="${item.id}">Ver</button>${state.evidence.some((e) => e.expediente_id === item.id && e.estado_r2 !== 'MIGRADO') ? `<button class="golevg-btn small" data-retry-r2="${item.id}">Reintentar fotos</button>` : ''}</div></td></tr>`; }).join('')}</tbody></table></div>`;
     $$('[data-exp-detail]', holder).forEach((button) => { button.onclick = () => showExpedient(button.dataset.expDetail); });
     $$('[data-retry-r2]', holder).forEach((button) => { button.onclick = () => retryR2(button.dataset.retryR2); });
   }
 
-  function aggregateProblems(resolved = false) {
-    const validStates = resolved ? ['RESUELTO', 'DESCARTADO'] : ['PENDIENTE', 'EN_COORDINACION', 'EN_PROCESO'];
+  function aggregateProblems(_resolved = false) {
     const map = new Map();
-    state.findings.filter((item) => validStates.includes(item.estado)).forEach((finding) => {
+    state.findings.filter((item) => item.estado !== 'DESCARTADO').forEach((finding) => {
       const key = finding.problema_clave;
       const current = map.get(key) || { key, label: finding.problema_etiqueta, findings: [], agencies: new Set(), photos: 0 };
       current.findings.push(finding);
@@ -809,51 +1099,34 @@
     return Array.from(map.values()).sort((a, b) => b.agencies.size - a.agencies.size || a.label.localeCompare(b.label));
   }
 
-  function renderProblemGroups(holder, resolved) {
-    const groupsList = aggregateProblems(resolved);
-    if (!groupsList.length) { holder.innerHTML = `<div class="golevg-empty">No hay problemas ${resolved ? 'cerrados' : 'activos'} en este levantamiento.</div>`; return; }
-    holder.innerHTML = `<div class="golevg-card-head"><div><h3>${resolved ? 'Problemas resueltos o descartados' : 'Agencias agrupadas por el mismo problema'}</h3><small>La agrupación se limita a ${esc(state.selectedCampaign.codigo)}. Nunca mezcla otros levantamientos del grupo.</small></div></div><div class="golevg-problem-grid">${groupsList.map((item) => `<article class="golevg-problem"><span class="golevg-code">Levantamiento ${esc(state.selectedCampaign.codigo)}</span><h4>Agencias con ${esc(item.label.toLowerCase())}</h4><p>${item.agencies.size} agencia(s) · ${item.photos} foto(s)</p><div class="golevg-actions" style="margin-top:12px"><button class="golevg-btn small" data-view-problem="${esc(item.key)}" data-resolved="${resolved ? '1' : '0'}">Ver agencias</button>${!resolved ? `<button class="golevg-btn primary small" data-report-problem="${esc(item.key)}">Crear reporte</button><button class="golevg-btn small" data-excel-problem="${esc(item.key)}">Excel</button>` : ''}</div></article>`).join('')}</div>`;
-    $$('[data-view-problem]', holder).forEach((button) => { button.onclick = () => showProblem(button.dataset.viewProblem, button.dataset.resolved === '1'); });
+  function renderProblemGroups(holder, _resolved = false) {
+    const groupsList = aggregateProblems(false);
+    if (!groupsList.length) { holder.innerHTML = '<div class="golevg-empty">No hay hallazgos detectados en este levantamiento.</div>'; return; }
+    holder.innerHTML = `<div class="golevg-card-head"><div><h3>Hallazgos por tipo</h3><small>La agrupación se limita a ${esc(state.selectedCampaign.codigo)} y no mezcla otros levantamientos.</small></div></div><div class="golevg-problem-grid">${groupsList.map((item) => `<article class="golevg-problem"><span class="golevg-code">Hallazgo</span><h4>${esc(item.label)}</h4><p>${item.agencies.size} agencia(s) · ${item.photos} foto(s)</p><div class="golevg-actions" style="margin-top:12px"><button class="golevg-btn small" data-view-problem="${esc(item.key)}">Ver agencias</button><button class="golevg-btn primary small" data-report-problem="${esc(item.key)}">Crear reporte</button><button class="golevg-btn small" data-excel-problem="${esc(item.key)}">Excel</button></div></article>`).join('')}</div>`;
+    $$('[data-view-problem]', holder).forEach((button) => { button.onclick = () => showProblem(button.dataset.viewProblem, false); });
     $$('[data-report-problem]', holder).forEach((button) => { button.onclick = () => prepareReport(button.dataset.reportProblem); });
     $$('[data-excel-problem]', holder).forEach((button) => { button.onclick = () => exportProblemExcel(button.dataset.excelProblem); });
   }
 
-  function problemFindings(key, resolved = false) {
-    const states = resolved ? ['RESUELTO', 'DESCARTADO'] : ['PENDIENTE', 'EN_COORDINACION', 'EN_PROCESO'];
-    return state.findings.filter((item) => item.problema_clave === key && states.includes(item.estado));
+  function problemFindings(key, _resolved = false) {
+    return state.findings.filter((item) => item.problema_clave === key && item.estado !== 'DESCARTADO');
   }
 
-  function showProblem(key, resolved = false) {
-    const findings = problemFindings(key, resolved);
+  function showProblem(key, _resolved = false) {
+    const findings = problemFindings(key, false);
     if (!findings.length) return;
     const label = findings[0].problema_etiqueta;
     $('#golevg-problem-title').textContent = `Agencias con ${label.toLowerCase()}`;
     $('#golevg-problem-subtitle').textContent = `${state.selectedCampaign.codigo} · Grupo ${state.selectedCampaign.grupo_codigo} · ${findings.length} agencia(s)`;
     $('#golevg-problem-content').innerHTML = findings.map((finding) => {
       const photos = evidenceForFinding(finding);
-      return `<article class="golevg-agency-result"><div class="golevg-agency-result-head"><span>AGENCIA ${esc(agencyDisplay(finding.agencia_numero))} · G-${esc(finding.grupo_codigo)}</span><span class="golevg-badge ${badgeClass(finding.estado)}">${findingStatusLabel(finding.estado)}</span></div><div class="golevg-agency-result-body"><p><b>${esc(finding.elemento_etiqueta)}</b> · ${esc(finding.condicion_reportada || '')}</p><p>${esc(finding.descripcion || 'Sin descripción.')}</p>${photos.length ? `<div class="golevg-photo-grid">${photos.map((photo) => `<a class="golevg-photo" href="${esc(photo.r2_url)}" target="_blank" rel="noopener"><img src="${esc(photo.r2_url)}" alt="${esc(photo.etiqueta)}"><div>${esc(photo.etiqueta)}</div></a>`).join('')}</div>` : '<div class="golevg-help">No hay fotografía vinculada a este problema.</div>'}<div class="golevg-actions" style="margin-top:12px">${!resolved ? `<select class="golevg-select" style="width:auto" data-finding-state="${finding.id}"><option value="PENDIENTE" ${finding.estado === 'PENDIENTE' ? 'selected' : ''}>Pendiente</option><option value="EN_COORDINACION" ${finding.estado === 'EN_COORDINACION' ? 'selected' : ''}>En coordinación</option><option value="EN_PROCESO" ${finding.estado === 'EN_PROCESO' ? 'selected' : ''}>En proceso</option><option value="RESUELTO">Resuelto</option><option value="DESCARTADO">Descartado</option></select>` : ''}</div></div></article>`;
+      return `<article class="golevg-agency-result"><div class="golevg-agency-result-head"><span>AGENCIA ${esc(agencyDisplay(finding.agencia_numero))} · G-${esc(finding.grupo_codigo)}</span><span>Hallazgo</span></div><div class="golevg-agency-result-body"><p><b>${esc(finding.elemento_etiqueta)}</b> · ${esc(finding.condicion_reportada || '')}</p><p>${esc(finding.descripcion || 'Sin descripción.')}</p>${photos.length ? `<div class="golevg-photo-grid">${photos.map((photo) => `<a class="golevg-photo" href="${esc(photo.r2_url)}" target="_blank" rel="noopener"><img src="${esc(photo.r2_url)}" alt="${esc(photo.etiqueta)}"><div>${esc(photo.etiqueta)}</div></a>`).join('')}</div>` : '<div class="golevg-help">No hay fotografía vinculada a este hallazgo.</div>'}</div></article>`;
     }).join('');
-    $$('[data-finding-state]', $('#golevg-problem-content')).forEach((select) => { select.onchange = () => updateFindingState(select.dataset.findingState, select.value); });
     $('#golevg-problem-modal').classList.add('open');
   }
 
-  async function updateFindingState(id, status) {
-    if (!requireManage()) return;
-    const finding = state.findings.find((item) => item.id === id);
-    if (!finding) return;
-    let resolution = finding.resolucion || null;
-    if (status === 'RESUELTO') {
-      resolution = global.prompt('Describe brevemente cómo se resolvió:', resolution || '') || resolution || 'Marcado como resuelto.';
-      if (!global.confirm('Al resolverlo, la agencia desaparecerá de los problemas activos y pasará a Resueltos. ¿Continuar?')) return showProblem(finding.problema_clave, false);
-    } else if (status === 'DESCARTADO') {
-      resolution = global.prompt('Indica por qué se descarta este hallazgo:', resolution || '') || resolution || 'Hallazgo descartado.';
-      if (!global.confirm('El hallazgo dejará de aparecer como problema activo. ¿Continuar?')) return showProblem(finding.problema_clave, false);
-    }
-    const response = await client().from(TABLES.findings).update({ estado: status, resolucion: resolution, resuelto_por: ['RESUELTO','DESCARTADO'].includes(status) ? 'Usuario del sistema' : null }).eq('id', id);
-    if (response.error) return toast(response.error.message, 'error');
-    toast('Estado del problema actualizado.', 'success');
-    closeModal('golevg-problem-modal');
-    await openCampaign(state.selectedCampaign.id, { tab: status === 'RESUELTO' ? 'RESOLVED' : 'PROBLEMS' });
+  async function updateFindingState(_id, _status) {
+    toast('La resolución de hallazgos no se gestiona desde Levantamientos en esta fase.', 'info');
   }
 
   function buildSnapshot(key) {
@@ -876,7 +1149,7 @@
   function prepareReport(key, existing = null) {
     const findings = problemFindings(key, false);
     const label = existing?.problema_etiqueta || findings[0]?.problema_etiqueta;
-    if (!label) return toast('No hay agencias activas para este problema.', 'error');
+    if (!label) return toast('No hay agencias con este hallazgo para generar el reporte.', 'error');
     state.reportEditing = existing;
     state.reportProblem = { key, label };
     const currentRows = buildSnapshot(key);
@@ -903,8 +1176,10 @@
     if (!requireManage()) return;
     const included = $$('[data-report-index]:checked', $('#golevg-r-items')).map((input) => state.reportSnapshot[Number(input.dataset.reportIndex)]).filter(Boolean).map(({ _included, ...item }) => item);
     if (!included.length) return toast('Selecciona al menos una agencia.', 'error');
+    const campaignId = state.selectedCampaign?.id;
+    if (!campaignId) return toast('No hay un levantamiento abierto en pantalla.', 'error');
     const payload = {
-      campana_id: state.selectedCampaign.id,
+      campana_id: campaignId,
       problema_clave: state.reportProblem.key,
       problema_etiqueta: state.reportProblem.label,
       titulo: text($('#golevg-r-title').value) || `Agencias con ${state.reportProblem.label.toLowerCase()}`,
@@ -920,26 +1195,29 @@
       : await client().from(TABLES.reports).insert(payload).select('*').single();
     if (response.error) return toast(response.error.message, 'error');
     closeModal('golevg-report-modal');
-    toast('Reporte guardado correctamente.', 'success');
-    await loadAll();
-    await openCampaign(state.selectedCampaign.id, { tab: 'REPORTS' });
+    toast('Reporte generado correctamente.', 'success');
+    await openCampaign(campaignId, { tab: 'REPORTS', scroll: false, returnTab: state.detailReturnTab });
   }
 
   function renderCampaignReports(holder) {
-    if (!state.campaignReports.length) { holder.innerHTML = '<div class="golevg-empty">Todavía no se han creado reportes para este levantamiento.</div>'; return; }
-    holder.innerHTML = `<div class="golevg-card-head"><div><h3>Reportes guardados</h3><small>El contenido queda congelado al guardarse.</small></div></div><div class="golevg-report-grid">${state.campaignReports.map(reportCard).join('')}</div>`;
+    if (!state.campaignReports.length) { holder.innerHTML = '<div class="golevg-empty">Todavía no se han generado reportes para este levantamiento.</div>'; return; }
+    holder.innerHTML = `<div class="golevg-card-head"><div><h3>Reportes generados</h3><small>El contenido de cada reporte queda congelado al guardarse.</small></div></div><div class="golevg-report-grid">${state.campaignReports.map(reportCard).join('')}</div>`;
     bindReportCards(holder);
   }
 
   function reportCard(report) {
-    return `<article class="golevg-report"><span class="golevg-code">${esc(report.codigo || 'Reporte')}</span><h4>${esc(report.titulo)}</h4><div class="golevg-report-info"><div><span>Grupo</span><b>${esc(report.ops_levantamiento_campanas?.grupo_codigo || (state.selectedCampaign?.id === report.campana_id ? state.selectedCampaign.grupo_codigo : '-'))}</b></div><div><span>Responsable</span><b>${esc(report.responsable_nombre || '-')}</b></div><div><span>Fecha</span><b>${formatDate(report.creado_en)}</b></div><div><span>Contenido</span><b>${report.agencias_count} agencias · ${report.fotos_count} fotos</b></div></div><p style="font-size:12px;color:#6d8394">${esc(report.observacion || 'Sin observación.')}</p><div class="golevg-actions"><button class="golevg-btn primary small" data-print-report="${report.id}">Generar PDF</button><button class="golevg-btn small" data-edit-report="${report.id}">Ver / Editar</button><button class="golevg-btn small" data-excel-report="${report.id}">Excel</button><button class="golevg-btn danger small" data-delete-report="${report.id}">Eliminar</button></div></article>`;
+    const campaign = report.ops_levantamiento_campanas || (state.selectedCampaign?.id === report.campana_id ? state.selectedCampaign : null) || {};
+    const creator = report._creator_name || (report.creado_por ? 'Registrado por UUID' : 'No registrado');
+    return `<article class="golevg-report"><span class="golevg-code">${esc(report.codigo || 'Reporte')}</span><h4>${esc(report.titulo)}</h4><div class="golevg-report-info"><div><span>Levantamiento</span><b>${esc(campaign.codigo || '-')}</b></div><div><span>Grupo</span><b>${esc(campaign.grupo_codigo || '-')}</b></div><div><span>Tipo de hallazgo</span><b>${esc(report.problema_etiqueta || '-')}</b></div><div><span>Contenido</span><b>${Number(report.agencias_count || 0)} agencias · ${Number(report.fotos_count || 0)} fotos</b></div><div><span>Generado</span><b>${formatDateTime(report.creado_en)}</b></div><div><span>Generado por</span><b>${esc(creator)}</b></div></div><div class="golevg-report-meta">Estado interno del reporte: ${esc(report.estado || '-')} · Formatos disponibles: PDF / Excel</div>${report.observacion ? `<p style="font-size:12px;color:#6d8394">${esc(report.observacion)}</p>` : ''}<div class="golevg-actions"><button class="golevg-btn primary small" data-print-report="${report.id}">PDF</button><button class="golevg-btn small" data-excel-report="${report.id}">Excel</button><button class="golevg-btn small" data-edit-report="${report.id}">Ver / Editar</button>${canManage() ? `<button class="golevg-btn danger small" data-delete-report="${report.id}">Eliminar</button>` : ''}</div></article>`;
   }
 
   function renderAllReports() {
     const holder = $('#golevg-all-reports');
-    if (!state.allReports.length) { holder.innerHTML = '<div class="golevg-empty">No hay reportes guardados.</div>'; return; }
+    if ($('#golevg-report-count')) $('#golevg-report-count').textContent = `${state.reportTotal} reporte(s)`;
+    if (!state.allReports.length) { holder.innerHTML = '<div class="golevg-empty">No hay reportes generados.</div>'; $('#golevg-report-pager').innerHTML = ''; return; }
     holder.innerHTML = state.allReports.map(reportCard).join('');
     bindReportCards(holder);
+    renderPager('#golevg-report-pager', state.reportPage, state.reportTotal, state.reportPageSize, async (nextPage) => { state.reportPage = nextPage; await loadReports(); saveUiState(); });
   }
 
   function bindReportCards(holder) {
@@ -963,11 +1241,12 @@
 
   async function deleteReport(id) {
     if (!requireManage()) return;
-    if (!global.confirm('¿Eliminar este reporte guardado?')) return;
+    if (!global.confirm('¿Eliminar este reporte generado?')) return;
     const response = await client().from(TABLES.reports).delete().eq('id', id);
     if (response.error) return toast(response.error.message, 'error');
     toast('Reporte eliminado.', 'success');
-    if (state.selectedCampaign) { await loadAll(); await openCampaign(state.selectedCampaign.id, { tab: 'REPORTS' }); } else await loadAll();
+    if (state.selectedCampaign) await openCampaign(state.selectedCampaign.id, { tab: 'REPORTS', scroll: false, returnTab: state.detailReturnTab });
+    else await loadReports();
   }
 
   function printableHtml(report) {
@@ -998,14 +1277,14 @@
     if (!findings.length) return;
     const rows = findings.map((finding) => {
       const expedition = state.expedients.find((item) => item.id === finding.expediente_id);
-      return { Agencia: agencyDisplay(finding.agencia_numero), Grupo: finding.grupo_codigo, Problema: finding.problema_etiqueta, Elemento: finding.elemento_etiqueta, Condición: finding.condicion_reportada, Descripción: finding.descripcion, Fecha: formatDate(expedition?.fecha_inspeccion), Técnico: expedition?.tecnico_nombre || '', Fotos: evidenceForFinding(finding).map((photo) => photo.r2_url).join(' | ') };
+      return { Agencia: agencyDisplay(finding.agencia_numero), Grupo: finding.grupo_codigo, Hallazgo: finding.problema_etiqueta, Elemento: finding.elemento_etiqueta, Condición: finding.condicion_reportada, Descripción: finding.descripcion, Fecha: formatDate(expedition?.fecha_inspeccion), Técnico: expedition?.tecnico_nombre || '', Fotos: evidenceForFinding(finding).map((photo) => photo.r2_url).join(' | ') };
     });
     downloadExcel(rows, `${state.selectedCampaign.codigo}_${key}.xls`, `Grupo ${state.selectedCampaign.grupo_codigo} - ${findings[0].problema_etiqueta}`);
   }
 
   function exportReportExcel(report) {
     if (!report?.id) return;
-    const rows = (report.snapshot || []).map((item) => ({ Agencia: agencyDisplay(item.agency_number), Grupo: item.group_code, Problema: report.problema_etiqueta, Elemento: item.element, Condición: item.condition, Descripción: item.description, Fecha: formatDate(item.inspection_date), Técnico: item.technician || '', Fotos: (item.photos || []).map((photo) => photo.url).join(' | ') }));
+    const rows = (report.snapshot || []).map((item) => ({ Agencia: agencyDisplay(item.agency_number), Grupo: item.group_code, Hallazgo: report.problema_etiqueta, Elemento: item.element, Condición: item.condition, Descripción: item.description, Fecha: formatDate(item.inspection_date), Técnico: item.technician || '', Fotos: (item.photos || []).map((photo) => photo.url).join(' | ') }));
     downloadExcel(rows, `${report.codigo || 'reporte'}.xls`, report.titulo);
   }
 
@@ -1017,34 +1296,22 @@
   async function showExpedient(id) {
     const item = state.expedients.find((row) => row.id === id);
     if (!item) return;
-    const findings = state.findings.filter((row) => row.expediente_id === id);
+    const findings = state.findings.filter((row) => row.expediente_id === id && row.estado !== 'DESCARTADO');
     const photos = evidenceForExpedient(id);
     const usedPhotoIds = new Set();
-
     const findingSections = findings.map((finding) => {
       const linkedPhotos = evidenceForFinding(finding).filter((photo) => photo.expediente_id === id);
       linkedPhotos.forEach((photo) => usedPhotoIds.add(photo.id));
-      return `<section class="golevg-card" style="margin-top:12px">
-        <div class="golevg-card-head"><div><span class="golevg-code">${esc(finding.area_etiqueta || 'Hallazgo')}</span><h3>${esc(finding.problema_etiqueta)}</h3></div><span class="golevg-badge ${badgeClass(finding.estado)}">${esc((finding.estado || '').replace(/_/g, ' '))}</span></div>
-        <p><b>Elemento:</b> ${esc(finding.elemento_etiqueta || '-')}</p>
-        <p><b>Condición:</b> ${esc(finding.condicion_reportada || '-')}</p>
-        <p><b>Descripción:</b> ${esc(finding.descripcion || 'Sin descripción.')}</p>
-        <div style="margin-top:10px"><b>Evidencias de este problema</b>${photoCards(linkedPhotos)}</div>
-      </section>`;
+      return `<section class="golevg-card" style="margin-top:12px"><div class="golevg-card-head"><div><span class="golevg-code">${esc(finding.area_etiqueta || 'Hallazgo')}</span><h3>${esc(finding.problema_etiqueta)}</h3></div></div><p><b>Elemento:</b> ${esc(finding.elemento_etiqueta || '-')}</p><p><b>Condición:</b> ${esc(finding.condicion_reportada || '-')}</p><p><b>Descripción:</b> ${esc(finding.descripcion || 'Sin descripción.')}</p><div style="margin-top:10px"><b>Evidencias de este hallazgo</b>${photoCards(linkedPhotos)}</div></section>`;
     }).join('');
-
-    const generalPhotos = photos.filter((photo) => !usedPhotoIds.has(photo.id));
-    $('#golevg-problem-title').textContent = `Agencia ${agencyDisplay(item.agencia_numero)}`;
-    $('#golevg-problem-subtitle').textContent = `${state.selectedCampaign.codigo} · Inspección ${formatDate(item.fecha_inspeccion)}`;
-    $('#golevg-problem-content').innerHTML = `
-      <div class="golevg-grid"><div class="golevg-card"><span class="golevg-code">Técnico</span><h3>${esc(item.tecnico_nombre || '-')}</h3></div><div class="golevg-card"><span class="golevg-code">Resultado</span><h3>${esc(item.estado.replace(/_/g, ' '))}</h3></div></div>
-      <div class="golevg-card" style="margin-top:12px"><h3>Observación general</h3><p>${esc(item.observacion_general || 'Sin observación.')}</p></div>
-      <div class="golevg-card" style="margin-top:12px"><div class="golevg-card-head"><div><h3>Hallazgos y evidencias asociadas</h3><small>Cada fotografía aparece únicamente en el problema que la originó.</small></div>${item.jotform_submission_id ? `<button class="golevg-btn small" id="golevg-rebuild-evidence">Sincronizar evidencias desde Jotform</button>` : ''}</div>${findings.length ? findingSections : '<div class="golevg-empty">Sin hallazgos detectados.</div>'}</div>
-      ${generalPhotos.length ? `<div class="golevg-card" style="margin-top:12px"><h3>Otras fotografías del levantamiento</h3><p style="font-size:12px;color:#6d8394">Son evidencias informativas de elementos que no generaron un problema. No se incluyen en reportes de otros hallazgos.</p>${photoCards(generalPhotos)}</div>` : ''}`;
-    const rebuildButton = $('#golevg-rebuild-evidence');
-    if (rebuildButton) rebuildButton.onclick = () => retryR2(item.id);
+    const unlinked = photos.filter((photo) => !usedPhotoIds.has(photo.id));
+    $('#golevg-problem-title').textContent = `AGENCIA ${agencyDisplay(item.agencia_numero)} · Grupo ${item.grupo_codigo}`;
+    $('#golevg-problem-subtitle').textContent = `${formatDate(item.fecha_inspeccion)} · ${item.tecnico_nombre || 'Sin técnico registrado'} · ${findings.length} hallazgo(s)`;
+    $('#golevg-problem-content').innerHTML = `<div class="golevg-card"><div class="golevg-card-head"><div><h3>Hallazgos y evidencias asociadas</h3><small>Cada fotografía aparece únicamente en el hallazgo que la originó.</small></div>${item.jotform_submission_id ? `<button class="golevg-btn small" id="golevg-rebuild-evidence">Sincronizar evidencias desde Jotform</button>` : ''}</div>${findings.length ? findingSections : '<div class="golevg-empty">Sin hallazgos detectados.</div>'}</div>${unlinked.length ? `<div class="golevg-card" style="margin-top:12px"><div class="golevg-card-head"><div><h3>Evidencias generales</h3><small>Fotografías R2 que no están asociadas a un hallazgo específico.</small></div></div>${photoCards(unlinked)}</div>` : ''}`;
+    if ($('#golevg-rebuild-evidence')) $('#golevg-rebuild-evidence').onclick = () => retryR2(item.id);
     $('#golevg-problem-modal').classList.add('open');
   }
+
   async function retryR2(expedientId) {
     if (!requireManage()) return;
     toast('Reconstruyendo las fotografías reales desde Jotform y trasladándolas a R2…', 'info');
@@ -1144,8 +1411,10 @@
     $$('[data-link-intake]', holder).forEach((button) => { button.onclick = () => openLinkModal(button.dataset.linkIntake); });
   }
 
-  function openLinkModal(intakeId) {
-    const openCampaigns = state.campaigns.filter((item) => item.estado === 'ABIERTO');
+  async function openLinkModal(intakeId) {
+    const result = await client().from(TABLES.campaigns).select('id,codigo,grupo_codigo,nombre').eq('estado', 'ABIERTO').order('actualizado_en', { ascending: false }).limit(100);
+    if (result.error) return toast(result.error.message, 'error');
+    const openCampaigns = result.data || [];
     if (!openCampaigns.length) return toast('No hay levantamientos abiertos.', 'error');
     $('#golevg-link-intake').value = intakeId;
     $('#golevg-link-campaign').innerHTML = openCampaigns.map((item) => `<option value="${item.id}">${esc(item.codigo)} · Grupo ${esc(item.grupo_codigo)} · ${esc(item.nombre)}</option>`).join('');
@@ -1231,22 +1500,19 @@
   function renderDeletePreview(preview) {
     const body = $('#golevg-delete-body');
     if (!body) return;
-    body.innerHTML = `
-      <div class="golevg-danger-box"><b>Esta acción eliminará permanentemente el levantamiento y todos sus datos relacionados.</b><br>También se eliminarán exclusivamente los objetos de Cloudflare R2 pertenecientes a este levantamiento. Esta acción no se puede deshacer.</div>
-      <div style="margin-top:14px"><span class="golevg-code">${esc(preview.codigo)}</span><h3 style="margin:5px 0;color:#153f5c">Grupo ${esc(preview.grupo_codigo)} · ${esc(preview.nombre || 'Levantamiento')}</h3><span class="golevg-badge ${badgeClass(preview.estado)}">${esc(campaignStatusLabel(preview.estado))}</span></div>
-      <div class="golevg-delete-summary"><div><span>Agencias</span><b>${Number(preview.agencias || 0)}</b></div><div><span>Problemas</span><b>${Number(preview.problemas || 0)}</b></div><div><span>Fotografías</span><b>${Number(preview.fotografias || 0)}</b></div><div><span>Reportes guardados</span><b>${Number(preview.reportes || 0)}</b></div></div>
+    body.innerHTML = `<div class="golevg-danger-box"><b>Esta acción no se puede deshacer.</b><br>Se eliminarán permanentemente el levantamiento y sus datos funcionales relacionados. Después el backend eliminará únicamente los objetos Cloudflare R2 pertenecientes a este levantamiento.</div>
+      <div class="golevg-delete-summary"><div><span>Agencias</span><b>${Number(preview.agencias || 0)}</b></div><div><span>Hallazgos</span><b>${Number(preview.problemas || 0)}</b></div><div><span>Fotografías</span><b>${Number(preview.fotografias || 0)}</b></div><div><span>Reportes generados</span><b>${Number(preview.reportes || 0)}</b></div></div>
       <div class="golevg-field"><label>Escribe ${esc(preview.codigo)} para confirmar</label><input class="golevg-input" id="golevg-delete-code-input" autocomplete="off" spellcheck="false" placeholder="${esc(preview.codigo)}"></div>`;
     const input = $('#golevg-delete-code-input');
     const confirm = $('#golevg-delete-confirm');
-    if (confirm) confirm.disabled = true;
-    input?.addEventListener('input', () => {
-      if (confirm) confirm.disabled = text(input.value) !== text(preview.codigo);
-    });
+    const sync = () => { if (confirm) confirm.disabled = text(input?.value) !== text(preview.codigo); };
+    input?.addEventListener('input', sync);
+    sync();
   }
 
   async function openDeleteModal(campaignId) {
     if (!requireDelete()) return;
-    const item = state.campaigns.find((row) => row.id === campaignId) || (state.selectedCampaign?.id === campaignId ? state.selectedCampaign : null);
+    const item = state.campaigns.find((row) => row.id === campaignId) || state.summaryRecent.find((row) => row.id === campaignId) || state.globalSearchResults.find((row) => row.id === campaignId) || (state.selectedCampaign?.id === campaignId ? state.selectedCampaign : null);
     state.deleteContext = { campaignId, code: item?.codigo || '', cleanupId: null };
     $('#golevg-delete-modal')?.classList.add('open');
     $('#golevg-delete-subtitle').textContent = item?.codigo ? `${item.codigo} · Grupo ${item.grupo_codigo}` : 'Preparando eliminación segura';
@@ -1272,32 +1538,27 @@
     if (!requireDelete()) return;
     const context = state.deleteContext;
     const input = $('#golevg-delete-code-input');
-    if (!context?.campaignId || !context?.code) return toast('No hay un levantamiento preparado para eliminar.', 'error');
-    if (text(input?.value) !== text(context.code)) return toast('El código de confirmación no coincide.', 'error');
-
+    if (!context?.campaignId || !context?.code || text(input?.value) !== text(context.code)) return;
+    const snapshot = captureUiState();
     const confirm = $('#golevg-delete-confirm');
     const cancel = $('#golevg-delete-cancel');
-    const snapshot = captureUiState();
     if (confirm) { confirm.disabled = true; confirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando…'; }
     if (cancel) cancel.disabled = true;
     setDeleteStatus('Eliminando datos relacionados en Supabase y verificando Cloudflare R2…');
-
     try {
       const data = await deleteApi({ action: 'delete', campaignId: context.campaignId, confirmationCode: context.code });
       if (data.complete) {
         state.deleteContext = null;
         if (state.selectedCampaign?.id === context.campaignId) state.selectedCampaign = null;
         closeModal('golevg-delete-modal');
+        $('#golevg-detail').style.display = 'none';
         toast(data.message || `${context.code} eliminado completamente.`, 'success');
-        await loadAll();
-        applyStoredFilters(snapshot);
-        applyCampaignFilters();
-        switchMainTab('CAMPAIGNS', { persist: false });
+        await loadMainTab(snapshot.mainTab || 'SUMMARY');
+        switchMainTab(snapshot.mainTab || 'SUMMARY', { persist: false, load: false });
         restoreScroll(snapshot);
         saveUiState(snapshot.scrollY);
         return;
       }
-
       state.deleteContext.cleanupId = data.cleanupId;
       state.selectedCampaign = state.selectedCampaign?.id === context.campaignId ? null : state.selectedCampaign;
       $('#golevg-delete-body').innerHTML = `<div class="golevg-danger-box"><b>${esc(context.code)} ya fue eliminado de Supabase.</b><br>Cloudflare R2 todavía no quedó completamente limpio. No se mostrará como eliminación completa hasta finalizar esta etapa.</div>`;
@@ -1305,7 +1566,7 @@
       $('#golevg-delete-retry').style.display = '';
       $('#golevg-delete-cancel').textContent = 'Cerrar';
       setDeleteStatus(data.error || data.message || 'Limpieza R2 pendiente.', 'error');
-      await loadAll();
+      await loadMainTab(snapshot.mainTab || 'SUMMARY');
       await loadPendingCleanups();
     } catch (error) {
       setDeleteStatus(error.message || 'No se pudo eliminar el levantamiento.', 'error');
@@ -1342,12 +1603,17 @@
     }
   }
 
-  function switchMainTab(tab, options = {}) {
-    state.mainTab = tab;
-    if (tab !== 'CAMPAIGNS') state.selectedCampaign = null;
-    $$('.golevg-tab[data-main]', $('#golevg-main-tabs')).forEach((button) => button.classList.toggle('active', button.dataset.main === tab));
-    $$('[data-main-panel]').forEach((panel) => panel.classList.toggle('active', panel.dataset.mainPanel === tab));
-    $('#golevg-detail').style.display = 'none';
+
+  async function switchMainTab(tab, options = {}) {
+    const normalized = normalizedMainTab(tab);
+    state.mainTab = normalized;
+    if (state.selectedCampaign && options.keepDetail !== true) state.selectedCampaign = null;
+    if ($('#golevg-detail')) { $('#golevg-detail').style.display = 'none'; $('#golevg-detail').innerHTML = ''; }
+    $$('.golevg-tab[data-main]', $('#golevg-main-tabs')).forEach((button) => button.classList.toggle('active', button.dataset.main === normalized));
+    $$('[data-main-panel]').forEach((panel) => panel.classList.toggle('active', panel.dataset.mainPanel === normalized));
+    if (options.load !== false) {
+      try { await loadMainTab(normalized); } catch (error) { toast(error.message || 'No se pudo cargar la pantalla.', 'error'); }
+    }
     if (options.persist !== false) saveUiState();
   }
 
@@ -1367,7 +1633,7 @@
   function subscribeRealtime() {
     if (state.realtime || !client()?.channel) return;
     try {
-      state.realtime = client().channel('ops-levantamientos-grupo-v80827')
+      state.realtime = client().channel('ops-levantamientos-grupo-v80828')
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.campaigns }, scheduleRealtimeRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.agencies }, scheduleRealtimeRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.findings }, scheduleRealtimeRefresh)
@@ -1390,21 +1656,25 @@
     $('#golevg-link-save').onclick = linkIntake;
     $('#golevg-delete-confirm').onclick = confirmDeleteCampaign;
     $('#golevg-delete-retry').onclick = () => retryCleanup(state.deleteContext?.cleanupId, state.deleteContext?.code);
-    $('#golevg-search').oninput = applyCampaignFilters;
-    $('#golevg-status').onchange = applyCampaignFilters;
-    $('#golevg-group').onchange = applyCampaignFilters;
-    $('#golevg-clear').onclick = () => { $('#golevg-search').value = ''; $('#golevg-status').value = ''; $('#golevg-group').value = ''; applyCampaignFilters(); };
+    $('#golevg-summary-open-all').onclick = () => switchMainTab('OPEN');
+    $('#golevg-global-search-btn').onclick = searchGlobal;
+    $('#golevg-global-search').addEventListener('keydown', (event) => { if (event.key === 'Enter') searchGlobal(); });
+
+    const delayedOpen = debounce(() => { state.openPage = 0; loadCampaignList('ABIERTO').catch((error) => toast(error.message, 'error')); });
+    const delayedClosed = debounce(() => { state.closedPage = 0; loadCampaignList('CERRADO').catch((error) => toast(error.message, 'error')); });
+    $('#golevg-open-search').oninput = delayedOpen;
+    $('#golevg-closed-search').oninput = delayedClosed;
+    for (const selector of ['#golevg-open-group','#golevg-open-date','#golevg-open-sort']) $(selector).onchange = () => { state.openPage = 0; loadCampaignList('ABIERTO').catch((error) => toast(error.message, 'error')); };
+    for (const selector of ['#golevg-closed-group','#golevg-closed-date','#golevg-closed-sort']) $(selector).onchange = () => { state.closedPage = 0; loadCampaignList('CERRADO').catch((error) => toast(error.message, 'error')); };
+    $('#golevg-open-clear').onclick = () => { $('#golevg-open-search').value=''; $('#golevg-open-group').value=''; $('#golevg-open-date').value=''; $('#golevg-open-sort').value='ULTIMA_ACTIVIDAD'; state.openPage=0; loadCampaignList('ABIERTO'); };
+    $('#golevg-closed-clear').onclick = () => { $('#golevg-closed-search').value=''; $('#golevg-closed-group').value=''; $('#golevg-closed-date').value=''; $('#golevg-closed-sort').value='RECIENTES'; state.closedPage=0; loadCampaignList('CERRADO'); };
+
     $$('[data-main]', $('#golevg-main-tabs')).forEach((button) => { button.onclick = () => switchMainTab(button.dataset.main); });
     $$('[data-close]', $('#vista-ops-levantamientos')).forEach((button) => { button.onclick = () => closeModal(button.dataset.close); });
     $$('.golevg-modal', $('#vista-ops-levantamientos')).forEach((modal) => { modal.onclick = (event) => { if (event.target === modal) closeModal(modal.id); }; });
 
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        if (isModuleVisible()) saveUiState();
-        return;
-      }
-      // Regresar a la pestaña nunca navega. Solo refresca datos si este módulo
-      // ya estaba visible, preservando pestaña, filtros, detalle y scroll.
+      if (document.hidden) { if (isModuleVisible()) saveUiState(); return; }
       if (isModuleVisible()) setTimeout(refreshPreservingUiState, 120);
     });
     global.addEventListener('pagehide', () => { if (isModuleVisible()) saveUiState(); });
@@ -1414,7 +1684,6 @@
       state.scrollSaveTimer = setTimeout(() => saveUiState(), 120);
     }, { passive: true });
     try { runtime()?.events?.on?.('auth:signed-out', clearUiState); } catch (_error) {}
-
     subscribeRealtime();
   }
 
@@ -1427,7 +1696,7 @@
       body.innerHTML = '<tr><td colspan="6">Cargando…</td></tr>';
       const result = await client().from(TABLES.agencies).select('*, ops_levantamiento_campanas(codigo,grupo_codigo,nombre,estado)').eq('agencia_numero', number).order('fecha_inspeccion', { ascending: false });
       if (result.error || !result.data?.length) { body.innerHTML = '<tr><td colspan="6">Sin levantamientos registrados.</td></tr>'; return; }
-      body.innerHTML = result.data.map((item) => `<tr><td><b>${esc(item.ops_levantamiento_campanas?.codigo || '-')}</b></td><td>${formatDate(item.fecha_inspeccion)}</td><td>${esc(item.tecnico_nombre || '-')}</td><td>${esc(item.estado.replace(/_/g, ' '))}</td><td>${item.hallazgos_activos || 0}</td><td><button class="btn-secondary" onclick="GOLevantamientosGrupos.openCampaign('${item.campana_id}')">Abrir</button></td></tr>`).join('');
+      body.innerHTML = result.data.map((item) => `<tr><td><b>${esc(item.ops_levantamiento_campanas?.codigo || '-')}</b></td><td>${formatDate(item.fecha_inspeccion)}</td><td>${esc(item.tecnico_nombre || '-')}</td><td>${esc(item.estado.replace(/_/g, ' '))}</td><td>${Number(item.hallazgos_activos || 0) + Number(item.hallazgos_resueltos || 0)}</td><td><button class="btn-secondary" onclick="GOLevantamientosGrupos.openCampaign('${item.campana_id}')">Abrir</button></td></tr>`).join('');
     };
   }
 
@@ -1440,7 +1709,12 @@
       try {
         injectStyles(); injectView(); bind();
         await Promise.all([loadConfig(), loadCatalog()]);
-        await loadAll();
+        fillGroupOptions();
+        const saved = readUiState();
+        applyStoredFilters(saved || {});
+        state.mainTab = normalizedMainTab(saved?.mainTab || state.mainTab || 'SUMMARY');
+        await loadMainTab(state.mainTab);
+        switchMainTab(state.mainTab, { load: false, persist: false });
       } finally {
         state.loadingAll = false;
       }
