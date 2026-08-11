@@ -1,4 +1,3 @@
-
 (function(){
   'use strict';
   const VIEW_KEY = 'loteka-active-view-v1';
@@ -6,15 +5,15 @@
 
   function safeSet(key, value){
     try { sessionStorage.setItem(key, JSON.stringify(value)); } catch(e){}
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){}
   }
   function safeGet(key){
     let raw = null;
     try { raw = sessionStorage.getItem(key); } catch(e){}
-    if(!raw){ try { raw = localStorage.getItem(key); } catch(e){} }
     if(!raw) return null;
     try { return JSON.parse(raw); } catch(e){ return raw; }
   }
+  function safeRemove(key){ try { sessionStorage.removeItem(key); } catch(e){} }
+  function clearSavedView(){ safeRemove(VIEW_KEY); safeRemove(OPS_KEY); }
   function trustedUserClick(){
     try { return !!(window.event && window.event.isTrusted); } catch(e){ return false; }
   }
@@ -35,21 +34,20 @@
     const wrapper = String(vistaWrapper || '').trim();
     const view = String(nombreVista || '').trim();
     if(!wrapper && !view) return;
-    safeSet(VIEW_KEY, { type:'ops', vista:view, wrapper:wrapper, navId: el && el.id ? el.id : '', ts:Date.now() });
-    safeSet(OPS_KEY, { vista:view, wrapper:wrapper, navId: el && el.id ? el.id : '', ts:Date.now() });
-  }
-  function getVisibleView(){
-    const node = Array.from(document.querySelectorAll('[id^="vista-"]')).find(function(el){ return !el.classList.contains('hidden'); });
-    return node ? node.id.replace(/^vista-/, '') : '';
+    const payload = { type:'ops', vista:view, wrapper:wrapper, navId: el && el.id ? el.id : '', ts:Date.now() };
+    safeSet(VIEW_KEY, payload);
+    safeSet(OPS_KEY, payload);
   }
   function restoreSavedView(reason){
     const saved = safeGet(VIEW_KEY);
-    if(!saved || !saved.vista && !saved.wrapper) return false;
+    if(!saved || (!saved.vista && !saved.wrapper)) return false;
 
     if(saved.type === 'ops'){
       const nav = saved.navId ? document.getElementById(saved.navId) : null;
       if(typeof window.abrirVistaOperaciones === 'function'){
-        window.abrirVistaOperaciones(saved.vista || '', saved.wrapper || '', nav);
+        window.__lotekaRestoringView = true;
+        try { window.abrirVistaOperaciones(saved.vista || '', saved.wrapper || '', nav); }
+        finally { window.__lotekaRestoringView = false; }
         return true;
       }
       return false;
@@ -67,6 +65,7 @@
   }
 
   window.lotekaRestoreActiveView = restoreSavedView;
+  window.lotekaClearActiveView = clearSavedView;
 
   function installNoAutoHomeGuard(){
     if(window.__lotekaNoAutoHomeGuardInstalled) return;
@@ -81,7 +80,6 @@
         const allowHome = userClick || window.__lotekaAllowProgrammaticHome || window.__lotekaRestoringView || !saved || saved.vista === 'home';
 
         if(target === 'home' && !allowHome){
-          setTimeout(function(){ restoreSavedView('blocked-auto-home'); }, 30);
           return false;
         }
 
@@ -103,8 +101,19 @@
     }
   }
 
+  function installSessionCleanup(){
+    try {
+      if(window.GOApp && window.GOApp.__phase2aRuntime && window.GOApp.events){
+        window.GOApp.events.on('auth:signed-out', clearSavedView);
+      }
+    } catch(e){}
+  }
+
   function bootRestore(){
     installNoAutoHomeGuard();
+    installSessionCleanup();
+    // Solo se restaura al arrancar/recargar esta misma pestaña. Volver desde
+    // otra pestaña del navegador nunca debe provocar navegación automática.
     setTimeout(function(){ restoreSavedView('dom-ready'); }, 120);
     setTimeout(function(){ restoreSavedView('dom-ready-late'); }, 700);
   }
@@ -112,14 +121,6 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootRestore);
   else bootRestore();
 
-  window.addEventListener('pageshow', function(){ setTimeout(function(){ restoreSavedView('pageshow'); }, 80); });
-
-  document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState !== 'visible') return;
-    const saved = safeGet(VIEW_KEY);
-    const current = getVisibleView();
-    if(saved && saved.type !== 'normal' || (saved && saved.vista && saved.vista !== current)){
-      setTimeout(function(){ restoreSavedView('tab-visible'); }, 120);
-    }
-  });
+  // pageshow/visibilitychange ya no ejecutan restoreSavedView. El navegador
+  // conserva la vista actual y los módulos pueden refrescar datos sin navegar.
 })();
