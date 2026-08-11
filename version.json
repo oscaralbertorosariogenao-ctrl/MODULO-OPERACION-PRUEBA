@@ -1,14 +1,13 @@
 {
-  "version": "2026-08-07-v808.26-operaciones-base-estable",
-  "name": "v808.25 · Base estable de Operaciones",
-  "released_at": "2026-08-07",
+  "version": "2026-08-11-v808.27-levantamientos-safe-delete-state",
+  "name": "v808.27 · Levantamientos seguros",
+  "released_at": "2026-08-11",
   "changes": [
-    "Carga de evidencias de Operaciones: R2 y operacion_evidencias forman una sola transacción lógica con rollback R2 si falla Supabase",
-    "Endpoint autenticado de reconciliación para objetos R2 huérfanos por código de operación",
-    "Asignación de técnicos basada primero en permisos reales de ejecución y no únicamente en el texto del puesto",
-    "Inicio y finalización de operaciones pasan por RPC con UUID; completar exige evidencia canónica no-REPORTE",
-    "Autoría de notificaciones separa actor autenticado de destinatario",
-    "Gestor global de capas usa offset real del header y una escala de z-index coherente",
-    "PWA, Service Worker y frontend comparten la misma versión de despliegue"
+    "Levantamientos: eliminación permanente protegida por permiso específico y validación backend por UUID autenticado",
+    "Levantamientos: borrado transaccional de relaciones Supabase y limpieza exclusiva del prefijo Cloudflare R2 con reintento persistente",
+    "Levantamientos: códigos LEV eliminados no se reutilizan; la creación automática existente de Jotform permanece intacta",
+    "Levantamientos: pestaña, filtros, detalle y scroll se conservan en sessionStorage sin navegar al volver desde otra pestaña",
+    "Levantamientos: Realtime refresca campañas, agencias, hallazgos, evidencias, reportes e ingresos sin mover la pantalla",
+    "Notificaciones: eliminación dirigida a usuarios autorizados con acceso directo al submódulo Levantamientos"
   ]
 }
