@@ -1,14 +1,15 @@
 {
-  "version": "2026-08-12-v808.30-control-tecnico-export-agrupado",
-  "name": "v808.30 · Control técnico · Exportación agrupada y Excel reparado",
+  "version": "2026-08-12-v808.31-rutas-calles-orden-tramos",
+  "name": "v808.31 · Rutas · Calles reales por orden y colores por tramo",
   "released_at": "2026-08-12",
   "changes": [
-    "Control técnico: la tabla activa se ordena por bloques de estado y dentro de cada bloque por Grupo → Agencia",
-    "Copiar averías: el texto se agrupa en Pendientes, En coordinación, Falta equipo/cambio y demás estados, respetando filtros",
-    "Instalaciones: nuevos botones Copiar instalaciones, Exportar Excel e Imprimir/PDF con los mismos filtros y orden operativo",
-    "Excel: se corrige la estructura OOXML que Excel reparaba; el autoFilter queda en el orden XML correcto antes de mergeCells",
-    "Excel: Agencia se exporta como texto para preservar ceros iniciales; filas ordenadas Estado → Grupo → Agencia y formato profesional",
-    "Imprimir/PDF: reporte agrupado por estado listo para imprimir o guardar como PDF desde el navegador",
-    "No requiere SQL y no modifica Supabase, Jotform, R2, Levantamientos ni la eliminación existente"
+    "Rutas y cobertura: el cálculo vial respeta estrictamente el orden visual 1 → 2 → 3 → … definido por el usuario",
+    "Ruta real: OSRM se consulta en bloques ordenados con legs por cada par de agencias, reduciendo decenas de solicitudes individuales y manteniendo el recorrido por calles",
+    "Ruta real: cada tramo Agencia N → Agencia N+1 conserva su geometría vial independiente, distancia, duración y color propio",
+    "Mapa: la línea recta de referencia se oculta al existir una ruta vial calculada para que no se confunda con el recorrido real",
+    "Colores: los primeros tramos usan la paleta existente y los siguientes reciben colores determinísticos adicionales sin repetir cíclicamente cada 10 tramos",
+    "Leyenda: muestra pares AG origen → AG destino para todos los tramos en un contenedor desplazable",
+    "Robustez: cálculo por bloques, reintento breve ante 429/502/503/504 y fallback individual solo si un leg no trae geometría",
+    "No requiere SQL y no modifica Supabase, Control técnico, Levantamientos, Jotform ni R2"
   ]
 }
