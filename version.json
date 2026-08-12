@@ -1,15 +1,14 @@
 {
-  "version": "2026-08-12-v808.31-rutas-calles-orden-tramos",
-  "name": "v808.31 · Rutas · Calles reales por orden y colores por tramo",
+  "version": "2026-08-12-v808.32-rutas-render-integrity",
+  "name": "v808.32 · Rutas · Render íntegro por tramo",
   "released_at": "2026-08-12",
   "changes": [
-    "Rutas y cobertura: el cálculo vial respeta estrictamente el orden visual 1 → 2 → 3 → … definido por el usuario",
-    "Ruta real: OSRM se consulta en bloques ordenados con legs por cada par de agencias, reduciendo decenas de solicitudes individuales y manteniendo el recorrido por calles",
-    "Ruta real: cada tramo Agencia N → Agencia N+1 conserva su geometría vial independiente, distancia, duración y color propio",
-    "Mapa: la línea recta de referencia se oculta al existir una ruta vial calculada para que no se confunda con el recorrido real",
-    "Colores: los primeros tramos usan la paleta existente y los siguientes reciben colores determinísticos adicionales sin repetir cíclicamente cada 10 tramos",
-    "Leyenda: muestra pares AG origen → AG destino para todos los tramos en un contenedor desplazable",
-    "Robustez: cálculo por bloques, reintento breve ante 429/502/503/504 y fallback individual solo si un leg no trae geometría",
+    "Rutas reales: conserva el cálculo OSRM ordenado de v808.31 y corrige específicamente el renderizado de los tramos en MapLibre",
+    "Mapa: cada tramo Agencia N → Agencia N+1 se dibuja en una capa sólida independiente con color fijo",
+    "Mapa: la guía recta y la ruta vial se separan; al existir ruta real la guía queda oculta completamente",
+    "Robustez: elimina la dependencia del cambio dinámico de line-dasharray y de la capa de flechas/texto para considerar visible la ruta",
+    "Integridad: una ruta no se marca como completada si el número de tramos dibujados no coincide con los tramos calculados",
+    "Diagnóstico: GOOperationalRoutes.diagnostics() informa segments y renderedSegments para detectar cualquier fallo visual",
     "No requiere SQL y no modifica Supabase, Control técnico, Levantamientos, Jotform ni R2"
   ]
 }
