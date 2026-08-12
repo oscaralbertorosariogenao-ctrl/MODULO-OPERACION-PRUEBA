@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOControlTecnico && global.GOControlTecnico.version === '808.29') return;
+  if (global.GOControlTecnico && global.GOControlTecnico.version === '808.30') return;
 
-  const VERSION = '808.29';
+  const VERSION = '808.30';
   const TABLE = 'control_tecnico_personal';
   const PAGE_SIZES = [10, 20, 50];
   const MAX_EVIDENCE_FILES = 12;
@@ -197,6 +197,39 @@
   }
 
 
+  const STATUS_BUCKETS = {
+    PENDIENTE: { key: 'PENDIENTES', label: 'Pendientes', order: 10, stateOrder: 10 },
+    POR_VERIFICAR: { key: 'PENDIENTES', label: 'Pendientes', order: 10, stateOrder: 20 },
+    EN_COORDINACION: { key: 'EN_COORDINACION', label: 'En coordinación', order: 20, stateOrder: 10 },
+    FALTA_EQUIPO: { key: 'FALTA_EQUIPO_CAMBIO', label: 'Falta equipo / cambio', order: 30, stateOrder: 10 },
+    REQUIERE_CAMBIO: { key: 'FALTA_EQUIPO_CAMBIO', label: 'Falta equipo / cambio', order: 30, stateOrder: 20 },
+    PROGRAMADO: { key: 'PROGRAMADO', label: 'Programados', order: 40, stateOrder: 10 },
+    EN_PROCESO: { key: 'EN_PROCESO', label: 'En proceso', order: 50, stateOrder: 10 },
+    REQUIERE_NUEVA_VISITA: { key: 'REQUIERE_NUEVA_VISITA', label: 'Requiere nueva visita', order: 60, stateOrder: 10 },
+    NO_REALIZADO: { key: 'NO_REALIZADO', label: 'No realizado', order: 70, stateOrder: 10 },
+    RESUELTO: { key: 'RESUELTO', label: 'Resueltos', order: 80, stateOrder: 10 },
+    ARCHIVADO: { key: 'ARCHIVADO', label: 'Archivados', order: 90, stateOrder: 10 }
+  };
+
+  const EXPORT_CONFIG = {
+    AVERIA_CAMARA: {
+      noun: 'avería', nounPlural: 'averías', copyLabel: 'Copiar averías',
+      title: 'Averías de cámaras, DVR y teléfonos',
+      excelTitle: 'CONTROL TÉCNICO · AVERÍAS DE CÁMARAS, DVR Y TELÉFONOS',
+      detailHeader: 'DETALLE DE AVERÍA', sheetName: 'Averías de cámaras', filename: 'Control-Tecnico-Averias'
+    },
+    INSTALACION: {
+      noun: 'instalación', nounPlural: 'instalaciones', copyLabel: 'Copiar instalaciones',
+      title: 'Instalaciones pendientes',
+      excelTitle: 'CONTROL TÉCNICO · INSTALACIONES PENDIENTES',
+      detailHeader: 'DETALLE DE INSTALACIÓN', sheetName: 'Instalaciones', filename: 'Control-Tecnico-Instalaciones'
+    }
+  };
+
+  function stateBucket(status) {
+    return STATUS_BUCKETS[text(status).toUpperCase()] || { key: 'OTROS', label: 'Otros estados', order: 95, stateOrder: 99 };
+  }
+
   function exportGroupLabel(value) {
     const raw = text(value).toUpperCase();
     const match = raw.match(/(?:^|G\s*[-:]?\s*)(\d{1,3})/i) || raw.match(/(\d{1,3})/);
@@ -204,25 +237,62 @@
     return `G-${String(Number(match[1])).padStart(2, '0')}`;
   }
 
-  function averiaExportRows() {
-    if (state.activeCategory !== 'AVERIA_CAMARA') return [];
+  function numericGroup(value) {
+    const match = exportGroupLabel(value).match(/\d+/);
+    return match ? Number(match[0]) : 999999;
+  }
+
+  function numericAgency(value) {
+    const digits = padAgency(value).replace(/\D/g, '');
+    return digits ? Number(digits) : 999999;
+  }
+
+  function compareOperational(a, b) {
+    const bucketA = stateBucket(a.estado), bucketB = stateBucket(b.estado);
+    if (bucketA.order !== bucketB.order) return bucketA.order - bucketB.order;
+    if (bucketA.stateOrder !== bucketB.stateOrder) return bucketA.stateOrder - bucketB.stateOrder;
+    const groupDiff = numericGroup(a.grupo_codigo) - numericGroup(b.grupo_codigo);
+    if (groupDiff) return groupDiff;
+    const agencyDiff = numericAgency(a.agencia_numero) - numericAgency(b.agencia_numero);
+    if (agencyDiff) return agencyDiff;
+    return text(a.asunto).localeCompare(text(b.asunto), 'es', { sensitivity: 'base' });
+  }
+
+  function activeExportConfig() {
+    return EXPORT_CONFIG[state.activeCategory] || null;
+  }
+
+  function exportRowsForCategory(category = state.activeCategory) {
+    if (!EXPORT_CONFIG[category]) return [];
     return state.filtered
-      .filter((item) => item.categoria === 'AVERIA_CAMARA')
+      .filter((item) => item.categoria === category)
       .map((item) => ({
         agencia: padAgency(item.agencia_numero) || text(item.agencia_numero) || '-',
         grupo: exportGroupLabel(item.grupo_codigo),
         detalle: text(item.asunto) || '-',
+        estadoCodigo: text(item.estado).toUpperCase(),
         estado: STATE_LABEL[item.estado] || text(item.estado) || '-'
       }))
       .sort((a, b) => {
-        const ga = Number((a.grupo.match(/\d+/) || ['999999'])[0]);
-        const gb = Number((b.grupo.match(/\d+/) || ['999999'])[0]);
-        if (ga !== gb) return ga - gb;
-        const aa = Number(a.agencia.replace(/\D/g, '') || 999999);
-        const ab = Number(b.agencia.replace(/\D/g, '') || 999999);
-        if (aa !== ab) return aa - ab;
+        const bucketA = stateBucket(a.estadoCodigo), bucketB = stateBucket(b.estadoCodigo);
+        if (bucketA.order !== bucketB.order) return bucketA.order - bucketB.order;
+        if (bucketA.stateOrder !== bucketB.stateOrder) return bucketA.stateOrder - bucketB.stateOrder;
+        const groupDiff = numericGroup(a.grupo) - numericGroup(b.grupo);
+        if (groupDiff) return groupDiff;
+        const agencyDiff = numericAgency(a.agencia) - numericAgency(b.agencia);
+        if (agencyDiff) return agencyDiff;
         return a.detalle.localeCompare(b.detalle, 'es', { sensitivity: 'base' });
       });
+  }
+
+  function groupedExportRows(rows) {
+    const groupsMap = new Map();
+    (Array.isArray(rows) ? rows : []).forEach((row) => {
+      const bucket = stateBucket(row.estadoCodigo);
+      if (!groupsMap.has(bucket.key)) groupsMap.set(bucket.key, { ...bucket, rows: [] });
+      groupsMap.get(bucket.key).rows.push(row);
+    });
+    return Array.from(groupsMap.values()).sort((a, b) => a.order - b.order);
   }
 
   function currentFilterSummary() {
@@ -239,13 +309,15 @@
     return parts.length ? parts.join(' · ') : 'Sin filtros adicionales';
   }
 
-  function averiasClipboardText(rows) {
-    const list = Array.isArray(rows) ? rows : [];
-    return [
-      'Averías de cámaras, DVR y teléfonos:',
-      '',
-      ...list.map((row) => `${row.agencia} ${row.grupo}: ${row.detalle} — ${row.estado}`)
-    ].join('\n');
+  function clipboardExportText(rows, config) {
+    const sections = groupedExportRows(rows);
+    const lines = [config.title + ':', ''];
+    sections.forEach((section, sectionIndex) => {
+      lines.push(`${section.label.toUpperCase()} (${section.rows.length})`);
+      section.rows.forEach((row) => lines.push(`${row.agencia} ${row.grupo}: ${row.detalle} — ${row.estado}`));
+      if (sectionIndex < sections.length - 1) lines.push('');
+    });
+    return lines.join('\n');
   }
 
   async function copyText(value) {
@@ -266,14 +338,15 @@
     if (!copied) throw new Error('El navegador no permitió copiar al portapapeles.');
   }
 
-  async function copyAverias() {
-    const rows = averiaExportRows();
-    if (!rows.length) return toast('No hay averías para copiar con los filtros actuales.', 'error');
+  async function copyCurrentCategory() {
+    const config = activeExportConfig();
+    const rows = exportRowsForCategory();
+    if (!config || !rows.length) return toast('No hay registros para copiar con los filtros actuales.', 'error');
     try {
-      await copyText(averiasClipboardText(rows));
-      toast(`${rows.length} avería${rows.length === 1 ? '' : 's'} copiada${rows.length === 1 ? '' : 's'} al portapapeles.`, 'success');
+      await copyText(clipboardExportText(rows, config));
+      toast(`${rows.length} ${rows.length === 1 ? config.noun : config.nounPlural} copiada${rows.length === 1 ? '' : 's'} al portapapeles.`, 'success');
     } catch (error) {
-      toast(error.message || 'No se pudieron copiar las averías.', 'error');
+      toast(error.message || 'No se pudieron copiar los registros.', 'error');
     }
   }
 
@@ -293,13 +366,6 @@
   function xlsxInlineCell(column, row, value, style = 0) {
     const ref = `${excelColumnName(column)}${row}`;
     return `<c r="${ref}" t="inlineStr" s="${style}"><is><t xml:space="preserve">${xmlSafe(value)}</t></is></c>`;
-  }
-
-  function xlsxNumberCell(column, row, value, style = 0) {
-    const ref = `${excelColumnName(column)}${row}`;
-    const numeric = Number(String(value).replace(/\D/g, ''));
-    if (!Number.isFinite(numeric)) return xlsxInlineCell(column, row, value, style);
-    return `<c r="${ref}" s="${style}"><v>${numeric}</v></c>`;
   }
 
   let crcTable = null;
@@ -360,33 +426,34 @@
     return concatBytes([localBytes, centralBytes, end]);
   }
 
-  function stateExcelStyle(label, alternate) {
-    const normalized = text(label).toLowerCase();
-    if (normalized.includes('coordin')) return 7;
-    if (normalized.includes('cambio') || normalized.includes('falta') || normalized.includes('no realizado')) return 8;
-    if (normalized.includes('resuelto')) return 9;
-    if (normalized.includes('pendiente') || normalized.includes('verificar')) return 6;
+  function stateExcelStyle(statusCode, alternate) {
+    const bucket = stateBucket(statusCode);
+    if (bucket.key === 'PENDIENTES') return alternate ? 7 : 6;
+    if (bucket.key === 'EN_COORDINACION') return alternate ? 9 : 8;
+    if (bucket.key === 'FALTA_EQUIPO_CAMBIO') return alternate ? 11 : 10;
+    if (bucket.key === 'RESUELTO') return alternate ? 13 : 12;
     return alternate ? 5 : 4;
   }
 
-  function buildAveriasWorkbook(rows, filterSummary = '') {
+  function buildControlWorkbook(rows, config, filterSummary = '') {
     const encoder = new TextEncoder();
     const now = new Date();
     const generated = new Intl.DateTimeFormat('es-DO', { dateStyle: 'medium', timeStyle: 'short' }).format(now);
     const dataStartRow = 6;
     const lastRow = dataStartRow + rows.length - 1;
     const rowXml = rows.map((row, index) => {
-      const r = dataStartRow + index, alternate = index % 2 === 1, baseStyle = alternate ? 5 : 4, agencyStyle = alternate ? 11 : 10;
-      return `<row r="${r}" ht="28" customHeight="1">${xlsxNumberCell(1, r, row.agencia, agencyStyle)}${xlsxInlineCell(2, r, row.grupo, baseStyle)}${xlsxInlineCell(3, r, row.detalle, baseStyle)}${xlsxInlineCell(4, r, row.estado, stateExcelStyle(row.estado, alternate))}</row>`;
+      const r = dataStartRow + index, alternate = index % 2 === 1, baseStyle = alternate ? 5 : 4;
+      return `<row r="${r}" ht="28" customHeight="1">${xlsxInlineCell(1, r, row.agencia, baseStyle)}${xlsxInlineCell(2, r, row.grupo, baseStyle)}${xlsxInlineCell(3, r, row.detalle, baseStyle)}${xlsxInlineCell(4, r, row.estado, stateExcelStyle(row.estadoCodigo, alternate))}</row>`;
     }).join('');
-    const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:D${Math.max(5, lastRow)}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols><col min="1" max="1" width="14" customWidth="1"/><col min="2" max="2" width="12" customWidth="1"/><col min="3" max="3" width="58" customWidth="1"/><col min="4" max="4" width="23" customWidth="1"/></cols><sheetData><row r="1" ht="32" customHeight="1">${xlsxInlineCell(1, 1, 'CONTROL TÉCNICO · AVERÍAS DE CÁMARAS, DVR Y TELÉFONOS', 1)}</row><row r="2" ht="22" customHeight="1">${xlsxInlineCell(1, 2, `Grupo Ortiz · ${rows.length} registro${rows.length === 1 ? '' : 's'} · Generado ${generated}`, 2)}</row><row r="3" ht="22" customHeight="1">${xlsxInlineCell(1, 3, filterSummary || 'Sin filtros adicionales', 2)}</row><row r="4" ht="8" customHeight="1"></row><row r="5" ht="26" customHeight="1">${xlsxInlineCell(1, 5, 'AGENCIA', 3)}${xlsxInlineCell(2, 5, 'GRUPO', 3)}${xlsxInlineCell(3, 5, 'DETALLE DE AVERÍA', 3)}${xlsxInlineCell(4, 5, 'ESTADO', 3)}</row>${rowXml}</sheetData><mergeCells count="3"><mergeCell ref="A1:D1"/><mergeCell ref="A2:D2"/><mergeCell ref="A3:D3"/></mergeCells><autoFilter ref="A5:D${Math.max(5, lastRow)}"/><pageMargins left="0.35" right="0.35" top="0.55" bottom="0.55" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0" horizontalDpi="300" verticalDpi="300"/></worksheet>`;
-    const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0000"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><b/><sz val="18"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="10"/><color rgb="FF547086"/><name val="Calibri"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="9"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF075F8F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B78AE"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF7FBFD"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF4CC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6F5FF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE8E6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE7F7ED"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9E6EE"/></left><right style="thin"><color rgb="FFD9E6EE"/></right><top style="thin"><color rgb="FFD9E6EE"/></top><bottom style="thin"><color rgb="FFD9E6EE"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="12"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="6" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="7" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="8" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="164" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
-    const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="15000"/></bookViews><sheets><sheet name="Averías de cámaras" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029"/></workbook>`;
+    const filterEnd = Math.max(5, lastRow);
+    const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:D${filterEnd}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols><col min="1" max="1" width="14" customWidth="1"/><col min="2" max="2" width="12" customWidth="1"/><col min="3" max="3" width="58" customWidth="1"/><col min="4" max="4" width="23" customWidth="1"/></cols><sheetData><row r="1" ht="32" customHeight="1">${xlsxInlineCell(1, 1, config.excelTitle, 1)}</row><row r="2" ht="22" customHeight="1">${xlsxInlineCell(1, 2, `Grupo Ortiz · ${rows.length} registro${rows.length === 1 ? '' : 's'} · Generado ${generated}`, 2)}</row><row r="3" ht="22" customHeight="1">${xlsxInlineCell(1, 3, filterSummary || 'Sin filtros adicionales', 2)}</row><row r="4" ht="8" customHeight="1"></row><row r="5" ht="26" customHeight="1">${xlsxInlineCell(1, 5, 'AGENCIA', 3)}${xlsxInlineCell(2, 5, 'GRUPO', 3)}${xlsxInlineCell(3, 5, config.detailHeader, 3)}${xlsxInlineCell(4, 5, 'ESTADO', 3)}</row>${rowXml}</sheetData><autoFilter ref="A5:D${filterEnd}"/><mergeCells count="3"><mergeCell ref="A1:D1"/><mergeCell ref="A2:D2"/><mergeCell ref="A3:D3"/></mergeCells><pageMargins left="0.35" right="0.35" top="0.55" bottom="0.55" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0" horizontalDpi="300" verticalDpi="300"/></worksheet>`;
+    const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><b/><sz val="18"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="10"/><color rgb="FF547086"/><name val="Calibri"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="10"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF075F8F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B78AE"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF7FBFD"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF4CC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6F5FF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE8E6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE7F7ED"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3F0FF"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9E6EE"/></left><right style="thin"><color rgb="FFD9E6EE"/></right><top style="thin"><color rgb="FFD9E6EE"/></top><bottom style="thin"><color rgb="FFD9E6EE"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="14"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="6" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="6" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="7" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="7" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="8" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="8" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="15000"/></bookViews><sheets><sheet name="${xmlSafe(config.sheetName)}" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029"/></workbook>`;
     const entries = [
       { name: '[Content_Types].xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>` },
       { name: '_rels/.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>` },
-      { name: 'docProps/app.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Grupo Ortiz</Application><AppVersion>808.29</AppVersion></Properties>` },
-      { name: 'docProps/core.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Control técnico · Averías de cámaras, DVR y teléfonos</dc:title><dc:creator>Grupo Ortiz</dc:creator><cp:lastModifiedBy>Grupo Ortiz</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now.toISOString()}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now.toISOString()}</dcterms:modified></cp:coreProperties>` },
+      { name: 'docProps/app.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Grupo Ortiz</Application><AppVersion>808.30</AppVersion></Properties>` },
+      { name: 'docProps/core.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xmlSafe(config.title)}</dc:title><dc:creator>Grupo Ortiz</dc:creator><cp:lastModifiedBy>Grupo Ortiz</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now.toISOString()}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now.toISOString()}</dcterms:modified></cp:coreProperties>` },
       { name: 'xl/workbook.xml', data: workbook },
       { name: 'xl/_rels/workbook.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
       { name: 'xl/styles.xml', data: styles },
@@ -404,13 +471,13 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
 
-  function exportAveriasExcel() {
-    const rows = averiaExportRows();
-    if (!rows.length) return toast('No hay averías para exportar con los filtros actuales.', 'error');
+  function exportCurrentExcel() {
+    const config = activeExportConfig();
+    const rows = exportRowsForCategory();
+    if (!config || !rows.length) return toast('No hay registros para exportar con los filtros actuales.', 'error');
     try {
-      const bytes = buildAveriasWorkbook(rows, currentFilterSummary());
-      const filename = `Control-Tecnico-Averias-${today()}.xlsx`;
-      downloadBytes(bytes, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      const bytes = buildControlWorkbook(rows, config, currentFilterSummary());
+      downloadBytes(bytes, `${config.filename}-${today()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       toast(`Excel generado correctamente: ${rows.length} registro${rows.length === 1 ? '' : 's'}.`, 'success');
     } catch (error) {
       console.error('[Control técnico] Error generando XLSX', error);
@@ -418,17 +485,33 @@
     }
   }
 
+  function printCurrentCategory() {
+    const config = activeExportConfig();
+    const rows = exportRowsForCategory();
+    if (!config || !rows.length) return toast('No hay registros para imprimir con los filtros actuales.', 'error');
+    const popup = global.open('', '_blank', 'noopener,noreferrer');
+    if (!popup) return toast('El navegador bloqueó la ventana de impresión. Habilita ventanas emergentes e inténtalo de nuevo.', 'error');
+    const generated = new Intl.DateTimeFormat('es-DO', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+    const sections = groupedExportRows(rows);
+    const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(config.title)}</title><style>@page{size:landscape;margin:12mm}body{font-family:Arial,sans-serif;color:#173f59;margin:0}h1{font-size:22px;margin:0 0 4px}.meta{font-size:11px;color:#617b8d;margin-bottom:16px}.section{margin:0 0 18px;break-inside:avoid}.section h2{font-size:13px;margin:0;padding:8px 10px;background:#eaf6fc;border:1px solid #cfe4ef}.section table{width:100%;border-collapse:collapse}.section th,.section td{border:1px solid #d5e5ee;padding:7px 8px;font-size:11px;text-align:left;vertical-align:top}.section th{background:#f4f9fc}.agency{width:12%}.group{width:10%}.status{width:19%}.detail{width:59%}</style></head><body><h1>${esc(config.excelTitle)}</h1><div class="meta">Grupo Ortiz · ${rows.length} registros · ${esc(generated)}<br>${esc(currentFilterSummary())}</div>${sections.map((section) => `<div class="section"><h2>${esc(section.label.toUpperCase())} · ${section.rows.length}</h2><table><thead><tr><th class="agency">Agencia</th><th class="group">Grupo</th><th class="detail">Detalle</th><th class="status">Estado</th></tr></thead><tbody>${section.rows.map((row) => `<tr><td>${esc(row.agencia)}</td><td>${esc(row.grupo)}</td><td>${esc(row.detalle)}</td><td>${esc(row.estado)}</td></tr>`).join('')}</tbody></table></div>`).join('')}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),120));<\/script></body></html>`;
+    popup.document.open(); popup.document.write(html); popup.document.close();
+  }
+
   function updateExportActions() {
-    const isAverias = state.activeCategory === 'AVERIA_CAMARA';
-    const rows = isAverias ? averiaExportRows() : [];
-    const copy = $('#goct-copy-averias'), excel = $('#goct-excel-averias');
-    [copy, excel].forEach((button) => {
+    const config = activeExportConfig();
+    const rows = config ? exportRowsForCategory() : [];
+    const copy = $('#goct-copy-averias'), excel = $('#goct-excel-averias'), pdf = $('#goct-pdf-export');
+    [copy, excel, pdf].forEach((button) => {
       if (!button) return;
-      button.hidden = !isAverias;
-      button.disabled = !isAverias || !rows.length;
+      button.hidden = !config;
+      button.disabled = !config || !rows.length;
     });
-    if (copy && isAverias) copy.title = rows.length ? `Copiar ${rows.length} avería(s) filtrada(s)` : 'No hay averías con los filtros actuales.';
-    if (excel && isAverias) excel.title = rows.length ? `Exportar ${rows.length} avería(s) filtrada(s) a Excel` : 'No hay averías con los filtros actuales.';
+    if (copy && config) {
+      copy.innerHTML = `<i class="fas fa-copy"></i> ${config.copyLabel}`;
+      copy.title = rows.length ? `${config.copyLabel}: ${rows.length} registro(s) filtrado(s)` : 'No hay registros con los filtros actuales.';
+    }
+    if (excel && config) excel.title = rows.length ? `Exportar ${rows.length} registro(s) a Excel` : 'No hay registros con los filtros actuales.';
+    if (pdf && config) pdf.title = rows.length ? `Imprimir o guardar PDF de ${rows.length} registro(s)` : 'No hay registros con los filtros actuales.';
   }
 
   function injectStyles() {
@@ -450,7 +533,7 @@
         <section class="goct-hero"><div><span class="goct-private"><i class="fas fa-lock"></i> Control interno</span><h2>Control técnico</h2><p>Seguimiento de instalaciones, averías de cámaras y acciones técnicas. Los levantamientos fotográficos se administran en el módulo Levantamientos por grupo.</p></div><div class="goct-actions"><button class="goct-btn" id="goct-open-surveys"><i class="fas fa-clipboard-check"></i> Abrir Levantamientos</button><button class="goct-btn" id="goct-import"><i class="fas fa-paste"></i> Entrada rápida</button><button class="goct-btn primary" id="goct-new"><i class="fas fa-plus"></i> Nuevo registro</button></div></section>
         <div class="goct-tabs"><button class="goct-tab active" data-cat="">Todos activos</button><button class="goct-tab" data-cat="INSTALACION">Instalaciones</button><button class="goct-tab" data-cat="AVERIA_CAMARA">Averías de cámaras</button><button class="goct-tab" data-cat="RESUELTO">Resueltos</button></div>
         <div class="goct-stats"><div class="goct-stat"><span>Total activo</span><strong id="goct-s-total">0</strong></div><div class="goct-stat"><span>Pendientes</span><strong id="goct-s-pending">0</strong></div><div class="goct-stat"><span>En coordinación</span><strong id="goct-s-process">0</strong></div><div class="goct-stat"><span>Falta equipo/cambio</span><strong id="goct-s-equipment">0</strong></div><div class="goct-stat"><span>Resueltos</span><strong id="goct-s-resolved">0</strong></div></div>
-        <section class="goct-card"><div class="goct-card-head"><div><h3 id="goct-list-title">Seguimiento activo</h3><small id="goct-count-label">0 registros</small></div><div class="goct-export-actions"><button class="goct-btn small copy" id="goct-copy-averias" hidden><i class="fas fa-copy"></i> Copiar averías</button><button class="goct-btn small export" id="goct-excel-averias" hidden><i class="fas fa-file-excel"></i> Exportar Excel</button><button class="goct-btn small" id="goct-refresh"><i class="fas fa-rotate"></i> Actualizar</button></div></div><div class="goct-toolbar"><input class="goct-input" id="goct-search" placeholder="Buscar agencia, problema, equipo o nota"><select class="goct-select" id="goct-state"><option value="">Todos los estados</option>${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select><select class="goct-select" id="goct-group"><option value="">Todos los grupos</option></select><button class="goct-btn" id="goct-clear">Limpiar</button></div><div id="goct-table"></div><div class="goct-pagination"><div><select class="goct-select" id="goct-size" style="width:auto">${PAGE_SIZES.map((size) => `<option ${size === 10 ? 'selected' : ''}>${size}</option>`).join('')}</select> <small>por página</small></div><div class="goct-pages" id="goct-pages"></div></div></section>
+        <section class="goct-card"><div class="goct-card-head"><div><h3 id="goct-list-title">Seguimiento activo</h3><small id="goct-count-label">0 registros</small></div><div class="goct-export-actions"><button class="goct-btn small copy" id="goct-copy-averias" hidden><i class="fas fa-copy"></i> Copiar</button><button class="goct-btn small export" id="goct-excel-averias" hidden><i class="fas fa-file-excel"></i> Exportar Excel</button><button class="goct-btn small" id="goct-pdf-export" hidden><i class="fas fa-print"></i> Imprimir / PDF</button><button class="goct-btn small" id="goct-refresh"><i class="fas fa-rotate"></i> Actualizar</button></div></div><div class="goct-toolbar"><input class="goct-input" id="goct-search" placeholder="Buscar agencia, problema, equipo o nota"><select class="goct-select" id="goct-state"><option value="">Todos los estados</option>${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select><select class="goct-select" id="goct-group"><option value="">Todos los grupos</option></select><button class="goct-btn" id="goct-clear">Limpiar</button></div><div id="goct-table"></div><div class="goct-pagination"><div><select class="goct-select" id="goct-size" style="width:auto">${PAGE_SIZES.map((size) => `<option ${size === 10 ? 'selected' : ''}>${size}</option>`).join('')}</select> <small>por página</small></div><div class="goct-pages" id="goct-pages"></div></div></section>
       </div>
       <div class="goct-modal" id="goct-form-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-form-title">Nuevo registro</h3><small>Control técnico interno</small></div><button class="goct-btn" data-close="goct-form-modal">Cerrar</button></div><div class="goct-grid"><div class="goct-field"><label>Categoría</label><select class="goct-select" id="goct-f-cat"><option value="INSTALACION">Instalación pendiente</option><option value="AVERIA_CAMARA">Avería de cámara</option><option value="OTRO">Otro seguimiento</option></select></div><div class="goct-field"><label>Agencia</label><select class="goct-select" id="goct-f-agency"></select></div><div class="goct-field"><label>Tipo / equipo</label><input class="goct-input" id="goct-f-equipment" placeholder="Ej. Registro fotográfico, cámara domo, PTZ"></div><div class="goct-field"><label>Estado</label><select class="goct-select" id="goct-f-state">${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select></div><div class="goct-field"><label>Fecha reportada</label><input class="goct-input" type="date" id="goct-f-date"></div><div class="goct-field full"><label>Problema / trabajo pendiente</label><textarea class="goct-textarea" rows="3" id="goct-f-subject" placeholder="Describe la instalación, avería o levantamiento pendiente"></textarea></div><div class="goct-field full"><label>Observaciones</label><textarea class="goct-textarea" rows="3" id="goct-f-notes"></textarea></div><div class="goct-field full"><label>Fotos / evidencias técnicas</label><input class="goct-input" type="file" id="goct-f-files" accept="image/*" multiple><div class="goct-help">Puedes tomar o seleccionar hasta ${MAX_EVIDENCE_FILES} fotos para documentar la instalación o avería.</div><div class="goct-upload-status" id="goct-upload-status"></div><div class="goct-evidence-grid" id="goct-form-evidence"></div></div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:16px"><button class="goct-btn" data-close="goct-form-modal">Cancelar</button><button class="goct-btn primary" id="goct-save">Guardar</button></div></div></div>
       <div class="goct-modal" id="goct-import-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-import-title">Entrada rápida</h3><small>Pega listas desde WhatsApp o Bloc de notas</small></div><button class="goct-btn" data-close="goct-import-modal">Cerrar</button></div><div id="goct-import-rule" class="goct-help" style="margin-bottom:12px">Todos los registros se guardarán en la categoría seleccionada.</div><div class="goct-field"><label>Texto</label><textarea class="goct-textarea" rows="9" id="goct-import-text" placeholder="1502 (DOMO)\n1576 (PTZ)\n1175 G-11 (verificar)\n1058 G-11: 17-7-2026"></textarea></div><div class="goct-actions" style="margin:12px 0"><div id="goct-import-category-label" class="goct-private">Categoría</div><button class="goct-btn" id="goct-preview-btn">Analizar lista</button></div><div class="goct-preview" id="goct-preview"><div class="goct-empty">Pega una lista y pulsa Analizar.</div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:14px"><button class="goct-btn primary" id="goct-import-save" disabled>Guardar registros válidos</button></div></div></div>
@@ -540,7 +623,7 @@
         if (!searchable.includes(query)) return false;
       }
       return true;
-    });
+    }).sort(compareOperational);
     const pages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
     if (state.page > pages) state.page = pages;
     renderTable(); renderPagination(); updateContextActions(); updateExportActions();
@@ -774,7 +857,7 @@
 
   function bind() {
     if (state.ready) return; state.ready = true; state.activeCategory = $('.goct-tab.active', $('#goct-root'))?.dataset.cat || '';
-    $('#goct-new').onclick = newItem; $('#goct-import').onclick = () => openImport(); $('#goct-copy-averias').onclick = copyAverias; $('#goct-excel-averias').onclick = exportAveriasExcel; $('#goct-open-surveys').onclick = () => global.GOLevantamientosGrupos ? global.GOLevantamientosGrupos.open($('#navLevantamientos')) : toast('El módulo Levantamientos todavía no está disponible.','error'); $('#goct-refresh').onclick = load; $('#goct-save').onclick = saveItem; $('#goct-preview-btn').onclick = parseImport; $('#goct-import-save').onclick = saveImport; $('#goct-f-files').onchange = (event) => addPendingFiles(event.target.files);
+    $('#goct-new').onclick = newItem; $('#goct-import').onclick = () => openImport(); $('#goct-copy-averias').onclick = copyCurrentCategory; $('#goct-excel-averias').onclick = exportCurrentExcel; $('#goct-pdf-export').onclick = printCurrentCategory; $('#goct-open-surveys').onclick = () => global.GOLevantamientosGrupos ? global.GOLevantamientosGrupos.open($('#navLevantamientos')) : toast('El módulo Levantamientos todavía no está disponible.','error'); $('#goct-refresh').onclick = load; $('#goct-save').onclick = saveItem; $('#goct-preview-btn').onclick = parseImport; $('#goct-import-save').onclick = saveImport; $('#goct-f-files').onchange = (event) => addPendingFiles(event.target.files);
     $('#goct-search').oninput = () => { state.page = 1; applyFilters(); };
     ['#goct-state', '#goct-group'].forEach((selector) => { $(selector).onchange = () => { state.page = 1; applyFilters(); }; });
     $('#goct-clear').onclick = () => { $('#goct-search').value = ''; $('#goct-state').value = ''; $('#goct-group').value = ''; state.page = 1; applyFilters(); };
