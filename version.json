@@ -1,14 +1,13 @@
 {
-  "version": "2026-08-12-v808.32-rutas-render-integrity",
-  "name": "v808.32 · Rutas · Render íntegro por tramo",
+  "version": "2026-08-12-v808.33-rutas-render-single-layer",
+  "name": "v808.33 · Rutas · Render estable por color",
   "released_at": "2026-08-12",
   "changes": [
-    "Rutas reales: conserva el cálculo OSRM ordenado de v808.31 y corrige específicamente el renderizado de los tramos en MapLibre",
-    "Mapa: cada tramo Agencia N → Agencia N+1 se dibuja en una capa sólida independiente con color fijo",
-    "Mapa: la guía recta y la ruta vial se separan; al existir ruta real la guía queda oculta completamente",
-    "Robustez: elimina la dependencia del cambio dinámico de line-dasharray y de la capa de flechas/texto para considerar visible la ruta",
-    "Integridad: una ruta no se marca como completada si el número de tramos dibujados no coincide con los tramos calculados",
-    "Diagnóstico: GOOperationalRoutes.diagnostics() informa segments y renderedSegments para detectar cualquier fallo visual",
-    "No requiere SQL y no modifica Supabase, Control técnico, Levantamientos, Jotform ni R2"
+    "Corrige el fallo de v808.32 donde OSRM completaba los tramos pero MapLibre podía rechazar el render por múltiples capas filtradas",
+    "Mapa: todos los tramos usan un único GeoJSON y una única capa de línea con color data-driven por la propiedad color",
+    "Mapa: conserva un color distinto para cada Agencia N → Agencia N+1 y el orden exacto definido por el usuario",
+    "Mapa: mantiene contorno blanco y oculta la guía recta cuando el recorrido vial se renderiza correctamente",
+    "Diagnóstico: conserva el error real de MapLibre en GOOperationalRoutes.diagnostics().roadRenderError",
+    "No modifica OSRM, orden de agencias, Supabase, Control técnico, Levantamientos, Jotform ni R2"
   ]
 }
