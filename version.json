@@ -1,14 +1,13 @@
 {
-  "version": "2026-08-11-v808.28-levantamientos-centro-control",
-  "name": "v808.28 · Levantamientos Centro de Control",
-  "released_at": "2026-08-11",
+  "version": "2026-08-12-v808.29-control-tecnico-export",
+  "name": "v808.29 · Control técnico · Copiar y Excel",
+  "released_at": "2026-08-12",
   "changes": [
-    "Levantamientos: nueva navegación Resumen, Abiertos, Cerrados, Jotform sin vincular y Reportes generados",
-    "Rendimiento: Resumen agregado y listados paginados consultan Supabase por pantalla sin descargar todo el histórico",
-    "Terminología: la interfaz usa Hallazgos y retira de esta fase la gestión visual de resolución",
-    "Reportes: autor UUID real para nuevos reportes, archivo documental paginado y PDF/Excel conservados como formatos generables",
-    "Realtime/persistencia: refresca únicamente la pantalla activa conservando pestaña, filtros, orden, página, detalle y scroll",
-    "Notificaciones: creación, cierre, reapertura, excepciones Jotform y reportes generados se dirigen a responsables autorizados; eliminación v808.27 permanece intacta",
-    "Jotform/R2: integración general y almacenamiento físico Cloudflare R2 no fueron modificados"
+    "Control técnico: el indicador En proceso pasa a En coordinación y cuenta exclusivamente registros EN_COORDINACION",
+    "Control técnico: Pendientes deja de duplicar registros En coordinación y cuenta PENDIENTE/POR_VERIFICAR",
+    "Averías de cámaras: nuevo botón Copiar averías con Agencia, Grupo, Detalle y Estado, respetando búsqueda y filtros actuales",
+    "Averías de cámaras: exportación XLSX real, ordenada Grupo → Agencia, con ceros iniciales preservados, autofiltro, encabezado congelado, ajuste de texto y formato visual profesional",
+    "Exportación: trabaja sobre todos los resultados filtrados, no solamente la página visible, y no modifica datos en Supabase",
+    "Levantamientos, Jotform, R2, eliminación v808.27 y persistencia v808.28 no fueron modificados"
   ]
 }
