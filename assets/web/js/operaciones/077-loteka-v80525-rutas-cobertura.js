@@ -1,9 +1,9 @@
 (function(global){
   'use strict';
 
-  if(global.GOOperationalRoutes && global.GOOperationalRoutes.version === '805.32.0') return;
+  if(global.GOOperationalRoutes && global.GOOperationalRoutes.version === '805.33.0') return;
 
-  var VERSION = '805.32.0';
+  var VERSION = '805.33.0';
   var ALL_GROUPS = '__ALL__';
   var state = {
     comparison: null,
@@ -21,6 +21,7 @@
     mapMarkers: [],
     roadRoute: null,
     roadRouteAbort: null,
+    roadRenderError: null,
     routePalette: ['#0b84f3','#16a34a','#f59e0b','#8b5cf6','#ef4444','#14b8a6','#ec4899','#f97316','#06b6d4','#84cc16']
   };
 
@@ -530,23 +531,35 @@
   function setSegmentSource(data,isRoadRoute){
     if(!state.map||!state.map.isStyleLoaded())return 0;
     var features=data&&Array.isArray(data.features)?data.features:[];
+    state.roadRenderError=null;
     try{
+      /*
+       * Una sola capa de líneas con color dirigido por la propiedad `color`.
+       * MapLibre soporta oficialmente line-color: ['get','color'] para GeoJSON.
+       * Evitamos 56 capas/filters independientes: un error en una capa ya no
+       * puede anular el render completo de una ruta larga.
+       */
+      clearFixedSegmentLayers();
       var source=state.map.getSource('gor-route-segments');
       if(source)source.setData(data);else state.map.addSource('gor-route-segments',{type:'geojson',data:data});
-      clearFixedSegmentLayers();
       if(!features.length)return 0;
-      state.map.addLayer({id:'gor-route-segments-outline',type:'line',source:'gor-route-segments',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffffff','line-width':isRoadRoute?9.5:7.5,'line-opacity':isRoadRoute?.94:.5,'line-blur':isRoadRoute?.8:.45}});
-      features.forEach(function(feature,index){
-        var segment=Number(feature&&feature.properties&&feature.properties.segment);
-        if(!Number.isFinite(segment))segment=index;
-        var color=text(feature&&feature.properties&&feature.properties.color)||paletteColor(segment);
-        var layerId='gor-route-segment-fixed-'+segment;
-        var paint={'line-color':color,'line-width':isRoadRoute?6.2:3.9,'line-opacity':isRoadRoute?.99:.72};
-        if(!isRoadRoute)paint['line-dasharray']=[1.25,1.25];
-        state.map.addLayer({id:layerId,type:'line',source:'gor-route-segments',filter:['==',['get','segment'],segment],layout:{'line-cap':'round','line-join':'round'},paint:paint});
+      state.map.addLayer({
+        id:'gor-route-segments-outline',
+        type:'line',
+        source:'gor-route-segments',
+        layout:{'line-cap':'round','line-join':'round'},
+        paint:{'line-color':'#ffffff','line-width':isRoadRoute?9:7,'line-opacity':isRoadRoute?.90:.46}
+      });
+      state.map.addLayer({
+        id:'gor-route-segments-layer',
+        type:'line',
+        source:'gor-route-segments',
+        layout:{'line-cap':'round','line-join':'round'},
+        paint:{'line-color':['get','color'],'line-width':isRoadRoute?5.8:3.8,'line-opacity':isRoadRoute?.99:.72}
       });
       return features.length;
     }catch(error){
+      state.roadRenderError=String(error&&error.message||error||'Error desconocido de MapLibre');
       routeRenderWarn(error,'dibujar tramos coloreados');
       return 0;
     }
@@ -638,7 +651,7 @@
       if(!all.length||segments.length!==totalLegs)throw new Error('El servicio no devolvió el recorrido completo.');
       state.roadRoute={coordinates:all,distance:distance,duration:duration,calculatedAt:new Date().toISOString(),provider:'OSRM_ORDERED_LEGS',segments:segments,renderedSegments:0};
       drawMapRouteLine();
-      if(Number(state.roadRoute.renderedSegments||0)!==segments.length)throw new Error('La ruta por calles se calculó, pero el mapa no pudo dibujar todos los tramos. No se mostrará como completada hasta que el render sea íntegro.');
+      if(Number(state.roadRoute.renderedSegments||0)!==segments.length)throw new Error('La ruta por calles se calculó, pero MapLibre no pudo dibujar los '+segments.length+' tramos'+(state.roadRenderError?' · '+state.roadRenderError:'')+'.');
       var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='';
       setRoadSummary('<span class="gor-road-pill"><i class="fas fa-road"></i> '+formatKm(distance)+'</span><span class="gor-road-pill"><i class="fas fa-clock"></i> '+formatDuration(duration)+'</span><span class="gor-road-pill"><i class="fas fa-location-dot"></i> '+points.length+' paradas</span><span class="gor-road-pill"><i class="fas fa-link"></i> '+segments.length+' tramos</span><span class="gor-road-note">Recorrido calculado por calles respetando exactamente el orden 1 → 2 → 3 → …</span><div class="gor-road-legend">'+routeLegendItems(ed.order)+'</div>');
       try{var b=new global.maplibregl.LngLatBounds();all.forEach(function(c){b.extend(c);});state.map.fitBounds(b,{padding:55,maxZoom:15});}catch(_e){}
@@ -672,6 +685,6 @@
   async function open(nav){if(!canView()){notify('No tienes permiso para consultar Rutas y cobertura.','error');return;}var link=nav||document.getElementById('navRoutesCoverage');if(global.GONavigationCoordinator&&typeof global.GONavigationCoordinator.show==='function')global.GONavigationCoordinator.show('vista-ops-rutas',link);else if(typeof global.cambiarVista==='function')global.cambiarVista('ops-rutas',link);else{qsa('[id^="vista-"]').forEach(function(v){v.classList.add('hidden');v.style.setProperty('display','none','important');});var own=document.getElementById('vista-ops-rutas');if(own){own.classList.remove('hidden');own.style.setProperty('display','block','important');}}try{if(typeof global.setSidebarSectionOpen==='function')global.setSidebarSectionOpen('operaciones',true);}catch(_e){}populateGroups();populateProfiles(false);if(!qs('#gorRouteDate').value)qs('#gorRouteDate').value=nowISO();if(!qs('#gorGroupSelect').value)qs('#gorGroupSelect').value=ALL_GROUPS;}
   function init(){injectStyles();buildView();buildNav();wrapNavigation();bindEvents();populateGroups();if(qs('#gorRouteDate'))qs('#gorRouteDate').value=nowISO();if(qs('#gorGroupSelect'))qs('#gorGroupSelect').value=ALL_GROUPS;refreshPermissionVisibility();var rt=runtime();if(rt){rt.modules.register('operaciones-rutas',{version:VERSION,refresh:refreshAllData,open:open});rt.events.on('auth:ready',function(){refreshPermissionVisibility();populateGroups();});rt.events.on('state:permissions',refreshPermissionVisibility);}}
 
-  global.GOOperationalRoutes={version:VERSION,init:init,open:open,compare:compareFromForm,refresh:refreshAllData,parseList:parseAgencyTokens,compareData:makeComparison,copyCurrent:function(){openExportForCurrent(true);},moveMapAgencyToPosition:function(key){var ed=state.mapEditor;if(!ed)return;var i=ed.order.findIndex(function(a){return agencyKey(a.numero||a.codigo)===String(key);});var raw=global.prompt?global.prompt('Mover AG '+agencyNumber(ed.order[i])+' a la posición (1-'+ed.order.length+'): ',String(i+1)):null,n=Number(raw);if(Number.isInteger(n)&&n>=1&&n<=ed.order.length)mapEditorMove(i,n-1);},diagnostics:function(){return{version:VERSION,comparison:state.comparison?state.comparison.counts:null,routes:state.routes.length,profiles:state.profiles.length,canView:canView(),canManage:canManage(),routeOrder:state.routeOrder.slice(),routingEngine:'OSRM ordered legs · chunk '+ROAD_CHUNK_POINTS,roadRoute:state.roadRoute?{distance:state.roadRoute.distance,duration:state.roadRoute.duration,points:state.roadRoute.coordinates.length,segments:state.roadRoute.segments.length,renderedSegments:Number(state.roadRoute.renderedSegments||0),provider:state.roadRoute.provider}:null};}};
+  global.GOOperationalRoutes={version:VERSION,init:init,open:open,compare:compareFromForm,refresh:refreshAllData,parseList:parseAgencyTokens,compareData:makeComparison,copyCurrent:function(){openExportForCurrent(true);},moveMapAgencyToPosition:function(key){var ed=state.mapEditor;if(!ed)return;var i=ed.order.findIndex(function(a){return agencyKey(a.numero||a.codigo)===String(key);});var raw=global.prompt?global.prompt('Mover AG '+agencyNumber(ed.order[i])+' a la posición (1-'+ed.order.length+'): ',String(i+1)):null,n=Number(raw);if(Number.isInteger(n)&&n>=1&&n<=ed.order.length)mapEditorMove(i,n-1);},diagnostics:function(){return{version:VERSION,comparison:state.comparison?state.comparison.counts:null,routes:state.routes.length,profiles:state.profiles.length,canView:canView(),canManage:canManage(),routeOrder:state.routeOrder.slice(),routingEngine:'OSRM ordered legs · chunk '+ROAD_CHUNK_POINTS,roadRoute:state.roadRoute?{distance:state.roadRoute.distance,duration:state.roadRoute.duration,points:state.roadRoute.coordinates.length,segments:state.roadRoute.segments.length,renderedSegments:Number(state.roadRoute.renderedSegments||0),provider:state.roadRoute.provider}:null,roadRenderError:state.roadRenderError};}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })(window);
