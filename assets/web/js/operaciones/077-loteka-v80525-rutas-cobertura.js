@@ -1,9 +1,9 @@
 (function(global){
   'use strict';
 
-  if(global.GOOperationalRoutes && global.GOOperationalRoutes.version === '805.31.1') return;
+  if(global.GOOperationalRoutes && global.GOOperationalRoutes.version === '805.31.2') return;
 
-  var VERSION = '805.31.1';
+  var VERSION = '805.31.2';
   var ALL_GROUPS = '__ALL__';
   var state = {
     comparison: null,
@@ -93,11 +93,30 @@
     return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query);
   }
 
-  function paletteColor(index){ var p=state.routePalette||[]; return p.length?p[index % p.length]:'#087fba'; }
-  function routeLegendItems(order){ return (order||[]).slice(0,10).map(function(a,index){ return '<span class="gor-road-legend-item"><i style="background:'+paletteColor(index)+'"></i>'+esc(String(index+1))+' · AG '+esc(agencyNumber(a))+'</span>'; }).join(''); }
+  function hslToHex(h,s,l){
+    h=((Number(h)||0)%360+360)%360;s=Math.max(0,Math.min(100,Number(s)||0))/100;l=Math.max(0,Math.min(100,Number(l)||0))/100;
+    var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2,r=0,g=0,b=0;
+    if(h<60){r=c;g=x;}else if(h<120){r=x;g=c;}else if(h<180){g=c;b=x;}else if(h<240){g=x;b=c;}else if(h<300){r=x;b=c;}else{r=c;b=x;}
+    function hex(v){return Math.round((v+m)*255).toString(16).padStart(2,'0');}
+    return '#'+hex(r)+hex(g)+hex(b);
+  }
+  function paletteColor(index){
+    var p=state.routePalette||[];
+    if(index>=0&&index<p.length)return p[index];
+    var hue=(205+(Number(index)||0)*137.50776405)%360;
+    var light=[43,52,47,56][Math.abs(Number(index)||0)%4];
+    return hslToHex(hue,76,light);
+  }
+  function routeLegendItems(order){
+    var list=order||[],html=[];
+    for(var index=0;index<Math.max(0,list.length-1);index++){
+      html.push('<span class="gor-road-legend-item" title="Tramo '+esc(String(index+1))+'"><i style="background:'+paletteColor(index)+'"></i>'+esc(String(index+1))+' · AG '+esc(agencyNumber(list[index]))+' → AG '+esc(agencyNumber(list[index+1]))+'</span>');
+    }
+    return html.join('');
+  }
   function createSegmentFeature(coords,index,meta){ return {type:'Feature',geometry:{type:'LineString',coordinates:coords||[]},properties:Object.assign({segment:index,color:paletteColor(index),label:String(index+1),arrow:'➜'},meta||{})}; }
-  function buildStraightSegments(list){ var features=[]; for(var i=0;i<Math.max(0,(list||[]).length-1);i++){ var from=list[i],to=list[i+1],a=agencyCoords(from),b=agencyCoords(to); if(a&&b) features.push(createSegmentFeature([[a.lng,a.lat],[b.lng,b.lat]],i,{from:'AG '+agencyNumber(from),to:'AG '+agencyNumber(to)})); } return {type:'FeatureCollection',features:features}; }
-  function roadRouteSegmentsGeoJSON(){ var ed=state.mapEditor; if(state.roadRoute&&Array.isArray(state.roadRoute.segments)&&state.roadRoute.segments.length){ return {type:'FeatureCollection',features:state.roadRoute.segments.map(function(seg,index){ return createSegmentFeature(seg.coordinates||[],index,{from:seg.fromNumber||'',to:seg.toNumber||'',distance:seg.distance||0,duration:seg.duration||0}); })}; } return buildStraightSegments(ed?ed.order:[]); }
+  function buildStraightSegments(list){ var features=[]; for(var i=0;i<Math.max(0,(list||[]).length-1);i++){ var from=list[i],to=list[i+1],a=agencyCoords(from),b=agencyCoords(to); if(a&&b) features.push(createSegmentFeature([[a.lng,a.lat],[b.lng,b.lat]],i,{from:'AG '+agencyNumber(from),to:'AG '+agencyNumber(to),color:paletteColor(i)})); } return {type:'FeatureCollection',features:features}; }
+  function roadRouteSegmentsGeoJSON(){ var ed=state.mapEditor; if(state.roadRoute&&Array.isArray(state.roadRoute.segments)&&state.roadRoute.segments.length){ return {type:'FeatureCollection',features:state.roadRoute.segments.map(function(seg,index){ return createSegmentFeature(seg.coordinates||[],index,{from:seg.fromNumber||'',to:seg.toNumber||'',distance:seg.distance||0,duration:seg.duration||0,color:seg.color||paletteColor(index)}); })}; } return buildStraightSegments(ed?ed.order:[]); }
 
   function selectedScope(){
     var value=text(qs('#gorGroupSelect')?.value);
@@ -127,7 +146,7 @@
       .gor-picker-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:10px;margin-bottom:12px}.gor-picker-list{display:grid;gap:8px;max-height:58vh;overflow:auto;padding-right:3px}.gor-picker-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:11px;align-items:center;border:1px solid #dbe7ef;border-radius:13px;padding:10px 12px;background:#fff;cursor:pointer}.gor-picker-row:hover{border-color:#9fd5e8;background:#f8fdff}.gor-picker-row.selected{border-color:#16a5d1;background:#edfaff}.gor-picker-code{font-weight:1000;color:#086f9f}.gor-picker-main strong{display:block;color:#173f5d}.gor-picker-main small{display:block;color:#73899a;margin-top:2px}.gor-check{width:25px;height:25px;border:2px solid #b9cfdd;border-radius:8px;display:grid;place-items:center;color:#fff}.gor-picker-row.selected .gor-check{background:#0999c9;border-color:#0999c9}.gor-export-preview{width:100%;min-height:380px;box-sizing:border-box;border:1px solid #c8dceb;border-radius:13px;padding:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.55;resize:vertical;background:#fbfdff}.gor-loading{opacity:.62;pointer-events:none}.gor-spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gorSpin .7s linear infinite}@keyframes gorSpin{to{transform:rotate(360deg)}}
       @media(max-width:980px){.gor-grid{grid-template-columns:1fr}.gor-hero{flex-direction:column}.gor-hero-actions{justify-content:flex-start}.gor-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:900px){.gor-map-editor{grid-template-columns:1fr}.gor-map-side{min-height:300px;max-height:420px}}
-      .gor-road-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border:1px solid #dce8f0;border-radius:13px;background:#f7fbfd}.gor-road-summary{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:#5f778a}.gor-road-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #d8e5ed;font-weight:800;color:#174866}.gor-road-note{font-size:11px;color:#71889a}.gor-road-legend{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.gor-road-legend-item{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:#fff;border:1px solid #d8e5ed;font-size:11px;font-weight:800;color:#173f5d}.gor-road-legend-item i{display:inline-block;width:12px;height:4px;border-radius:999px}.gor-btn.loading{opacity:.75;pointer-events:none}
+      .gor-road-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border:1px solid #dce8f0;border-radius:13px;background:#f7fbfd}.gor-road-summary{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:#5f778a}.gor-road-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #d8e5ed;font-weight:800;color:#174866}.gor-road-note{font-size:11px;color:#71889a}.gor-road-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:7px;align-items:center;width:100%;max-height:142px;overflow:auto;padding:2px 2px 2px 0}.gor-road-legend-item{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #d8e5ed;font-size:10.5px;font-weight:850;color:#173f5d;white-space:nowrap}.gor-road-legend-item i{display:inline-block;flex:0 0 auto;width:16px;height:5px;border-radius:999px}.gor-btn.loading{opacity:.75;pointer-events:none}
       @media(max-width:620px){.gor-hero{padding:20px}.gor-hero h2{font-size:23px}.gor-form-grid,.gor-picker-toolbar{grid-template-columns:1fr}.gor-field.full{grid-column:auto}.gor-kpis{grid-template-columns:1fr 1fr}.gor-route-card{grid-template-columns:1fr}.gor-route-actions{justify-content:flex-start}.gor-tabs{width:100%}.gor-tab{flex:1;padding:9px 7px}.gor-card{padding:14px}.gor-map{height:380px}.gor-order-row{grid-template-columns:36px minmax(0,1fr)}.gor-order-controls{grid-column:2}.gor-modal{padding:8px}}
     `;
     document.head.appendChild(style);
@@ -481,7 +500,7 @@
     state.roadRoute=null;
     if(state.roadRouteAbort){try{state.roadRouteAbort.abort();}catch(_e){}state.roadRouteAbort=null;}
     var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='none';
-    setRoadSummary('<span class="gor-road-note">Orden modificado. Pulsa “Calcular ruta real” para actualizar el recorrido.</span>');
+    setRoadSummary('<span class="gor-road-note">Orden modificado. El cálculo respetará exactamente esta secuencia. Pulsa “Calcular ruta real”.</span><div class="gor-road-legend">'+routeLegendItems(ed.order)+'</div>');
     drawMapRouteLine();
   }
   function setRouteSource(data){
@@ -512,52 +531,96 @@
     try{
       var dashed=!(state.roadRoute&&state.roadRoute.segments&&state.roadRoute.segments.length);
       if(state.map.getLayer('gor-route-line-layer'))state.map.setPaintProperty('gor-route-line-layer','line-dasharray',dashed?[1.5,1.5]:[1,0]);
-      if(state.map.getLayer('gor-route-line-layer'))state.map.setPaintProperty('gor-route-line-layer','line-opacity',dashed?.18:.06);
-      if(state.map.getLayer('gor-route-line-outline'))state.map.setPaintProperty('gor-route-line-outline','line-opacity',dashed?.18:.08);
+      if(state.map.getLayer('gor-route-line-layer'))state.map.setPaintProperty('gor-route-line-layer','line-opacity',dashed?.18:0);
+      if(state.map.getLayer('gor-route-line-outline'))state.map.setPaintProperty('gor-route-line-outline','line-opacity',dashed?.18:0);
       if(state.map.getLayer('gor-route-segments-layer'))state.map.setPaintProperty('gor-route-segments-layer','line-dasharray',dashed?[1.2,1.2]:[1,0]);
       if(state.map.getLayer('gor-route-segments-layer'))state.map.setPaintProperty('gor-route-segments-layer','line-opacity',dashed?.68:.96);
       if(state.map.getLayer('gor-route-segments-arrows'))state.map.setPaintProperty('gor-route-segments-arrows','text-opacity',dashed?.82:.95);
     }catch(_e){}
   }
-  async function fetchRoadChunk(points,signal){
-    var coords=points.map(function(c){return c.lng+','+c.lat;}).join(';');
-    var url='https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson&steps=false&alternatives=false';
-    var response=await fetch(url,{method:'GET',signal:signal,headers:{'Accept':'application/json'}});
-    if(!response.ok)throw new Error('El servicio de rutas respondió '+response.status+'.');
-    var json=await response.json();
-    if(json.code!=='Ok'||!json.routes||!json.routes[0])throw new Error(json.message||'No se pudo calcular el recorrido por calles.');
-    return json.routes[0];
+  var ROAD_CHUNK_POINTS=18;
+  function sameCoordinate(a,b){return Array.isArray(a)&&Array.isArray(b)&&Math.abs(Number(a[0])-Number(b[0]))<1e-7&&Math.abs(Number(a[1])-Number(b[1]))<1e-7;}
+  function appendCoordinates(target,coords){
+    var out=target||[],list=Array.isArray(coords)?coords.filter(function(c){return Array.isArray(c)&&c.length>=2&&Number.isFinite(Number(c[0]))&&Number.isFinite(Number(c[1]));}):[];
+    if(!list.length)return out;
+    if(out.length&&sameCoordinate(out[out.length-1],list[0]))list=list.slice(1);
+    return out.concat(list);
+  }
+  function legCoordinates(leg){
+    var coords=[];
+    (leg&&Array.isArray(leg.steps)?leg.steps:[]).forEach(function(step){
+      var geometry=step&&step.geometry,part=geometry&&geometry.type==='LineString'&&Array.isArray(geometry.coordinates)?geometry.coordinates:[];
+      coords=appendCoordinates(coords,part);
+    });
+    return coords;
+  }
+  function wait(ms,signal){return new Promise(function(resolve,reject){var timer=setTimeout(resolve,ms);if(signal)signal.addEventListener('abort',function(){clearTimeout(timer);var e=new Error('Abortado');e.name='AbortError';reject(e);},{once:true});});}
+  async function fetchRoadJson(points,signal,options){
+    var opts=options||{},coords=points.map(function(c){return c.lng+','+c.lat;}).join(';');
+    var query=opts.pair?'overview=full&geometries=geojson&steps=false&alternatives=false&continue_straight=false':'overview=false&geometries=geojson&steps=true&alternatives=false&continue_straight=false';
+    var url='https://router.project-osrm.org/route/v1/driving/'+coords+'?'+query,lastError=null;
+    for(var attempt=0;attempt<2;attempt++){
+      try{
+        var response=await fetch(url,{method:'GET',signal:signal,headers:{'Accept':'application/json'}});
+        if(!response.ok){
+          var retryable=[429,502,503,504].indexOf(response.status)!==-1;
+          if(retryable&&attempt===0){await wait(650,signal);continue;}
+          throw new Error('El servicio de rutas respondió '+response.status+'.');
+        }
+        var json=await response.json();
+        if(json.code!=='Ok'||!json.routes||!json.routes[0])throw new Error(json.message||'No se pudo calcular el recorrido por calles.');
+        return json;
+      }catch(error){
+        if(error&&error.name==='AbortError')throw error;lastError=error;
+        if(attempt===0){await wait(450,signal);continue;}
+      }
+    }
+    throw lastError||new Error('No se pudo consultar el servicio de rutas.');
+  }
+  async function fetchRoadPair(pair,signal){
+    var json=await fetchRoadJson(pair,signal,{pair:true}),route=json.routes[0],coords=route.geometry&&route.geometry.coordinates||[];
+    return {coordinates:coords,distance:Number(route.distance||0),duration:Number(route.duration||0)};
   }
   async function calculateRoadRoute(){
     var ed=state.mapEditor,btn=qs('#gorCalculateRoadRouteBtn');if(!ed)return;
-    var points=ed.order.map(function(a){var c=agencyCoords(a);return c?{a:a,lng:c.lng,lat:c.lat}:null;}).filter(Boolean);
+    var missing=ed.order.filter(function(a){return !agencyCoords(a);});
+    if(missing.length){notify('No se puede calcular la ruta completa sin saltar agencias. Faltan coordenadas en: '+missing.slice(0,6).map(function(a){return 'AG '+agencyNumber(a);}).join(', ')+(missing.length>6?'…':''),'error');return;}
+    var points=ed.order.map(function(a){var c=agencyCoords(a);return{a:a,lng:c.lng,lat:c.lat};});
     if(points.length<2){notify('Necesitas al menos dos agencias con coordenadas.','error');return;}
     if(state.roadRouteAbort){try{state.roadRouteAbort.abort();}catch(_e){}}
     var controller=global.AbortController?new AbortController():null;state.roadRouteAbort=controller;
-    setButtonLoading(btn,true,'Calculando calles...');setRoadSummary('<span class="gor-spin" style="display:inline-block"></span><span>Calculando recorrido real por las calles...</span>');
+    setButtonLoading(btn,true,'Calculando calles...');setRoadSummary('<span class="gor-spin" style="display:inline-block"></span><span>Calculando '+(points.length-1)+' tramos por calles en el orden indicado...</span>');
     try{
-      var segments=[],all=[],distance=0,duration=0;
-      for(var i=0;i<points.length-1;i++){
-        var pair=[points[i],points[i+1]];
-        var route=await fetchRoadChunk(pair,controller?controller.signal:undefined),segment=route.geometry&&route.geometry.coordinates||[];
-        if(!segment.length) continue;
-        if(all.length) segment=segment.slice(1);
-        all=all.concat(segment);
-        distance+=Number(route.distance||0); duration+=Number(route.duration||0);
-        segments.push({coordinates:(route.geometry&&route.geometry.coordinates)||[],distance:Number(route.distance||0),duration:Number(route.duration||0),fromKey:agencyKey(pair[0].a.numero||pair[0].a.codigo),toKey:agencyKey(pair[1].a.numero||pair[1].a.codigo),fromNumber:'AG '+agencyNumber(pair[0].a),toNumber:'AG '+agencyNumber(pair[1].a),color:paletteColor(i)});
+      var segments=[],all=[],distance=0,duration=0,totalLegs=points.length-1,completed=0;
+      for(var start=0;start<points.length-1;start+=ROAD_CHUNK_POINTS-1){
+        var end=Math.min(points.length,start+ROAD_CHUNK_POINTS),chunk=points.slice(start,end);
+        setRoadSummary('<span class="gor-spin" style="display:inline-block"></span><span>Calculando ruta real por calles · '+completed+' de '+totalLegs+' tramos...</span>');
+        var json=await fetchRoadJson(chunk,controller?controller.signal:undefined,{pair:false}),route=json.routes[0],legs=Array.isArray(route.legs)?route.legs:[];
+        if(legs.length!==chunk.length-1)throw new Error('El motor de rutas no devolvió todos los tramos en el orden solicitado.');
+        for(var j=0;j<legs.length;j++){
+          var globalIndex=start+j,from=chunk[j],to=chunk[j+1],leg=legs[j],coords=legCoordinates(leg),legDistance=Number(leg.distance||0),legDuration=Number(leg.duration||0);
+          if(coords.length<2){
+            var fallback=await fetchRoadPair([from,to],controller?controller.signal:undefined);
+            coords=fallback.coordinates;legDistance=fallback.distance;legDuration=fallback.duration;
+          }
+          if(coords.length<2)throw new Error('No se pudo trazar por calles el tramo AG '+agencyNumber(from.a)+' → AG '+agencyNumber(to.a)+'.');
+          all=appendCoordinates(all,coords);distance+=legDistance;duration+=legDuration;completed++;
+          segments.push({coordinates:coords,distance:legDistance,duration:legDuration,fromKey:agencyKey(from.a.numero||from.a.codigo),toKey:agencyKey(to.a.numero||to.a.codigo),fromNumber:'AG '+agencyNumber(from.a),toNumber:'AG '+agencyNumber(to.a),color:paletteColor(globalIndex)});
+        }
+        if(end>=points.length)break;
       }
-      if(!all.length||!segments.length)throw new Error('El servicio no devolvió un trazado válido.');
-      state.roadRoute={coordinates:all,distance:distance,duration:duration,calculatedAt:new Date().toISOString(),provider:'OSRM',segments:segments};
+      if(!all.length||segments.length!==totalLegs)throw new Error('El servicio no devolvió el recorrido completo.');
+      state.roadRoute={coordinates:all,distance:distance,duration:duration,calculatedAt:new Date().toISOString(),provider:'OSRM_ORDERED_LEGS',segments:segments};
       drawMapRouteLine();
       var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='';
-      setRoadSummary('<span class="gor-road-pill"><i class="fas fa-road"></i> '+formatKm(distance)+'</span><span class="gor-road-pill"><i class="fas fa-clock"></i> '+formatDuration(duration)+'</span><span class="gor-road-pill"><i class="fas fa-location-dot"></i> '+points.length+' paradas</span><span class="gor-road-note">Ruta real por calles, dividida por tramos de colores.</span><div class="gor-road-legend">'+routeLegendItems(ed.order)+'</div>');
+      setRoadSummary('<span class="gor-road-pill"><i class="fas fa-road"></i> '+formatKm(distance)+'</span><span class="gor-road-pill"><i class="fas fa-clock"></i> '+formatDuration(duration)+'</span><span class="gor-road-pill"><i class="fas fa-location-dot"></i> '+points.length+' paradas</span><span class="gor-road-pill"><i class="fas fa-link"></i> '+segments.length+' tramos</span><span class="gor-road-note">Recorrido calculado por calles respetando exactamente el orden 1 → 2 → 3 → …</span><div class="gor-road-legend">'+routeLegendItems(ed.order)+'</div>');
       try{var b=new global.maplibregl.LngLatBounds();all.forEach(function(c){b.extend(c);});state.map.fitBounds(b,{padding:55,maxZoom:15});}catch(_e){}
     }catch(error){
       if(error&&error.name==='AbortError')return;
-      state.roadRoute=null;drawMapRouteLine();setRoadSummary('<span class="gor-road-note">No se pudo calcular la ruta real. Se mantiene la línea de referencia multicolor.</span>');handleError(error,'calcular ruta real');
+      state.roadRoute=null;drawMapRouteLine();setRoadSummary('<span class="gor-road-note">No se pudo completar la ruta por calles. Se conserva únicamente la guía visual entre agencias; vuelve a intentar el cálculo.</span><div class="gor-road-legend">'+routeLegendItems(ed.order)+'</div>');handleError(error,'calcular ruta real');
     }finally{state.roadRouteAbort=null;setButtonLoading(btn,false);}
   }
-  function clearRoadRoute(){state.roadRoute=null;var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='none';setRoadSummary('<span class="gor-road-note">Recorrido eliminado. Se muestra de nuevo la guía visual multicolor entre agencias.</span><div class="gor-road-legend">'+routeLegendItems(state.mapEditor?state.mapEditor.order:[])+'</div>');drawMapRouteLine();}
+  function clearRoadRoute(){state.roadRoute=null;var clear=qs('#gorClearRoadRouteBtn');if(clear)clear.style.display='none';setRoadSummary('<span class="gor-road-note">Recorrido real eliminado. Se muestra la guía visual por tramos según el orden actual.</span><div class="gor-road-legend">'+routeLegendItems(state.mapEditor?state.mapEditor.order:[])+'</div>');drawMapRouteLine();}
   function applyMapOrder(){
     var ed=state.mapEditor;if(!ed)return;
     if(ed.applyToCurrent){state.routeOrder=ed.order.map(function(a){return agencyKey(a.numero||a.codigo);});syncItemOrder();renderComparison();notify('Orden del mapa aplicado a la ruta.','success');closeModal('gorMapModal');}
@@ -567,7 +630,7 @@
   function openMap(routeAgencies,title,options){
     var list=(routeAgencies||[]).filter(Boolean),opts=options||{};openModal('gorMapModal');qs('#gorMapTitle').textContent=title||'Mapa de ruta';var fallback=qs('#gorMapFallback');fallback.innerHTML='';qs('#gorMapCanvas').innerHTML='';state.mapEditor={order:list.slice(),original:list.slice(),selectedKey:null,dragKey:null,applyToCurrent:!!opts.applyToCurrent,onApply:opts.onApply||null};state.roadRoute=null;
     qs('#gorMapApplyOrderBtn').style.display=opts.editable===false?'none':'';qs('#gorMapResetOrderBtn').style.display=opts.editable===false?'none':'';
-    qs('#gorMapApplyOrderBtn').onclick=applyMapOrder;qs('#gorMapResetOrderBtn').onclick=function(){state.mapEditor.order=state.mapEditor.original.slice();invalidateRoadRoute();renderMapEditor();};var calcBtn=qs('#gorCalculateRoadRouteBtn'),clearBtn=qs('#gorClearRoadRouteBtn');if(calcBtn)calcBtn.onclick=calculateRoadRoute;if(clearBtn){clearBtn.onclick=clearRoadRoute;clearBtn.style.display='none';}setRoadSummary('<span class="gor-road-note">Ordena las agencias y pulsa “Calcular ruta real”. Mientras tanto verás una guía visual multicolor entre paradas.</span><div class="gor-road-legend">'+routeLegendItems(list)+'</div>');renderMapEditor();
+    qs('#gorMapApplyOrderBtn').onclick=applyMapOrder;qs('#gorMapResetOrderBtn').onclick=function(){state.mapEditor.order=state.mapEditor.original.slice();invalidateRoadRoute();renderMapEditor();};var calcBtn=qs('#gorCalculateRoadRouteBtn'),clearBtn=qs('#gorClearRoadRouteBtn');if(calcBtn)calcBtn.onclick=calculateRoadRoute;if(clearBtn){clearBtn.onclick=clearRoadRoute;clearBtn.style.display='none';}setRoadSummary('<span class="gor-road-note">El orden de la lista manda: 1 → 2 → 3 → … Cada tramo tendrá un color propio. Pulsa “Calcular ruta real” para seguir las calles.</span><div class="gor-road-legend">'+routeLegendItems(list)+'</div>');renderMapEditor();
     var coords=list.map(function(a){var c=agencyCoords(a);return c?{a:a,lat:c.lat,lng:c.lng}:null;}).filter(Boolean);
     if(!global.maplibregl||!coords.length){qs('#gorMapCanvas').innerHTML='<div class="gor-empty" style="margin:20px">No hay coordenadas suficientes para dibujar el mapa. Todavía puedes organizar la ruta desde la lista lateral.</div>';fallback.innerHTML='<div class="gor-chips">'+list.map(function(a){return '<a class="gor-chip" href="'+esc(agencyMapUrl(a))+'" target="_blank">AG '+esc(agencyNumber(a))+'</a>';}).join('')+'</div>';return;}
     try{
@@ -582,6 +645,6 @@
   async function open(nav){if(!canView()){notify('No tienes permiso para consultar Rutas y cobertura.','error');return;}var link=nav||document.getElementById('navRoutesCoverage');if(global.GONavigationCoordinator&&typeof global.GONavigationCoordinator.show==='function')global.GONavigationCoordinator.show('vista-ops-rutas',link);else if(typeof global.cambiarVista==='function')global.cambiarVista('ops-rutas',link);else{qsa('[id^="vista-"]').forEach(function(v){v.classList.add('hidden');v.style.setProperty('display','none','important');});var own=document.getElementById('vista-ops-rutas');if(own){own.classList.remove('hidden');own.style.setProperty('display','block','important');}}try{if(typeof global.setSidebarSectionOpen==='function')global.setSidebarSectionOpen('operaciones',true);}catch(_e){}populateGroups();populateProfiles(false);if(!qs('#gorRouteDate').value)qs('#gorRouteDate').value=nowISO();if(!qs('#gorGroupSelect').value)qs('#gorGroupSelect').value=ALL_GROUPS;}
   function init(){injectStyles();buildView();buildNav();wrapNavigation();bindEvents();populateGroups();if(qs('#gorRouteDate'))qs('#gorRouteDate').value=nowISO();if(qs('#gorGroupSelect'))qs('#gorGroupSelect').value=ALL_GROUPS;refreshPermissionVisibility();var rt=runtime();if(rt){rt.modules.register('operaciones-rutas',{version:VERSION,refresh:refreshAllData,open:open});rt.events.on('auth:ready',function(){refreshPermissionVisibility();populateGroups();});rt.events.on('state:permissions',refreshPermissionVisibility);}}
 
-  global.GOOperationalRoutes={version:VERSION,init:init,open:open,compare:compareFromForm,refresh:refreshAllData,parseList:parseAgencyTokens,compareData:makeComparison,copyCurrent:function(){openExportForCurrent(true);},moveMapAgencyToPosition:function(key){var ed=state.mapEditor;if(!ed)return;var i=ed.order.findIndex(function(a){return agencyKey(a.numero||a.codigo)===String(key);});var raw=global.prompt?global.prompt('Mover AG '+agencyNumber(ed.order[i])+' a la posición (1-'+ed.order.length+'): ',String(i+1)):null,n=Number(raw);if(Number.isInteger(n)&&n>=1&&n<=ed.order.length)mapEditorMove(i,n-1);},diagnostics:function(){return{version:VERSION,comparison:state.comparison?state.comparison.counts:null,routes:state.routes.length,profiles:state.profiles.length,canView:canView(),canManage:canManage(),routeOrder:state.routeOrder.slice(),roadRoute:state.roadRoute?{distance:state.roadRoute.distance,duration:state.roadRoute.duration,points:state.roadRoute.coordinates.length}:null};}};
+  global.GOOperationalRoutes={version:VERSION,init:init,open:open,compare:compareFromForm,refresh:refreshAllData,parseList:parseAgencyTokens,compareData:makeComparison,copyCurrent:function(){openExportForCurrent(true);},moveMapAgencyToPosition:function(key){var ed=state.mapEditor;if(!ed)return;var i=ed.order.findIndex(function(a){return agencyKey(a.numero||a.codigo)===String(key);});var raw=global.prompt?global.prompt('Mover AG '+agencyNumber(ed.order[i])+' a la posición (1-'+ed.order.length+'): ',String(i+1)):null,n=Number(raw);if(Number.isInteger(n)&&n>=1&&n<=ed.order.length)mapEditorMove(i,n-1);},diagnostics:function(){return{version:VERSION,comparison:state.comparison?state.comparison.counts:null,routes:state.routes.length,profiles:state.profiles.length,canView:canView(),canManage:canManage(),routeOrder:state.routeOrder.slice(),routingEngine:'OSRM ordered legs · chunk '+ROAD_CHUNK_POINTS,roadRoute:state.roadRoute?{distance:state.roadRoute.distance,duration:state.roadRoute.duration,points:state.roadRoute.coordinates.length,segments:state.roadRoute.segments.length,provider:state.roadRoute.provider}:null};}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })(window);
