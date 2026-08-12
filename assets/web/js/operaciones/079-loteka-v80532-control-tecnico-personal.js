@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOControlTecnico && global.GOControlTecnico.version === '807.00') return;
+  if (global.GOControlTecnico && global.GOControlTecnico.version === '808.29') return;
 
-  const VERSION = '807.00';
+  const VERSION = '808.29';
   const TABLE = 'control_tecnico_personal';
   const PAGE_SIZES = [10, 20, 50];
   const MAX_EVIDENCE_FILES = 12;
@@ -196,12 +196,247 @@
     return 'wait';
   }
 
+
+  function exportGroupLabel(value) {
+    const raw = text(value).toUpperCase();
+    const match = raw.match(/(?:^|G\s*[-:]?\s*)(\d{1,3})/i) || raw.match(/(\d{1,3})/);
+    if (!match) return raw || 'SIN GRUPO';
+    return `G-${String(Number(match[1])).padStart(2, '0')}`;
+  }
+
+  function averiaExportRows() {
+    if (state.activeCategory !== 'AVERIA_CAMARA') return [];
+    return state.filtered
+      .filter((item) => item.categoria === 'AVERIA_CAMARA')
+      .map((item) => ({
+        agencia: padAgency(item.agencia_numero) || text(item.agencia_numero) || '-',
+        grupo: exportGroupLabel(item.grupo_codigo),
+        detalle: text(item.asunto) || '-',
+        estado: STATE_LABEL[item.estado] || text(item.estado) || '-'
+      }))
+      .sort((a, b) => {
+        const ga = Number((a.grupo.match(/\d+/) || ['999999'])[0]);
+        const gb = Number((b.grupo.match(/\d+/) || ['999999'])[0]);
+        if (ga !== gb) return ga - gb;
+        const aa = Number(a.agencia.replace(/\D/g, '') || 999999);
+        const ab = Number(b.agencia.replace(/\D/g, '') || 999999);
+        if (aa !== ab) return aa - ab;
+        return a.detalle.localeCompare(b.detalle, 'es', { sensitivity: 'base' });
+      });
+  }
+
+  function currentFilterSummary() {
+    const parts = [];
+    const search = text($('#goct-search')?.value);
+    const status = $('#goct-state')?.value || '';
+    const group = $('#goct-group')?.value || '';
+    if (search) parts.push(`Búsqueda: ${search}`);
+    if (status) parts.push(`Estado: ${STATE_LABEL[status] || status}`);
+    if (group) {
+      const selected = $('#goct-group')?.selectedOptions?.[0]?.textContent;
+      parts.push(`Grupo: ${text(selected) || exportGroupLabel(group)}`);
+    }
+    return parts.length ? parts.join(' · ') : 'Sin filtros adicionales';
+  }
+
+  function averiasClipboardText(rows) {
+    const list = Array.isArray(rows) ? rows : [];
+    return [
+      'Averías de cámaras, DVR y teléfonos:',
+      '',
+      ...list.map((row) => `${row.agencia} ${row.grupo}: ${row.detalle} — ${row.estado}`)
+    ].join('\n');
+  }
+
+  async function copyText(value) {
+    if (navigator.clipboard && global.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+    const area = document.createElement('textarea');
+    area.value = value;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    area.style.pointerEvents = 'none';
+    document.body.appendChild(area);
+    area.select();
+    const copied = document.execCommand('copy');
+    area.remove();
+    if (!copied) throw new Error('El navegador no permitió copiar al portapapeles.');
+  }
+
+  async function copyAverias() {
+    const rows = averiaExportRows();
+    if (!rows.length) return toast('No hay averías para copiar con los filtros actuales.', 'error');
+    try {
+      await copyText(averiasClipboardText(rows));
+      toast(`${rows.length} avería${rows.length === 1 ? '' : 's'} copiada${rows.length === 1 ? '' : 's'} al portapapeles.`, 'success');
+    } catch (error) {
+      toast(error.message || 'No se pudieron copiar las averías.', 'error');
+    }
+  }
+
+  function xmlSafe(value) {
+    return text(value)
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+
+  function excelColumnName(number) {
+    let value = Number(number), name = '';
+    while (value > 0) { value -= 1; name = String.fromCharCode(65 + (value % 26)) + name; value = Math.floor(value / 26); }
+    return name;
+  }
+
+  function xlsxInlineCell(column, row, value, style = 0) {
+    const ref = `${excelColumnName(column)}${row}`;
+    return `<c r="${ref}" t="inlineStr" s="${style}"><is><t xml:space="preserve">${xmlSafe(value)}</t></is></c>`;
+  }
+
+  function xlsxNumberCell(column, row, value, style = 0) {
+    const ref = `${excelColumnName(column)}${row}`;
+    const numeric = Number(String(value).replace(/\D/g, ''));
+    if (!Number.isFinite(numeric)) return xlsxInlineCell(column, row, value, style);
+    return `<c r="${ref}" s="${style}"><v>${numeric}</v></c>`;
+  }
+
+  let crcTable = null;
+  function crc32(bytes) {
+    if (!crcTable) {
+      crcTable = new Uint32Array(256);
+      for (let n = 0; n < 256; n += 1) {
+        let c = n;
+        for (let k = 0; k < 8; k += 1) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        crcTable[n] = c >>> 0;
+      }
+    }
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i += 1) crc = crcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function dosDateTime(date = new Date()) {
+    const year = Math.max(1980, date.getFullYear());
+    return {
+      time: ((date.getHours() & 31) << 11) | ((date.getMinutes() & 63) << 5) | ((Math.floor(date.getSeconds() / 2)) & 31),
+      date: (((year - 1980) & 127) << 9) | (((date.getMonth() + 1) & 15) << 5) | (date.getDate() & 31)
+    };
+  }
+
+  function writeU16(view, offset, value) { view.setUint16(offset, value & 0xFFFF, true); }
+  function writeU32(view, offset, value) { view.setUint32(offset, value >>> 0, true); }
+  function concatBytes(parts) {
+    const length = parts.reduce((sum, part) => sum + part.length, 0);
+    const output = new Uint8Array(length); let offset = 0;
+    parts.forEach((part) => { output.set(part, offset); offset += part.length; });
+    return output;
+  }
+
+  function zipStore(entries) {
+    const encoder = new TextEncoder();
+    const localParts = [], centralParts = [];
+    let localOffset = 0;
+    const stamp = dosDateTime();
+    entries.forEach((entry) => {
+      const name = encoder.encode(entry.name);
+      const data = entry.data instanceof Uint8Array ? entry.data : encoder.encode(String(entry.data));
+      const crc = crc32(data);
+      const local = new Uint8Array(30); const lv = new DataView(local.buffer);
+      writeU32(lv, 0, 0x04034B50); writeU16(lv, 4, 20); writeU16(lv, 6, 0x0800); writeU16(lv, 8, 0);
+      writeU16(lv, 10, stamp.time); writeU16(lv, 12, stamp.date); writeU32(lv, 14, crc); writeU32(lv, 18, data.length); writeU32(lv, 22, data.length); writeU16(lv, 26, name.length); writeU16(lv, 28, 0);
+      localParts.push(local, name, data);
+
+      const central = new Uint8Array(46); const cv = new DataView(central.buffer);
+      writeU32(cv, 0, 0x02014B50); writeU16(cv, 4, 20); writeU16(cv, 6, 20); writeU16(cv, 8, 0x0800); writeU16(cv, 10, 0);
+      writeU16(cv, 12, stamp.time); writeU16(cv, 14, stamp.date); writeU32(cv, 16, crc); writeU32(cv, 20, data.length); writeU32(cv, 24, data.length); writeU16(cv, 28, name.length); writeU16(cv, 30, 0); writeU16(cv, 32, 0); writeU16(cv, 34, 0); writeU16(cv, 36, 0); writeU32(cv, 38, 0); writeU32(cv, 42, localOffset);
+      centralParts.push(central, name);
+      localOffset += local.length + name.length + data.length;
+    });
+    const localBytes = concatBytes(localParts), centralBytes = concatBytes(centralParts);
+    const end = new Uint8Array(22); const ev = new DataView(end.buffer);
+    writeU32(ev, 0, 0x06054B50); writeU16(ev, 4, 0); writeU16(ev, 6, 0); writeU16(ev, 8, entries.length); writeU16(ev, 10, entries.length); writeU32(ev, 12, centralBytes.length); writeU32(ev, 16, localBytes.length); writeU16(ev, 20, 0);
+    return concatBytes([localBytes, centralBytes, end]);
+  }
+
+  function stateExcelStyle(label, alternate) {
+    const normalized = text(label).toLowerCase();
+    if (normalized.includes('coordin')) return 7;
+    if (normalized.includes('cambio') || normalized.includes('falta') || normalized.includes('no realizado')) return 8;
+    if (normalized.includes('resuelto')) return 9;
+    if (normalized.includes('pendiente') || normalized.includes('verificar')) return 6;
+    return alternate ? 5 : 4;
+  }
+
+  function buildAveriasWorkbook(rows, filterSummary = '') {
+    const encoder = new TextEncoder();
+    const now = new Date();
+    const generated = new Intl.DateTimeFormat('es-DO', { dateStyle: 'medium', timeStyle: 'short' }).format(now);
+    const dataStartRow = 6;
+    const lastRow = dataStartRow + rows.length - 1;
+    const rowXml = rows.map((row, index) => {
+      const r = dataStartRow + index, alternate = index % 2 === 1, baseStyle = alternate ? 5 : 4, agencyStyle = alternate ? 11 : 10;
+      return `<row r="${r}" ht="28" customHeight="1">${xlsxNumberCell(1, r, row.agencia, agencyStyle)}${xlsxInlineCell(2, r, row.grupo, baseStyle)}${xlsxInlineCell(3, r, row.detalle, baseStyle)}${xlsxInlineCell(4, r, row.estado, stateExcelStyle(row.estado, alternate))}</row>`;
+    }).join('');
+    const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:D${Math.max(5, lastRow)}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols><col min="1" max="1" width="14" customWidth="1"/><col min="2" max="2" width="12" customWidth="1"/><col min="3" max="3" width="58" customWidth="1"/><col min="4" max="4" width="23" customWidth="1"/></cols><sheetData><row r="1" ht="32" customHeight="1">${xlsxInlineCell(1, 1, 'CONTROL TÉCNICO · AVERÍAS DE CÁMARAS, DVR Y TELÉFONOS', 1)}</row><row r="2" ht="22" customHeight="1">${xlsxInlineCell(1, 2, `Grupo Ortiz · ${rows.length} registro${rows.length === 1 ? '' : 's'} · Generado ${generated}`, 2)}</row><row r="3" ht="22" customHeight="1">${xlsxInlineCell(1, 3, filterSummary || 'Sin filtros adicionales', 2)}</row><row r="4" ht="8" customHeight="1"></row><row r="5" ht="26" customHeight="1">${xlsxInlineCell(1, 5, 'AGENCIA', 3)}${xlsxInlineCell(2, 5, 'GRUPO', 3)}${xlsxInlineCell(3, 5, 'DETALLE DE AVERÍA', 3)}${xlsxInlineCell(4, 5, 'ESTADO', 3)}</row>${rowXml}</sheetData><mergeCells count="3"><mergeCell ref="A1:D1"/><mergeCell ref="A2:D2"/><mergeCell ref="A3:D3"/></mergeCells><autoFilter ref="A5:D${Math.max(5, lastRow)}"/><pageMargins left="0.35" right="0.35" top="0.55" bottom="0.55" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0" horizontalDpi="300" verticalDpi="300"/></worksheet>`;
+    const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0000"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font><font><b/><sz val="18"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="10"/><color rgb="FF547086"/><name val="Calibri"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="9"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF075F8F"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B78AE"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF7FBFD"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF4CC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6F5FF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE8E6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE7F7ED"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9E6EE"/></left><right style="thin"><color rgb="FFD9E6EE"/></right><top style="thin"><color rgb="FFD9E6EE"/></top><bottom style="thin"><color rgb="FFD9E6EE"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="12"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="6" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="7" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="8" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf><xf numFmtId="164" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" horizontal="left"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="15000"/></bookViews><sheets><sheet name="Averías de cámaras" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029"/></workbook>`;
+    const entries = [
+      { name: '[Content_Types].xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>` },
+      { name: '_rels/.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>` },
+      { name: 'docProps/app.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Grupo Ortiz</Application><AppVersion>808.29</AppVersion></Properties>` },
+      { name: 'docProps/core.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Control técnico · Averías de cámaras, DVR y teléfonos</dc:title><dc:creator>Grupo Ortiz</dc:creator><cp:lastModifiedBy>Grupo Ortiz</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now.toISOString()}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now.toISOString()}</dcterms:modified></cp:coreProperties>` },
+      { name: 'xl/workbook.xml', data: workbook },
+      { name: 'xl/_rels/workbook.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+      { name: 'xl/styles.xml', data: styles },
+      { name: 'xl/worksheets/sheet1.xml', data: sheet }
+    ].map((entry) => ({ name: entry.name, data: encoder.encode(entry.data) }));
+    return zipStore(entries);
+  }
+
+  function downloadBytes(bytes, filename, mime) {
+    const blob = new Blob([bytes], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = filename; anchor.style.display = 'none';
+    document.body.appendChild(anchor); anchor.click(); anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function exportAveriasExcel() {
+    const rows = averiaExportRows();
+    if (!rows.length) return toast('No hay averías para exportar con los filtros actuales.', 'error');
+    try {
+      const bytes = buildAveriasWorkbook(rows, currentFilterSummary());
+      const filename = `Control-Tecnico-Averias-${today()}.xlsx`;
+      downloadBytes(bytes, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      toast(`Excel generado correctamente: ${rows.length} registro${rows.length === 1 ? '' : 's'}.`, 'success');
+    } catch (error) {
+      console.error('[Control técnico] Error generando XLSX', error);
+      toast(error.message || 'No se pudo generar el Excel.', 'error');
+    }
+  }
+
+  function updateExportActions() {
+    const isAverias = state.activeCategory === 'AVERIA_CAMARA';
+    const rows = isAverias ? averiaExportRows() : [];
+    const copy = $('#goct-copy-averias'), excel = $('#goct-excel-averias');
+    [copy, excel].forEach((button) => {
+      if (!button) return;
+      button.hidden = !isAverias;
+      button.disabled = !isAverias || !rows.length;
+    });
+    if (copy && isAverias) copy.title = rows.length ? `Copiar ${rows.length} avería(s) filtrada(s)` : 'No hay averías con los filtros actuales.';
+    if (excel && isAverias) excel.title = rows.length ? `Exportar ${rows.length} avería(s) filtrada(s) a Excel` : 'No hay averías con los filtros actuales.';
+  }
+
   function injectStyles() {
     if ($('#goct-style')) return;
     const style = document.createElement('style');
     style.id = 'goct-style';
     style.textContent = `
-      #goct-root{font-family:Inter,system-ui;color:#103b5b;padding-bottom:34px}.goct-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:24px;border-radius:22px;border:1px solid #cde2ef;background:linear-gradient(135deg,#f7fcff,#e8f7ff);box-shadow:0 15px 34px rgba(18,73,109,.08);margin-bottom:15px}.goct-hero h2{margin:0;font-size:28px;color:#0b4166}.goct-hero p{margin:7px 0 0;color:#647f93}.goct-actions,.goct-tabs,.goct-pagination{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.goct-btn{border:1px solid #c9ddea;background:#fff;color:#086796;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer;transition:.16s ease}.goct-btn:hover:not(:disabled){transform:translateY(-1px)}.goct-btn:disabled{opacity:.5;cursor:not-allowed}.goct-btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#087dbb,#05a8d4)}.goct-btn.danger{color:#b42318}.goct-btn.small{padding:7px 9px;font-size:12px}.goct-tabs{background:#edf6fb;padding:5px;border-radius:13px;width:max-content;max-width:100%;margin-bottom:14px}.goct-tab{border:0;background:transparent;color:#607b8e;padding:9px 14px;border-radius:9px;font-weight:900;cursor:pointer}.goct-tab.active{background:#fff;color:#0870a4;box-shadow:0 4px 13px #aac6d655}.goct-stats{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:11px;margin-bottom:14px}.goct-stat,.goct-card{background:#fff;border:1px solid #d6e5ef;border-radius:17px;padding:16px;box-shadow:0 10px 24px rgba(11,61,95,.055)}.goct-stat span{font-size:11px;color:#6b8497;font-weight:900;text-transform:uppercase}.goct-stat strong{display:block;font-size:26px;margin-top:4px;color:#0b456d}.goct-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.goct-card h3{margin:0}.goct-toolbar{display:grid;grid-template-columns:2fr repeat(3,minmax(150px,1fr)) auto;gap:10px;margin-bottom:12px}.goct-input,.goct-select,.goct-textarea{width:100%;box-sizing:border-box;border:1px solid #c8dce8;border-radius:11px;padding:10px 11px;font:inherit;background:#fff}.goct-table-wrap{overflow:auto;border:1px solid #dbe8f0;border-radius:14px}.goct-table{width:100%;border-collapse:collapse;min-width:1120px}.goct-table th,.goct-table td{padding:11px;border-bottom:1px solid #e7eff4;text-align:left;font-size:13px;vertical-align:top}.goct-table th{background:#eff8fc;color:#5e788c;font-size:11px;text-transform:uppercase;position:sticky;top:0}.goct-table tr:hover td{background:#f9fdff}.goct-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.goct-badge.ok{background:#e5f8ed;color:#087448}.goct-badge.bad{background:#fff0ef;color:#b42318}.goct-badge.run{background:#e7f5ff;color:#08689c}.goct-badge.wait{background:#fff7dc;color:#876400}.goct-empty{text-align:center;padding:35px;color:#71899a}.goct-pagination{justify-content:space-between;margin-top:12px}.goct-pages{display:flex;gap:6px;align-items:center}.goct-page{min-width:34px;height:34px;border:1px solid #d0e0e9;border-radius:9px;background:#fff;font-weight:900;cursor:pointer}.goct-page.active{background:#0786bd;color:#fff;border-color:#0786bd}.goct-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#072c4775;z-index:11000;padding:20px}.goct-modal.open{display:flex}.goct-dialog{width:min(920px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #071c2c66}.goct-dialog.viewer{width:min(1040px,96vw)}.goct-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.goct-field.full{grid-column:1/-1}.goct-field label{display:block;font-size:11px;font-weight:1000;color:#5c7588;text-transform:uppercase;margin-bottom:6px}.goct-preview{max-height:380px;overflow:auto;border:1px solid #d8e6ef;border-radius:13px}.goct-preview-row{display:grid;grid-template-columns:95px 120px 1fr 125px;gap:8px;padding:9px 11px;border-bottom:1px solid #eaf1f5;font-size:12px}.goct-private{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#e9f8ee;color:#087449;font-weight:900;font-size:12px}.goct-help{padding:11px 13px;border-radius:12px;background:#f4f9fc;border:1px solid #d7e8f1;color:#5d788c;font-size:12px;line-height:1.5}.goct-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;margin-top:10px}.goct-evidence-card{position:relative;border:1px solid #d4e4ed;border-radius:13px;overflow:hidden;background:#f6fbfd;min-height:125px}.goct-evidence-card img{display:block;width:100%;height:105px;object-fit:cover}.goct-evidence-card span{display:block;padding:7px 8px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goct-evidence-remove{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:999px;background:#a61b1bea;color:#fff;cursor:pointer;font-weight:900}.goct-viewer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px}.goct-viewer-item{border:1px solid #d7e5ed;border-radius:14px;overflow:hidden;background:#f8fcfe}.goct-viewer-item img{display:block;width:100%;height:210px;object-fit:contain;background:#0b1d2b}.goct-viewer-item div{padding:9px;font-size:12px}.goct-upload-status{display:none;padding:10px 12px;border-radius:11px;background:#e9f7ff;color:#075f8c;font-weight:900;margin-top:10px}.goct-upload-status.show{display:block}@media(max-width:1100px){.goct-stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.goct-hero{align-items:flex-start;flex-direction:column}.goct-stats{grid-template-columns:repeat(2,1fr)}.goct-toolbar{grid-template-columns:1fr}.goct-grid{grid-template-columns:1fr}.goct-field.full{grid-column:auto}.goct-tabs{width:100%;overflow:auto;flex-wrap:nowrap}.goct-tab{white-space:nowrap}}
+      #goct-root{font-family:Inter,system-ui;color:#103b5b;padding-bottom:34px}.goct-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:24px;border-radius:22px;border:1px solid #cde2ef;background:linear-gradient(135deg,#f7fcff,#e8f7ff);box-shadow:0 15px 34px rgba(18,73,109,.08);margin-bottom:15px}.goct-hero h2{margin:0;font-size:28px;color:#0b4166}.goct-hero p{margin:7px 0 0;color:#647f93}.goct-actions,.goct-tabs,.goct-pagination{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.goct-btn{border:1px solid #c9ddea;background:#fff;color:#086796;border-radius:11px;padding:10px 13px;font-weight:900;cursor:pointer;transition:.16s ease}.goct-btn:hover:not(:disabled){transform:translateY(-1px)}.goct-btn:disabled{opacity:.5;cursor:not-allowed}.goct-btn.primary{border:0;color:#fff;background:linear-gradient(135deg,#087dbb,#05a8d4)}.goct-btn.danger{color:#b42318}.goct-btn.small{padding:7px 9px;font-size:12px}.goct-tabs{background:#edf6fb;padding:5px;border-radius:13px;width:max-content;max-width:100%;margin-bottom:14px}.goct-tab{border:0;background:transparent;color:#607b8e;padding:9px 14px;border-radius:9px;font-weight:900;cursor:pointer}.goct-tab.active{background:#fff;color:#0870a4;box-shadow:0 4px 13px #aac6d655}.goct-stats{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:11px;margin-bottom:14px}.goct-stat,.goct-card{background:#fff;border:1px solid #d6e5ef;border-radius:17px;padding:16px;box-shadow:0 10px 24px rgba(11,61,95,.055)}.goct-stat span{font-size:11px;color:#6b8497;font-weight:900;text-transform:uppercase}.goct-stat strong{display:block;font-size:26px;margin-top:4px;color:#0b456d}.goct-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.goct-card h3{margin:0}.goct-toolbar{display:grid;grid-template-columns:2fr repeat(2,minmax(150px,1fr)) auto;gap:10px;margin-bottom:12px}.goct-export-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.goct-btn.export{background:#eef9f1;border-color:#b9dec4;color:#176a36}.goct-btn.copy{background:#f4f9fc}.goct-input,.goct-select,.goct-textarea{width:100%;box-sizing:border-box;border:1px solid #c8dce8;border-radius:11px;padding:10px 11px;font:inherit;background:#fff}.goct-table-wrap{overflow:auto;border:1px solid #dbe8f0;border-radius:14px}.goct-table{width:100%;border-collapse:collapse;min-width:1120px}.goct-table th,.goct-table td{padding:11px;border-bottom:1px solid #e7eff4;text-align:left;font-size:13px;vertical-align:top}.goct-table th{background:#eff8fc;color:#5e788c;font-size:11px;text-transform:uppercase;position:sticky;top:0}.goct-table tr:hover td{background:#f9fdff}.goct-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:1000}.goct-badge.ok{background:#e5f8ed;color:#087448}.goct-badge.bad{background:#fff0ef;color:#b42318}.goct-badge.run{background:#e7f5ff;color:#08689c}.goct-badge.wait{background:#fff7dc;color:#876400}.goct-empty{text-align:center;padding:35px;color:#71899a}.goct-pagination{justify-content:space-between;margin-top:12px}.goct-pages{display:flex;gap:6px;align-items:center}.goct-page{min-width:34px;height:34px;border:1px solid #d0e0e9;border-radius:9px;background:#fff;font-weight:900;cursor:pointer}.goct-page.active{background:#0786bd;color:#fff;border-color:#0786bd}.goct-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#072c4775;z-index:11000;padding:20px}.goct-modal.open{display:flex}.goct-dialog{width:min(920px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 30px 80px #071c2c66}.goct-dialog.viewer{width:min(1040px,96vw)}.goct-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.goct-field.full{grid-column:1/-1}.goct-field label{display:block;font-size:11px;font-weight:1000;color:#5c7588;text-transform:uppercase;margin-bottom:6px}.goct-preview{max-height:380px;overflow:auto;border:1px solid #d8e6ef;border-radius:13px}.goct-preview-row{display:grid;grid-template-columns:95px 120px 1fr 125px;gap:8px;padding:9px 11px;border-bottom:1px solid #eaf1f5;font-size:12px}.goct-private{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#e9f8ee;color:#087449;font-weight:900;font-size:12px}.goct-help{padding:11px 13px;border-radius:12px;background:#f4f9fc;border:1px solid #d7e8f1;color:#5d788c;font-size:12px;line-height:1.5}.goct-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;margin-top:10px}.goct-evidence-card{position:relative;border:1px solid #d4e4ed;border-radius:13px;overflow:hidden;background:#f6fbfd;min-height:125px}.goct-evidence-card img{display:block;width:100%;height:105px;object-fit:cover}.goct-evidence-card span{display:block;padding:7px 8px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goct-evidence-remove{position:absolute;right:6px;top:6px;width:28px;height:28px;border:0;border-radius:999px;background:#a61b1bea;color:#fff;cursor:pointer;font-weight:900}.goct-viewer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px}.goct-viewer-item{border:1px solid #d7e5ed;border-radius:14px;overflow:hidden;background:#f8fcfe}.goct-viewer-item img{display:block;width:100%;height:210px;object-fit:contain;background:#0b1d2b}.goct-viewer-item div{padding:9px;font-size:12px}.goct-upload-status{display:none;padding:10px 12px;border-radius:11px;background:#e9f7ff;color:#075f8c;font-weight:900;margin-top:10px}.goct-upload-status.show{display:block}@media(max-width:1100px){.goct-stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.goct-hero{align-items:flex-start;flex-direction:column}.goct-stats{grid-template-columns:repeat(2,1fr)}.goct-toolbar{grid-template-columns:1fr}.goct-grid{grid-template-columns:1fr}.goct-field.full{grid-column:auto}.goct-tabs{width:100%;overflow:auto;flex-wrap:nowrap}.goct-tab{white-space:nowrap}}
     `;
     document.head.appendChild(style);
   }
@@ -214,8 +449,8 @@
       <div id="goct-root">
         <section class="goct-hero"><div><span class="goct-private"><i class="fas fa-lock"></i> Control interno</span><h2>Control técnico</h2><p>Seguimiento de instalaciones, averías de cámaras y acciones técnicas. Los levantamientos fotográficos se administran en el módulo Levantamientos por grupo.</p></div><div class="goct-actions"><button class="goct-btn" id="goct-open-surveys"><i class="fas fa-clipboard-check"></i> Abrir Levantamientos</button><button class="goct-btn" id="goct-import"><i class="fas fa-paste"></i> Entrada rápida</button><button class="goct-btn primary" id="goct-new"><i class="fas fa-plus"></i> Nuevo registro</button></div></section>
         <div class="goct-tabs"><button class="goct-tab active" data-cat="">Todos activos</button><button class="goct-tab" data-cat="INSTALACION">Instalaciones</button><button class="goct-tab" data-cat="AVERIA_CAMARA">Averías de cámaras</button><button class="goct-tab" data-cat="RESUELTO">Resueltos</button></div>
-        <div class="goct-stats"><div class="goct-stat"><span>Total activo</span><strong id="goct-s-total">0</strong></div><div class="goct-stat"><span>Pendientes</span><strong id="goct-s-pending">0</strong></div><div class="goct-stat"><span>En proceso</span><strong id="goct-s-process">0</strong></div><div class="goct-stat"><span>Falta equipo/cambio</span><strong id="goct-s-equipment">0</strong></div><div class="goct-stat"><span>Resueltos</span><strong id="goct-s-resolved">0</strong></div></div>
-        <section class="goct-card"><div class="goct-card-head"><div><h3 id="goct-list-title">Seguimiento activo</h3><small id="goct-count-label">0 registros</small></div><button class="goct-btn small" id="goct-refresh"><i class="fas fa-rotate"></i> Actualizar</button></div><div class="goct-toolbar"><input class="goct-input" id="goct-search" placeholder="Buscar agencia, problema, equipo o nota"><select class="goct-select" id="goct-state"><option value="">Todos los estados</option>${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select><select class="goct-select" id="goct-group"><option value="">Todos los grupos</option></select><button class="goct-btn" id="goct-clear">Limpiar</button></div><div id="goct-table"></div><div class="goct-pagination"><div><select class="goct-select" id="goct-size" style="width:auto">${PAGE_SIZES.map((size) => `<option ${size === 10 ? 'selected' : ''}>${size}</option>`).join('')}</select> <small>por página</small></div><div class="goct-pages" id="goct-pages"></div></div></section>
+        <div class="goct-stats"><div class="goct-stat"><span>Total activo</span><strong id="goct-s-total">0</strong></div><div class="goct-stat"><span>Pendientes</span><strong id="goct-s-pending">0</strong></div><div class="goct-stat"><span>En coordinación</span><strong id="goct-s-process">0</strong></div><div class="goct-stat"><span>Falta equipo/cambio</span><strong id="goct-s-equipment">0</strong></div><div class="goct-stat"><span>Resueltos</span><strong id="goct-s-resolved">0</strong></div></div>
+        <section class="goct-card"><div class="goct-card-head"><div><h3 id="goct-list-title">Seguimiento activo</h3><small id="goct-count-label">0 registros</small></div><div class="goct-export-actions"><button class="goct-btn small copy" id="goct-copy-averias" hidden><i class="fas fa-copy"></i> Copiar averías</button><button class="goct-btn small export" id="goct-excel-averias" hidden><i class="fas fa-file-excel"></i> Exportar Excel</button><button class="goct-btn small" id="goct-refresh"><i class="fas fa-rotate"></i> Actualizar</button></div></div><div class="goct-toolbar"><input class="goct-input" id="goct-search" placeholder="Buscar agencia, problema, equipo o nota"><select class="goct-select" id="goct-state"><option value="">Todos los estados</option>${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select><select class="goct-select" id="goct-group"><option value="">Todos los grupos</option></select><button class="goct-btn" id="goct-clear">Limpiar</button></div><div id="goct-table"></div><div class="goct-pagination"><div><select class="goct-select" id="goct-size" style="width:auto">${PAGE_SIZES.map((size) => `<option ${size === 10 ? 'selected' : ''}>${size}</option>`).join('')}</select> <small>por página</small></div><div class="goct-pages" id="goct-pages"></div></div></section>
       </div>
       <div class="goct-modal" id="goct-form-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-form-title">Nuevo registro</h3><small>Control técnico interno</small></div><button class="goct-btn" data-close="goct-form-modal">Cerrar</button></div><div class="goct-grid"><div class="goct-field"><label>Categoría</label><select class="goct-select" id="goct-f-cat"><option value="INSTALACION">Instalación pendiente</option><option value="AVERIA_CAMARA">Avería de cámara</option><option value="OTRO">Otro seguimiento</option></select></div><div class="goct-field"><label>Agencia</label><select class="goct-select" id="goct-f-agency"></select></div><div class="goct-field"><label>Tipo / equipo</label><input class="goct-input" id="goct-f-equipment" placeholder="Ej. Registro fotográfico, cámara domo, PTZ"></div><div class="goct-field"><label>Estado</label><select class="goct-select" id="goct-f-state">${STATES.map((item) => `<option value="${item}">${STATE_LABEL[item]}</option>`).join('')}</select></div><div class="goct-field"><label>Fecha reportada</label><input class="goct-input" type="date" id="goct-f-date"></div><div class="goct-field full"><label>Problema / trabajo pendiente</label><textarea class="goct-textarea" rows="3" id="goct-f-subject" placeholder="Describe la instalación, avería o levantamiento pendiente"></textarea></div><div class="goct-field full"><label>Observaciones</label><textarea class="goct-textarea" rows="3" id="goct-f-notes"></textarea></div><div class="goct-field full"><label>Fotos / evidencias técnicas</label><input class="goct-input" type="file" id="goct-f-files" accept="image/*" multiple><div class="goct-help">Puedes tomar o seleccionar hasta ${MAX_EVIDENCE_FILES} fotos para documentar la instalación o avería.</div><div class="goct-upload-status" id="goct-upload-status"></div><div class="goct-evidence-grid" id="goct-form-evidence"></div></div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:16px"><button class="goct-btn" data-close="goct-form-modal">Cancelar</button><button class="goct-btn primary" id="goct-save">Guardar</button></div></div></div>
       <div class="goct-modal" id="goct-import-modal"><div class="goct-dialog"><div class="goct-card-head"><div><h3 id="goct-import-title">Entrada rápida</h3><small>Pega listas desde WhatsApp o Bloc de notas</small></div><button class="goct-btn" data-close="goct-import-modal">Cerrar</button></div><div id="goct-import-rule" class="goct-help" style="margin-bottom:12px">Todos los registros se guardarán en la categoría seleccionada.</div><div class="goct-field"><label>Texto</label><textarea class="goct-textarea" rows="9" id="goct-import-text" placeholder="1502 (DOMO)\n1576 (PTZ)\n1175 G-11 (verificar)\n1058 G-11: 17-7-2026"></textarea></div><div class="goct-actions" style="margin:12px 0"><div id="goct-import-category-label" class="goct-private">Categoría</div><button class="goct-btn" id="goct-preview-btn">Analizar lista</button></div><div class="goct-preview" id="goct-preview"><div class="goct-empty">Pega una lista y pulsa Analizar.</div></div><div class="goct-actions" style="justify-content:flex-end;margin-top:14px"><button class="goct-btn primary" id="goct-import-save" disabled>Guardar registros válidos</button></div></div></div>
@@ -249,6 +484,7 @@
     importButton.disabled = !importable;
     importButton.title = importable ? '' : 'Selecciona Instalaciones o Averías para usar la entrada rápida.';
     importButton.innerHTML = category === 'AVERIA_CAMARA' ? '<i class="fas fa-paste"></i> Entrada rápida de averías' : category === 'INSTALACION' ? '<i class="fas fa-paste"></i> Entrada rápida de instalaciones' : '<i class="fas fa-paste"></i> Entrada rápida';
+    updateExportActions();
   }
 
   function open(navElement) {
@@ -283,8 +519,8 @@
   function renderStats() {
     const activeItems = state.items.filter((item) => !isResolved(item));
     $('#goct-s-total').textContent = activeItems.length;
-    $('#goct-s-pending').textContent = activeItems.filter((item) => ['PENDIENTE', 'POR_VERIFICAR', 'EN_COORDINACION'].includes(item.estado)).length;
-    $('#goct-s-process').textContent = activeItems.filter((item) => ['PROGRAMADO', 'EN_PROCESO'].includes(item.estado)).length;
+    $('#goct-s-pending').textContent = activeItems.filter((item) => ['PENDIENTE', 'POR_VERIFICAR'].includes(item.estado)).length;
+    $('#goct-s-process').textContent = activeItems.filter((item) => item.estado === 'EN_COORDINACION').length;
     $('#goct-s-equipment').textContent = activeItems.filter((item) => ['FALTA_EQUIPO', 'REQUIERE_CAMBIO'].includes(item.estado)).length;
     $('#goct-s-resolved').textContent = state.items.filter(isResolved).length;
   }
@@ -307,7 +543,7 @@
     });
     const pages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
     if (state.page > pages) state.page = pages;
-    renderTable(); renderPagination(); updateContextActions();
+    renderTable(); renderPagination(); updateContextActions(); updateExportActions();
   }
 
   function renderTable() {
@@ -538,7 +774,7 @@
 
   function bind() {
     if (state.ready) return; state.ready = true; state.activeCategory = $('.goct-tab.active', $('#goct-root'))?.dataset.cat || '';
-    $('#goct-new').onclick = newItem; $('#goct-import').onclick = () => openImport(); $('#goct-open-surveys').onclick = () => global.GOLevantamientosGrupos ? global.GOLevantamientosGrupos.open($('#navLevantamientos')) : toast('El módulo Levantamientos todavía no está disponible.','error'); $('#goct-refresh').onclick = load; $('#goct-save').onclick = saveItem; $('#goct-preview-btn').onclick = parseImport; $('#goct-import-save').onclick = saveImport; $('#goct-f-files').onchange = (event) => addPendingFiles(event.target.files);
+    $('#goct-new').onclick = newItem; $('#goct-import').onclick = () => openImport(); $('#goct-copy-averias').onclick = copyAverias; $('#goct-excel-averias').onclick = exportAveriasExcel; $('#goct-open-surveys').onclick = () => global.GOLevantamientosGrupos ? global.GOLevantamientosGrupos.open($('#navLevantamientos')) : toast('El módulo Levantamientos todavía no está disponible.','error'); $('#goct-refresh').onclick = load; $('#goct-save').onclick = saveItem; $('#goct-preview-btn').onclick = parseImport; $('#goct-import-save').onclick = saveImport; $('#goct-f-files').onchange = (event) => addPendingFiles(event.target.files);
     $('#goct-search').oninput = () => { state.page = 1; applyFilters(); };
     ['#goct-state', '#goct-group'].forEach((selector) => { $(selector).onchange = () => { state.page = 1; applyFilters(); }; });
     $('#goct-clear').onclick = () => { $('#goct-search').value = ''; $('#goct-state').value = ''; $('#goct-group').value = ''; state.page = 1; applyFilters(); };
