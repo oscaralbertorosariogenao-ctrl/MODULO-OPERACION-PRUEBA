@@ -1,13 +1,14 @@
 {
-  "version": "2026-08-12-v808.29-control-tecnico-export",
-  "name": "v808.29 · Control técnico · Copiar y Excel",
+  "version": "2026-08-12-v808.30-control-tecnico-export-agrupado",
+  "name": "v808.30 · Control técnico · Exportación agrupada y Excel reparado",
   "released_at": "2026-08-12",
   "changes": [
-    "Control técnico: el indicador En proceso pasa a En coordinación y cuenta exclusivamente registros EN_COORDINACION",
-    "Control técnico: Pendientes deja de duplicar registros En coordinación y cuenta PENDIENTE/POR_VERIFICAR",
-    "Averías de cámaras: nuevo botón Copiar averías con Agencia, Grupo, Detalle y Estado, respetando búsqueda y filtros actuales",
-    "Averías de cámaras: exportación XLSX real, ordenada Grupo → Agencia, con ceros iniciales preservados, autofiltro, encabezado congelado, ajuste de texto y formato visual profesional",
-    "Exportación: trabaja sobre todos los resultados filtrados, no solamente la página visible, y no modifica datos en Supabase",
-    "Levantamientos, Jotform, R2, eliminación v808.27 y persistencia v808.28 no fueron modificados"
+    "Control técnico: la tabla activa se ordena por bloques de estado y dentro de cada bloque por Grupo → Agencia",
+    "Copiar averías: el texto se agrupa en Pendientes, En coordinación, Falta equipo/cambio y demás estados, respetando filtros",
+    "Instalaciones: nuevos botones Copiar instalaciones, Exportar Excel e Imprimir/PDF con los mismos filtros y orden operativo",
+    "Excel: se corrige la estructura OOXML que Excel reparaba; el autoFilter queda en el orden XML correcto antes de mergeCells",
+    "Excel: Agencia se exporta como texto para preservar ceros iniciales; filas ordenadas Estado → Grupo → Agencia y formato profesional",
+    "Imprimir/PDF: reporte agrupado por estado listo para imprimir o guardar como PDF desde el navegador",
+    "No requiere SQL y no modifica Supabase, Jotform, R2, Levantamientos ni la eliminación existente"
   ]
 }
