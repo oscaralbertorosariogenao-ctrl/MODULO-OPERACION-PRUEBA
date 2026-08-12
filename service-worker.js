@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-08-12-v808.31-rutas-calles-orden-tramos";
+const SW_VERSION = "2026-08-12-v808.32-rutas-render-integrity";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
