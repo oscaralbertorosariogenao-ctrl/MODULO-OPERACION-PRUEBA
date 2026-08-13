@@ -1,69 +1,18 @@
 
-/* v208 · Branding interno Grupo Ortiz: Loteka queda como socio, no como marca principal */
+/* Grupo Ortiz · Branding interno integrado al Shell */
 .go-internal-brand-mark{
-  position:relative!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:3px!important;
-  width:148px!important;
-  height:82px!important;
-  border-radius:24px!important;
-  background:radial-gradient(circle at 72% 20%, rgba(26,208,231,.20), transparent 34%), linear-gradient(145deg,#ffffff 0%,#eefaff 100%)!important;
-  border:1px solid rgba(12,158,204,.22)!important;
-  box-shadow:0 14px 26px rgba(9,95,142,.12)!important;
-  overflow:hidden!important;
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  width:116px;height:62px;border-radius:var(--go-radius-lg);
+  background:radial-gradient(circle at 72% 20%,rgba(25,183,223,.14),transparent 36%),var(--go-color-surface);
+  border:1px solid var(--go-color-border-strong);box-shadow:var(--go-shadow-subtle);overflow:hidden;
 }
-.go-internal-brand-mark::before{content:"";position:absolute;inset:8px;border-radius:20px;border:1px solid rgba(7,156,201,.10);pointer-events:none;}
-.go-internal-brand-mark span{font-size:34px;line-height:1;font-weight:1000;letter-spacing:-.06em;background:linear-gradient(135deg,#056895 0%,#08a9d0 58%,#1de0ee 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 8px 18px rgba(5,119,163,.12);}
-.go-internal-brand-mark small{font-size:9px;line-height:1;font-weight:1000;text-transform:uppercase;letter-spacing:.16em;color:#173d5a;}
-.brand-partner-badge{
-  margin:10px auto 0!important;
-  width:max-content!important;
-  max-width:210px!important;
-  padding:6px 10px!important;
-  border-radius:999px!important;
-  background:rgba(14,165,198,.08)!important;
-  border:1px solid rgba(14,165,198,.16)!important;
-  color:#4e7f96!important;
-  font-size:9px!important;
-  font-weight:1000!important;
-  letter-spacing:.12em!important;
-  text-transform:uppercase!important;
-  text-align:center!important;
-}
-.go-topbar-monogram{
-  font-size:13px!important;
-  font-weight:1000!important;
-  letter-spacing:-.05em!important;
-  color:#eaffff!important;
-  background:linear-gradient(135deg,#073f66 0%,#0ca0cf 58%,#17e2ed 100%)!important;
-}
-.go-auth-brand-mark{
-  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;
-  width:106px!important;height:106px!important;border-radius:30px!important;
-  background:radial-gradient(circle at 74% 20%, rgba(29,224,238,.24), transparent 36%), linear-gradient(145deg,#ffffff 0%,#effbff 100%)!important;
-  border:1px solid rgba(12,158,204,.22)!important;
-  box-shadow:0 20px 40px rgba(8,98,144,.15)!important;
-}
+.go-internal-brand-mark::before{content:"";position:absolute;inset:6px;border-radius:calc(var(--go-radius-lg) - 5px);border:1px solid rgba(7,143,189,.08);pointer-events:none;}
+.go-internal-brand-mark span{font-size:28px;line-height:1;font-weight:900;letter-spacing:-.06em;background:linear-gradient(135deg,var(--go-brand-navy) 0%,var(--go-brand-blue) 58%,var(--go-brand-cyan) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.go-internal-brand-mark small{font-size:8px;line-height:1;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:var(--go-color-text-strong);}
+.brand-partner-badge{margin:7px auto 0;width:max-content;max-width:190px;padding:5px 8px;border-radius:var(--go-radius-pill);background:var(--go-brand-sky-soft);border:1px solid #d3edf7;color:#587b90;font-size:8px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;text-align:center;}
+.go-topbar-monogram{font-size:12px;font-weight:900;letter-spacing:-.04em;color:#effcff;background:linear-gradient(135deg,var(--go-brand-navy),var(--go-brand-cyan));}
+.go-auth-brand-mark{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;width:106px!important;height:106px!important;border-radius:30px!important;background:radial-gradient(circle at 74% 20%,rgba(29,224,238,.24),transparent 36%),linear-gradient(145deg,#fff 0%,#effbff 100%)!important;border:1px solid rgba(12,158,204,.22)!important;box-shadow:0 20px 40px rgba(8,98,144,.15)!important;}
 .go-auth-brand-mark span{font-size:42px;line-height:1;font-weight:1000;letter-spacing:-.06em;background:linear-gradient(135deg,#073f66 0%,#0ca0cf 62%,#18e2ed 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
 .go-auth-brand-mark small{font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.14em;color:#173d5a;}
-.ltk-auth-copy h1::after{
-  content:"Socio operativo Loteka";
-  display:inline-flex;
-  margin-left:12px;
-  transform:translateY(-7px);
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(255,255,255,.13);
-  border:1px solid rgba(255,255,255,.18);
-  color:rgba(230,250,255,.86);
-  font-size:10px;
-  line-height:1;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  font-weight:1000;
-  white-space:nowrap;
-}
+.ltk-auth-copy h1::after{content:"Socio operativo Loteka";display:inline-flex;margin-left:12px;transform:translateY(-7px);padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);color:rgba(230,250,255,.86);font-size:10px;line-height:1;letter-spacing:.12em;text-transform:uppercase;font-weight:1000;white-space:nowrap;}
 .ltk-auth-logo img,.brand-logo-shell img{display:none!important;}
