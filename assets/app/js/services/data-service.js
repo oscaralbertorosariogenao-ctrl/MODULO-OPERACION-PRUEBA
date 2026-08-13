@@ -5,6 +5,7 @@ import { listAgencyEquipment } from '../api/equipment-api.js';
 import { getMyGroupInventory, saveGroupInventoryCache, loadGroupInventoryCache } from '../api/group-inventory-api.js';
 import { listNotifications } from '../api/notifications-api.js';
 import { computeStats, normalizeOperation } from './operations-service.js';
+import { isActiveOperationStatus, isTerminalOperationStatus } from '../operation-status.js';
 import { deriveOperationalAlerts, filterNotificationsForProfile } from './notification-service.js';
 import { getState, updateSlice } from '../store.js';
 import { markSync } from '../connectivity.js';
@@ -94,7 +95,7 @@ export async function loadHomeData(){
     technicianMap.set(name,{...technician,activeOperations:0,lastActivity:null});
   }
   for(const row of statsRows.map(normalizeOperation)){
-    if(!['Asignada','En proceso'].includes(row.status)) continue;
+    if(!isActiveOperationStatus(row.status)) continue;
     const item = technicianMap.get(row.technician);
     if(item){
       item.activeOperations += 1;
@@ -134,7 +135,7 @@ export async function loadAgencyDetail(reference){
   const agencyKey = String(agency?.numero || '');
   const state = getState();
   const [ops,equipment] = await Promise.all([
-    can('operations.view',state) ? listOperations({page:0,pageSize:60,filters:{search:agencyKey}}).then(result => result.data.map(normalizeOperation).filter(op => op.agencyNumber.replace(/^0+/,'') === agencyKey.replace(/^0+/,'') && op.status !== 'Completado')).catch(() => []) : [],
+    can('operations.view',state) ? listOperations({page:0,pageSize:60,filters:{search:agencyKey}}).then(result => result.data.map(normalizeOperation).filter(op => op.agencyNumber.replace(/^0+/,'') === agencyKey.replace(/^0+/,'') && !isTerminalOperationStatus(op.status))).catch(() => []) : [],
     can('equipment.view',state) && agency?.id ? listAgencyEquipment(agency.id).catch(() => []) : []
   ]);
   const selected = {...agency,relatedOperations:ops,equipment}; updateSlice('agencies',{selected,loading:false},'agency-detail-loaded'); markSync(); return selected;
@@ -149,7 +150,7 @@ export async function loadTechniciansData(){
   const normalized = rows.map(normalizeOperation);
   const items = technicians.map(tech => {
     const name = tech.nombre_completo || tech.nombre || tech.usuario_login;
-    const active = normalized.filter(op => ['Asignada','En proceso'].includes(op.status) && op.technician === name);
+    const active = normalized.filter(op => isActiveOperationStatus(op.status) && op.technician === name);
     return {...tech,activeOperations:active.length,lastActivity:active[0]?.createdAt || null};
   });
   updateSlice('technicians',{items,loading:false},'technicians-loaded'); markSync(); return items;
