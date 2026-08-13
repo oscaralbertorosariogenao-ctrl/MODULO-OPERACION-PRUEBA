@@ -528,9 +528,9 @@
     var resolveText = type === 'averia' ? 'PROM. RESOLUCIÓN' : 'PROM. EJECUCIÓN';
     return ''+
       '<div class="rend-kpi-v300"><span>'+esc(periodMetricTitle(type))+'</span><strong>'+rows.length+'</strong><small>'+esc(totalText)+'</small></div>'+
-      '<div class="rend-kpi-v300"><span>PROM. ASIGNACIÓN</span><strong>'+esc(fmtMinutes(avg(rows,'_assignmentMinutes')))+'</strong><small>Tiempo en asignar la operación</small><em>Pendiente → Asignada</em></div>'+
-      '<div class="rend-kpi-v300"><span>PROM. RESPUESTA</span><strong>'+esc(fmtMinutes(avg(rows,'_responseMinutes')))+'</strong><small>Tiempo en tomar la operación</small><em>Asignada → En proceso</em></div>'+
-      '<div class="rend-kpi-v300"><span>'+resolveText+'</span><strong>'+esc(fmtMinutes(avg(rows,'_resolutionMinutes')))+'</strong><small>Tiempo en resolver / ejecutar</small><em>En proceso → Completada</em></div>';
+      '<div class="rend-kpi-v300"><span>PROM. ASIGNACIÓN</span><strong>'+esc(fmtMinutes(avg(rows,'_assignmentMinutes')))+'</strong><small>Tiempo en asignar la operación</small><em>Reportado → Asignado</em></div>'+
+      '<div class="rend-kpi-v300"><span>PROM. RESPUESTA</span><strong>'+esc(fmtMinutes(avg(rows,'_responseMinutes')))+'</strong><small>Tiempo en tomar la operación</small><em>Asignado → En proceso</em></div>'+
+      '<div class="rend-kpi-v300"><span>'+resolveText+'</span><strong>'+esc(fmtMinutes(avg(rows,'_resolutionMinutes')))+'</strong><small>Tiempo en resolver / ejecutar</small><em>En proceso → Cerrada</em></div>';
   }
   function miniItem(left, sub, right, tone){
     return '<div class="rend-mini-item-v300"><div><strong>'+esc(left)+'</strong><span>'+esc(sub)+'</span></div>'+chip(right,tone || 'muted')+'</div>';
@@ -748,9 +748,9 @@
     var display = supplier ? rows.filter(function(x){ return x._type === 'Trabajo'; }) : rows;
     return '<div class="rend-sheet-grid-v300">'+
       '<div class="rend-sheet-card-v300"><small>'+(supplier ? esc(periodMetricTitle('trabajo')) : 'OP. COMPLETAS ESTA SEMANA')+'</small><strong>'+display.length+'</strong><span>Operaciones completadas esta semana</span></div>'+
-      '<div class="rend-sheet-card-v300"><small>PROM. ASIGNACIÓN</small><strong>'+esc(fmtMinutes(avg(display,'_assignmentMinutes')))+'</strong><span>Tiempo en asignar la operación<br>Pendiente → Asignada</span></div>'+
-      '<div class="rend-sheet-card-v300"><small>PROM. RESPUESTA</small><strong>'+esc(fmtMinutes(avg(display,'_responseMinutes')))+'</strong><span>Tiempo en tomar la operación<br>Asignada → En proceso</span></div>'+
-      '<div class="rend-sheet-card-v300"><small>'+(supplier ? 'PROM. EJECUCIÓN' : 'PROM. RESOLUCIÓN')+'</small><strong>'+esc(fmtMinutes(avg(display,'_resolutionMinutes')))+'</strong><span>Tiempo en resolver / ejecutar<br>En proceso → Completada</span></div>'+
+      '<div class="rend-sheet-card-v300"><small>PROM. ASIGNACIÓN</small><strong>'+esc(fmtMinutes(avg(display,'_assignmentMinutes')))+'</strong><span>Tiempo en asignar la operación<br>Reportado → Asignado</span></div>'+
+      '<div class="rend-sheet-card-v300"><small>PROM. RESPUESTA</small><strong>'+esc(fmtMinutes(avg(display,'_responseMinutes')))+'</strong><span>Tiempo en tomar la operación<br>Asignado → En proceso</span></div>'+
+      '<div class="rend-sheet-card-v300"><small>'+(supplier ? 'PROM. EJECUCIÓN' : 'PROM. RESOLUCIÓN')+'</small><strong>'+esc(fmtMinutes(avg(display,'_resolutionMinutes')))+'</strong><span>Tiempo en resolver / ejecutar<br>En proceso → Cerrada</span></div>'+
     '</div>';
   }
   function rowsPanel(title, rows){
