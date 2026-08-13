@@ -1,4 +1,5 @@
 import { normalizeOperation } from './operations-service.js';
+import { isTerminalOperationStatus } from '../operation-status.js';
 import { isGroupManager } from '../permissions.js';
 
 export function deriveOperationalAlerts(rows, profile = null){
@@ -7,7 +8,7 @@ export function deriveOperationalAlerts(rows, profile = null){
   const reported=operations.filter(op => op.status === 'Reportado');
   const incidents=operations.filter(op => op.status === 'En incidencia');
   const inProgress=operations.filter(op => op.status === 'En proceso');
-  const recentCompleted=operations.filter(op => ['Completado','Resuelto por soporte remoto'].includes(op.status) && Date.now() - new Date(op.completedAt || 0).getTime() < 86400000);
+  const recentCompleted=operations.filter(op => isTerminalOperationStatus(op.status) && Date.now() - new Date(op.completedAt || 0).getTime() < 86400000);
   if(reported.length) alerts.push({id:'derived-reported',type:'warning',title:`${reported.length} reporte(s) sin asignar`,message:'Esperan revisión y asignación.',route:'/operations',filter:'Reportado'});
   if(incidents.length) alerts.push({id:'derived-incidents',type:'danger',title:`${incidents.length} operación(es) en incidencia`,message:'Necesitan revisión para continuar.',route:'/operations',filter:'En incidencia'});
   if(inProgress.length) alerts.push({id:'derived-progress',type:'info',title:`${inProgress.length} operación(es) en proceso`,message:'Trabajos actualmente activos.',route:'/operations',filter:'En proceso'});
