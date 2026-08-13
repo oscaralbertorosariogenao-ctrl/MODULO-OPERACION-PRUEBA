@@ -1,14 +1,65 @@
 
-/* Fix final: menú colapsable + botón refresh Loteka + recuperación de Grupos */
+/* Fase 3 · Shell: colapso del menú y acceso a Inicio. La lógica PWA permanece intacta. */
 .brand-wrap{cursor:pointer;position:relative;}
-.brand-wrap::after{content:"↻ HOME";position:absolute;right:10px;top:10px;font-size:10px;font-weight:900;letter-spacing:.08em;color:#119ecf;background:rgba(255,255,255,.92);border:1px solid #cfeaf4;border-radius:999px;padding:4px 7px;box-shadow:0 8px 18px rgba(17,158,207,.10);opacity:.86;}
+.brand-wrap::after{
+  content:"↻";
+  position:absolute;
+  right:8px;
+  top:8px;
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  color:var(--go-brand-blue);
+  background:var(--go-color-surface);
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-pill);
+  box-shadow:var(--go-shadow-subtle);
+  font-size:12px;
+  font-weight:var(--go-weight-heavy);
+  opacity:.78;
+  transition:opacity var(--go-motion-fast),transform var(--go-motion-fast);
+}
 .brand-wrap:hover::after{opacity:1;transform:translateY(-1px);}
-#ltkSidebarFloatingToggle{position:fixed;left:14px;top:14px;z-index:999999;width:44px;height:44px;border:none;border-radius:16px;background:linear-gradient(145deg,#0e9ed0,#087aa5);color:#fff;display:grid;place-items:center;box-shadow:0 14px 32px rgba(0,72,112,.28);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease;}
-#ltkSidebarFloatingToggle:hover{transform:translateY(-1px);box-shadow:0 18px 36px rgba(0,72,112,.34);}
-#ltkSidebarFloatingToggle i{font-size:18px;}
-body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:300px;}
-.sidebar{transition:width .22s ease,padding .22s ease,opacity .18s ease,transform .22s ease!important;will-change:width,transform;}
-.content{transition:padding .22s ease!important;min-width:0;}
-body.ltk-sidebar-collapsed .sidebar{width:0!important;min-width:0!important;max-width:0!important;padding-left:0!important;padding-right:0!important;border-right:0!important;opacity:0!important;overflow:hidden!important;transform:translateX(-18px)!important;}
-body.ltk-sidebar-collapsed .content{padding-left:18px!important;}
-@media(max-width:900px){body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:14px}.brand-wrap::after{display:none}}
+#ltkSidebarFloatingToggle{
+  position:fixed;
+  left:14px;
+  top:10px;
+  z-index:calc(var(--go-z-sticky) + 10);
+  width:42px;
+  height:42px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:var(--go-radius-md);
+  background:rgba(255,255,255,.10);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  box-shadow:none;
+  backdrop-filter:blur(8px);
+  cursor:pointer;
+  transition:transform var(--go-motion-fast),background var(--go-motion-fast),box-shadow var(--go-motion-fast);
+}
+#ltkSidebarFloatingToggle:hover{transform:translateY(-1px);background:rgba(255,255,255,.16);}
+#ltkSidebarFloatingToggle:focus-visible{outline:none;box-shadow:var(--go-focus-ring);}
+#ltkSidebarFloatingToggle i{font-size:17px;}
+body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:14px;}
+.sidebar{transition:width var(--go-motion-standard),padding var(--go-motion-standard),opacity var(--go-motion-fast),transform var(--go-motion-standard);will-change:width,transform;}
+.content{transition:padding var(--go-motion-standard);min-width:0;}
+body.ltk-sidebar-collapsed .sidebar{width:0;min-width:0;max-width:0;padding-left:0;padding-right:0;border-right:0;opacity:0;overflow:hidden;transform:translateX(-18px);}
+body.ltk-sidebar-collapsed .content{padding-left:var(--go-shell-content-pad-x);}
+#ltkSidebarBackdrop{display:none;}
+@media(max-width:900px){
+  .brand-wrap::after{display:none;}
+  #ltkSidebarFloatingToggle,body:not(.ltk-sidebar-collapsed) #ltkSidebarFloatingToggle{left:10px;}
+  #ltkSidebarBackdrop{
+    position:fixed;
+    inset:var(--go-shell-topbar-height-mobile) 0 0 0;
+    z-index:calc(var(--go-z-sticky) - 10);
+    display:block;
+    background:rgba(6,29,51,.42);
+    backdrop-filter:blur(2px);
+    opacity:1;
+    transition:opacity var(--go-motion-fast);
+  }
+  body.ltk-sidebar-collapsed #ltkSidebarBackdrop{opacity:0;pointer-events:none;}
+}
