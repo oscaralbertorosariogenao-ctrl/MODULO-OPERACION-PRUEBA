@@ -1687,25 +1687,25 @@ html.dark-mode .ops-modal .modal-body .field .multi-select-trigger{
   }
 }
 
-/* UI-only Loteka theme overrides */
+/* UI-only theme overrides · Fase 3: aliases a Design System oficial */
 :root{
-  --bg:#eef5fb;
-  --panel:#ffffff;
-  --line:#d7e4ef;
-  --line-soft:#edf4f9;
-  --text:#27435c;
-  --text-soft:#6e879d;
-  --title:#119ecf;
-  --title-dark:#204b6a;
-  --primary:#119ecf;
-  --primary-dark:#267aa9;
-  --primary-dark-hover:#1c6a95;
-  --green:#46a672;
-  --green-dark:#35855a;
-  --red:#d9413a;
-  --shadow:0 10px 30px rgba(24,74,111,.08);
+  --bg:var(--go-color-bg);
+  --panel:var(--go-color-surface);
+  --line:var(--go-color-border);
+  --line-soft:var(--go-color-surface-subtle);
+  --text:var(--go-color-text);
+  --text-soft:var(--go-color-text-muted);
+  --title:var(--go-brand-blue);
+  --title-dark:var(--go-color-text-strong);
+  --primary:var(--go-brand-blue);
+  --primary-dark:var(--go-brand-navy);
+  --primary-dark-hover:var(--go-brand-navy-800);
+  --green:var(--go-color-success);
+  --green-dark:#126f45;
+  --red:var(--go-color-danger);
+  --shadow:var(--go-shadow-subtle);
 }
-body{background:linear-gradient(180deg,#f4f9fd 0%, #eef5fb 100%);}
+body{background:var(--go-color-bg);}
 .sidebar{
   background:linear-gradient(180deg,#ffffff 0%,#f6fbff 100%);
   border-right:1px solid #d9e7f1;
@@ -1754,38 +1754,54 @@ body{background:linear-gradient(180deg,#f4f9fd 0%, #eef5fb 100%);}
 .menu a{border-radius:16px;font-weight:700;}
 .menu a:hover{background:#eaf7fc;}
 .menu a.active{background:linear-gradient(90deg,#e7f7fd 0%, #dff3fb 100%);color:#148fbc;box-shadow:inset 0 0 0 1px #cfeaf4;}
-.content{padding:22px 22px 30px;}
-.header{margin-bottom:18px;}
-.header h2,.entry-title{font-size:22px;color:var(--title-dark);}
-.btn,.btn-entry,.btn-secondary,.btn-apply,.entry-mini-btn{border-radius:12px;box-shadow:0 10px 18px rgba(17,158,207,.16);}
-.btn,.btn-entry,.btn-apply,.entry-mini-btn{background:linear-gradient(180deg,#22b4e2 0%,#119ecf 100%);}
-.btn:hover,.btn-entry:hover,.btn-apply:hover,.entry-mini-btn:hover{background:linear-gradient(180deg,#16a7d5 0%,#0f8dbc 100%);}
-.btn-secondary{background:#6b8faa;}
-.card-table,.entry-table-card,.filter-card,.dashboard-card,.detail-panel,.ops-scope .panel,.ops-scope .stat-card,.ops-scope .mini-stat,.ops-scope .report-box{
-  border-radius:18px;
-  border:1px solid #d9e7f1;
-  box-shadow:0 10px 30px rgba(24,74,111,.06);
+.content{
+  min-width:0;
+  padding:var(--go-shell-content-pad-y) var(--go-shell-content-pad-x) calc(var(--go-shell-content-pad-y) + var(--go-space-2));
 }
-.dashboard-card{background:linear-gradient(180deg,#ffffff 0%, #f8fcff 100%);}
-.dashboard-card-value{color:#1e5e86;}
-th{background:#f5fbff;color:#2c5877;}
-table tr:hover td{background:#fbfdff;}
+.header{
+  gap:var(--go-space-3);
+  margin-bottom:var(--go-space-5);
+  padding:0;
+  flex-wrap:wrap;
+}
+.header h2,.entry-title{font-size:var(--go-text-xl);font-weight:var(--go-weight-heavy);color:var(--go-color-text-strong);letter-spacing:-.02em;}
+.btn,.btn-entry,.btn-secondary,.btn-apply,.entry-mini-btn{
+  min-height:var(--go-control-min-height);
+  border-radius:var(--go-radius-md);
+  box-shadow:none;
+  font-weight:var(--go-weight-bold);
+}
+.btn,.btn-entry,.btn-apply,.entry-mini-btn{background:linear-gradient(135deg,var(--go-brand-navy),var(--go-brand-blue));}
+.btn:hover,.btn-entry:hover,.btn-apply:hover,.entry-mini-btn:hover{background:linear-gradient(135deg,var(--go-brand-navy-800),var(--go-brand-blue));}
+.btn-secondary{background:#607f96;}
+.btn:focus-visible,.btn-entry:focus-visible,.btn-secondary:focus-visible,.btn-apply:focus-visible,.entry-mini-btn:focus-visible{outline:none;box-shadow:var(--go-focus-ring);}
+.card-table,.entry-table-card,.filter-card,.dashboard-card,.detail-panel,.ops-scope .panel,.ops-scope .stat-card,.ops-scope .mini-stat,.ops-scope .report-box{
+  border-radius:var(--go-radius-lg);
+  border:1px solid var(--go-color-border);
+  box-shadow:var(--go-shadow-subtle);
+}
+.dashboard-card{background:var(--go-color-surface);}
+.dashboard-card-value{color:var(--go-color-text-strong);}
+th{background:var(--go-color-surface-subtle);color:var(--go-color-text-strong);}
+table tr:hover td{background:#f8fcff;}
 input,textarea,select,.ops-scope .input,.ops-scope .select,.ops-scope .textarea,.ops-scope .multi-select-trigger{
-  border-radius:12px !important;
-  border:1px solid #cfe0ec !important;
-  background:#fbfdff !important;
+  min-height:var(--go-control-min-height);
+  border-radius:var(--go-radius-md) !important;
+  border:1px solid var(--go-color-border-strong) !important;
+  background:var(--go-color-surface) !important;
 }
 input:focus,textarea:focus,select:focus,.ops-scope .input:focus,.ops-scope .select:focus,.ops-scope .textarea:focus,.ops-scope .multi-select-trigger.open{
-  border-color:#22b4e2 !important;
-  box-shadow:0 0 0 3px rgba(17,158,207,.12) !important;
+  border-color:var(--go-brand-sky) !important;
+  box-shadow:var(--go-focus-ring) !important;
 }
-.ops-scope .topbar h2,.ops-scope .catalog-topbar h2{color:#1f587b;}
-.ops-scope .stat-card strong,.ops-scope .mini-stat strong{color:#1f587b;}
+.ops-scope .topbar h2,.ops-scope .catalog-topbar h2{color:var(--go-color-text-strong);}
+.ops-scope .stat-card strong,.ops-scope .mini-stat strong{color:var(--go-color-text-strong);}
 .ops-scope .badge-pendiente{background:#edf3f8;color:#59748a;}
-.ops-scope .badge-proceso{background:#fff2d8;color:#9a6b12;}
-.ops-scope .badge-completado{background:#e8f6ef;color:#2f7d57;}
-.status-badge{border-radius:999px;padding:6px 10px;}
-.modal-content,.ops-modal{border-radius:22px;border:1px solid #d9e7f1;box-shadow:0 20px 50px rgba(24,74,111,.16);}
+.ops-scope .badge-proceso{background:var(--go-color-warning-soft);color:#9a5b08;}
+.ops-scope .badge-completado{background:var(--go-color-success-soft);color:var(--go-color-success);}
+.status-badge{border-radius:var(--go-radius-pill);padding:6px 10px;}
+.modal{z-index:var(--go-z-overlay);background:rgba(6,29,51,.48);backdrop-filter:blur(4px);}
+.modal-content,.ops-modal{border-radius:var(--go-radius-modal);border:1px solid var(--go-color-border);box-shadow:var(--go-shadow-floating);}
 
 
 
