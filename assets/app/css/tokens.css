@@ -1,13 +1,13 @@
+@import url('../../shared/css/go-design-tokens.css');
+
 :root{
   color-scheme:light;
-  --go-navy-950:#061d33;--go-navy-900:#082844;--go-navy-800:#0b3a67;--go-blue-700:#0b5fa5;--go-blue-600:#1479c9;--go-sky-500:#39a9e8;--go-sky-100:#e8f6ff;
-  --go-white:#fff;--go-bg:#f3f7fb;--go-surface:#fff;--go-surface-2:#f8fbfd;--go-border:#dce7f0;--go-text:#13283b;--go-muted:#607487;
-  --go-success:#178a55;--go-success-soft:#e7f7ef;--go-warning:#d97706;--go-warning-soft:#fff3df;--go-danger:#c53b3b;--go-danger-soft:#fff0f0;--go-info:#176fb4;--go-info-soft:#eaf5ff;
-  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;
-  --radius-sm:.65rem;--radius-md:1rem;--radius-lg:1.35rem;--radius-xl:1.75rem;--radius-pill:999px;
-  --shadow-sm:0 1px 2px rgba(6,29,51,.05),0 4px 16px rgba(6,29,51,.06);--shadow-md:0 14px 35px rgba(6,29,51,.13);--shadow-lg:0 24px 70px rgba(6,29,51,.2);
-  --font-sans:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-  --text-xs:.75rem;--text-sm:.875rem;--text-md:1rem;--text-lg:1.125rem;--text-xl:1.35rem;--text-2xl:1.75rem;--text-3xl:2.15rem;
-  --tap:2.75rem;--header-h:4.25rem;--nav-h:4.8rem;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
-  --transition:160ms ease;--content-max:74rem;
+  /* Tokens exclusivos del shell móvil. Los tokens visuales viven en assets/shared/css/go-design-tokens.css. */
+  --tap:var(--go-control-min-height);
+  --header-h:4.25rem;
+  --nav-h:4.8rem;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --transition:var(--go-motion-fast);
+  --content-max:var(--go-content-max);
 }
