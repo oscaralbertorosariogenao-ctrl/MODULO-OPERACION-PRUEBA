@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-08-12-v808.33-rutas-render-single-layer";
+const SW_VERSION = "2026-08-13-v808.34-estabilizacion-p0";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -103,6 +103,7 @@ const CORE_ASSETS = [
   "/assets/app/js/errors.js",
   "/assets/app/js/event-controller.js",
   "/assets/app/js/main.js",
+  "/assets/app/js/operation-status.js",
   "/assets/app/js/permissions.js",
   "/assets/app/js/realtime.js",
   "/assets/app/js/router.js",
