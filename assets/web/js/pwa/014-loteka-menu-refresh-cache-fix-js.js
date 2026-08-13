@@ -1,6 +1,6 @@
 
 (function(){
-  const BUILD = '2026-05-08-v59-grupo01-agencias-tipos-v1';
+  const BUILD = String(document.querySelector('meta[name="grupo-ortiz-build"]')?.content || '').trim();
 
   function safeInvalidateMap(){
     try { if (window.agenciasMapInstance && typeof window.agenciasMapInstance.invalidateSize === 'function') window.agenciasMapInstance.invalidateSize(true); } catch(e){}
