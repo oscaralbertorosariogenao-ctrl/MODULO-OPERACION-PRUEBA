@@ -349,8 +349,8 @@
 
     function triggerOperationPushNotifications(previousOp, nextOp) {
       try {
-        const previousStatus = String(previousOp?.status || 'Pendiente').trim();
-        const nextStatus = String(nextOp?.status || 'Pendiente').trim();
+        const previousStatus = canonicalOperationStatus(previousOp?.status);
+        const nextStatus = canonicalOperationStatus(nextOp?.status);
         const previousTechnician = getPushUsername(previousOp?.technician || '');
         const nextTechnician = getPushUsername(nextOp?.technician || '');
         const encargado = getPushUsername(nextOp?.nombre_encargado || nextOp?.created_by || '');
@@ -378,15 +378,15 @@
           );
         }
 
-        if (encargado && statusChanged && ['Asignada', 'En proceso', 'Completado'].includes(nextStatus)) {
+        if (encargado && statusChanged && ['Asignado', 'En proceso', 'Completado', 'Resuelto por soporte remoto'].includes(nextStatus)) {
           let message = `${operationCode} cambió a estado ${nextStatus}.`;
 
-          if (nextStatus === 'Asignada') {
+          if (nextStatus === 'Asignado') {
             message = `${operationCode} quedó asignada a ${assigneeLabel}.`;
           } else if (nextStatus === 'En proceso') {
             message = `${operationCode} ya está en proceso en ${operationPlace}.`;
-          } else if (nextStatus === 'Completado') {
-            message = `${operationCode} fue completada en ${operationPlace}.`;
+          } else if (nextStatus === 'Completado' || nextStatus === 'Resuelto por soporte remoto') {
+            message = `${operationCode} fue cerrada en ${operationPlace} (${nextStatus}).`;
           }
 
           void sendPushToUsername(
@@ -598,13 +598,30 @@ function saveOperations(operations) {
       return date.toLocaleString('es-DO', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     }
 
+    function canonicalOperationStatus(status) {
+      try {
+        const shared = window.GOApp?.operations?.status?.normalizeOperationStatus;
+        if (typeof shared === 'function') return shared(status);
+      } catch (_error) {}
+      const value = String(status || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      if (value.includes('soporte') || value.includes('remot')) return 'Resuelto por soporte remoto';
+      if (value.includes('incid')) return 'En incidencia';
+      if (value.includes('complet') || value.includes('cerrad') || value.includes('finaliz') || value === 'resuelto' || value === 'resuelta') return 'Completado';
+      if (value.includes('proceso') || value.includes('inici') || value === 'en ruta') return 'En proceso';
+      if (value.includes('asign')) return 'Asignado';
+      return 'Reportado';
+    }
+
+    function isOperationTerminalStatus(status) {
+      try {
+        const shared = window.GOApp?.operations?.status?.isTerminalOperationStatus;
+        if (typeof shared === 'function') return shared(status);
+      } catch (_error) {}
+      return ['Completado', 'Resuelto por soporte remoto'].includes(canonicalOperationStatus(status));
+    }
+
     function normalizeRemoteStatus(status) {
-      const value = String(status || '').trim().toLowerCase();
-      if (!value) return 'Pendiente';
-      if (['cerrado', 'cerrada', 'resuelto', 'resuelta', 'completado', 'completada'].includes(value)) return 'Completado';
-      if (['en ruta', 'en proceso', 'proceso'].includes(value)) return 'En proceso';
-      if (['asignada', 'asignado'].includes(value)) return 'Asignada';
-      return 'Pendiente';
+      return canonicalOperationStatus(status);
     }
 
     function getOperationLocation(op = {}) {
@@ -908,19 +925,23 @@ function saveOperations(operations) {
     }
 
     function statusBadge(status) {
-      const value = String(status || 'Pendiente');
-      const normalized = value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      if (normalized.includes('complet')) return '<span class="badge badge-completado go-status-chip go-status-completado"><i class="fas fa-circle-check"></i>Completado</span>';
-      if (normalized.includes('proceso')) return '<span class="badge badge-proceso go-status-chip go-status-proceso"><i class="fas fa-gears"></i>En proceso</span>';
-      if (normalized.includes('asign')) return '<span class="badge badge-proceso go-status-chip go-status-asignada"><i class="fas fa-user-check"></i>Asignada</span>';
-      return '<span class="badge badge-pendiente go-status-chip go-status-pendiente"><i class="fas fa-clock"></i>Pendiente</span>';
+      const canonical = canonicalOperationStatus(status);
+      if (canonical === 'Resuelto por soporte remoto') return '<span class="badge badge-completado go-status-chip go-status-completado"><i class="fas fa-headset"></i>Resuelto por soporte remoto</span>';
+      if (canonical === 'Completado') return '<span class="badge badge-completado go-status-chip go-status-completado"><i class="fas fa-circle-check"></i>Completado</span>';
+      if (canonical === 'En incidencia') return '<span class="badge badge-pendiente go-status-chip go-status-incidencia"><i class="fas fa-triangle-exclamation"></i>En incidencia</span>';
+      if (canonical === 'En proceso') return '<span class="badge badge-proceso go-status-chip go-status-proceso"><i class="fas fa-gears"></i>En proceso</span>';
+      if (canonical === 'Asignado') return '<span class="badge badge-proceso go-status-chip go-status-asignada"><i class="fas fa-user-check"></i>Asignado</span>';
+      return '<span class="badge badge-pendiente go-status-chip go-status-pendiente"><i class="fas fa-clock"></i>Reportado</span>';
     }
 
     function renderStats(operations) {
+      const statuses = operations.map(op => canonicalOperationStatus(op.status));
       document.getElementById('statTotal').textContent = operations.length;
-      document.getElementById('statProceso').textContent = operations.filter(op => op.status === 'En proceso' || op.status === 'Asignada').length;
-      document.getElementById('statCompletado').textContent = operations.filter(op => op.status === 'Completado').length;
-      document.getElementById('statPendiente').textContent = operations.filter(op => op.status === 'Pendiente').length;
+      document.getElementById('statProceso').textContent = statuses.filter(status => status === 'En proceso').length;
+      document.getElementById('statCompletado').textContent = statuses.filter(status => ['Completado', 'Resuelto por soporte remoto'].includes(status)).length;
+      document.getElementById('statPendiente').textContent = statuses.filter(status => status === 'Reportado').length;
+      const assignedNode = document.getElementById('statAsignada');
+      if (assignedNode) assignedNode.textContent = statuses.filter(status => status === 'Asignado').length;
     }
 
     function resolutionMinutesFromText(text) {
@@ -977,7 +998,7 @@ function saveOperations(operations) {
       const assignmentEntry = history
         .filter(item => item && (
           item.action === 'Asignación' ||
-          (item.action === 'Estado' && item.newStatus === 'Asignada')
+          (item.action === 'Estado' && canonicalOperationStatus(item.newStatus) === 'Asignado')
         ))
         .sort((a, b) => new Date(getHistoryTimestamp(a) || 0) - new Date(getHistoryTimestamp(b) || 0))[0];
 
@@ -1001,7 +1022,7 @@ function saveOperations(operations) {
       const completionEntry = history
         .filter(item => item && (
           item.action === 'Finalización' ||
-          (item.action === 'Estado' && item.newStatus === 'Completado')
+          (item.action === 'Estado' && isOperationTerminalStatus(item.newStatus))
         ))
         .sort((a, b) => new Date(getHistoryTimestamp(a) || 0) - new Date(getHistoryTimestamp(b) || 0))[0];
 
@@ -1155,7 +1176,7 @@ function saveOperations(operations) {
         const ownerNeedleSlug = slugifyUsername(ownerValue || '');
         const reporterNeedleSlug = slugifyUsername(reporterValue || '');
         const matchType = !typeValue || op.type === typeValue;
-        const matchStatus = !statusValue || op.status === statusValue;
+        const matchStatus = !statusValue || canonicalOperationStatus(op.status) === canonicalOperationStatus(statusValue);
         const matchSpecificType = !specificTypeValue || ((Array.isArray(op.selectedTypes) ? op.selectedTypes : []).includes(specificTypeValue));
         const matchAgency = !agencyValue || locationText.includes(agencyValue.toLowerCase()) || agencyText.includes(agencyValue.toLowerCase());
         const matchOwner = !ownerNeedle || ownerKeywords.some(value => value.includes(ownerNeedle) || slugifyUsername(value) === ownerNeedleSlug);
@@ -1184,7 +1205,7 @@ function saveOperations(operations) {
 
     function buildAgencyGroups(operations) {
       return Array.from(averageFromOperations(operations, op => op.agency).entries()).map(([agency, items]) => {
-        const completed = items.filter(op => op.status === 'Completado').length;
+        const completed = items.filter(op => isOperationTerminalStatus(op.status)).length;
         const stillOpen = items.length - completed;
         const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
         const responseValues = items.map(getResponseMinutes).filter(value => value !== null);
@@ -1198,8 +1219,8 @@ function saveOperations(operations) {
 
     function buildOwnerGroups(operations) {
       return Array.from(averageFromOperations(operations, op => op.technician || 'Sin asignar').entries()).map(([owner, items]) => {
-        const completed = items.filter(op => op.status === 'Completado').length;
-        const inProgress = items.filter(op => ['Pendiente','Asignada','En proceso'].includes(op.status)).length;
+        const completed = items.filter(op => isOperationTerminalStatus(op.status)).length;
+        const inProgress = items.filter(op => !isOperationTerminalStatus(op.status)).length;
         const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
         const responseValues = items.map(getResponseMinutes).filter(value => value !== null);
         const resolutionValues = items.map(getResolutionMinutes).filter(value => value !== null);
@@ -1220,7 +1241,7 @@ function saveOperations(operations) {
         });
       });
       return Array.from(categoryMap.entries()).map(([category, items]) => {
-        const completed = items.filter(op => op.status === 'Completado').length;
+        const completed = items.filter(op => isOperationTerminalStatus(op.status)).length;
         const stillOpen = items.length - completed;
         const assignValues = items.map(getAssignmentMinutes).filter(value => value !== null);
         const responseValues = items.map(getResponseMinutes).filter(value => value !== null);
@@ -1410,8 +1431,8 @@ function saveOperations(operations) {
         reportFilterFrom.value ? { label: 'Desde', value: reportFilterFrom.value } : null,
         reportFilterTo.value ? { label: 'Hasta', value: reportFilterTo.value } : null
       ].filter(Boolean));
-      const done = operations.filter(op => op.status === 'Completado');
-      const pending = operations.filter(op => op.status !== 'Completado');
+      const done = operations.filter(op => isOperationTerminalStatus(op.status));
+      const pending = operations.filter(op => !isOperationTerminalStatus(op.status));
       const resolutionValues = done.map(getResolutionMinutes).filter(value => value !== null);
       const avgResolution = resolutionValues.length ? resolutionValues.reduce((a,b) => a+b, 0) / resolutionValues.length : 0;
       const assignedValues = operations.map(getAssignmentMinutes).filter(value => value !== null);
@@ -1558,7 +1579,7 @@ function saveOperations(operations) {
       const operations = loadOperations();
       return operations.filter(op => {
         const matchType = !filterType.value || op.type === filterType.value;
-        const matchStatus = !filterStatus.value || op.status === filterStatus.value;
+        const matchStatus = !filterStatus.value || canonicalOperationStatus(op.status) === canonicalOperationStatus(filterStatus.value);
         const locationText = getOperationLocation(op).toLowerCase();
         const matchAgency = !filterAgency.value || locationText.includes(filterAgency.value.toLowerCase());
         const matchTech = !filterTech.value || `${String(op.technician || '').toLowerCase()} ${getAssigneeDisplayName(op.technician, op.type).toLowerCase()}`.includes(filterTech.value.toLowerCase());
@@ -1706,10 +1727,11 @@ function saveOperations(operations) {
     function renderDashboard() {
       const operations = loadOperations().slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       const total = operations.length;
-      const pending = operations.filter(op => op.status === 'Pendiente' || op.status === 'Asignada').length;
-      const inProcess = operations.filter(op => op.status === 'En proceso').length;
-      const completed = operations.filter(op => op.status === 'Completado').length;
-      const reportedOpen = operations.filter(op => ['Reportado','Pendiente'].includes(op.status)).length;
+      const statuses = operations.map(op => canonicalOperationStatus(op.status));
+      const pending = statuses.filter(status => ['Reportado', 'Asignado'].includes(status)).length;
+      const inProcess = statuses.filter(status => ['En proceso', 'En incidencia'].includes(status)).length;
+      const completed = statuses.filter(status => ['Completado', 'Resuelto por soporte remoto'].includes(status)).length;
+      const reportedOpen = statuses.filter(status => status === 'Reportado').length;
 
       const avgAssignValues = operations.map(getAssignmentMinutes).filter(v => Number.isFinite(v) && v >= 0);
       const avgResolutionValues = operations.map(getResolutionMinutes).filter(v => Number.isFinite(v) && v >= 0);
@@ -1722,10 +1744,11 @@ function saveOperations(operations) {
 
       const typeCounts = ['Avería','Trabajo'].map(type => ({ label:type, value: operations.filter(op => op.type === type).length }));
       const statusCounts = [
-        { label:'Pendientes', value: operations.filter(op => op.status === 'Pendiente').length, cls:'danger' },
-        { label:'Asignadas', value: operations.filter(op => op.status === 'Asignada').length, cls:'' },
-        { label:'En proceso', value: operations.filter(op => op.status === 'En proceso').length, cls:'warning' },
-        { label:'Completadas', value: operations.filter(op => op.status === 'Completado').length, cls:'success' }
+        { label:'Reportadas', value: statuses.filter(status => status === 'Reportado').length, cls:'danger' },
+        { label:'Asignadas', value: statuses.filter(status => status === 'Asignado').length, cls:'' },
+        { label:'En proceso', value: statuses.filter(status => status === 'En proceso').length, cls:'warning' },
+        { label:'En incidencia', value: statuses.filter(status => status === 'En incidencia').length, cls:'warning' },
+        { label:'Cerradas', value: statuses.filter(status => ['Completado', 'Resuelto por soporte remoto'].includes(status)).length, cls:'success' }
       ];
 
       const topTech = techGroups[0];
@@ -1791,7 +1814,7 @@ function saveOperations(operations) {
       if (topAgency) alerts.push({title:'Agencias con más incidencias reportadas', text:`${topAgency.agency} lidera con ${topAgency.total} reportes.`});
       if (topTech) alerts.push({title:'Técnico con más carga', text:`${getAssigneeDisplayName(topTech.owner, 'Avería')} lleva ${topTech.total} averías asignadas.`});
       if (topSupplier) alerts.push({title:'Suplidor con más carga', text:`${getAssigneeDisplayName(topSupplier.owner, 'Trabajo')} lleva ${topSupplier.total} trabajos activos o completados.`});
-      const oldPending = operations.filter(op => op.status !== 'Completado' && ((Date.now() - new Date(op.createdAt).getTime()) / 3600000) >= 24);
+      const oldPending = operations.filter(op => !isOperationTerminalStatus(op.status) && ((Date.now() - new Date(op.createdAt).getTime()) / 3600000) >= 24);
       if (oldPending.length) alerts.push({title:'Pendientes envejecidas', text:`${oldPending.length} operaciones llevan más de 24 horas abiertas.`});
       const alertsEl = document.getElementById('dashboardAlerts');
       if (alertsEl) {
@@ -1814,7 +1837,7 @@ function saveOperations(operations) {
       renderOwnerTable('dashboardTechTable', techGroups, 'Avería', 'No hay técnicos con actividad aún.');
       renderOwnerTable('dashboardSupplierTable', supplierGroups, 'Trabajo', 'No hay suplidores con actividad aún.');
 
-      const criticalOps = operations.filter(op => ['Reportado','Pendiente'].includes(op.status)).slice(0,6);
+      const criticalOps = operations.filter(op => canonicalOperationStatus(op.status) === 'Reportado').slice(0,6);
       const criticalTable = document.getElementById('dashboardCriticalTable');
       if (criticalTable) {
         criticalTable.innerHTML = criticalOps.length ? criticalOps.map(op => `
@@ -2430,7 +2453,7 @@ function saveOperations(operations) {
     function closeCreateModal() {
       createModalBackdrop.classList.add('hidden');
       document.getElementById('operationType').value = 'Avería';
-      document.getElementById('operationStatus').value = 'Pendiente';
+      document.getElementById('operationStatus').value = 'Reportado';
       document.getElementById('operationTitle').value = '';
       populateOperationAgencyOptions('');
       document.getElementById('operationDescription').value = '';
@@ -4083,8 +4106,8 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
 
     function printGeneralReport() {
       const operations = getReportFilteredOperations();
-      const done = operations.filter(op => op.status === 'Completado');
-      const pending = operations.filter(op => op.status !== 'Completado');
+      const done = operations.filter(op => isOperationTerminalStatus(op.status));
+      const pending = operations.filter(op => !isOperationTerminalStatus(op.status));
       const resolutionValues = done.map(getResolutionMinutes).filter(value => value !== null);
       const avgResolution = resolutionValues.length ? resolutionValues.reduce((a,b) => a+b, 0) / resolutionValues.length : 0;
       const assignedValues = operations.map(getAssignmentMinutes).filter(value => value !== null);
@@ -4103,8 +4126,8 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
       ].join('');
       const summaryHtml = [
         ['Total filtrado', operations.length],
-        ['Completadas', done.length],
-        ['Pendientes / en proceso', pending.length],
+        ['Cerradas', done.length],
+        ['Activas', pending.length],
         ['Tiempo promedio', formatMinutesHuman(avgResolution)],
         ['% Cumplimiento', `${compliance}%`],
         ['Promedio asignación', formatMinutesHuman(avgAssigned)],
@@ -4153,8 +4176,8 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
       const summaryHtml = [
         ['Agencias en reporte', rowsData.length],
         ['Total de operaciones', operations.length],
-        ['Completadas', operations.filter(op => op.status === 'Completado').length],
-        ['Pendientes / activas', operations.filter(op => op.status !== 'Completado').length]
+        ['Cerradas', operations.filter(op => isOperationTerminalStatus(op.status)).length],
+        ['Activas', operations.filter(op => !isOperationTerminalStatus(op.status)).length]
       ].map(([label, value]) => `<div class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('');
       const rows = rowsData.map(row => [
         escapeHtml(row.agency),
@@ -4169,7 +4192,7 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
         'Consulta dedicada para revisar carga, cumplimiento y tiempos por agencia.',
         filtersHtml,
         summaryHtml,
-        ['Agencia', 'Total', 'Completadas', 'Pendientes', 'Asignación prom.', 'Resolución prom.'],
+        ['Agencia', 'Total', 'Cerradas', 'Activas', 'Asignación prom.', 'Resolución prom.'],
         rows,
         'No hay datos de agencias para imprimir.'
       );
@@ -4194,8 +4217,8 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
       const summaryHtml = [
         ['Responsables en reporte', rowsData.length],
         ['Total asignado', operations.length],
-        ['Completadas', operations.filter(op => op.status === 'Completado').length],
-        ['Activas', operations.filter(op => ['Pendiente','Asignada','En proceso'].includes(op.status)).length]
+        ['Cerradas', operations.filter(op => isOperationTerminalStatus(op.status)).length],
+        ['Activas', operations.filter(op => !isOperationTerminalStatus(op.status)).length]
       ].map(([label, value]) => `<div class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('');
       const rows = rowsData.map(row => [
         escapeHtml(getAssigneeDisplayName(row.owner, 'Avería')),
@@ -4210,7 +4233,7 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
         'Consulta dedicada para técnicos y suplidores con su carga y desempeño.',
         filtersHtml,
         summaryHtml,
-        ['Responsable', 'Total', 'Completadas', 'Activas', 'Asignación prom.', 'Resolución prom.'],
+        ['Responsable', 'Total', 'Cerradas', 'Activas', 'Asignación prom.', 'Resolución prom.'],
         rows,
         'No hay datos de responsables para imprimir.'
       );
@@ -4235,8 +4258,8 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
       const summaryHtml = [
         ['Tipos en reporte', rowsData.length],
         ['Total de operaciones', operations.length],
-        ['Completadas', operations.filter(op => op.status === 'Completado').length],
-        ['Pendientes', operations.filter(op => op.status !== 'Completado').length]
+        ['Cerradas', operations.filter(op => isOperationTerminalStatus(op.status)).length],
+        ['Activas', operations.filter(op => !isOperationTerminalStatus(op.status)).length]
       ].map(([label, value]) => `<div class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('');
       const rows = rowsData.map(row => [
         escapeHtml(row.category),
@@ -4251,7 +4274,7 @@ ${'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},22
         'Consulta dedicada para los tipos específicos de averías y trabajos.',
         filtersHtml,
         summaryHtml,
-        ['Tipo específico', 'Total', 'Completadas', 'Pendientes', 'Asignación prom.', 'Resolución prom.'],
+        ['Tipo específico', 'Total', 'Cerradas', 'Activas', 'Asignación prom.', 'Resolución prom.'],
         rows,
         'No hay datos de tipos específicos para imprimir.'
       );
@@ -5777,50 +5800,24 @@ function openEditModal(id) {
       document.getElementById('editOperationTypeOptionsBtn').classList.toggle('open');
     });
 
-    document.getElementById('resetDataBtn').addEventListener('click', () => {
-      /*
-  OPERACIONES / CAPA A2 - Paso 6A:
-  operations_records ya no se usa como fuente operativa.
-  No se borra ni se restaura desde el reset.
-*/
-      localStorage.removeItem('operations_catalog_users');
-      localStorage.removeItem('operations_catalog_suppliers');
-      localStorage.removeItem('operations_catalog_work_types');
-      localStorage.removeItem('operations_catalog_issue_types');
-      USERS = deepClone(DEFAULT_USERS);
-      SUPPLIERS = deepClone(DEFAULT_SUPPLIERS);
-      WORK_TYPES = deepClone(DEFAULT_WORK_TYPES);
-      ISSUE_TYPES = deepClone(DEFAULT_ISSUE_TYPES);
-      saveCatalogs();
-      /*
-  OPERACIONES / CAPA A2 - Paso 2:
-  No restaurar operaciones demo.
-  Si se usa el botón de reset, Operaciones queda vacía en memoria
-  hasta que Supabase vuelva a sincronizar datos reales.
-*/
-saveOperations([]);
-      userSearch.value = '';
-      supplierSearch.value = '';
-      workSearch.value = '';
-      issueSearch.value = '';
-      refreshOpenTypeSelectors();
-      populateReportSpecificTypeOptions();
-      renderOperations();
-      renderHistory();
-      populateAdvancedReportDropdowns();
-      renderReports();
-      renderAgencyReports();
-      renderOwnerReports();
-      renderSpecificReports();
-      renderGenericTable('users', '');
-      renderGenericTable('suppliers', '');
-      renderGenericTable('work', '');
-      renderGenericTable('issue', '');
-    });
+    // Fase 4: el antiguo botón "Restablecer datos" fue retirado del listado.
+    // Refresh y limpieza de filtros quedan bajo GOApp.operations.domain y nunca borran datos.
 
-    [filterType, filterStatus, filterAgency, filterTech, filterDateFrom, filterDateTo].forEach(el => {
-      el.addEventListener('input', renderOperations);
-      el.addEventListener('change', renderOperations);
+    function requestActiveOperationsRender(immediate = false) {
+      try {
+        const domain = window.GOApp?.operations?.domain;
+        if (domain && typeof domain.scheduleRender === 'function') return domain.scheduleRender({ immediate });
+        if (typeof window.renderOperations === 'function' && window.renderOperations !== renderOperations) return window.renderOperations();
+      } catch (_error) {}
+      return renderOperations();
+    }
+
+
+    [filterAgency, filterTech].forEach(el => {
+      el.addEventListener('input', () => requestActiveOperationsRender(false));
+    });
+    [filterType, filterStatus, filterDateFrom, filterDateTo].forEach(el => {
+      el.addEventListener('change', () => requestActiveOperationsRender(true));
     });
 
     [reportFilterType, reportFilterStatus, reportFilterSpecificType, reportFilterAgency, reportFilterOwner, reportFilterGroup, reportFilterReporter, reportFilterFrom, reportFilterTo].forEach(el => {
@@ -5929,7 +5926,7 @@ saveOperations([]);
       const rows = buildAgencyGroups(operations);
       exportRowsToCsv(
         'reportes_por_agencia.csv',
-        ['Agencia', 'Total', 'Completadas', 'Pendientes', 'Asignación promedio', 'Respuesta promedio', 'Resolución promedio'],
+        ['Agencia', 'Total', 'Cerradas', 'Activas', 'Asignación promedio', 'Respuesta promedio', 'Resolución promedio'],
         rows.map(row => [row.agency, row.total, row.completed, row.stillOpen, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResponse || 0), formatMinutesHuman(row.avgResolution)])
       );
     });
@@ -5945,7 +5942,7 @@ saveOperations([]);
       const rows = buildOwnerGroups(operations);
       exportRowsToCsv(
         'reportes_por_responsable.csv',
-        ['Responsable', 'Total', 'Completadas', 'Activas', 'Asignación promedio', 'Respuesta promedio', 'Resolución promedio'],
+        ['Responsable', 'Total', 'Cerradas', 'Activas', 'Asignación promedio', 'Respuesta promedio', 'Resolución promedio'],
         rows.map(row => [getAssigneeDisplayName(row.owner, 'Avería'), row.total, row.completed, row.inProgress, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResponse || 0), formatMinutesHuman(row.avgResolution)])
       );
     });
@@ -5961,7 +5958,7 @@ saveOperations([]);
       const rows = buildCategoryGroups(operations);
       exportRowsToCsv(
         'reportes_por_tipos_especificos.csv',
-        ['Tipo específico', 'Total', 'Completadas', 'Pendientes', 'Asignación promedio', 'Respuesta promedio', 'Resolución promedio'],
+        ['Tipo específico', 'Total', 'Cerradas', 'Activas', 'Asignación promedio', 'Respuesta promedio', 'Resolución promedio'],
         rows.map(row => [row.category, row.total, row.completed, row.stillOpen, formatMinutesHuman(row.avgAssign), formatMinutesHuman(row.avgResponse || 0), formatMinutesHuman(row.avgResolution)])
       );
     });
