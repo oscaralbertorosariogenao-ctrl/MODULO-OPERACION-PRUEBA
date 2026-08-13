@@ -1,5 +1,5 @@
-export const APP_BUILD = '2026-08-13-v808.36-shell-unification';
-export const APP_VERSION = 'V808.36';
+export const APP_BUILD = '2026-08-13-v808.37-operaciones-domain';
+export const APP_VERSION = 'V808.37';
 export const SUPABASE_URL = 'https://tnymrjxdhzdmpcbilftj.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRueW1yanhkaHpkbXBjYmlsZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNjEwOTksImV4cCI6MjA5MzgzNzA5OX0.YXG9juChbJUUdsdy01Qkoh9X0-MijewD5aQbKnG9Itk';
 export const R2_UPLOAD_ENDPOINT = '/api/r2-upload';
