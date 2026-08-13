@@ -1,15 +1,10 @@
 import { OPERATION_STATUSES, OPERATION_TYPES } from '../config.js';
+import { normalizeOperationStatus, isTerminalOperationStatus, isActiveOperationStatus, TERMINAL_OPERATION_STATUSES, ACTIVE_OPERATION_STATUSES } from '../operation-status.js';
+export { normalizeOperationStatus, isTerminalOperationStatus, isActiveOperationStatus, TERMINAL_OPERATION_STATUSES, ACTIVE_OPERATION_STATUSES } from '../operation-status.js';
 import { reportOperation, safeUpdateOperation, getOperation, assignOperationRpc, startOperationRpc, completeOperationRpc, resolveRemoteOperationRpc } from '../api/operations-api.js';
 function text(value){ return String(value ?? '').trim(); }
-export function normalizeStatus(value){
-  const raw=text(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  if(raw.includes('soporte') || raw.includes('remot')) return 'Resuelto por soporte remoto';
-  if(raw.includes('incid')) return 'En incidencia';
-  if(raw.includes('complet') || raw.includes('cerrad') || raw.includes('finaliz')) return 'Completado';
-  if(raw.includes('proceso') || raw.includes('inici')) return 'En proceso';
-  if(raw.includes('asign')) return 'Asignado';
-  return 'Reportado';
-}
+export const normalizeStatus = normalizeOperationStatus;
+
 export function normalizeOperation(row = {}){
   const r2Rows = Array.isArray(row._r2_evidencias) ? row._r2_evidencias : (Array.isArray(row.evidenciasR2) ? row.evidenciasR2 : []);
   const r2Reported = r2Rows.filter(item => text(item?.etapa).toUpperCase() === 'REPORTE');
@@ -20,7 +15,7 @@ export function normalizeOperation(row = {}){
     ...row,
     id:text(row.id), code:text(row.codigo || row.code || row.id), type:text(row.tipo || row.type || 'Avería'),
     title:text(row.titulo || row.title || row.categoria || 'Operación'), description:text(row.descripcion || row.description || row.detalle),
-    status:normalizeStatus(row.estado || row.status),
+    status:normalizeOperationStatus(row.estado || row.status),
     agencyNumber:text(row.agencia || row.agency_number || row.numero_agencia), agencyLabel:text(row.agencia_label || row.agency || row.nombre_agencia),
     group:text(row.grupo || row.grupo_nombre), technician:text(row.tecnico || row.technician || row.asignado_a || 'Sin asignar'),
     manager:text(row.encargado || row.nombre_encargado || row.reportado_por_nombre), managerPhone:text(row.encargado_telefono || row.telefono_encargado || row.whatsapp_encargado),
@@ -52,7 +47,7 @@ export function operationElapsed(operation){
   return `${Math.floor(hours / 24)} d ${hours % 24} h`;
 }
 export function isOverdue(operation, hours = 24){
-  if(['Completado','Resuelto por soporte remoto'].includes(normalizeStatus(operation.status))) return false;
+  if(isTerminalOperationStatus(operation.status)) return false;
   const created = new Date(operation.createdAt || 0).getTime(); return Boolean(created && Date.now() - created > hours * 3600000);
 }
 export function computeStats(rows){
@@ -69,7 +64,7 @@ export function computeStats(rows){
     completedToday:operations.filter(op => op.status === 'Completado' && isToday(op.completedAt)).length,
     remoteToday:operations.filter(op => op.status === 'Resuelto por soporte remoto' && isToday(op.completedAt)).length,
     pendingEvidence:operations.filter(op => op.status === 'En proceso' && !op.evidenceMedia.length).length,
-    activeTechnicians:new Set(operations.filter(op => ['Asignado','En proceso','En incidencia'].includes(op.status) && !/sin asignar/i.test(op.technician)).map(op => op.technician)).size
+    activeTechnicians:new Set(operations.filter(op => isActiveOperationStatus(op.status) && !/sin asignar/i.test(op.technician)).map(op => op.technician)).size
   };
 }
 export function primaryAction(operation, canAction){
