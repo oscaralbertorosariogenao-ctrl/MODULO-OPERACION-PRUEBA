@@ -11,7 +11,7 @@
    - Sin skipWaiting agresivo ni clients.claim automático.
    ========================================================================== */
 
-const SW_VERSION = "2026-08-13-v808.34-estabilizacion-p0";
+const SW_VERSION = "2026-08-13-v808.35-design-system-foundation";
 
 const STATIC_CACHE = `loteka-static-${SW_VERSION}`;
 const HTML_CACHE = `loteka-html-${SW_VERSION}`;
@@ -62,6 +62,8 @@ const CORE_ASSETS = [
   "/assets/app/css/responsive.css",
   "/assets/app/css/tokens.css",
   "/assets/app/css/utilities.css",
+  "/assets/shared/css/go-design-tokens.css",
+  "/assets/web/css/design-system/go-components.css",
   "/assets/app/img/app-icon-192.png",
   "/assets/app/img/app-icon-512.png",
   "/assets/app/img/app-icon-maskable-512.png",
