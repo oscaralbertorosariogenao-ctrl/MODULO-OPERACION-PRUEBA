@@ -13,7 +13,7 @@
     - Nunca recarga solo. El usuario decide cuándo actualizar.
   */
 
-  var LOTEKA_HTML_VERSION = '2026-07-27-v805.18-desbloqueo-real';
+  var LOTEKA_HTML_VERSION = String(document.querySelector('meta[name="grupo-ortiz-build"]')?.content || '').trim();
   var VERSION_URL = '/version.json';
   var DISMISSED_KEY = 'loteka_update_dismissed_session_version';
   var APPLIED_KEY = 'loteka_update_applied_version';
