@@ -94,6 +94,14 @@
   --go-motion-standard: 220ms cubic-bezier(.2,.75,.25,1);
   --go-focus-ring: 0 0 0 3px rgba(57,169,232,.28);
 
+  /* Shell web oficial */
+  --go-shell-topbar-height: 3.875rem;
+  --go-shell-topbar-height-mobile: 3.625rem;
+  --go-shell-sidebar-width: 18.75rem;
+  --go-shell-sidebar-width-compact: 17.75rem;
+  --go-shell-content-pad-x: 1.375rem;
+  --go-shell-content-pad-y: 1.25rem;
+
   /*
    * Aliases de compatibilidad de la app móvil.
    * Mantienen exactamente el contrato visual existente mientras los consumidores
