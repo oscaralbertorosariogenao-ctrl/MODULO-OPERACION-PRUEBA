@@ -18,6 +18,9 @@ INDEX = ROOT / 'index.html'
 APP = ROOT / 'app.html'
 PANTALLA = ROOT / 'pantalla.html'
 CSS_BUNDLE = ROOT / 'assets/web/css/grupo-ortiz-web.bundle.css'
+DESIGN_TOKENS = ROOT / 'assets/shared/css/go-design-tokens.css'
+WEB_COMPONENTS = ROOT / 'assets/web/css/design-system/go-components.css'
+APP_TOKENS = ROOT / 'assets/app/css/tokens.css'
 
 
 class RefParser(HTMLParser):
@@ -95,7 +98,7 @@ def version_check() -> tuple[bool, dict]:
 def main() -> int:
     failures: list[str] = []
     warnings: list[str] = []
-    for required in (INDEX, APP, PANTALLA, ROOT / 'version.json', ROOT / 'service-worker.js'):
+    for required in (INDEX, APP, PANTALLA, ROOT / 'version.json', ROOT / 'service-worker.js', DESIGN_TOKENS, WEB_COMPONENTS, APP_TOKENS):
         if not required.is_file():
             failures.append(f'Falta {required.relative_to(ROOT)}')
     if failures:
@@ -120,7 +123,10 @@ def main() -> int:
     js_failures = check_js(index_scripts + app_js + api_js + [ROOT / 'service-worker.js'])
     failures.extend(js_failures)
 
-    css_failures = check_css(CSS_BUNDLE)
+    css_paths = [CSS_BUNDLE, DESIGN_TOKENS, WEB_COMPONENTS] + list((ROOT / 'assets/app/css').rglob('*.css'))
+    css_failures = []
+    for css_path in sorted(set(path for path in css_paths if path.is_file())):
+        css_failures.extend(check_css(css_path))
     failures.extend(css_failures)
 
     index_text = INDEX.read_text(encoding='utf-8')
@@ -150,6 +156,47 @@ def main() -> int:
         failures.append('/api/send-push todavía acepta/envía subscriptions arbitrarias desde el cliente.')
 
     sw_text = (ROOT / 'service-worker.js').read_text(encoding='utf-8')
+
+    # Design System compartido: fuente única de tokens + componentes web opt-in.
+    design_text = DESIGN_TOKENS.read_text(encoding='utf-8')
+    components_text = WEB_COMPONENTS.read_text(encoding='utf-8')
+    app_tokens_text = APP_TOKENS.read_text(encoding='utf-8')
+    required_tokens = (
+        '--go-brand-navy:', '--go-brand-blue:', '--go-brand-cyan:',
+        '--go-color-bg:', '--go-color-surface:', '--go-color-border:',
+        '--go-color-text:', '--go-color-text-muted:',
+        '--go-color-success:', '--go-color-warning:', '--go-color-danger:', '--go-color-info:',
+        '--go-space-1:', '--go-space-4:', '--go-space-8:',
+        '--go-radius-sm:', '--go-radius-md:', '--go-radius-lg:',
+        '--go-shadow-subtle:', '--go-shadow-card:', '--go-shadow-floating:',
+        '--go-z-sticky:', '--go-z-dropdown:', '--go-z-overlay:', '--go-z-modal:', '--go-z-toast:',
+        '--go-control-min-height:'
+    )
+    for token in required_tokens:
+        if token not in design_text:
+            failures.append(f'Falta token oficial del Design System: {token}')
+
+    if "@import url('../../shared/css/go-design-tokens.css')" not in app_tokens_text:
+        failures.append('La app móvil no consume la fuente compartida oficial de tokens.')
+
+    expected_design_refs = {
+        INDEX: ('./assets/shared/css/go-design-tokens.css', './assets/web/css/design-system/go-components.css'),
+        PANTALLA: ('./assets/shared/css/go-design-tokens.css', './assets/web/css/design-system/go-components.css'),
+    }
+    for html_path, refs in expected_design_refs.items():
+        styles = set(parsed[html_path].styles)
+        for ref in refs:
+            if ref not in styles:
+                failures.append(f'{html_path.name} no carga el Design System requerido: {ref}')
+
+    if '.go-ui-btn' not in components_text or '.go-ui-card' not in components_text or '.go-ui-state' not in components_text:
+        failures.append('La capa de componentes web del Design System está incompleta.')
+    if re.search(r'(^|\n)\s*(body|html|button|input|select|textarea|\.btn|\.card)\s*[{,]', components_text):
+        failures.append('Los componentes nuevos contienen selectores globales/legacy que podrían alterar el runtime actual.')
+
+    if '/assets/shared/css/go-design-tokens.css' not in sw_text or '/assets/web/css/design-system/go-components.css' not in sw_text:
+        failures.append('Los assets del Design System no están incluidos en CORE_ASSETS del Service Worker.')
+
     if '/assets/app/js/operation-status.js' not in sw_text:
         failures.append('El módulo canónico de estados no está incluido en CORE_ASSETS del Service Worker.')
     if 'LOTEKA_ACTIVATE_NEW_VERSION' not in sw_text or 'userRequestedActivation' not in sw_text:
@@ -175,7 +222,10 @@ def main() -> int:
         'api_js_files_checked': len(api_js),
         'local_html_refs_checked': len(set(local_refs)),
         'js_syntax_failures': len(js_failures),
+        'css_files_checked': len(set(path for path in css_paths if path.is_file())),
         'css_parser_errors': len(css_failures),
+        'design_system_tokens_bytes': DESIGN_TOKENS.stat().st_size,
+        'design_system_components_bytes': WEB_COMPONENTS.stat().st_size,
         'inline_css_bytes': len(inline_css.encode('utf-8')) if inline_css else 0,
         'external_css_bundle_bytes': CSS_BUNDLE.stat().st_size if CSS_BUNDLE.is_file() else 0,
         'inline_css_matches_external_bundle': inline_matches_bundle,
