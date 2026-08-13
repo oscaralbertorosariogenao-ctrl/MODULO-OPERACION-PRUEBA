@@ -1,0 +1,164 @@
+/*
+ * Grupo Ortiz · Design System · Tokens compartidos
+ * Fuente oficial para nuevas interfaces web/móvil.
+ *
+ * Reglas de compatibilidad:
+ * - No redefine variables legacy genéricas de la web (--bg, --panel, --primary, etc.).
+ * - Conserva aliases usados actualmente por la app móvil para migración progresiva.
+ * - Los componentes nuevos deben preferir los tokens --go-* semánticos/oficiales.
+ */
+
+:root {
+  /* Marca */
+  --go-brand-navy-950: #061d33;
+  --go-brand-navy-900: #082844;
+  --go-brand-navy-800: #0b3a67;
+  --go-brand-navy: #073b63;
+  --go-brand-blue: #078fbd;
+  --go-brand-blue-600: #1479c9;
+  --go-brand-cyan: #19b7df;
+  --go-brand-sky: #39a9e8;
+  --go-brand-sky-soft: #e8f6ff;
+  --go-white: #ffffff;
+
+  /* Superficies y texto */
+  --go-color-bg: #f3f7fb;
+  --go-color-surface: #ffffff;
+  --go-color-surface-subtle: #f8fbfd;
+  --go-color-surface-raised: #ffffff;
+  --go-color-border: #dce7f0;
+  --go-color-border-strong: #c3dfed;
+  --go-color-text: #13283b;
+  --go-color-text-strong: #082844;
+  --go-color-text-muted: #607487;
+
+  /* Estados */
+  --go-color-success: #178a55;
+  --go-color-success-soft: #e7f7ef;
+  --go-color-warning: #d97706;
+  --go-color-warning-soft: #fff3df;
+  --go-color-danger: #c53b3b;
+  --go-color-danger-soft: #fff0f0;
+  --go-color-info: #176fb4;
+  --go-color-info-soft: #eaf5ff;
+
+  /* Tipografía */
+  --go-font-sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --go-text-xs: .75rem;
+  --go-text-sm: .875rem;
+  --go-text-md: 1rem;
+  --go-text-lg: 1.125rem;
+  --go-text-xl: 1.35rem;
+  --go-text-2xl: 1.75rem;
+  --go-text-3xl: 2.15rem;
+  --go-weight-medium: 600;
+  --go-weight-semibold: 700;
+  --go-weight-bold: 800;
+  --go-weight-heavy: 900;
+
+  /* Espaciado: escala oficial */
+  --go-space-1: .25rem;
+  --go-space-2: .5rem;
+  --go-space-3: .75rem;
+  --go-space-4: 1rem;
+  --go-space-5: 1.25rem;
+  --go-space-6: 1.5rem;
+  --go-space-8: 2rem;
+  --go-space-10: 2.5rem;
+
+  /* Radios: escala reducida */
+  --go-radius-sm: .65rem;
+  --go-radius-md: 1rem;
+  --go-radius-lg: 1.35rem;
+  --go-radius-modal: 1.75rem;
+  --go-radius-pill: 999px;
+
+  /* Sombras: subtle / card / floating */
+  --go-shadow-subtle: 0 1px 2px rgba(6,29,51,.05), 0 4px 16px rgba(6,29,51,.06);
+  --go-shadow-card: 0 14px 35px rgba(6,29,51,.13);
+  --go-shadow-floating: 0 24px 70px rgba(6,29,51,.20);
+
+  /* Capas: escala oficial para código nuevo */
+  --go-z-base: 0;
+  --go-z-sticky: 100;
+  --go-z-dropdown: 200;
+  --go-z-overlay: 800;
+  --go-z-modal: 900;
+  --go-z-toast: 1000;
+  --go-z-critical: 1100;
+
+  /* Interacción / layout */
+  --go-control-min-height: 2.75rem; /* 44 px */
+  --go-content-max: 74rem;
+  --go-motion-fast: 160ms ease;
+  --go-motion-standard: 220ms cubic-bezier(.2,.75,.25,1);
+  --go-focus-ring: 0 0 0 3px rgba(57,169,232,.28);
+
+  /*
+   * Aliases de compatibilidad de la app móvil.
+   * Mantienen exactamente el contrato visual existente mientras los consumidores
+   * migran gradualmente a los nombres semánticos oficiales de arriba.
+   */
+  --go-navy-950: var(--go-brand-navy-950);
+  --go-navy-900: var(--go-brand-navy-900);
+  --go-navy-800: var(--go-brand-navy-800);
+  --go-blue-700: #0b5fa5;
+  --go-blue-600: var(--go-brand-blue-600);
+  --go-sky-500: var(--go-brand-sky);
+  --go-sky-100: var(--go-brand-sky-soft);
+  --go-bg: var(--go-color-bg);
+  --go-surface: var(--go-color-surface);
+  --go-surface-2: var(--go-color-surface-subtle);
+  --go-border: var(--go-color-border);
+  --go-text: var(--go-color-text);
+  --go-muted: var(--go-color-text-muted);
+  --go-success: var(--go-color-success);
+  --go-success-soft: var(--go-color-success-soft);
+  --go-warning: var(--go-color-warning);
+  --go-warning-soft: var(--go-color-warning-soft);
+  --go-danger: var(--go-color-danger);
+  --go-danger-soft: var(--go-color-danger-soft);
+  --go-info: var(--go-color-info);
+  --go-info-soft: var(--go-color-info-soft);
+  --space-1: var(--go-space-1);
+  --space-2: var(--go-space-2);
+  --space-3: var(--go-space-3);
+  --space-4: var(--go-space-4);
+  --space-5: var(--go-space-5);
+  --space-6: var(--go-space-6);
+  --space-8: var(--go-space-8);
+  --space-10: var(--go-space-10);
+  --radius-sm: var(--go-radius-sm);
+  --radius-md: var(--go-radius-md);
+  --radius-lg: var(--go-radius-lg);
+  --radius-xl: var(--go-radius-modal);
+  --radius-pill: var(--go-radius-pill);
+  --shadow-sm: var(--go-shadow-subtle);
+  --shadow-md: var(--go-shadow-card);
+  --shadow-lg: var(--go-shadow-floating);
+  --font-sans: var(--go-font-sans);
+  --text-xs: var(--go-text-xs);
+  --text-sm: var(--go-text-sm);
+  --text-md: var(--go-text-md);
+  --text-lg: var(--go-text-lg);
+  --text-xl: var(--go-text-xl);
+  --text-2xl: var(--go-text-2xl);
+  --text-3xl: var(--go-text-3xl);
+}
+
+/* Variante oscura para superficies que la adopten explícitamente (p. ej. monitoreo). */
+[data-go-theme="dark"] {
+  --go-color-bg: #020817;
+  --go-color-surface: #07172a;
+  --go-color-surface-subtle: #0f233a;
+  --go-color-surface-raised: #102940;
+  --go-color-border: rgba(148,163,184,.20);
+  --go-color-border-strong: rgba(148,163,184,.30);
+  --go-color-text: #eaf6ff;
+  --go-color-text-strong: #ffffff;
+  --go-color-text-muted: #94a3b8;
+  --go-focus-ring: 0 0 0 3px rgba(56,189,248,.30);
+  --go-shadow-subtle: 0 4px 18px rgba(0,0,0,.18);
+  --go-shadow-card: 0 18px 48px rgba(0,0,0,.28);
+  --go-shadow-floating: 0 28px 80px rgba(0,0,0,.38);
+}
