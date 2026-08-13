@@ -1,4 +1,15 @@
 
+function syncSidebarGroupAria(){
+  document.querySelectorAll('.sidebar-group').forEach((group, index) => {
+    const button = group.querySelector(':scope > .sidebar-group-btn');
+    const menu = group.querySelector(':scope > .sidebar-group-menu');
+    if(!button || !menu) return;
+    if(!menu.id) menu.id = `go-sidebar-group-${group.dataset.section || index}`;
+    button.setAttribute('aria-controls', menu.id);
+    button.setAttribute('aria-expanded', group.classList.contains('is-open') ? 'true' : 'false');
+  });
+}
+
 function setSidebarSectionOpen(sectionName, forceOpen){
   const groups = document.querySelectorAll('.sidebar-group');
   groups.forEach(group => {
@@ -6,6 +17,7 @@ function setSidebarSectionOpen(sectionName, forceOpen){
     if (forceOpen && !isTarget) group.classList.remove('is-open');
     if (isTarget) group.classList.add('is-open');
   });
+  syncSidebarGroupAria();
 }
 
 function toggleSidebarSection(sectionName){
@@ -14,6 +26,7 @@ function toggleSidebarSection(sectionName){
   const willOpen = !target.classList.contains('is-open');
   document.querySelectorAll('.sidebar-group').forEach(group => group.classList.remove('is-open'));
   if(willOpen) target.classList.add('is-open');
+  syncSidebarGroupAria();
 }
 
 function sidebarSectionForView(vista){
@@ -28,14 +41,53 @@ function sidebarSectionForView(vista){
   return 'inventario';
 }
 
+function closeSidebarOnMobile(){
+  try{
+    if(window.matchMedia && window.matchMedia('(max-width: 900px)').matches){
+      document.body.classList.add('ltk-sidebar-collapsed');
+      localStorage.setItem('loteka-sidebar-collapsed','1');
+      if(typeof window.ltkSyncSidebarShell === 'function') window.ltkSyncSidebarShell();
+    }
+  }catch(e){}
+}
+
 function activateSidebarLink(el, vista){
   document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
   if(el && el.classList) el.classList.add('active');
   const section = sidebarSectionForView(vista);
   if(section) setSidebarSectionOpen(section, true);
+  closeSidebarOnMobile();
+}
+
+function setupSidebarLinkAccessibility(){
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    const href = link.getAttribute('href');
+    if(!href){
+      link.setAttribute('role','button');
+      link.setAttribute('tabindex','0');
+    }
+    if(link.dataset.goKeyboardReady === '1') return;
+    link.dataset.goKeyboardReady = '1';
+    link.addEventListener('keydown', event => {
+      if(event.key !== 'Enter' && event.key !== ' ') return;
+      if(event.key === ' ' || !href){
+        event.preventDefault();
+        link.click();
+      }
+    });
+  });
 }
 
 function initSidebarNavigation(){
+  const sidebar = document.querySelector('.sidebar');
+  if(sidebar){
+    if(!sidebar.id) sidebar.id='goMainSidebar';
+    sidebar.setAttribute('role','navigation');
+    sidebar.setAttribute('aria-label','Navegación principal');
+  }
+  const content = document.querySelector('.content');
+  if(content) content.setAttribute('role','main');
+
   const firstActive = document.querySelector('.sidebar-link.active');
   if(firstActive){
     const parent = firstActive.closest('.sidebar-group')?.dataset.section;
@@ -43,6 +95,8 @@ function initSidebarNavigation(){
   } else {
     const home=document.getElementById('navHome'); if(home) home.classList.add('active');
   }
+  syncSidebarGroupAria();
+  setupSidebarLinkAccessibility();
 }
 
 document.addEventListener('DOMContentLoaded', initSidebarNavigation);
@@ -67,13 +121,13 @@ function cambiarVista(vista, el){
 
   if(vista==='agencias' && typeof renderAgencias === 'function') renderAgencias();
   if(vista==='grupos' && typeof renderGrupos === 'function') renderGrupos();
-  if(vista==='control-despachos' && typeof lotekaRenderControlDespachos === 'function') lotekaRenderControlDespachos();  if(vista==='home' && typeof agencyMapRefresh === 'function') setTimeout(() => agencyMapRefresh(agencias), 120);
+  if(vista==='control-despachos' && typeof lotekaRenderControlDespachos === 'function') lotekaRenderControlDespachos();
+  if(vista==='home' && typeof agencyMapRefresh === 'function') setTimeout(() => agencyMapRefresh(agencias), 120);
   if(vista==='dashboard-rrhh' && typeof rrhdRender === 'function') rrhdRender();
   if(vista==='solicitudes' && typeof hrxSyncSolicitudesFromBackendCero === 'function') hrxSyncSolicitudesFromBackendCero(false); else if(vista==='solicitudes' && typeof hrxApplyFilters === 'function') hrxApplyFilters();
   if(vista==='operadoras' && typeof opxApplyFilters === 'function') opxApplyFilters();
   if(vista==='historial-rrhh' && typeof hrhApplyFilters === 'function') hrhApplyFilters();
 }
-
 
 const OPX_STORAGE_KEY = 'loteka_operadoras_module_v1';
 let opxOperadoras = [];
