@@ -1,14 +1,15 @@
 {
-  "version": "2026-08-13-v808.36-shell-unification",
-  "name": "v808.36 · Shell · Unificación visual y responsive",
+  "version": "2026-08-13-v808.37-operaciones-domain",
+  "name": "v808.37 · Operaciones · Migración de dominio",
   "released_at": "2026-08-13",
   "changes": [
-    "Migra el shell web activo a los tokens oficiales --go-* sin reescribir módulos de negocio",
-    "Unifica topbar, sidebar, identidad de usuario, contenedor, headers, cards, formularios, tablas y modales base",
-    "Reduce sombras, radios y colores arbitrarios del shell y adopta la escala formal de z-index para topbar, dropdowns y overlays",
-    "Convierte el sidebar móvil en drawer con backdrop, cierre por selección y tecla Escape",
-    "Añade ARIA y navegación por teclado a grupos y enlaces legacy del sidebar sin cambiar sus handlers",
-    "Mantiene las reglas responsive específicas de cada dominio y los flujos de navegación existentes",
-    "Sincroniza las fuentes CSS modificadas con el bundle e inline actuales; la extracción total del CSS queda para Fase 5 Performance"
+    "Introduce GOApp.operations.domain como ownership progresivo del listado, filtros, refresh y modales modernos de Operaciones",
+    "Centraliza el render activo del listado y reduce listeners/renderizados duplicados mediante debounce controlado",
+    "Normaliza semánticamente Reportado, Asignado, En proceso, En incidencia, Completado y Resuelto por soporte remoto en Operaciones y reportes",
+    "Sustituye Restablecer datos por acciones no destructivas de Actualizar y Limpiar filtros",
+    "Migra asignación y soporte remoto a diálogos accesibles con focus trap, Escape, restauración de foco y prevención de doble submit",
+    "Añade una hoja CSS oficial scopeada para Operaciones basada en el Design System, sin nuevos !important ni z-index arbitrarios",
+    "Mantiene intactos Rutas, Levantamientos, Mantenimiento Preventivo, Control Técnico, contratos R2 y RPC verificados",
+    "Restaura la prueba de regresión del Shell en la base instalada y añade pruebas específicas de la Fase 4"
   ]
 }
