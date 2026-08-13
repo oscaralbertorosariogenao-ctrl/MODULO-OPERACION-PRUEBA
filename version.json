@@ -1,15 +1,14 @@
 {
-  "version": "2026-08-13-v808.35-design-system-foundation",
-  "name": "v808.35 · Design System · Fundación compartida",
+  "version": "2026-08-13-v808.36-shell-unification",
+  "name": "v808.36 · Shell · Unificación visual y responsive",
   "released_at": "2026-08-13",
   "changes": [
-    "Crea una fuente oficial y compartida de design tokens para web y app móvil sin sustituir visuales legacy de golpe",
-    "Centraliza marca, superficies, estados, tipografía, espaciado, radios, sombras, z-index, motion y targets táctiles de 44 px",
-    "La app móvil consume los tokens compartidos conservando aliases compatibles con sus valores visuales actuales",
-    "Añade componentes web opt-in con prefijo go-ui-* para headers, toolbars, cards, botones, formularios, badges, tablas, estados, modales, toasts y skeletons",
-    "Prepara variante dark del Design System para pantalla.html sin reemplazar su diseño oscuro existente",
-    "Precachea los nuevos assets visuales en el Service Worker para conservar funcionamiento offline",
-    "Amplía pruebas y validación CSS para impedir colisiones globales y detectar regresiones del contrato visual",
-    "No migra todavía módulos legacy, no elimina !important/z-index históricos y no extrae aún el CSS inline de index.html"
+    "Migra el shell web activo a los tokens oficiales --go-* sin reescribir módulos de negocio",
+    "Unifica topbar, sidebar, identidad de usuario, contenedor, headers, cards, formularios, tablas y modales base",
+    "Reduce sombras, radios y colores arbitrarios del shell y adopta la escala formal de z-index para topbar, dropdowns y overlays",
+    "Convierte el sidebar móvil en drawer con backdrop, cierre por selección y tecla Escape",
+    "Añade ARIA y navegación por teclado a grupos y enlaces legacy del sidebar sin cambiar sus handlers",
+    "Mantiene las reglas responsive específicas de cada dominio y los flujos de navegación existentes",
+    "Sincroniza las fuentes CSS modificadas con el bundle e inline actuales; la extracción total del CSS queda para Fase 5 Performance"
   ]
 }
