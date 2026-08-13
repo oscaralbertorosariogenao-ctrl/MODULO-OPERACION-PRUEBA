@@ -1,13 +1,15 @@
 {
-  "version": "2026-08-12-v808.33-rutas-render-single-layer",
-  "name": "v808.33 · Rutas · Render estable por color",
-  "released_at": "2026-08-12",
+  "version": "2026-08-13-v808.34-estabilizacion-p0",
+  "name": "v808.34 · Estabilización P0 · Auth, estados, Push y versiones",
+  "released_at": "2026-08-13",
   "changes": [
-    "Corrige el fallo de v808.32 donde OSRM completaba los tramos pero MapLibre podía rechazar el render por múltiples capas filtradas",
-    "Mapa: todos los tramos usan un único GeoJSON y una única capa de línea con color data-driven por la propiedad color",
-    "Mapa: conserva un color distinto para cada Agencia N → Agencia N+1 y el orden exacto definido por el usuario",
-    "Mapa: mantiene contorno blanco y oculta la guía recta cuando el recorrido vial se renderiza correctamente",
-    "Diagnóstico: conserva el error real de MapLibre en GOOperationalRoutes.diagnostics().roadRenderError",
-    "No modifica OSRM, orden de agencias, Supabase, Control técnico, Levantamientos, Jotform ni R2"
+    "Centraliza los estados canónicos de Operaciones y corrige la inconsistencia Asignado/Asignada en la app móvil",
+    "Trata Completado y Resuelto por soporte remoto como estados terminales mediante helpers compartidos",
+    "Elimina la sesión demo y las credenciales ficticias del runtime de producción; Supabase Auth queda como única identidad autoritativa",
+    "Asegura /api/send-push con autenticación, validación estricta, límite de payload, rate limiting y fail-closed mientras no exista un resolver verificado de subscriptions",
+    "Unifica la versión de index, app móvil, Service Worker y actualizador PWA desde version.json",
+    "Elimina builds globales obsoletos en los helpers de caché y Despachos; ambos consumen ahora el build canónico generado en index.html",
+    "Añade el módulo canónico de estados al precache de la app móvil sin cambiar el flujo seguro de activación del Service Worker",
+    "No modifica Rutas, Levantamientos, Inventario, Taller, RPC, tablas, RLS ni el flujo de evidencias R2"
   ]
 }
