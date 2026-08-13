@@ -1,15 +1,15 @@
 {
-  "version": "2026-08-13-v808.34-estabilizacion-p0",
-  "name": "v808.34 · Estabilización P0 · Auth, estados, Push y versiones",
+  "version": "2026-08-13-v808.35-design-system-foundation",
+  "name": "v808.35 · Design System · Fundación compartida",
   "released_at": "2026-08-13",
   "changes": [
-    "Centraliza los estados canónicos de Operaciones y corrige la inconsistencia Asignado/Asignada en la app móvil",
-    "Trata Completado y Resuelto por soporte remoto como estados terminales mediante helpers compartidos",
-    "Elimina la sesión demo y las credenciales ficticias del runtime de producción; Supabase Auth queda como única identidad autoritativa",
-    "Asegura /api/send-push con autenticación, validación estricta, límite de payload, rate limiting y fail-closed mientras no exista un resolver verificado de subscriptions",
-    "Unifica la versión de index, app móvil, Service Worker y actualizador PWA desde version.json",
-    "Elimina builds globales obsoletos en los helpers de caché y Despachos; ambos consumen ahora el build canónico generado en index.html",
-    "Añade el módulo canónico de estados al precache de la app móvil sin cambiar el flujo seguro de activación del Service Worker",
-    "No modifica Rutas, Levantamientos, Inventario, Taller, RPC, tablas, RLS ni el flujo de evidencias R2"
+    "Crea una fuente oficial y compartida de design tokens para web y app móvil sin sustituir visuales legacy de golpe",
+    "Centraliza marca, superficies, estados, tipografía, espaciado, radios, sombras, z-index, motion y targets táctiles de 44 px",
+    "La app móvil consume los tokens compartidos conservando aliases compatibles con sus valores visuales actuales",
+    "Añade componentes web opt-in con prefijo go-ui-* para headers, toolbars, cards, botones, formularios, badges, tablas, estados, modales, toasts y skeletons",
+    "Prepara variante dark del Design System para pantalla.html sin reemplazar su diseño oscuro existente",
+    "Precachea los nuevos assets visuales en el Service Worker para conservar funcionamiento offline",
+    "Amplía pruebas y validación CSS para impedir colisiones globales y detectar regresiones del contrato visual",
+    "No migra todavía módulos legacy, no elimina !important/z-index históricos y no extrae aún el CSS inline de index.html"
   ]
 }
