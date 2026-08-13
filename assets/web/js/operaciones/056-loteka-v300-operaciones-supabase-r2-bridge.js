@@ -93,6 +93,25 @@
     if(v.includes('asign')) return 'Asignado';
     return 'Reportado';
   }
+  const TERMINAL_OPERATION_STATUSES = Object.freeze(['Completado','Resuelto por soporte remoto']);
+  const ACTIVE_OPERATION_STATUSES = Object.freeze(['Asignado','En proceso','En incidencia']);
+  function isTerminalOperationStatus(value){ return TERMINAL_OPERATION_STATUSES.includes(normalizeStatus(value)); }
+  function isActiveOperationStatus(value){ return ACTIVE_OPERATION_STATUSES.includes(normalizeStatus(value)); }
+
+  // Fuente canónica de estados para la web moderna. El legacy anterior conserva
+  // sus adaptadores hasta migrarlo por dominio, pero los módulos nuevos deben usar esto.
+  const operationStatusApi = Object.freeze({
+    normalizeOperationStatus: normalizeStatus,
+    isTerminalOperationStatus,
+    isActiveOperationStatus,
+    terminalStatuses: TERMINAL_OPERATION_STATUSES,
+    activeStatuses: ACTIVE_OPERATION_STATUSES
+  });
+  if(window.GOApp){
+    window.GOApp.operations = window.GOApp.operations || {};
+    window.GOApp.operations.status = operationStatusApi;
+    try{ window.GOApp.modules && window.GOApp.modules.register('operations.status', { version:'1.0.0', api:operationStatusApi }); }catch(_error){}
+  }
   function normalizeAgency(value){
     if(typeof normalizeAgencyNumber === 'function') return normalizeAgencyNumber(value);
     const d = txt(value).replace(/\D/g,'');
