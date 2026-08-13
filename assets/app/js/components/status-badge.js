@@ -1,8 +1,8 @@
 import { el } from './dom.js';
-import { normalizeStatus } from '../services/operations-service.js';
+import { normalizeOperationStatus, isTerminalOperationStatus } from '../operation-status.js';
 export function statusBadge(status){
-  const normalized=normalizeStatus(status);
-  const tone=normalized === 'Completado' || normalized === 'Resuelto por soporte remoto' ? 'complete'
+  const normalized=normalizeOperationStatus(status);
+  const tone=isTerminalOperationStatus(normalized) ? 'complete'
     : normalized === 'En proceso' ? 'progress'
     : normalized === 'En incidencia' ? 'danger'
     : normalized === 'Asignado' ? 'assigned' : 'pending';
