@@ -2,7 +2,7 @@
 
 <html class="ltk-auth-preboot" lang="es" data-go-theme="light">
 <head>
-  <meta name="grupo-ortiz-build" content="2026-08-13-v808.36-shell-unification">
+  <meta name="grupo-ortiz-build" content="2026-08-13-v808.37-operaciones-domain">
 
 <style id="grupo-ortiz-web-bundle-inline">
 /* ===== 001 · loteka-v59-auth-critical-no-flash · assets/web/css/auth/001-loteka-v59-auth-critical-no-flash.css ===== */
@@ -9580,6 +9580,491 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
   .ltk-access-readonly-note{margin:14px 0;border:1px solid #f3d7a4;background:#fff9eb;color:#8a5b13;border-radius:14px;padding:11px 13px;font-size:11px;font-weight:850;line-height:1.4}
   @media(max-width:980px){.ltk-access-shell{grid-template-columns:1fr}.ltk-access-role-list{max-height:270px}.ltk-perm-groups{grid-template-columns:1fr}.ltk-access-assign-grid,.ltk-access-scope-row{grid-template-columns:1fr}.ltk-access-assign button{min-height:44px}}
   @media(max-width:680px){.ltk-access-tabs{overflow:auto}.ltk-access-tab{white-space:nowrap}.ltk-access-form-grid,.ltk-access-summary,.ltk-position-form{grid-template-columns:1fr}.ltk-access-editor-head,.ltk-access-editor-foot{flex-direction:column;align-items:stretch}.ltk-access-editor-foot .left,.ltk-access-editor-foot .right{width:100%}.ltk-access-editor-foot button{flex:1}.ltk-position-row{grid-template-columns:1fr}}
+
+/* ===== 077 · go-operations-domain · assets/web/css/operaciones/070-go-operations-domain.css ===== */
+
+/*
+ * Grupo Ortiz · Operaciones · Dominio oficial
+ * Fase 4: migración progresiva del núcleo de Operaciones al Design System.
+ * Alcance: dashboard/listado/historial/reportes/catálogos de Operaciones.
+ * No modifica Rutas, Levantamientos, Mantenimiento Preventivo ni Control Técnico.
+ */
+
+.go-ops-domain{
+  --go-ops-accent:var(--go-brand-blue);
+  --go-ops-soft:var(--go-brand-sky-soft);
+  color:var(--go-color-text);
+}
+
+.go-ops-domain .ops-scope{
+  display:grid;
+  gap:var(--go-space-5);
+  min-width:0;
+}
+
+.go-ops-domain .ops-scope .topbar,
+.go-ops-domain .ops-scope .catalog-topbar{
+  margin:0;
+  padding:0 0 var(--go-space-4);
+  border-bottom:1px solid var(--go-color-border);
+  background:transparent;
+  box-shadow:none;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:var(--go-space-4);
+}
+
+.go-ops-domain .ops-scope .topbar h2,
+.go-ops-domain .ops-scope .catalog-topbar h2{
+  margin:0;
+  color:var(--go-color-text-strong);
+  font-size:clamp(1.35rem,1.8vw,1.8rem);
+  line-height:1.15;
+  letter-spacing:-.025em;
+  font-weight:var(--go-weight-heavy);
+}
+
+.go-ops-domain .ops-scope .topbar p,
+.go-ops-domain .ops-scope .catalog-topbar p{
+  margin:.42rem 0 0;
+  max-width:58rem;
+  color:var(--go-color-text-muted);
+  font-size:var(--go-text-sm);
+  line-height:1.55;
+}
+
+.go-ops-domain .ops-scope .stats,
+.go-ops-domain .ops-scope .mini-stats,
+.go-ops-domain .ops-scope .history-highlight{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:var(--go-space-3);
+  margin:0;
+}
+
+.go-ops-domain .ops-scope .stat-card,
+.go-ops-domain .ops-scope .mini-stat{
+  position:relative;
+  min-width:0;
+  padding:var(--go-space-4);
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-md);
+  background:var(--go-color-surface);
+  box-shadow:var(--go-shadow-subtle);
+  overflow:hidden;
+}
+
+.go-ops-domain .ops-scope .stat-card::before,
+.go-ops-domain .ops-scope .mini-stat::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:3px;
+  background:var(--go-ops-accent);
+  opacity:.72;
+}
+
+.go-ops-domain .ops-scope .stat-card span,
+.go-ops-domain .ops-scope .mini-stat span{
+  display:block;
+  color:var(--go-color-text-muted);
+  font-size:var(--go-text-xs);
+  font-weight:var(--go-weight-bold);
+  line-height:1.35;
+}
+
+.go-ops-domain .ops-scope .stat-card strong,
+.go-ops-domain .ops-scope .mini-stat strong{
+  display:block;
+  margin-top:.35rem;
+  color:var(--go-color-text-strong);
+  font-size:1.65rem;
+  line-height:1;
+  font-weight:var(--go-weight-heavy);
+  font-variant-numeric:tabular-nums;
+}
+
+.go-ops-domain .ops-scope .panel,
+.go-ops-domain .ops-scope .report-box{
+  margin:0;
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-lg);
+  background:var(--go-color-surface);
+  box-shadow:var(--go-shadow-subtle);
+  overflow:hidden;
+}
+
+.go-ops-domain .ops-scope .panel-header,
+.go-ops-domain .ops-scope .report-box-header{
+  min-height:auto;
+  padding:var(--go-space-4) var(--go-space-5);
+  border-bottom:1px solid var(--go-color-border);
+  background:var(--go-color-surface-subtle);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--go-space-3);
+  flex-wrap:wrap;
+}
+
+.go-ops-domain .ops-scope .panel-header h3,
+.go-ops-domain .ops-scope .report-box-header h4{
+  margin:0;
+  color:var(--go-color-text-strong);
+  font-size:var(--go-text-md);
+  font-weight:var(--go-weight-heavy);
+}
+
+.go-ops-list-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:var(--go-space-2);
+  flex-wrap:wrap;
+}
+
+.go-ops-result-count{
+  display:inline-flex;
+  min-height:2.35rem;
+  align-items:center;
+  padding:.5rem .72rem;
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-pill);
+  background:var(--go-color-surface);
+  color:var(--go-color-text-muted);
+  font-size:var(--go-text-xs);
+  font-weight:var(--go-weight-bold);
+  white-space:nowrap;
+}
+
+.go-ops-domain .ops-scope .filters{
+  padding:var(--go-space-4) var(--go-space-5);
+  margin:0;
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:var(--go-space-3);
+  align-items:end;
+  border-bottom:1px solid var(--go-color-border);
+  background:var(--go-color-surface);
+}
+
+.go-ops-filter-field{
+  display:grid;
+  gap:.38rem;
+  min-width:0;
+}
+
+.go-ops-filter-field > span{
+  color:var(--go-color-text-muted);
+  font-size:.68rem;
+  font-weight:var(--go-weight-heavy);
+  letter-spacing:.045em;
+  text-transform:uppercase;
+}
+
+.go-ops-domain .ops-scope .filters .input,
+.go-ops-domain .ops-scope .filters .select{
+  width:100%;
+  min-width:0;
+  min-height:var(--go-control-min-height);
+  margin:0;
+  padding:.68rem .78rem;
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-sm);
+  background:var(--go-color-surface);
+  color:var(--go-color-text);
+  box-shadow:none;
+  font:inherit;
+  font-size:var(--go-text-sm);
+}
+
+.go-ops-domain .ops-scope .filters .input:focus,
+.go-ops-domain .ops-scope .filters .select:focus{
+  outline:none;
+  border-color:var(--go-brand-sky);
+  box-shadow:var(--go-focus-ring);
+}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) .table-wrap{
+  margin:0;
+  border:0;
+  border-radius:0;
+  overflow:auto;
+  background:var(--go-color-surface);
+  scrollbar-gutter:stable;
+}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) table{
+  width:100%;
+  min-width:980px;
+  border-collapse:separate;
+  border-spacing:0;
+}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) thead th{
+  position:sticky;
+  top:0;
+  z-index:var(--go-z-sticky);
+  padding:.72rem .82rem;
+  border-bottom:1px solid var(--go-color-border-strong);
+  background:var(--go-color-surface-subtle);
+  color:var(--go-color-text-muted);
+  font-size:.68rem;
+  line-height:1.25;
+  font-weight:var(--go-weight-heavy);
+  letter-spacing:.045em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) tbody td{
+  padding:.78rem .82rem;
+  border-bottom:1px solid var(--go-color-border);
+  color:var(--go-color-text);
+  font-size:var(--go-text-sm);
+  vertical-align:middle;
+}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) tbody tr:last-child td{border-bottom:0}
+.go-ops-domain .ops-scope :is(.panel,.report-box) tbody tr:hover td{background:#fbfdff}
+
+.go-ops-domain .ops-code-main{
+  color:var(--go-color-text-strong);
+  font-weight:var(--go-weight-heavy);
+}
+.go-ops-domain .ops-code-sub,
+.go-ops-domain .v808-timer,
+.go-ops-domain .v808-related{
+  display:block;
+  margin-top:.28rem;
+  color:var(--go-color-text-muted);
+  font-size:var(--go-text-xs);
+  line-height:1.35;
+}
+.go-ops-domain .ops-title-block strong{color:var(--go-color-text-strong)}
+.go-ops-domain .ops-title-block p{
+  margin:.25rem 0 0;
+  max-width:34rem;
+  color:var(--go-color-text-muted);
+  font-size:var(--go-text-xs);
+  line-height:1.4;
+}
+
+.go-ops-domain .v808-status{
+  display:inline-flex;
+  align-items:center;
+  min-height:1.75rem;
+  padding:.28rem .58rem;
+  border:1px solid transparent;
+  border-radius:var(--go-radius-pill);
+  font-size:.72rem;
+  line-height:1;
+  font-weight:var(--go-weight-heavy);
+  white-space:nowrap;
+}
+.go-ops-domain .v808-status.reported{background:var(--go-color-warning-soft);border-color:#f4d5a4;color:#98520a}
+.go-ops-domain .v808-status.assigned{background:var(--go-color-info-soft);border-color:#cce4f8;color:var(--go-color-info)}
+.go-ops-domain .v808-status.progress{background:var(--go-brand-sky-soft);border-color:#bee5f8;color:var(--go-brand-navy)}
+.go-ops-domain .v808-status.danger{background:var(--go-color-danger-soft);border-color:#f4cccc;color:var(--go-color-danger)}
+.go-ops-domain .v808-status.success{background:var(--go-color-success-soft);border-color:#c7ead7;color:var(--go-color-success)}
+
+.go-ops-domain .ops-row-actions{
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+  flex-wrap:wrap;
+}
+
+.go-ops-domain .ops-row-actions .btn{
+  min-height:2.25rem;
+  padding:.45rem .62rem;
+  border-radius:var(--go-radius-sm);
+  box-shadow:none;
+  white-space:nowrap;
+}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) .go-ops-empty-row td{
+  padding:0;
+  background:var(--go-color-surface);
+}
+.go-ops-empty{
+  min-height:15rem;
+  padding:var(--go-space-8) var(--go-space-5);
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:var(--go-color-text-muted);
+}
+.go-ops-empty > div{max-width:30rem}
+.go-ops-empty i{
+  width:3rem;
+  height:3rem;
+  margin:0 auto var(--go-space-3);
+  display:grid;
+  place-items:center;
+  border-radius:var(--go-radius-md);
+  background:var(--go-brand-sky-soft);
+  color:var(--go-brand-blue);
+  font-size:1.1rem;
+}
+.go-ops-empty strong{
+  display:block;
+  color:var(--go-color-text-strong);
+  font-size:var(--go-text-md);
+  font-weight:var(--go-weight-heavy);
+}
+.go-ops-empty p{margin:.45rem 0 0;font-size:var(--go-text-sm);line-height:1.5}
+
+.go-ops-domain .ops-scope :is(.panel,.report-box) .go-ops-loading-row td{padding:0}
+.go-ops-loading{
+  padding:var(--go-space-5);
+  display:grid;
+  gap:.65rem;
+}
+.go-ops-loading span{
+  display:block;
+  height:2.5rem;
+  border-radius:var(--go-radius-sm);
+  background:linear-gradient(90deg,#eef4f8 20%,#f8fbfd 42%,#eef4f8 64%);
+  background-size:240% 100%;
+  animation:goOpsSkeleton 1.35s ease-in-out infinite;
+}
+@keyframes goOpsSkeleton{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+.go-ops-modal-backdrop{
+  position:fixed;
+  inset:var(--go-fixed-header-offset,var(--go-shell-topbar-height)) 0 0;
+  z-index:var(--go-z-modal);
+  display:grid;
+  place-items:start center;
+  padding:var(--go-space-5);
+  overflow:auto;
+  background:rgba(6,29,51,.56);
+  backdrop-filter:blur(2px);
+}
+
+.go-ops-modal{
+  width:min(36rem,100%);
+  max-height:calc(100dvh - var(--go-fixed-header-offset,var(--go-shell-topbar-height)) - 2.5rem);
+  margin:0 auto;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  overflow:hidden;
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-modal);
+  background:var(--go-color-surface);
+  box-shadow:var(--go-shadow-floating);
+}
+
+.go-ops-modal__header{
+  padding:var(--go-space-4) var(--go-space-5);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--go-space-3);
+  border-bottom:1px solid var(--go-color-border);
+  background:var(--go-color-surface-subtle);
+}
+.go-ops-modal__header h3{
+  margin:0;
+  color:var(--go-color-text-strong);
+  font-size:var(--go-text-lg);
+  font-weight:var(--go-weight-heavy);
+}
+.go-ops-modal__close{
+  width:var(--go-control-min-height);
+  height:var(--go-control-min-height);
+  display:grid;
+  place-items:center;
+  border:1px solid transparent;
+  border-radius:var(--go-radius-sm);
+  background:transparent;
+  color:var(--go-color-text-muted);
+  cursor:pointer;
+  font-size:1.35rem;
+}
+.go-ops-modal__close:hover{background:var(--go-color-surface);border-color:var(--go-color-border)}
+.go-ops-modal__close:focus-visible{outline:none;box-shadow:var(--go-focus-ring)}
+
+.go-ops-modal__body{
+  padding:var(--go-space-5);
+  display:grid;
+  gap:var(--go-space-4);
+  overflow:auto;
+}
+.go-ops-modal__body .field{display:grid;gap:.42rem;margin:0}
+.go-ops-modal__body .field > span{color:var(--go-color-text-strong);font-size:var(--go-text-sm);font-weight:var(--go-weight-bold)}
+.go-ops-modal__body .select,
+.go-ops-modal__body .textarea,
+.go-ops-modal__body .input{
+  width:100%;
+  min-height:var(--go-control-min-height);
+  padding:.7rem .8rem;
+  border:1px solid var(--go-color-border);
+  border-radius:var(--go-radius-sm);
+  background:var(--go-color-surface);
+  color:var(--go-color-text);
+  font:inherit;
+}
+.go-ops-modal__body .textarea{min-height:7rem;resize:vertical}
+.go-ops-modal__body .select:focus,
+.go-ops-modal__body .textarea:focus,
+.go-ops-modal__body .input:focus{outline:none;border-color:var(--go-brand-sky);box-shadow:var(--go-focus-ring)}
+
+.go-ops-modal__actions{
+  padding-top:var(--go-space-2);
+  display:flex;
+  justify-content:flex-end;
+  gap:var(--go-space-2);
+  flex-wrap:wrap;
+}
+
+.go-ops-domain [aria-busy="true"]{cursor:wait}
+
+@media (max-width:1180px){
+  .go-ops-domain .ops-scope .stats,
+  .go-ops-domain .ops-scope .mini-stats,
+  .go-ops-domain .ops-scope .history-highlight{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .go-ops-domain .ops-scope .filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+@media (max-width:760px){
+  .go-ops-domain .ops-scope{gap:var(--go-space-4)}
+  .go-ops-domain .ops-scope .topbar,
+  .go-ops-domain .ops-scope .catalog-topbar{align-items:stretch;flex-direction:column}
+  .go-ops-domain .ops-scope .topbar .actions,
+  .go-ops-domain .ops-scope .catalog-topbar .actions{width:100%}
+  .go-ops-domain .ops-scope .topbar .btn,
+  .go-ops-domain .ops-scope .catalog-topbar .btn{width:100%;justify-content:center}
+  .go-ops-domain .ops-scope .stats,
+  .go-ops-domain .ops-scope .mini-stats,
+  .go-ops-domain .ops-scope .history-highlight{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .go-ops-domain .ops-scope .filters{grid-template-columns:1fr 1fr;padding:var(--go-space-4)}
+  .go-ops-domain .ops-scope .panel-header,
+  .go-ops-domain .ops-scope .report-box-header{padding:var(--go-space-4)}
+  .go-ops-list-toolbar{width:100%;justify-content:flex-start}
+  .go-ops-result-count{order:3;width:100%;justify-content:center}
+  .go-ops-modal-backdrop{inset:var(--go-fixed-header-offset,var(--go-shell-topbar-height-mobile)) 0 0;padding:var(--go-space-2)}
+  .go-ops-modal{max-height:calc(100dvh - var(--go-fixed-header-offset,var(--go-shell-topbar-height-mobile)) - 1rem);border-radius:var(--go-radius-lg)}
+}
+
+@media (max-width:480px){
+  .go-ops-domain .ops-scope .stats,
+  .go-ops-domain .ops-scope .mini-stats,
+  .go-ops-domain .ops-scope .history-highlight,
+  .go-ops-domain .ops-scope .filters{grid-template-columns:1fr}
+  .go-ops-domain .ops-scope .stat-card strong,
+  .go-ops-domain .ops-scope .mini-stat strong{font-size:1.45rem}
+  .go-ops-modal__body,
+  .go-ops-modal__header{padding:var(--go-space-4)}
+  .go-ops-modal__actions{display:grid;grid-template-columns:1fr}
+  .go-ops-modal__actions .btn{width:100%;justify-content:center}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .go-ops-loading span{animation:none}
+}
 </style>
 <link href="./assets/shared/css/go-design-tokens.css" rel="stylesheet"/>
 <link href="./assets/web/css/design-system/go-components.css" rel="stylesheet"/>
@@ -9600,7 +10085,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/>
-<meta content="2026-08-13-v808.36-shell-unification" name="loteka-build"/>
+<meta content="2026-08-13-v808.37-operaciones-domain" name="loteka-build"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Grupo Ortiz</title>
@@ -10398,7 +10883,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </section>
 </div>
 </div>
-<div class="hidden" id="vista-ops-dashboard"><div class="ops-scope"><div class="view" id="dashboardView">
+<div class="hidden go-ops-domain" id="vista-ops-dashboard"><div class="ops-scope"><div class="view" id="dashboardView">
 <section class="opdash-v46">
 <div class="opdash-hero-v46 opdash-hero-brand-v52">
 <img alt="" aria-hidden="true" class="opdash-brand-bg-v52" src="./assets/logos/grupo-ortiz-operaciones-wide.webp"/>
@@ -10513,16 +10998,16 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 </section>
 </div></div></div>
-<div class="hidden" id="vista-ops-operaciones"><div class="ops-scope"><div class="view" id="operationsView">
-<div class="topbar"><div><h2>Módulo de Operaciones</h2><p>Registro, seguimiento y control de averías y trabajos por agencia.</p></div><button class="btn btn-primary" id="openCreateModalBtn">+ Nueva operación</button></div>
-<div class="stats"><div class="stat-card"><span>Total de operaciones</span><strong id="statTotal">0</strong></div><div class="stat-card"><span>En proceso</span><strong id="statProceso">0</strong></div><div class="stat-card"><span>Completadas</span><strong id="statCompletado">0</strong></div><div class="stat-card"><span>Pendientes</span><strong id="statPendiente">0</strong></div></div>
-<div class="panel"><div class="panel-header"><h3>Listado de operaciones</h3><button class="btn btn-secondary" id="resetDataBtn">Restablecer datos</button></div><div class="filters"><select class="select" id="filterType"><option value="">Todos los tipos</option><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select><select class="select" id="filterStatus"><option value="">Todos los estados</option><option value="Pendiente">Pendiente</option><option value="Asignada">Asignada</option><option value="En proceso">En proceso</option><option value="Completado">Completado</option></select><input class="input" id="filterAgency" placeholder="Filtrar por agencia"/><input class="input" id="filterTech" placeholder="Filtrar por técnico / suplidor"/><input class="input" id="filterDateFrom" type="date"/><input class="input" id="filterDateTo" type="date"/></div><div class="table-wrap"><table><thead><tr><th>Código</th><th>Tipo</th><th>Título</th><th>Agencia</th><th>Asignado</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="operationsTableBody"></tbody></table></div></div>
+<div class="hidden go-ops-domain" id="vista-ops-operaciones"><div class="ops-scope"><div class="view" id="operationsView">
+<div class="topbar go-ops-page-head"><div><h2>Reportes y operaciones</h2><p>Registro, asignación, seguimiento y cierre de averías y trabajos por agencia.</p></div><div class="actions"><button class="btn btn-primary" id="openCreateModalBtn" type="button"><i class="fas fa-plus" aria-hidden="true"></i> Reportar problema</button></div></div>
+<div class="stats" aria-label="Resumen de operaciones"><div class="stat-card"><span>Total de operaciones</span><strong id="statTotal">0</strong></div><div class="stat-card"><span>Reportadas</span><strong id="statPendiente">0</strong></div><div class="stat-card"><span>Asignadas</span><strong id="statAsignada">0</strong></div><div class="stat-card"><span>En proceso</span><strong id="statProceso">0</strong></div><div class="stat-card"><span>Cerradas</span><strong id="statCompletado">0</strong></div></div>
+<div class="panel go-ops-list-panel"><div class="panel-header"><div><h3>Listado de operaciones</h3></div><div class="go-ops-list-toolbar"><span class="go-ops-result-count" id="operationsResultCount" aria-live="polite">0 resultados</span><button class="btn btn-secondary btn-sm" id="clearOperationsFiltersBtn" type="button"><i class="fas fa-filter-circle-xmark" aria-hidden="true"></i> Limpiar filtros</button><button class="btn btn-secondary btn-sm" id="refreshOperationsBtn" type="button"><i class="fas fa-rotate" aria-hidden="true"></i> Actualizar</button></div></div><div class="filters" aria-label="Filtros de operaciones"><label class="go-ops-filter-field" for="filterType"><span>Tipo</span><select class="select" id="filterType"><option value="">Todos</option><option value="Avería">Avería</option><option value="Trabajo">Trabajo</option></select></label><label class="go-ops-filter-field" for="filterStatus"><span>Estado</span><select class="select" id="filterStatus"><option value="">Todos</option><option value="Reportado">Reportado</option><option value="Asignado">Asignado</option><option value="En proceso">En proceso</option><option value="En incidencia">En incidencia</option><option value="Completado">Completado</option><option value="Resuelto por soporte remoto">Resuelto por soporte remoto</option></select></label><label class="go-ops-filter-field" for="filterAgency"><span>Agencia</span><input class="input" id="filterAgency" placeholder="Número o nombre" autocomplete="off"/></label><label class="go-ops-filter-field" for="filterTech"><span>Responsable</span><input class="input" id="filterTech" placeholder="Técnico / suplidor" autocomplete="off"/></label><label class="go-ops-filter-field" for="filterDateFrom"><span>Desde</span><input class="input" id="filterDateFrom" type="date"/></label><label class="go-ops-filter-field" for="filterDateTo"><span>Hasta</span><input class="input" id="filterDateTo" type="date"/></label></div><div class="table-wrap"><table aria-label="Operaciones"><thead><tr><th>Código</th><th>Tipo</th><th>Problema</th><th>Agencia</th><th>Asignado</th><th>Estado / tiempo</th><th>Reportado</th><th>Acciones</th></tr></thead><tbody id="operationsTableBody"></tbody></table></div></div>
 </div></div></div>
 <div class="hidden" id="vista-ops-levantamientos"></div>
 <div class="hidden" id="vista-ops-mantenimiento"></div>
 <div class="hidden" id="vista-ops-control-tecnico"></div>
 
-<div class="hidden" id="vista-ops-historial"><div class="ops-scope"><div class="view hidden" id="historyView">
+<div class="hidden go-ops-domain" id="vista-ops-historial"><div class="ops-scope"><div class="view hidden" id="historyView">
 <div class="topbar">
 <div>
 <h2>Historial de Operaciones</h2>
@@ -10575,7 +11060,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 </div>
 </div></div></div>
-<div class="hidden" id="vista-ops-rendimiento">
+<div class="hidden go-ops-domain" id="vista-ops-rendimiento">
 <div class="ops-scope">
 <div class="view hidden" id="rendimientoView">
 <section aria-label="Consulta de Rendimiento Operativo" class="rend-shell-v300">
@@ -10702,19 +11187,19 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <span>PROM. ASIGNACIÓN</span>
 <strong id="rendGeneralAveriasAsignacionV300">Sin dato</strong>
 <small>Tiempo en asignar la operación</small>
-<em>Pendiente → Asignada</em>
+<em>Reportado → Asignado</em>
 </div>
 <div class="rend-kpi-v300">
 <span>PROM. RESPUESTA</span>
 <strong id="rendGeneralAveriasRespuestaV300">Sin dato</strong>
 <small>Tiempo en tomar la operación</small>
-<em>Asignada → En proceso</em>
+<em>Asignado → En proceso</em>
 </div>
 <div class="rend-kpi-v300">
 <span>PROM. RESOLUCIÓN</span>
 <strong id="rendGeneralAveriasResolucionV300">Sin dato</strong>
 <small>Tiempo en resolver / ejecutar</small>
-<em>En proceso → Completada</em>
+<em>En proceso → Cerrada</em>
 </div>
 </div>
 <div class="rend-mini-grid-v300">
@@ -10746,19 +11231,19 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <span>PROM. ASIGNACIÓN</span>
 <strong id="rendGeneralTrabajosAsignacionV300">Sin dato</strong>
 <small>Tiempo en asignar la operación</small>
-<em>Pendiente → Asignada</em>
+<em>Reportado → Asignado</em>
 </div>
 <div class="rend-kpi-v300">
 <span>PROM. RESPUESTA</span>
 <strong id="rendGeneralTrabajosRespuestaV300">Sin dato</strong>
 <small>Tiempo en tomar la operación</small>
-<em>Asignada → En proceso</em>
+<em>Asignado → En proceso</em>
 </div>
 <div class="rend-kpi-v300">
 <span>PROM. EJECUCIÓN</span>
 <strong id="rendGeneralTrabajosResolucionV300">Sin dato</strong>
 <small>Tiempo en resolver / ejecutar</small>
-<em>En proceso → Completada</em>
+<em>En proceso → Cerrada</em>
 </div>
 </div>
 <div class="rend-mini-grid-v300">
@@ -10903,7 +11388,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 </div>
 </div>
-<div class="hidden" id="vista-ops-reportes"><div class="ops-scope"><div class="view hidden" id="reportsView">
+<div class="hidden go-ops-domain" id="vista-ops-reportes"><div class="ops-scope"><div class="view hidden" id="reportsView">
 <div class="topbar">
 <div>
 <h2>Reportes de Operaciones</h2>
@@ -10915,8 +11400,8 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 <div class="stats">
 <div class="stat-card"><span>Total filtrado</span><strong id="reportStatTotal">0</strong></div>
-<div class="stat-card"><span>Completadas</span><strong id="reportStatDone">0</strong></div>
-<div class="stat-card"><span>Pendientes / en proceso</span><strong id="reportStatPending">0</strong></div>
+<div class="stat-card"><span>Cerradas</span><strong id="reportStatDone">0</strong></div>
+<div class="stat-card"><span>Activas</span><strong id="reportStatPending">0</strong></div>
 <div class="stat-card"><span>Tiempo promedio</span><strong id="reportStatAvgResolution">0 min</strong></div>
 </div>
 <div class="mini-stats">
@@ -10938,10 +11423,12 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </select>
 <select class="select" id="reportFilterStatus">
 <option value="">Todos los estados</option>
-<option value="Pendiente">Pendiente</option>
-<option value="Asignada">Asignada</option>
+<option value="Reportado">Reportado</option>
+<option value="Asignado">Asignado</option>
 <option value="En proceso">En proceso</option>
+<option value="En incidencia">En incidencia</option>
 <option value="Completado">Completado</option>
+<option value="Resuelto por soporte remoto">Resuelto por soporte remoto</option>
 </select>
 <select class="select" id="reportFilterSpecificType">
 <option value="">Todos los tipos específicos</option>
@@ -10969,7 +11456,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div>
 </div>
 </div></div></div>
-<div class="hidden" id="vista-ops-reportes-agencia"><div class="ops-scope"><div class="view hidden" id="reportsAgencyView">
+<div class="hidden go-ops-domain" id="vista-ops-reportes-agencia"><div class="ops-scope"><div class="view hidden" id="reportsAgencyView">
 <div class="topbar">
 <div>
 <h2>Reportes por Agencia</h2>
@@ -10992,10 +11479,12 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </select>
 <select class="select" id="agencyReportFilterStatus">
 <option value="">Todos los estados</option>
-<option value="Pendiente">Pendiente</option>
-<option value="Asignada">Asignada</option>
+<option value="Reportado">Reportado</option>
+<option value="Asignado">Asignado</option>
 <option value="En proceso">En proceso</option>
+<option value="En incidencia">En incidencia</option>
 <option value="Completado">Completado</option>
+<option value="Resuelto por soporte remoto">Resuelto por soporte remoto</option>
 </select>
 <input class="input" id="agencyReportFilterAgency" placeholder="Filtrar por agencia"/>
 <input class="input" id="agencyReportFilterFrom" type="date"/>
@@ -11006,13 +11495,13 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <div class="report-box-header"><h4>Resumen por agencia</h4><div class="report-helper">Carga, completadas, pendientes y tiempo promedio.</div></div>
 <div class="report-box-body table-wrap">
 <table>
-<thead><tr><th>Agencia</th><th>Total</th><th>Completadas</th><th>Pendientes</th><th>Asignación prom.</th><th>Respuesta prom.</th><th>Resolución prom.</th></tr></thead>
+<thead><tr><th>Agencia</th><th>Total</th><th>Cerradas</th><th>Activas</th><th>Asignación prom.</th><th>Respuesta prom.</th><th>Resolución prom.</th></tr></thead>
 <tbody id="reportAgencyBody"></tbody>
 </table>
 </div>
 </div>
 </div></div></div>
-<div class="hidden" id="vista-ops-reportes-responsable"><div class="ops-scope"><div class="view hidden" id="reportsOwnerView">
+<div class="hidden go-ops-domain" id="vista-ops-reportes-responsable"><div class="ops-scope"><div class="view hidden" id="reportsOwnerView">
 <div class="topbar">
 <div>
 <h2>Reportes por Responsable</h2>
@@ -11035,10 +11524,12 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </select>
 <select class="select" id="ownerReportFilterStatus">
 <option value="">Todos los estados</option>
-<option value="Pendiente">Pendiente</option>
-<option value="Asignada">Asignada</option>
+<option value="Reportado">Reportado</option>
+<option value="Asignado">Asignado</option>
 <option value="En proceso">En proceso</option>
+<option value="En incidencia">En incidencia</option>
 <option value="Completado">Completado</option>
+<option value="Resuelto por soporte remoto">Resuelto por soporte remoto</option>
 </select>
 <input class="input" id="ownerReportFilterOwner" placeholder="Filtrar por técnico / suplidor"/>
 <input class="input" id="ownerReportFilterFrom" type="date"/>
@@ -11049,13 +11540,13 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <div class="report-box-header"><h4>Resumen por responsable</h4><div class="report-helper">Total asignado, completadas, activas y tiempo promedio.</div></div>
 <div class="report-box-body table-wrap">
 <table>
-<thead><tr><th>Responsable</th><th>Total</th><th>Completadas</th><th>Activas</th><th>Asignación prom.</th><th>Respuesta prom.</th><th>Resolución prom.</th></tr></thead>
+<thead><tr><th>Responsable</th><th>Total</th><th>Cerradas</th><th>Activas</th><th>Asignación prom.</th><th>Respuesta prom.</th><th>Resolución prom.</th></tr></thead>
 <tbody id="reportOwnerBody"></tbody>
 </table>
 </div>
 </div>
 </div></div></div>
-<div class="hidden" id="vista-ops-reportes-tipos"><div class="ops-scope"><div class="view hidden" id="reportsSpecificView">
+<div class="hidden go-ops-domain" id="vista-ops-reportes-tipos"><div class="ops-scope"><div class="view hidden" id="reportsSpecificView">
 <div class="topbar">
 <div>
 <h2>Reportes por Tipos Específicos</h2>
@@ -11081,10 +11572,12 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </select>
 <select class="select" id="specificReportFilterStatus">
 <option value="">Todos los estados</option>
-<option value="Pendiente">Pendiente</option>
-<option value="Asignada">Asignada</option>
+<option value="Reportado">Reportado</option>
+<option value="Asignado">Asignado</option>
 <option value="En proceso">En proceso</option>
+<option value="En incidencia">En incidencia</option>
 <option value="Completado">Completado</option>
+<option value="Resuelto por soporte remoto">Resuelto por soporte remoto</option>
 </select>
 <input class="input" id="specificReportFilterFrom" type="date"/>
 <input class="input" id="specificReportFilterTo" type="date"/>
@@ -11094,7 +11587,7 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 <div class="report-box-header"><h4>Resumen por tipo específico</h4><div class="report-helper">Frecuencia, completadas, pendientes y tiempo promedio.</div></div>
 <div class="report-box-body table-wrap">
 <table>
-<thead><tr><th>Tipo específico</th><th>Total</th><th>Completadas</th><th>Pendientes</th><th>Asignación prom.</th><th>Respuesta prom.</th><th>Resolución prom.</th></tr></thead>
+<thead><tr><th>Tipo específico</th><th>Total</th><th>Cerradas</th><th>Activas</th><th>Asignación prom.</th><th>Respuesta prom.</th><th>Resolución prom.</th></tr></thead>
 <tbody id="reportCategoryBody"></tbody>
 </table>
 </div>
@@ -11102,19 +11595,19 @@ body.dark-mode #vista-ops-rendimiento .rend-sheet-card-v300 strong{
 </div></div></div>
 
 
-<div class="hidden" id="vista-ops-usuarios"><div class="ops-scope"><div class="view hidden" id="usersView">
+<div class="hidden go-ops-domain" id="vista-ops-usuarios"><div class="ops-scope"><div class="view hidden" id="usersView">
 <div class="catalog-topbar"><div><h2>Administración de Usuarios</h2><p>Gestión de técnicos disponibles para averías.</p></div><button class="btn btn-primary" id="addUserBtn">+ Crear Usuario</button></div>
 <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="userSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Área</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="usersCatalogTableBody"></tbody></table></div></div></div>
 </div></div></div>
-<div class="hidden" id="vista-ops-suplidores"><div class="ops-scope"><div class="view hidden" id="suppliersView">
+<div class="hidden go-ops-domain" id="vista-ops-suplidores"><div class="ops-scope"><div class="view hidden" id="suppliersView">
 <div class="catalog-topbar"><div><h2>Administración de Suplidores</h2><p>Gestión de suplidores de servicios para trabajos.</p></div><button class="btn btn-primary" id="addSupplierBtn">+ Crear Suplidor</button></div>
 <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="supplierSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Servicio</th><th>Teléfono</th><th>Acciones</th></tr></thead><tbody id="suppliersCatalogTableBody"></tbody></table></div></div></div>
 </div></div></div>
-<div class="hidden" id="vista-ops-trabajos"><div class="ops-scope"><div class="view hidden" id="worksView">
+<div class="hidden go-ops-domain" id="vista-ops-trabajos"><div class="ops-scope"><div class="view hidden" id="worksView">
 <div class="catalog-topbar"><div><h2>Administración de Trabajos</h2><p>Gestión de tipos de trabajos disponibles para operaciones.</p></div><button class="btn btn-primary" id="addWorkTypeBtn">+ Crear Trabajo</button></div>
 <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="workSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="worksCatalogTableBody"></tbody></table></div></div></div>
 </div></div></div>
-<div class="hidden" id="vista-ops-averias"><div class="ops-scope"><div class="view hidden" id="issuesView">
+<div class="hidden go-ops-domain" id="vista-ops-averias"><div class="ops-scope"><div class="view hidden" id="issuesView">
 <div class="catalog-topbar"><div><h2>Administración de Averías</h2><p>Gestión de tipos de averías disponibles para operaciones.</p></div><button class="btn btn-primary" id="addIssueTypeBtn">+ Crear Avería</button></div>
 <div class="panel"><div class="catalog-panel-body"><div class="catalog-actions"><div></div><input class="input catalog-search" id="issueSearch" placeholder="Buscar"/></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="issuesCatalogTableBody"></tbody></table></div></div></div>
 </div></div></div>
