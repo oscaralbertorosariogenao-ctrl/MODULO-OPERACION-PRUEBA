@@ -21,6 +21,7 @@ CSS_BUNDLE = ROOT / 'assets/web/css/grupo-ortiz-web.bundle.css'
 DESIGN_TOKENS = ROOT / 'assets/shared/css/go-design-tokens.css'
 WEB_COMPONENTS = ROOT / 'assets/web/css/design-system/go-components.css'
 APP_TOKENS = ROOT / 'assets/app/css/tokens.css'
+OPERATIONS_DOMAIN_CSS = ROOT / 'assets/web/css/operaciones/070-go-operations-domain.css'
 
 
 class RefParser(HTMLParser):
@@ -98,7 +99,7 @@ def version_check() -> tuple[bool, dict]:
 def main() -> int:
     failures: list[str] = []
     warnings: list[str] = []
-    for required in (INDEX, APP, PANTALLA, ROOT / 'version.json', ROOT / 'service-worker.js', DESIGN_TOKENS, WEB_COMPONENTS, APP_TOKENS):
+    for required in (INDEX, APP, PANTALLA, ROOT / 'version.json', ROOT / 'service-worker.js', DESIGN_TOKENS, WEB_COMPONENTS, APP_TOKENS, OPERATIONS_DOMAIN_CSS):
         if not required.is_file():
             failures.append(f'Falta {required.relative_to(ROOT)}')
     if failures:
@@ -123,7 +124,7 @@ def main() -> int:
     js_failures = check_js(index_scripts + app_js + api_js + [ROOT / 'service-worker.js'])
     failures.extend(js_failures)
 
-    css_paths = [CSS_BUNDLE, DESIGN_TOKENS, WEB_COMPONENTS] + list((ROOT / 'assets/app/css').rglob('*.css'))
+    css_paths = [CSS_BUNDLE, DESIGN_TOKENS, WEB_COMPONENTS, OPERATIONS_DOMAIN_CSS] + list((ROOT / 'assets/app/css').rglob('*.css'))
     css_failures = []
     for css_path in sorted(set(path for path in css_paths if path.is_file())):
         css_failures.extend(check_css(css_path))
@@ -196,6 +197,24 @@ def main() -> int:
 
     if '/assets/shared/css/go-design-tokens.css' not in sw_text or '/assets/web/css/design-system/go-components.css' not in sw_text:
         failures.append('Los assets del Design System no están incluidos en CORE_ASSETS del Service Worker.')
+
+    # Fase 4 · Dominio Operaciones: ownership, estados, UX segura y CSS scopeado.
+    operations_domain_path = ROOT / 'assets/web/js/operaciones/081-loteka-v80820-reportes-bandeja.js'
+    operations_domain_text = operations_domain_path.read_text(encoding='utf-8') if operations_domain_path.is_file() else ''
+    operations_css_text = OPERATIONS_DOMAIN_CSS.read_text(encoding='utf-8') if OPERATIONS_DOMAIN_CSS.is_file() else ''
+    if 'global.GOApp.operations.domain=api' not in operations_domain_text:
+        failures.append('Operaciones no expone GOApp.operations.domain como ownership de la migración Fase 4.')
+    if 'id="resetDataBtn"' in index_text:
+        failures.append('Operaciones todavía expone el botón destructivo Restablecer datos.')
+    if 'id="refreshOperationsBtn"' not in index_text or 'id="clearOperationsFiltersBtn"' not in index_text:
+        failures.append('Operaciones no expone acciones separadas de actualizar y limpiar filtros.')
+    if 'data-v808-action=' in operations_domain_text or '1000025' in operations_domain_text or 'installStyles' in operations_domain_text:
+        failures.append('El dominio Operaciones conserva hooks/CSS inyectado o z-index legacy de v808.20.')
+    if '.go-ops-domain' not in operations_css_text or '!important' in operations_css_text:
+        failures.append('La hoja oficial de Operaciones debe estar scopeada y sin !important nuevos.')
+    for state in ('Reportado', 'Asignado', 'En proceso', 'En incidencia', 'Completado', 'Resuelto por soporte remoto'):
+        if state not in operations_domain_text:
+            failures.append(f'El dominio Operaciones no contempla el estado canónico: {state}')
 
     if '/assets/app/js/operation-status.js' not in sw_text:
         failures.append('El módulo canónico de estados no está incluido en CORE_ASSETS del Service Worker.')
