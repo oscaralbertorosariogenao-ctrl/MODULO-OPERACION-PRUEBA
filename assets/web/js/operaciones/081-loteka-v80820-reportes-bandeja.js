@@ -14,6 +14,8 @@
     console[tone==='warning'?'warn':'log'](`[${title}] ${message}`);
   }
   function canonicalStatus(value){
+    const shared=global.GOApp?.operations?.status?.normalizeOperationStatus;
+    if(typeof shared==='function') return shared(value);
     const v=txt(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
     if(v.includes('soporte') || v.includes('remot')) return 'Resuelto por soporte remoto';
     if(v.includes('incid')) return 'En incidencia';
