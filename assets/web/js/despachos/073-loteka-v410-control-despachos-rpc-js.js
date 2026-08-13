@@ -5,7 +5,7 @@
   window.__lotekaDespachosRpcV410 = true;
 
   const VERSION = 'v803-despachos-multiples-integracion-real';
-  const BUILD = '2026-07-24-v804-seguridad-sesion-api-pwa';
+  const BUILD = String(document.querySelector('meta[name="grupo-ortiz-build"]')?.content || '').trim();
   window.__GRUPO_ORTIZ_BUILD__ = BUILD;
   document.documentElement.dataset.grupoOrtizBuild = BUILD;
   console.info('[Grupo Ortiz] Build ' + BUILD);
