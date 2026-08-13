@@ -1,16 +1,12 @@
 
-    const DEMO_USER = { email: 'admin@empresa.com', password: '1234' };
-
-    const DEFAULT_USERS = [
-      { name: 'Técnico 1', username: 'tecnico1', area: 'Soporte técnico', phone: '809-555-1111' },
-      { name: 'Técnico 2', username: 'tecnico2', area: 'Soporte técnico', phone: '809-555-2222' },
-      { name: 'Encargado 1', username: 'encargado1', area: 'Encargado', phone: '809-555-3333' }
-    ];
+    // Compatibilidad legacy: la identidad real proviene exclusivamente de Supabase Auth.
+    const DEFAULT_USERS = [];
+    const LEGACY_DEMO_USERNAMES = new Set(['tecnico1', 'tecnico2', 'encargado1']);
 
     const DEFAULT_SUPPLIERS = [
-      { name: 'E-Gret Servicios', service: 'Publicidad', phone: '809-555-4444' },
-      { name: 'Toldos RD', service: 'Toldos', phone: '809-555-5555' },
-      { name: 'AC Solutions', service: 'Aire acondicionado', phone: '809-555-6666' }
+      { name: 'E-Gret Servicios', service: 'Publicidad', phone: '' },
+      { name: 'Toldos RD', service: 'Toldos', phone: '' },
+      { name: 'AC Solutions', service: 'Aire acondicionado', phone: '' }
     ];
 
     const DEFAULT_WORK_TYPES = [
@@ -114,7 +110,8 @@
     }
 
     function loadCatalogs() {
-      const users = normalizeUsersCatalog(JSON.parse(localStorage.getItem('operations_catalog_users') || 'null'), DEFAULT_USERS);
+      const users = normalizeUsersCatalog(JSON.parse(localStorage.getItem('operations_catalog_users') || 'null'), DEFAULT_USERS)
+        .filter(item => !LEGACY_DEMO_USERNAMES.has(slugifyUsername(item?.username || item?.name)));
       const suppliers = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_suppliers') || 'null'), DEFAULT_SUPPLIERS, 'service');
       const works = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_work_types') || 'null'), DEFAULT_WORK_TYPES, 'description');
       const issues = normalizeNamedCatalog(JSON.parse(localStorage.getItem('operations_catalog_issue_types') || 'null'), DEFAULT_ISSUE_TYPES, 'description');
@@ -299,11 +296,7 @@
     }
     ensureOperationalWorkTypes();
 
-    const ASSIGNEE_DISPLAY_BY_USERNAME = {
-      tecnico1: 'Técnico 1',
-      tecnico2: 'Técnico 2',
-      encargado1: 'Encargado 1'
-    };
+    const ASSIGNEE_DISPLAY_BY_USERNAME = Object.freeze({});
 
     function findUserByUsername(username) {
       const normalized = slugifyUsername(username);
@@ -340,26 +333,18 @@
     async function sendPushToUsername(username, title, body, url = '/app.html') {
       const cleanUsername = getPushUsername(username);
       if (!cleanUsername) return null;
-
-      try {
-        const response = await fetch('/api/send-push', {
-          method: 'POST',
-          headers: await window.lotekaGetApiAuthHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({
-            username: cleanUsername,
-            title,
-            body,
-            url
-          })
-        });
-
-        const result = await response.json().catch(() => ({}));
-        console.log('[PUSH]', cleanUsername, result);
-        return result;
-      } catch (error) {
-        console.error('[PUSH_ERROR]', cleanUsername, error);
-        return null;
-      }
+      // La entrega Web Push queda cerrada hasta que el backend disponga de un
+      // resolver verificado username -> PushSubscription. Las notificaciones
+      // internas y Realtime continúan siendo la vía activa del sistema.
+      return {
+        ok: false,
+        skipped: true,
+        code: 'PUSH_SUBSCRIPTION_RESOLVER_NOT_CONFIGURED',
+        username: cleanUsername,
+        title: String(title || ''),
+        body: String(body || ''),
+        url: String(url || '/app.html')
+      };
     }
 
     function triggerOperationPushNotifications(previousOp, nextOp) {
@@ -419,10 +404,10 @@
 
     function getCurrentUserEmail() {
       const session = getSession();
-      return session?.email || 'admin@empresa.com';
+      return session?.email || 'Sistema web';
     }
 
-    function createHistoryEntry(actionOrConfig, detail = '', user = 'admin@empresa.com') {
+    function createHistoryEntry(actionOrConfig, detail = '', user = 'Sistema web') {
       const config = typeof actionOrConfig === 'object' && actionOrConfig !== null
         ? actionOrConfig
         : { action: actionOrConfig, detail, user };
@@ -430,7 +415,7 @@
         id: crypto.randomUUID(),
         action: config.action || '',
         detail: config.detail || '',
-        user: config.user || 'admin@empresa.com',
+        user: config.user || 'Sistema web',
         prevStatus: config.prevStatus ?? null,
         newStatus: config.newStatus ?? null,
         timestamp: config.timestamp || nowIso()
@@ -438,37 +423,11 @@
     }
 
     /*
-  OPERACIONES / CAPA A3 - Paso 1:
-  Demo operations neutralizado.
-  Este array queda vacío para evitar que cualquier flujo legacy futuro
-  pueda reutilizar operaciones inventadas.
-*/
-const demoOperations = [
-      {
-        id: crypto.randomUUID(),
-        code: 'OP-0001',
-        type: 'Trabajo',
-        title: 'Toldo y publicidad de cambio',
-        agency: 'Agencia 1268',
-        technician: 'E-Gret Servicios',
-        status: 'Completado',
-        description: 'Instalación de publicidad y toldo nuevo',
-        selectedTypes: ['Instalación de publicidad en pecho (ACM)', 'Fabricación de toldo'],
-        createdAt: new Date().toISOString(),
-        images: [],
-        resultImages: [],
-        assignedAt: nowIso(),
-        startedAt: nowIso(),
-        completedAt: nowIso(),
-        resolutionTime: '',
-        history: [
-          createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'admin@empresa.com', newStatus: 'Pendiente' }),
-          createHistoryEntry({ action: 'Asignación', detail: 'Asignada a E-Gret Servicios', user: 'admin@empresa.com' }),
-          createHistoryEntry({ action: 'Finalización', detail: 'Operación completada', user: 'admin@empresa.com', prevStatus: 'Asignada', newStatus: 'Completado' })
-        ],
-        closedAt: null
-      }
-    ];
+      OPERACIONES / CAPA A3:
+      No existe fallback de operaciones demo en producción. La fuente real es Supabase.
+    */
+    const demoOperations = [];
+
 
     const loginView = document.getElementById('loginView') || { classList: { add(){}, remove(){} } };
     const appView = document.getElementById('appView') || { classList: { add(){}, remove(){} } };
@@ -616,9 +575,23 @@ function saveOperations(operations) {
   return normalized;
 }
 
-    function getSession() { return JSON.parse(localStorage.getItem('operations_session') || 'null'); }
-    function setSession(session) { localStorage.setItem('operations_session', JSON.stringify(session)); }
-    function clearSession() { localStorage.removeItem('operations_session'); }
+    function getSession() {
+      const authState = window.lotekaAuthState || {};
+      const user = authState.user || authState.session?.user || null;
+      if (!user) return null;
+      const email = String(user.email || authState.perfil?.correo || authState.profile?.correo || '').trim();
+      return { email: email || 'Usuario autenticado', userId: user.id || '' };
+    }
+    function setSession() {
+      // Eliminado: production no mantiene una segunda sesión local paralela a Supabase Auth.
+      return getSession();
+    }
+    function clearSession() {
+      // Limpia únicamente cualquier residuo histórico; Supabase Auth sigue siendo la autoridad.
+      try { localStorage.removeItem('operations_session'); } catch (_error) {}
+      return null;
+    }
+    clearSession();
 
     function formatDate(dateString) {
       const date = new Date(dateString);
@@ -1955,9 +1928,9 @@ function saveOperations(operations) {
 
     async function createCatalogItem(type) {
       if (type === 'users') {
-        const name = prompt('Nombre visible del usuario:', 'Técnico 1');
+        const name = prompt('Nombre visible del usuario:', 'Técnico');
         if (!name || !name.trim()) return;
-        const username = slugifyUsername(prompt('Username de acceso (ej: tecnico1):', slugifyUsername(name)) || slugifyUsername(name));
+        const username = slugifyUsername(prompt('Username de acceso:', slugifyUsername(name)) || slugifyUsername(name));
         if (!username) return;
         const area = prompt('Área o especialidad:', '') || '';
         const phone = prompt('Teléfono:', '') || '';
@@ -5721,8 +5694,22 @@ function openEditModal(id) {
     function showLogin() {
       appView.classList.add('hidden');
       loginView.classList.add('hidden');
-      setSession({ email: DEMO_USER.email });
-      showApp({ email: DEMO_USER.email });
+      // El formulario real de acceso lo gestiona la capa Supabase Auth (020-*).
+    }
+
+    function showAppForAuthenticatedUser(payload = {}) {
+      const authState = window.lotekaAuthState || {};
+      const user = payload.user || authState.user || authState.session?.user || null;
+      if (!user) return false;
+      const email = String(user.email || payload.perfil?.correo || authState.perfil?.correo || authState.profile?.correo || '').trim();
+      if (document.readyState === 'complete') return bootLegacyRuntimeForAuthenticatedUser();
+      showApp({ email: email || 'Usuario autenticado' });
+      return true;
+    }
+
+    if (window.GOApp?.events?.on) {
+      window.GOApp.events.on('auth:ready', showAppForAuthenticatedUser);
+      window.GOApp.events.on('auth:signed-out', showLogin);
     }
 
     function updateTechnicianLabel(selectId, labelId, inputId) {
@@ -5737,19 +5724,12 @@ function openEditModal(id) {
     }
 
     loginBtn.addEventListener('click', () => {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-      if (email === DEMO_USER.email && password === DEMO_USER.password) {
-        setSession({ email });
-        loginError.classList.add('hidden');
-        showApp({ email });
-      } else {
-        loginError.textContent = 'Credenciales incorrectas. Usa el usuario de acceso.';
-        loginError.classList.remove('hidden');
-      }
+      loginError.textContent = 'Utiliza el acceso seguro de Supabase.';
+      loginError.classList.remove('hidden');
     });
 
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
+      try { await window.lotekaSupabase?.auth?.signOut(); } catch (_error) {}
       clearSession();
       showLogin();
     });
@@ -6070,7 +6050,18 @@ saveOperations([]);
       }, 60000);
     }
 
-    window.addEventListener('load', () => {
+    let legacyAuthenticatedBooted = false;
+    function bootLegacyRuntimeForAuthenticatedUser() {
+      const session = getSession();
+      if (!session) {
+        showLogin();
+        return false;
+      }
+      if (legacyAuthenticatedBooted) {
+        showApp(session);
+        return true;
+      }
+      legacyAuthenticatedBooted = true;
       updateNotificationButtonState();
       initializeRealtimeSync();
       startLiveSyncWatchdog();
@@ -6083,10 +6074,10 @@ saveOperations([]);
           changed = true;
         }
         if (!Array.isArray(op.history)) {
-          op.history = [createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'admin@empresa.com', newStatus: 'Pendiente' })];
-          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${getAssigneeDisplayName(op.technician, op.type)}`, user: 'admin@empresa.com' }));
-          if (op.status === 'En proceso') op.history.push(createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: 'admin@empresa.com', prevStatus: 'Asignada', newStatus: 'En proceso' }));
-          if (op.status === 'Completado') op.history.push(createHistoryEntry({ action: 'Finalización', detail: op.resolutionTime ? `Operación completada en ${op.resolutionTime}` : 'Operación completada', user: 'admin@empresa.com', prevStatus: op.assignedAt ? 'Asignada' : 'Pendiente', newStatus: 'Completado' }));
+          op.history = [createHistoryEntry({ action: 'Creación', detail: 'Operación creada', user: 'Sistema web', newStatus: 'Pendiente' })];
+          if (op.technician && op.technician !== 'Sin asignar') op.history.push(createHistoryEntry({ action: 'Asignación', detail: `Asignada a ${getAssigneeDisplayName(op.technician, op.type)}`, user: 'Sistema web' }));
+          if (op.status === 'En proceso') op.history.push(createHistoryEntry({ action: 'Inicio', detail: 'Operación iniciada', user: 'Sistema web', prevStatus: 'Asignada', newStatus: 'En proceso' }));
+          if (op.status === 'Completado') op.history.push(createHistoryEntry({ action: 'Finalización', detail: op.resolutionTime ? `Operación completada en ${op.resolutionTime}` : 'Operación completada', user: 'Sistema web', prevStatus: op.assignedAt ? 'Asignada' : 'Pendiente', newStatus: 'Completado' }));
           changed = true;
         }
         if (Array.isArray(op.history) && op.history.some(item => item && typeof item === 'object' && (!Object.prototype.hasOwnProperty.call(item, 'prevStatus') || !Object.prototype.hasOwnProperty.call(item, 'newStatus')))) {
@@ -6094,7 +6085,7 @@ saveOperations([]);
             id: item.id || crypto.randomUUID(),
             action: item.action || '',
             detail: item.detail || '',
-            user: item.user || 'admin@empresa.com',
+            user: item.user || 'Sistema web',
             prevStatus: Object.prototype.hasOwnProperty.call(item, 'prevStatus') ? item.prevStatus : null,
             newStatus: Object.prototype.hasOwnProperty.call(item, 'newStatus') ? item.newStatus : null,
             timestamp: getHistoryTimestamp(item) || op.createdAt
@@ -6143,8 +6134,9 @@ saveOperations([]);
       if (changed) saveOperations(operations);
       renderDashboard();
       populateReportSpecificTypeOptions();
-      const session = getSession() || { email: DEMO_USER.email };
-      setSession(session);
       showApp(session);
-    });
+      return true;
+    }
+
+    window.addEventListener('load', bootLegacyRuntimeForAuthenticatedUser);
   
