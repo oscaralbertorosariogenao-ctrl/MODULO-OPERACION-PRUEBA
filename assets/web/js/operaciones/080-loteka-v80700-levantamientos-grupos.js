@@ -1,9 +1,9 @@
 (function (global) {
   'use strict';
 
-  if (global.GOLevantamientosGrupos?.version === '808.28') return;
+  if (global.GOLevantamientosGrupos?.version === '808.38') return;
 
-  const VERSION = '808.28';
+  const VERSION = '808.38';
   const UI_STATE_KEY = 'go-levantamientos-ui-v1';
   const TABLES = {
     campaigns: 'ops_levantamiento_campanas',
@@ -12,7 +12,9 @@
     findings: 'ops_levantamiento_hallazgos',
     evidence: 'ops_levantamiento_evidencias',
     reports: 'ops_levantamiento_reportes',
-    intakes: 'ops_jotform_levantamientos_ingresos'
+    intakes: 'ops_jotform_levantamientos_ingresos',
+    historyGroups: 'ops_levantamiento_historial_grupos',
+    historyAgencies: 'ops_levantamiento_historial_agencias'
   };
 
   try { if (typeof global.levInit === 'function') global.removeEventListener('DOMContentLoaded', global.levInit); } catch (_error) {}
@@ -59,7 +61,16 @@
     reportTotal: 0,
     globalSearchResults: [],
     listSearchTimer: null,
-    detailReturnTab: 'SUMMARY'
+    detailReturnTab: 'SUMMARY',
+    historyRows: [],
+    historyAgencyRows: [],
+    historyGroupRows: [],
+    historySelectedGroupCode: null,
+    historySelectedExecution: null,
+    historyManualSelectedAgencyIds: new Set(),
+    historyManualLockedSnapshots: [],
+    historyManualShowAllAgencies: false,
+    historyLoading: false
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -117,6 +128,13 @@
         page: state.closedPage || 0
       },
       reports: { page: state.reportPage || 0 },
+      history: {
+        search: $('#golevg-history-search')?.value || '',
+        from: $('#golevg-history-from')?.value || '',
+        to: $('#golevg-history-to')?.value || '',
+        origin: $('#golevg-history-origin')?.value || '',
+        sort: $('#golevg-history-sort')?.value || 'NEVER_FIRST'
+      },
       globalSearch: $('#golevg-global-search')?.value || '',
       scrollY: Number.isFinite(Number(scrollOverride)) ? Number(scrollOverride) : Math.max(0, Number(global.scrollY || 0)),
       savedAt: Date.now()
@@ -141,6 +159,12 @@
     if ($('#golevg-closed-date')) $('#golevg-closed-date').value = text(closed.date);
     if ($('#golevg-closed-sort')) $('#golevg-closed-sort').value = text(closed.sort) || 'RECIENTES';
     if ($('#golevg-global-search')) $('#golevg-global-search').value = text(saved.globalSearch);
+    const history = saved.history || {};
+    if ($('#golevg-history-search')) $('#golevg-history-search').value = text(history.search);
+    if ($('#golevg-history-from')) $('#golevg-history-from').value = text(history.from);
+    if ($('#golevg-history-to')) $('#golevg-history-to').value = text(history.to);
+    if ($('#golevg-history-origin')) $('#golevg-history-origin').value = text(history.origin);
+    if ($('#golevg-history-sort')) $('#golevg-history-sort').value = text(history.sort) || 'NEVER_FIRST';
     state.openPage = Math.max(0, Number(open.page || 0));
     state.closedPage = Math.max(0, Number(closed.page || 0));
     state.reportPage = Math.max(0, Number(saved.reports?.page || 0));
@@ -292,13 +316,13 @@
     return rawGroups().filter((group) => group?.activo !== false && !/prueba|test|desactiv/i.test(text(group?.nombre || group?.codigo)));
   }
 
-  async function fetchAllCatalogRows(tableName) {
+  async function fetchAllCatalogRows(tableName, columns = '*', orderColumn = 'id') {
     const connected = client();
     if (!connected) return [];
     const pageSize = 1000;
     const rows = [];
     for (let from = 0; from < 50000; from += pageSize) {
-      const response = await connected.from(tableName).select('*').order('id', { ascending: true }).range(from, from + pageSize - 1);
+      const response = await connected.from(tableName).select(columns).order(orderColumn, { ascending: true }).range(from, from + pageSize - 1);
       if (response.error) throw response.error;
       const batch = response.data || [];
       rows.push(...batch);
@@ -456,6 +480,10 @@
       .golevg-summary-stats{grid-template-columns:repeat(6,minmax(125px,1fr))}.golevg-detail-stats{grid-template-columns:repeat(4,minmax(125px,1fr))}.golevg-section-stack{display:grid;gap:14px}.golevg-section-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:12px}.golevg-section-title h3{margin:0;color:#0a4167}.golevg-section-title p{margin:4px 0 0;color:#71899a;font-size:12px}.golevg-list-filter{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) minmax(145px,1fr) minmax(175px,1fr) auto;gap:9px;margin-bottom:13px}.golevg-list-meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0 12px;color:#71899a;font-size:12px}.golevg-campaign-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.golevg-campaign-details div{border:1px solid #e0ebf1;background:#fbfdfe;border-radius:10px;padding:9px}.golevg-campaign-details span{display:block;color:#738b9d;font-size:9px;font-weight:1000;text-transform:uppercase}.golevg-campaign-details b{display:block;color:#174967;margin-top:3px;font-size:12px}.golevg-activity{display:grid;gap:8px}.golevg-activity-item{display:grid;grid-template-columns:115px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #e8f0f4}.golevg-activity-item:last-child{border-bottom:0}.golevg-activity-time{font-size:11px;font-weight:900;color:#0b709e}.golevg-activity-title{font-weight:900;color:#173f59}.golevg-activity-detail{margin-top:2px;color:#708697;font-size:12px}.golevg-search-results{display:grid;gap:8px;margin-top:12px}.golevg-search-result{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid #dce8ef;border-radius:12px;padding:11px;background:#fbfdfe}.golevg-search-result strong{display:block;color:#0a4167}.golevg-search-result small{color:#71899a}.golevg-pager{display:flex;justify-content:center;align-items:center;gap:9px;margin-top:14px}.golevg-report-meta{font-size:11px;color:#71899a;line-height:1.55}.golevg-subtle{color:#71899a;font-size:12px}.golevg-stat.is-clickable{cursor:pointer}.golevg-stat.is-clickable:hover{border-color:#8bc8e3;transform:translateY(-1px)}
       @media(max-width:1180px){.golevg-summary-stats{grid-template-columns:repeat(3,1fr)}.golevg-detail-stats{grid-template-columns:repeat(2,1fr)}.golevg-list-filter{grid-template-columns:1fr 1fr 1fr}}
       @media(max-width:700px){.golevg-summary-stats{grid-template-columns:repeat(2,1fr)}.golevg-detail-stats{grid-template-columns:1fr 1fr}.golevg-list-filter{grid-template-columns:1fr}.golevg-campaign-details{grid-template-columns:1fr}.golevg-activity-item{grid-template-columns:1fr;gap:3px}.golevg-search-result{align-items:flex-start;flex-direction:column}}
+
+      .golevg-history-title{align-items:flex-start}.golevg-history-stats{grid-template-columns:repeat(3,minmax(150px,1fr))}.golevg-history-filter{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(2,minmax(135px,1fr)) minmax(150px,1fr) minmax(190px,1.2fr) auto;gap:9px;margin-bottom:10px}.golevg-history-table{min-width:980px}.golevg-history-never td{background:#fffdf5}.golevg-history-period{font-weight:900;color:#174967}.golevg-history-days{font-weight:1000}.golevg-history-days.is-old{color:#9a5b00}.golevg-history-origin{white-space:nowrap}.golevg-history-selection-summary{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:10px}.golevg-history-selection-summary>div{border:1px solid #dce9f0;border-radius:12px;background:#f8fcfe;padding:11px}.golevg-history-selection-summary span{display:block;font-size:9px;font-weight:1000;text-transform:uppercase;color:#71899a}.golevg-history-selection-summary strong{display:block;margin-top:4px;font-size:21px;color:#0a456c}.golevg-history-agency-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:8px;align-items:center;margin-bottom:9px}.golevg-history-all-toggle{grid-column:1/-1;display:flex;align-items:center;gap:7px;color:#5d788c;font-size:12px}.golevg-history-all-toggle span{color:#8497a5}.golevg-history-agency-list{border:1px solid #d7e5ed;border-radius:13px;max-height:390px;overflow:auto;background:#fff}.golevg-history-agency-option{display:grid;grid-template-columns:32px 88px 1fr auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #e8eff3;cursor:pointer}.golevg-history-agency-option:last-child{border-bottom:0}.golevg-history-agency-option:hover{background:#f7fbfd}.golevg-history-agency-option input{width:18px;height:18px}.golevg-history-agency-option b{color:#0b638f}.golevg-history-agency-option small{color:#7890a0}.golevg-history-group-summary{grid-template-columns:repeat(4,minmax(130px,1fr));margin-bottom:14px}.golevg-history-actions-cell{display:flex;gap:6px;flex-wrap:wrap}.golevg-history-agency-simple{display:grid;gap:7px}.golevg-history-agency-simple>div{display:grid;grid-template-columns:45px 88px 1fr;gap:10px;align-items:center;padding:9px 10px;border:1px solid #e1ebf0;border-radius:10px}.golevg-history-agency-simple span:first-child{color:#7b91a0;font-size:11px}.golevg-history-loading{padding:26px;text-align:center;color:#71899a}.golevg-history-loading i{margin-right:7px}.golevg-history-filter-note{font-size:11px;color:#71899a}
+      @media(max-width:1180px){.golevg-history-filter{grid-template-columns:1fr 1fr 1fr}.golevg-history-title{flex-direction:column}.golevg-history-group-summary{grid-template-columns:repeat(2,1fr)}}
+      @media(max-width:700px){.golevg-history-stats,.golevg-history-group-summary,.golevg-history-selection-summary{grid-template-columns:1fr}.golevg-history-filter,.golevg-history-agency-toolbar{grid-template-columns:1fr}.golevg-history-all-toggle{grid-column:auto}.golevg-history-agency-option{grid-template-columns:28px 72px 1fr}.golevg-history-agency-option small{display:none}.golevg-history-agency-simple>div{grid-template-columns:36px 74px 1fr}.golevg-history-title .golevg-actions{width:100%}.golevg-history-title .golevg-actions .golevg-btn{flex:1 1 145px}}
     `;
     document.head.appendChild(style);
   }
@@ -476,6 +504,7 @@
           <button class="golevg-tab" data-main="CLOSED">Cerrados</button>
           <button class="golevg-tab" data-main="PENDING">Jotform sin vincular <span id="golevg-pending-badge"></span></button>
           <button class="golevg-tab" data-main="REPORTS">Reportes generados</button>
+          <button class="golevg-tab" data-main="HISTORY">Historial por grupo</button>
         </div>
         <div class="golevg-cleanup-banner" id="golevg-cleanup-banner"></div>
 
@@ -504,6 +533,30 @@
 
         <section class="golevg-panel" data-main-panel="PENDING"><div class="golevg-card"><div class="golevg-card-head"><div><h3>Jotform sin vincular</h3><small>Bandeja de excepciones: formularios que no pudieron completar el flujo automático.</small></div></div><div id="golevg-pending"></div></div></section>
         <section class="golevg-panel" data-main-panel="REPORTS"><div class="golevg-card"><div class="golevg-card-head"><div><h3>Reportes generados</h3><small>Archivo documental de los entregables PDF/Excel creados desde los hallazgos.</small></div><small id="golevg-report-count">0 reportes</small></div><div class="golevg-report-grid" id="golevg-all-reports"></div><div class="golevg-pager" id="golevg-report-pager"></div></div></section>
+        <section class="golevg-panel" data-main-panel="HISTORY">
+          <div class="golevg-card">
+            <div class="golevg-section-title golevg-history-title">
+              <div><h3>Historial por grupo</h3><p>Control administrativo de cuándo se levantó cada grupo. Una agencia única levantada equivale a un registro.</p></div>
+              <div class="golevg-actions">
+                <button class="golevg-btn" id="golevg-history-export-summary"><i class="fas fa-file-excel"></i> Excel resumen</button>
+                <button class="golevg-btn" id="golevg-history-export-full"><i class="fas fa-file-excel"></i> Excel historial</button>
+                <button class="golevg-btn" id="golevg-history-export-agencies"><i class="fas fa-file-excel"></i> Excel agencias</button>
+                <button class="golevg-btn primary" id="golevg-history-new"><i class="fas fa-plus"></i> Registrar levantamiento</button>
+              </div>
+            </div>
+            <div class="golevg-stats golevg-history-stats" id="golevg-history-stats"></div>
+            <div class="golevg-history-filter">
+              <input class="golevg-input" id="golevg-history-search" placeholder="Buscar grupo">
+              <input class="golevg-input" id="golevg-history-from" type="date" aria-label="Desde">
+              <input class="golevg-input" id="golevg-history-to" type="date" aria-label="Hasta">
+              <select class="golevg-select" id="golevg-history-origin"><option value="">Todos los orígenes</option><option value="MANUAL">Manual</option><option value="AUTOMATICO">Automático</option></select>
+              <select class="golevg-select" id="golevg-history-sort"><option value="NEVER_FIRST">Nunca registrados primero</option><option value="OLDEST">Más antiguo primero</option><option value="RECENT">Más reciente primero</option><option value="GROUP">Grupo</option><option value="MOST_AGENCIES">Más agencias levantadas</option><option value="LEAST_AGENCIES">Menos agencias levantadas</option></select>
+              <button class="golevg-btn" id="golevg-history-clear">Limpiar</button>
+            </div>
+            <div class="golevg-list-meta"><span id="golevg-history-count">0 grupos</span><span>Antigüedad calculada desde la fecha Hasta</span></div>
+            <div id="golevg-history-content"><div class="golevg-empty">Abre esta pestaña para consultar el historial.</div></div>
+          </div>
+        </section>
         <section id="golevg-detail" style="display:none"></section>
       </div>
 
@@ -516,6 +569,12 @@
       <div class="golevg-modal" id="golevg-report-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3>Preparar reporte</h3><small>Selecciona las agencias incluidas en este entregable documental.</small></div><button class="golevg-btn" data-close="golevg-report-modal">Cerrar</button></div><div class="golevg-grid"><div class="golevg-field full"><label>Título</label><input class="golevg-input" id="golevg-r-title"></div><div class="golevg-field"><label>Responsable</label><input class="golevg-input" id="golevg-r-responsible"></div><div class="golevg-field"><label>Estado del reporte</label><select class="golevg-select" id="golevg-r-status"><option value="BORRADOR">Borrador</option><option value="FINAL">Final</option></select></div><div class="golevg-field full"><label>Observación</label><textarea class="golevg-textarea" id="golevg-r-observation" rows="2"></textarea></div><div class="golevg-field full"><label>Agencias incluidas</label><div id="golevg-r-items" style="border:1px solid #d7e5ed;border-radius:13px;max-height:390px;overflow:auto"></div></div></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-report-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-save-report">Guardar reporte</button></div></div></div>
 
       <div class="golevg-modal" id="golevg-link-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Vincular formulario</h3><small>El formulario se reprocesará dentro del levantamiento seleccionado.</small></div><button class="golevg-btn" data-close="golevg-link-modal">Cerrar</button></div><div class="golevg-field"><label>Levantamiento abierto</label><select class="golevg-select" id="golevg-link-campaign"></select></div><input type="hidden" id="golevg-link-intake"><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn primary" id="golevg-link-save">Vincular y procesar</button></div></div></div>
+
+      <div class="golevg-modal" id="golevg-history-manual-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3 id="golevg-history-manual-title">Registrar levantamiento histórico</h3><small>Sin fotos ni evidencias. Registros = agencias únicas seleccionadas.</small></div><button class="golevg-btn" data-close="golevg-history-manual-modal">Cerrar</button></div><input type="hidden" id="golevg-history-manual-id"><div class="golevg-grid"><div class="golevg-field"><label>Grupo</label><select class="golevg-select" id="golevg-history-manual-group"></select></div><div class="golevg-field"><label>Período</label><div class="golevg-inline"><input class="golevg-input" id="golevg-history-manual-from" type="date" aria-label="Desde"><input class="golevg-input" id="golevg-history-manual-to" type="date" aria-label="Hasta"></div></div><div class="golevg-field full"><div class="golevg-history-selection-summary"><div><span>Agencias seleccionadas</span><strong id="golevg-history-manual-selected">0</strong></div><div><span>Registros</span><strong id="golevg-history-manual-records">0</strong></div><div><span>Duración</span><strong id="golevg-history-manual-duration">—</strong></div></div></div><div class="golevg-field full"><label>Agencias</label><div class="golevg-history-agency-toolbar"><input class="golevg-input" id="golevg-history-manual-search" placeholder="Buscar número o nombre de agencia"><button class="golevg-btn small" id="golevg-history-manual-select-all">Seleccionar todas</button><button class="golevg-btn small" id="golevg-history-manual-clear">Limpiar selección</button><label class="golevg-history-all-toggle"><input type="checkbox" id="golevg-history-manual-show-all"> Ver todas las agencias existentes <span>(para históricos donde una agencia cambió de grupo)</span></label></div><div class="golevg-history-agency-list" id="golevg-history-manual-agencies"></div><div class="golevg-subtle" id="golevg-history-manual-locked" style="display:none"></div></div></div><div class="golevg-help" id="golevg-history-manual-status" style="display:none;margin-top:12px"></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-history-manual-modal">Cancelar</button><button class="golevg-btn primary" id="golevg-history-manual-save">Guardar histórico</button></div></div></div>
+
+      <div class="golevg-modal" id="golevg-history-group-modal"><div class="golevg-dialog wide"><div class="golevg-card-head"><div><h3 id="golevg-history-group-title">Historial del grupo</h3><small id="golevg-history-group-subtitle"></small></div><button class="golevg-btn" data-close="golevg-history-group-modal">Cerrar</button></div><div id="golevg-history-group-body"></div></div></div>
+
+      <div class="golevg-modal" id="golevg-history-agencies-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3 id="golevg-history-agencies-title">Agencias levantadas</h3><small id="golevg-history-agencies-subtitle"></small></div><div class="golevg-actions"><button class="golevg-btn small" id="golevg-history-agencies-export"><i class="fas fa-file-excel"></i> Exportar</button><button class="golevg-btn" data-close="golevg-history-agencies-modal">Cerrar</button></div></div><div id="golevg-history-agencies-body"></div></div></div>
 
       <div class="golevg-modal" id="golevg-delete-modal"><div class="golevg-dialog"><div class="golevg-card-head"><div><h3>Eliminar levantamiento</h3><small id="golevg-delete-subtitle">Acción permanente</small></div><button class="golevg-btn" data-close="golevg-delete-modal">Cerrar</button></div><div id="golevg-delete-body"><div class="golevg-empty">Preparando eliminación…</div></div><div class="golevg-help" id="golevg-delete-status" style="display:none;margin-top:12px"></div><div class="golevg-actions" style="justify-content:flex-end;margin-top:15px"><button class="golevg-btn" data-close="golevg-delete-modal" id="golevg-delete-cancel">Cancelar</button><button class="golevg-btn danger" id="golevg-delete-retry" style="display:none">Reintentar limpieza R2</button><button class="golevg-btn danger solid" id="golevg-delete-confirm" disabled>Eliminar definitivamente</button></div></div></div>
     `;
@@ -590,15 +649,18 @@
       element.innerHTML = filterHtml;
       element.value = labels.includes(current) ? current : '';
     }
+    const sortedGroups = groups().sort((a, b) => groupLabel(a).localeCompare(groupLabel(b), 'es', { numeric: true }));
     const create = $('#golevg-f-group');
-    if (create) create.innerHTML = '<option value="">Selecciona un grupo</option>' + groups().sort((a, b) => groupLabel(a).localeCompare(groupLabel(b), 'es', { numeric: true })).map((group) => `<option value="${groupId(group)}" data-code="${esc(groupLabel(group))}">Grupo ${esc(groupLabel(group))}</option>`).join('');
+    if (create) create.innerHTML = '<option value="">Selecciona un grupo</option>' + sortedGroups.map((group) => `<option value="${groupId(group)}" data-code="${esc(groupLabel(group))}">Grupo ${esc(groupLabel(group))}</option>`).join('');
+    const historyCreate = $('#golevg-history-manual-group');
+    if (historyCreate) historyCreate.innerHTML = '<option value="">Selecciona un grupo</option>' + sortedGroups.map((group) => `<option value="${groupId(group)}" data-code="${esc(groupLabel(group))}">Grupo ${esc(groupLabel(group))}${text(group.nombre) && normalize(group.nombre) !== normalize(`grupo ${groupLabel(group)}`) ? ` · ${esc(group.nombre)}` : ''}</option>`).join('');
   }
 
 
   function normalizedMainTab(tab) {
     const value = text(tab).toUpperCase();
     if (value === 'CAMPAIGNS') return 'SUMMARY';
-    return ['SUMMARY','OPEN','CLOSED','PENDING','REPORTS'].includes(value) ? value : 'SUMMARY';
+    return ['SUMMARY','OPEN','CLOSED','PENDING','REPORTS','HISTORY'].includes(value) ? value : 'SUMMARY';
   }
 
   function normalizedCampaignTab(tab) {
@@ -719,6 +781,7 @@
     else if (normalized === 'CLOSED') await loadCampaignList('CERRADO');
     else if (normalized === 'PENDING') await loadPending();
     else if (normalized === 'REPORTS') await loadReports();
+    else if (normalized === 'HISTORY') await loadHistory();
     if (normalized !== 'SUMMARY' && normalized !== 'PENDING') await loadPendingCount();
     await loadPendingCleanups();
   }
@@ -977,7 +1040,19 @@
     if (!global.confirm(message)) return;
     const response = await client().from(TABLES.campaigns).update({ estado: next }).eq('id', id);
     if (response.error) return toast(response.error.message, 'error');
-    toast(next === 'CERRADO' ? 'Levantamiento cerrado.' : 'Levantamiento reabierto.', 'success');
+    let historySynced = true;
+    if (next === 'CERRADO') {
+      try {
+        const historyResult = await client().rpc('ops_levantamiento_historial_sincronizar_automatico_v1', { p_campana_id: id });
+        if (historyResult.error) throw historyResult.error;
+      } catch (historyError) {
+        historySynced = false;
+        console.warn('[Levantamientos] La campaña cerró, pero la sincronización explícita del historial devolvió error:', historyError);
+      }
+    }
+    toast(next === 'CERRADO'
+      ? (historySynced ? 'Levantamiento cerrado y registrado en Historial por Grupo.' : 'Levantamiento cerrado. El historial automático queda pendiente de verificación.')
+      : 'Levantamiento reabierto.', historySynced ? 'success' : 'info');
     if (state.selectedCampaign?.id === id) closeCampaignDetail({ scroll: false, persist: false });
     await loadMainTab(state.mainTab);
     saveUiState();
@@ -1022,7 +1097,7 @@
     const detected = state.findings.filter((item) => item.estado !== 'DESCARTADO');
     const migratedPhotos = state.evidence.filter((item) => item.estado_r2 === 'MIGRADO').length;
     $('#golevg-detail').innerHTML = `
-      <div class="golevg-detail-head"><div><a class="golevg-link" id="golevg-back">← Volver a ${state.detailReturnTab === 'CLOSED' ? 'cerrados' : state.detailReturnTab === 'OPEN' ? 'abiertos' : state.detailReturnTab === 'REPORTS' ? 'reportes generados' : 'resumen'}</a><h2>${esc(c.codigo)} · Grupo ${esc(c.grupo_codigo)}</h2><div class="golevg-detail-meta"><span class="golevg-badge ${badgeClass(c.estado)}">${campaignStatusLabel(c.estado)}</span><span class="golevg-badge wait">Responsable: ${esc(c.responsable_nombre || 'Sin asignar')}</span><span class="golevg-badge wait">Inicio: ${formatDate(c.fecha_inicio)}</span>${c.fecha_cierre ? `<span class="golevg-badge ok">Cierre: ${formatDate(c.fecha_cierre)}</span>` : ''}</div></div><div class="golevg-actions"><button class="golevg-btn primary" id="golevg-detail-form"><i class="fas fa-link"></i> Copiar enlace general de Jotform</button><button class="golevg-btn" id="golevg-detail-refresh"><i class="fas fa-rotate"></i> Actualizar</button>${canManage() ? `<button class="golevg-btn" id="golevg-detail-close">${c.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar levantamiento'}</button>` : ''}${canDelete() ? '<button class="golevg-btn danger" id="golevg-detail-delete">Eliminar</button>' : ''}</div></div>
+      <div class="golevg-detail-head"><div><a class="golevg-link" id="golevg-back">← Volver a ${state.detailReturnTab === 'CLOSED' ? 'cerrados' : state.detailReturnTab === 'OPEN' ? 'abiertos' : state.detailReturnTab === 'REPORTS' ? 'reportes generados' : state.detailReturnTab === 'HISTORY' ? 'historial por grupo' : 'resumen'}</a><h2>${esc(c.codigo)} · Grupo ${esc(c.grupo_codigo)}</h2><div class="golevg-detail-meta"><span class="golevg-badge ${badgeClass(c.estado)}">${campaignStatusLabel(c.estado)}</span><span class="golevg-badge wait">Responsable: ${esc(c.responsable_nombre || 'Sin asignar')}</span><span class="golevg-badge wait">Inicio: ${formatDate(c.fecha_inicio)}</span>${c.fecha_cierre ? `<span class="golevg-badge ok">Cierre: ${formatDate(c.fecha_cierre)}</span>` : ''}</div></div><div class="golevg-actions"><button class="golevg-btn primary" id="golevg-detail-form"><i class="fas fa-link"></i> Copiar enlace general de Jotform</button><button class="golevg-btn" id="golevg-detail-refresh"><i class="fas fa-rotate"></i> Actualizar</button>${canManage() ? `<button class="golevg-btn" id="golevg-detail-close">${c.estado === 'CERRADO' ? 'Reabrir' : 'Cerrar levantamiento'}</button>` : ''}${canDelete() ? '<button class="golevg-btn danger" id="golevg-detail-delete">Eliminar</button>' : ''}</div></div>
       <div class="golevg-help" style="margin-bottom:13px"><b>Flujo actual:</b> el levantamiento detecta hallazgos y permite generar PDF/Excel. El seguimiento de reparación o resolución no forma parte de esta fase.</div>
       <div class="golevg-stats golevg-detail-stats"><div class="golevg-stat"><span>Agencias inspeccionadas</span><strong>${state.expedients.length}</strong></div><div class="golevg-stat"><span>Hallazgos detectados</span><strong>${detected.length}</strong></div><div class="golevg-stat"><span>Fotos en R2</span><strong>${migratedPhotos}</strong></div><div class="golevg-stat"><span>Reportes generados</span><strong>${state.campaignReports.length}</strong></div></div>
       <div class="golevg-tabs" id="golevg-campaign-tabs"><button class="golevg-tab ${state.campaignTab === 'AGENCIES' ? 'active' : ''}" data-campaign-tab="AGENCIES">Agencias</button><button class="golevg-tab ${state.campaignTab === 'FINDINGS' ? 'active' : ''}" data-campaign-tab="FINDINGS">Hallazgos por tipo</button><button class="golevg-tab ${state.campaignTab === 'REPORTS' ? 'active' : ''}" data-campaign-tab="REPORTS">Reportes generados</button></div>
@@ -1247,6 +1322,484 @@
     toast('Reporte eliminado.', 'success');
     if (state.selectedCampaign) await openCampaign(state.selectedCampaign.id, { tab: 'REPORTS', scroll: false, returnTab: state.detailReturnTab });
     else await loadReports();
+  }
+
+  function historyDate(value) {
+    if (!value) return null;
+    const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function historyInclusiveDays(from, to) {
+    const start = historyDate(from), end = historyDate(to);
+    if (!start || !end || end < start) return 0;
+    return Math.floor((end - start) / 86400000) + 1;
+  }
+
+  function historyDaysSince(value) {
+    const end = historyDate(value), now = historyDate(today());
+    if (!end || !now) return null;
+    return Math.max(0, Math.floor((now - end) / 86400000));
+  }
+
+  function historyOriginLabel(value) {
+    return value === 'AUTOMATICO' ? 'Automático' : 'Manual';
+  }
+
+  function historyFilterValues() {
+    return {
+      search: normalize($('#golevg-history-search')?.value || ''),
+      from: text($('#golevg-history-from')?.value),
+      to: text($('#golevg-history-to')?.value),
+      origin: text($('#golevg-history-origin')?.value),
+      sort: text($('#golevg-history-sort')?.value) || 'NEVER_FIRST'
+    };
+  }
+
+  function historyMatchesPeriod(item, filters) {
+    if (filters.origin && item.origen !== filters.origin) return false;
+    if (filters.from && text(item.fecha_hasta) < filters.from) return false;
+    if (filters.to && text(item.fecha_desde) > filters.to) return false;
+    return true;
+  }
+
+  function historyDetailsFor(id) {
+    return state.historyAgencyRows.filter((row) => row.historial_id === id);
+  }
+
+  function historyCountFor(id) {
+    return historyDetailsFor(id).length;
+  }
+
+  function historyAllGroupRows() {
+    const map = new Map();
+    groups().forEach((group) => {
+      const code = normalizeGroup(groupLabel(group));
+      if (!code) return;
+      map.set(code, { code, id: groupId(group) || null, name: text(group.nombre) || `Grupo ${code}`, current: true, histories: [] });
+    });
+    state.historyRows.forEach((history) => {
+      const code = normalizeGroup(history.grupo_codigo);
+      if (!code) return;
+      if (!map.has(code)) map.set(code, { code, id: history.grupo_id || null, name: text(history.grupo_nombre) || `Grupo ${code}`, current: false, histories: [] });
+      map.get(code).histories.push(history);
+    });
+    map.forEach((group) => group.histories.sort((a, b) => text(b.fecha_hasta).localeCompare(text(a.fecha_hasta)) || text(b.creado_en).localeCompare(text(a.creado_en))));
+    return [...map.values()];
+  }
+
+  function filteredHistoryGroupRows() {
+    const filters = historyFilterValues();
+    const hasHistoryFilter = Boolean(filters.from || filters.to || filters.origin);
+    const rows = historyAllGroupRows().map((group) => {
+      const matching = group.histories.filter((item) => historyMatchesPeriod(item, filters));
+      const latest = matching[0] || null;
+      return {
+        ...group,
+        matching,
+        latest,
+        agencies: latest ? historyCountFor(latest.id) : 0,
+        days: latest ? historyDaysSince(latest.fecha_hasta) : null,
+        totalHistories: group.histories.length
+      };
+    }).filter((group) => {
+      if (filters.search && !normalize(`${group.code} ${group.name}`).includes(filters.search)) return false;
+      if (hasHistoryFilter && !group.matching.length) return false;
+      return true;
+    });
+
+    rows.sort((a, b) => {
+      if (filters.sort === 'NEVER_FIRST') {
+        if (!a.latest && b.latest) return -1;
+        if (a.latest && !b.latest) return 1;
+        if (!a.latest && !b.latest) return a.code.localeCompare(b.code, 'es', { numeric: true });
+        return text(a.latest.fecha_hasta).localeCompare(text(b.latest.fecha_hasta)) || a.code.localeCompare(b.code, 'es', { numeric: true });
+      }
+      if (filters.sort === 'OLDEST') {
+        if (!a.latest && b.latest) return -1;
+        if (a.latest && !b.latest) return 1;
+        return text(a.latest?.fecha_hasta).localeCompare(text(b.latest?.fecha_hasta));
+      }
+      if (filters.sort === 'RECENT') return text(b.latest?.fecha_hasta).localeCompare(text(a.latest?.fecha_hasta));
+      if (filters.sort === 'MOST_AGENCIES') return b.agencies - a.agencies || a.code.localeCompare(b.code, 'es', { numeric: true });
+      if (filters.sort === 'LEAST_AGENCIES') return a.agencies - b.agencies || a.code.localeCompare(b.code, 'es', { numeric: true });
+      return a.code.localeCompare(b.code, 'es', { numeric: true });
+    });
+    return rows;
+  }
+
+  function renderHistoryStats() {
+    const all = historyAllGroupRows();
+    const registered = all.filter((row) => row.histories.length);
+    const never = all.filter((row) => !row.histories.length);
+    const oldest = registered.map((row) => ({ row, latest: row.histories[0], days: historyDaysSince(row.histories[0]?.fecha_hasta) })).sort((a, b) => (b.days ?? -1) - (a.days ?? -1))[0];
+    const holder = $('#golevg-history-stats');
+    if (!holder) return;
+    holder.innerHTML = [
+      ['Grupos con historial', registered.length],
+      ['Nunca registrados', never.length],
+      ['Más tiempo sin levantarse', oldest ? `G-${oldest.row.code} · ${oldest.days} días` : '—']
+    ].map(([label, value]) => `<div class="golevg-stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('');
+  }
+
+  function renderHistory() {
+    const holder = $('#golevg-history-content');
+    if (!holder) return;
+    const filters = historyFilterValues();
+    if (filters.from && filters.to && filters.to < filters.from) {
+      holder.innerHTML = '<div class="golevg-empty">La fecha Hasta del filtro no puede ser menor que Desde.</div>';
+      return;
+    }
+    const rows = filteredHistoryGroupRows();
+    state.historyGroupRows = rows;
+    renderHistoryStats();
+    if ($('#golevg-history-count')) $('#golevg-history-count').textContent = `${rows.length} grupo${rows.length === 1 ? '' : 's'}`;
+    if ($('#golevg-history-new')) $('#golevg-history-new').style.display = canManage() ? '' : 'none';
+    if (!rows.length) {
+      holder.innerHTML = `<div class="golevg-empty"><b>No hay levantamientos históricos que coincidan.</b><br>${canManage() ? '<button class="golevg-btn primary" id="golevg-history-empty-new" style="margin-top:12px">Registrar primer levantamiento</button>' : ''}</div>`;
+      if ($('#golevg-history-empty-new')) $('#golevg-history-empty-new').onclick = () => openHistoryManualModal();
+      return;
+    }
+    holder.innerHTML = `<div class="golevg-table-wrap"><table class="golevg-table golevg-history-table"><thead><tr><th>Grupo</th><th>Último período</th><th>Agencias</th><th>Días sin levantamiento</th><th>Históricos</th><th>Origen último</th><th>Acción</th></tr></thead><tbody>${rows.map((row) => {
+      const latest = row.latest;
+      return `<tr class="${latest ? '' : 'golevg-history-never'}"><td><b>G-${esc(row.code)}</b><br><small>${esc(row.name || '')}</small></td><td>${latest ? `<span class="golevg-history-period">${formatDate(latest.fecha_desde)} → ${formatDate(latest.fecha_hasta)}</span>` : '<span class="golevg-badge warn">Nunca registrado</span>'}</td><td>${latest ? `<b>${row.agencies}</b> agencias` : '—'}</td><td>${latest ? `<span class="golevg-history-days ${Number(row.days || 0) >= 180 ? 'is-old' : ''}">${row.days} días</span>` : '—'}</td><td>${row.totalHistories}</td><td class="golevg-history-origin">${latest ? `<span class="golevg-badge ${latest.origen === 'AUTOMATICO' ? 'run' : 'wait'}">${historyOriginLabel(latest.origen)}</span>` : '—'}</td><td><button class="golevg-btn small" data-history-group="${esc(row.code)}">${latest ? 'Ver historial' : 'Registrar'}</button></td></tr>`;
+    }).join('')}</tbody></table></div>`;
+    $$('[data-history-group]', holder).forEach((button) => {
+      button.onclick = () => {
+        const group = rows.find((item) => item.code === button.dataset.historyGroup);
+        if (!group?.histories.length && canManage()) return openHistoryManualModal({ groupCode: group.code });
+        openHistoryGroupModal(button.dataset.historyGroup);
+      };
+    });
+  }
+
+  async function loadHistory() {
+    const connected = client();
+    if (!connected?.from) throw new Error('Supabase no está disponible.');
+    const holder = $('#golevg-history-content');
+    if (state.historyLoading) return;
+    state.historyLoading = true;
+    if (holder) holder.innerHTML = '<div class="golevg-history-loading"><i class="fas fa-spinner fa-spin"></i> Cargando historial por grupo…</div>';
+    try {
+      await loadCatalog();
+      fillGroupOptions();
+      const [headerRows, detailRows] = await Promise.all([
+        fetchAllCatalogRows(TABLES.historyGroups, 'id,grupo_id,grupo_codigo,grupo_nombre,fecha_desde,fecha_hasta,origen,campana_origen_id,campana_codigo,creado_por,creado_en,actualizado_en', 'id'),
+        fetchAllCatalogRows(TABLES.historyAgencies, 'id,historial_id,agencia_id,expediente_origen_id,agencia_numero,agencia_nombre,creado_en', 'id')
+      ]);
+      state.historyRows = (headerRows || []).sort((a, b) => text(b.fecha_hasta).localeCompare(text(a.fecha_hasta)) || text(b.creado_en).localeCompare(text(a.creado_en)));
+      state.historyAgencyRows = detailRows || [];
+      await enrichReportCreators(state.historyRows);
+      renderHistory();
+      saveUiState();
+    } finally {
+      state.historyLoading = false;
+    }
+  }
+
+  function historyManualSetStatus(message = '', tone = 'info') {
+    const el = $('#golevg-history-manual-status');
+    if (!el) return;
+    el.style.display = message ? '' : 'none';
+    el.textContent = message;
+    el.style.borderColor = tone === 'error' ? '#f1b7b2' : '#d7e8f1';
+    el.style.background = tone === 'error' ? '#fff4f3' : '#f4f9fc';
+    el.style.color = tone === 'error' ? '#8e281f' : '#5d788c';
+  }
+
+  function historyManualGroupCode() {
+    return $('#golevg-history-manual-group')?.selectedOptions?.[0]?.dataset?.code || '';
+  }
+
+  function historyManualAvailableAgencies() {
+    const code = normalizeGroup(historyManualGroupCode());
+    const search = normalize($('#golevg-history-manual-search')?.value || '');
+    const showAll = state.historyManualShowAllAgencies;
+    return rawAgencies().filter((agency) => agencyId(agency)).filter((agency) => showAll || agencyGroupCode(agency) === code).filter((agency) => !search || normalize(`${agencyNumber(agency)} ${agencyName(agency)}`).includes(search)).sort((a, b) => agencyNumber(a).localeCompare(agencyNumber(b), 'es', { numeric: true }));
+  }
+
+  function updateHistoryManualSummary() {
+    const locked = state.historyManualLockedSnapshots.length;
+    const selected = state.historyManualSelectedAgencyIds.size + locked;
+    if ($('#golevg-history-manual-selected')) $('#golevg-history-manual-selected').textContent = String(selected);
+    if ($('#golevg-history-manual-records')) $('#golevg-history-manual-records').textContent = String(selected);
+    const from = $('#golevg-history-manual-from')?.value, to = $('#golevg-history-manual-to')?.value;
+    const days = historyInclusiveDays(from, to);
+    if ($('#golevg-history-manual-duration')) $('#golevg-history-manual-duration').textContent = days ? `${days} día${days === 1 ? '' : 's'}` : '—';
+    const lockedEl = $('#golevg-history-manual-locked');
+    if (lockedEl) {
+      lockedEl.style.display = locked ? '' : 'none';
+      lockedEl.textContent = locked ? `${locked} agencia${locked === 1 ? '' : 's'} histórica${locked === 1 ? '' : 's'} ya no tiene referencia activa y se conservará${locked === 1 ? '' : 'n'} por snapshot.` : '';
+    }
+  }
+
+  function renderHistoryManualAgencies() {
+    const holder = $('#golevg-history-manual-agencies');
+    if (!holder) return;
+    const groupCode = historyManualGroupCode();
+    if (!groupCode) {
+      holder.innerHTML = '<div class="golevg-empty">Selecciona un grupo para cargar sus agencias.</div>';
+      updateHistoryManualSummary();
+      return;
+    }
+    const rows = historyManualAvailableAgencies();
+    if (!rows.length) {
+      holder.innerHTML = '<div class="golevg-empty">No hay agencias que coincidan con esta selección.</div>';
+      updateHistoryManualSummary();
+      return;
+    }
+    holder.innerHTML = rows.map((agency) => {
+      const id = agencyId(agency), checked = state.historyManualSelectedAgencyIds.has(id);
+      const currentCode = agencyGroupCode(agency);
+      return `<label class="golevg-history-agency-option"><input type="checkbox" data-history-agency-id="${esc(id)}" ${checked ? 'checked' : ''}><b>${esc(agencyNumber(agency))}</b><span>${esc(agencyName(agency))}</span><small>G-${esc(currentCode || '—')}</small></label>`;
+    }).join('');
+    $$('[data-history-agency-id]', holder).forEach((input) => {
+      input.onchange = () => {
+        if (input.checked) state.historyManualSelectedAgencyIds.add(input.dataset.historyAgencyId);
+        else state.historyManualSelectedAgencyIds.delete(input.dataset.historyAgencyId);
+        updateHistoryManualSummary();
+      };
+    });
+    updateHistoryManualSummary();
+  }
+
+  async function openHistoryManualModal(options = {}) {
+    if (!requireManage()) return;
+    await loadCatalog();
+    fillGroupOptions();
+    const record = options.historyId ? state.historyRows.find((row) => row.id === options.historyId) : null;
+    state.historyManualSelectedAgencyIds = new Set();
+    state.historyManualLockedSnapshots = [];
+    state.historyManualShowAllAgencies = false;
+    $('#golevg-history-manual-id').value = record?.id || '';
+    $('#golevg-history-manual-title').textContent = record ? 'Editar levantamiento histórico' : 'Registrar levantamiento histórico';
+    $('#golevg-history-manual-search').value = '';
+    $('#golevg-history-manual-show-all').checked = false;
+    let wantedGroupId = record?.grupo_id || '';
+    let wantedGroupCode = normalizeGroup(record?.grupo_codigo || options.groupCode || '');
+    const select = $('#golevg-history-manual-group');
+    const optionByCode = [...select.options].find((option) => normalizeGroup(option.dataset.code) === wantedGroupCode);
+    select.value = wantedGroupId && [...select.options].some((option) => option.value === wantedGroupId) ? wantedGroupId : (optionByCode?.value || '');
+    select.disabled = !!record;
+    select.title = record ? 'El grupo de un histórico existente no se modifica; edita fechas y agencias.' : '';
+    $('#golevg-history-manual-from').value = record?.fecha_desde || today();
+    $('#golevg-history-manual-to').value = record?.fecha_hasta || today();
+    if (record) {
+      const details = historyDetailsFor(record.id);
+      details.forEach((detail) => {
+        if (detail.agencia_id && rawAgencies().some((agency) => agencyId(agency) === detail.agencia_id)) state.historyManualSelectedAgencyIds.add(detail.agencia_id);
+        else state.historyManualLockedSnapshots.push(detail);
+      });
+      const mismatched = details.some((detail) => {
+        const agency = rawAgencies().find((item) => agencyId(item) === detail.agencia_id);
+        return agency && agencyGroupCode(agency) !== wantedGroupCode;
+      });
+      state.historyManualShowAllAgencies = mismatched;
+      $('#golevg-history-manual-show-all').checked = mismatched;
+    }
+    historyManualSetStatus('');
+    renderHistoryManualAgencies();
+    $('#golevg-history-manual-modal').classList.add('open');
+  }
+
+  async function saveHistoryManual() {
+    if (!requireManage()) return;
+    const button = $('#golevg-history-manual-save');
+    if (button?.disabled) return;
+    const groupIdValue = $('#golevg-history-manual-group')?.value || '';
+    const from = $('#golevg-history-manual-from')?.value || '';
+    const to = $('#golevg-history-manual-to')?.value || '';
+    const ids = [...state.historyManualSelectedAgencyIds];
+    const historyId = $('#golevg-history-manual-id')?.value || null;
+    if (!uuid(groupIdValue)) return historyManualSetStatus('Selecciona un grupo válido.', 'error');
+    if (!from || !to) return historyManualSetStatus('Desde y Hasta son obligatorios.', 'error');
+    if (to < from) return historyManualSetStatus('Hasta no puede ser menor que Desde.', 'error');
+    if (!ids.length) return historyManualSetStatus('Selecciona al menos una agencia existente.', 'error');
+    const original = button?.innerHTML || 'Guardar histórico';
+    if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…'; }
+    historyManualSetStatus('Guardando el histórico sin fotografías ni evidencias…');
+    try {
+      const result = await client().rpc('ops_levantamiento_historial_guardar_manual_v1', {
+        p_grupo_id: groupIdValue,
+        p_fecha_desde: from,
+        p_fecha_hasta: to,
+        p_agencia_ids: ids,
+        p_historial_id: historyId || null
+      });
+      if (result.error) throw result.error;
+      closeModal('golevg-history-manual-modal');
+      toast(historyId ? 'Histórico manual actualizado correctamente.' : 'Levantamiento histórico registrado correctamente.', 'success');
+      await loadHistory();
+      if (state.historySelectedGroupCode) openHistoryGroupModal(state.historySelectedGroupCode);
+    } catch (error) {
+      historyManualSetStatus(error.message || 'No se pudo guardar el histórico.', 'error');
+      toast(error.message || 'No se pudo guardar el histórico.', 'error');
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = original; }
+    }
+  }
+
+  async function deleteHistoryManual(id) {
+    const record = state.historyRows.find((row) => row.id === id);
+    if (!record || record.origen !== 'MANUAL' || !requireManage()) return;
+    if (!global.confirm(`¿Eliminar el histórico manual de G-${record.grupo_codigo} (${formatDate(record.fecha_desde)} → ${formatDate(record.fecha_hasta)})? Esta acción no elimina Jotforms, fotos ni levantamientos reales.`)) return;
+    try {
+      const result = await client().rpc('ops_levantamiento_historial_eliminar_manual_v1', { p_historial_id: id });
+      if (result.error) throw result.error;
+      toast('Histórico manual eliminado.', 'success');
+      await loadHistory();
+      if (state.historySelectedGroupCode) openHistoryGroupModal(state.historySelectedGroupCode);
+    } catch (error) { toast(error.message || 'No se pudo eliminar el histórico.', 'error'); }
+  }
+
+  function openHistoryGroupModal(groupCode) {
+    const code = normalizeGroup(groupCode);
+    const group = historyAllGroupRows().find((row) => row.code === code);
+    if (!group) return;
+    state.historySelectedGroupCode = code;
+    const histories = group.histories;
+    const latest = histories[0] || null;
+    $('#golevg-history-group-title').textContent = `Grupo ${code}`;
+    $('#golevg-history-group-subtitle').textContent = latest ? `Último levantamiento: ${formatDate(latest.fecha_desde)} → ${formatDate(latest.fecha_hasta)}` : 'Nunca registrado';
+    const body = $('#golevg-history-group-body');
+    body.innerHTML = `<div class="golevg-stats golevg-history-group-summary"><div class="golevg-stat"><span>Último levantamiento</span><strong>${latest ? `${formatDate(latest.fecha_hasta)}` : '—'}</strong></div><div class="golevg-stat"><span>Agencias</span><strong>${latest ? historyCountFor(latest.id) : 0}</strong></div><div class="golevg-stat"><span>Días desde finalización</span><strong>${latest ? historyDaysSince(latest.fecha_hasta) : '—'}</strong></div><div class="golevg-stat"><span>Históricos</span><strong>${histories.length}</strong></div></div><div class="golevg-actions" style="margin-bottom:12px">${canManage() ? `<button class="golevg-btn primary" id="golevg-history-group-add"><i class="fas fa-plus"></i> Registrar nuevo</button>` : ''}</div>${histories.length ? `<div class="golevg-table-wrap"><table class="golevg-table"><thead><tr><th>Desde</th><th>Hasta</th><th>Duración</th><th>Agencias / Registros</th><th>Origen</th><th>Registrado</th><th>Acciones</th></tr></thead><tbody>${histories.map((item) => `<tr><td>${formatDate(item.fecha_desde)}</td><td>${formatDate(item.fecha_hasta)}</td><td>${historyInclusiveDays(item.fecha_desde, item.fecha_hasta)} días</td><td><b>${historyCountFor(item.id)}</b></td><td><span class="golevg-badge ${item.origen === 'AUTOMATICO' ? 'run' : 'wait'}">${historyOriginLabel(item.origen)}</span></td><td>${formatDateTime(item.creado_en)}<br><small>${esc(item._creator_name || 'No registrado')}</small></td><td><div class="golevg-history-actions-cell"><button class="golevg-btn small" data-history-view-agencies="${item.id}">Ver agencias</button>${item.origen === 'MANUAL' && canManage() ? `<button class="golevg-btn small" data-history-edit="${item.id}">Editar</button><button class="golevg-btn small danger" data-history-delete="${item.id}">Eliminar</button>` : ''}${item.origen === 'AUTOMATICO' && item.campana_origen_id ? `<button class="golevg-btn small" data-history-open-campaign="${item.campana_origen_id}">Abrir original</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div>` : '<div class="golevg-empty">No hay levantamientos históricos registrados.</div>'}`;
+    if ($('#golevg-history-group-add')) $('#golevg-history-group-add').onclick = () => openHistoryManualModal({ groupCode: code });
+    $$('[data-history-view-agencies]', body).forEach((button) => { button.onclick = () => openHistoryAgenciesModal(button.dataset.historyViewAgencies); });
+    $$('[data-history-edit]', body).forEach((button) => { button.onclick = () => openHistoryManualModal({ historyId: button.dataset.historyEdit }); });
+    $$('[data-history-delete]', body).forEach((button) => { button.onclick = () => deleteHistoryManual(button.dataset.historyDelete); });
+    $$('[data-history-open-campaign]', body).forEach((button) => { button.onclick = async () => { closeModal('golevg-history-group-modal'); await openCampaign(button.dataset.historyOpenCampaign, { returnTab: 'HISTORY' }); }; });
+    $('#golevg-history-group-modal').classList.add('open');
+  }
+
+  function openHistoryAgenciesModal(historyId) {
+    const record = state.historyRows.find((row) => row.id === historyId);
+    if (!record) return;
+    const rows = historyDetailsFor(historyId).sort((a, b) => text(a.agencia_numero).localeCompare(text(b.agencia_numero), 'es', { numeric: true }));
+    state.historySelectedExecution = record;
+    $('#golevg-history-agencies-title').textContent = `Agencias levantadas · Grupo ${record.grupo_codigo}`;
+    $('#golevg-history-agencies-subtitle').textContent = `${formatDate(record.fecha_desde)} → ${formatDate(record.fecha_hasta)} · ${rows.length} agencias = ${rows.length} registros`;
+    $('#golevg-history-agencies-body').innerHTML = rows.length ? `<div class="golevg-history-agency-simple">${rows.map((row, index) => `<div><span>${index + 1}.</span><b>${esc(row.agencia_numero)}</b><span>${esc(row.agencia_nombre || 'Agencia')}</span></div>`).join('')}</div>` : '<div class="golevg-empty">No hay agencias registradas en este histórico.</div>';
+    $('#golevg-history-agencies-export').disabled = !rows.length;
+    $('#golevg-history-agencies-modal').classList.add('open');
+  }
+
+  function historyXmlSafe(value) {
+    return text(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+
+  function historyExcelColumnName(number) {
+    let value = Number(number), name = '';
+    while (value > 0) { value -= 1; name = String.fromCharCode(65 + (value % 26)) + name; value = Math.floor(value / 26); }
+    return name;
+  }
+
+  function historyExcelDateSerial(value) {
+    const date = historyDate(value);
+    return date ? Math.floor((Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(1899, 11, 30)) / 86400000) : null;
+  }
+
+  function historyXlsxCell(column, row, value, type = 'text', alternate = false) {
+    const ref = `${historyExcelColumnName(column)}${row}`;
+    if (type === 'number') { if (value === '' || value == null) return `<c r="${ref}" t="inlineStr" s="${alternate ? 5 : 4}"><is><t></t></is></c>`; return `<c r="${ref}" t="n" s="${alternate ? 7 : 6}"><v>${Number(value)}</v></c>`; }
+    if (type === 'date') { const serial = historyExcelDateSerial(value); return serial == null ? `<c r="${ref}" t="inlineStr" s="${alternate ? 5 : 4}"><is><t></t></is></c>` : `<c r="${ref}" t="n" s="${alternate ? 9 : 8}"><v>${serial}</v></c>`; }
+    return `<c r="${ref}" t="inlineStr" s="${alternate ? 5 : 4}"><is><t xml:space="preserve">${historyXmlSafe(value)}</t></is></c>`;
+  }
+
+  let historyCrcTable = null;
+  function historyCrc32(bytes) {
+    if (!historyCrcTable) {
+      historyCrcTable = new Uint32Array(256);
+      for (let n = 0; n < 256; n += 1) { let c = n; for (let k = 0; k < 8; k += 1) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); historyCrcTable[n] = c >>> 0; }
+    }
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i += 1) crc = historyCrcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function historyDosDateTime(date = new Date()) {
+    const year = Math.max(1980, date.getFullYear());
+    return { time: ((date.getHours() & 31) << 11) | ((date.getMinutes() & 63) << 5) | ((Math.floor(date.getSeconds() / 2)) & 31), date: (((year - 1980) & 127) << 9) | (((date.getMonth() + 1) & 15) << 5) | (date.getDate() & 31) };
+  }
+
+  function historyWriteU16(view, offset, value) { view.setUint16(offset, value & 0xFFFF, true); }
+  function historyWriteU32(view, offset, value) { view.setUint32(offset, value >>> 0, true); }
+  function historyConcatBytes(parts) { const length = parts.reduce((sum, part) => sum + part.length, 0); const output = new Uint8Array(length); let offset = 0; parts.forEach((part) => { output.set(part, offset); offset += part.length; }); return output; }
+
+  function historyZipStore(entries) {
+    const encoder = new TextEncoder(), localParts = [], centralParts = []; let localOffset = 0; const stamp = historyDosDateTime();
+    entries.forEach((entry) => {
+      const name = encoder.encode(entry.name), data = entry.data instanceof Uint8Array ? entry.data : encoder.encode(String(entry.data)), crc = historyCrc32(data);
+      const local = new Uint8Array(30), lv = new DataView(local.buffer); historyWriteU32(lv, 0, 0x04034B50); historyWriteU16(lv, 4, 20); historyWriteU16(lv, 6, 0x0800); historyWriteU16(lv, 8, 0); historyWriteU16(lv, 10, stamp.time); historyWriteU16(lv, 12, stamp.date); historyWriteU32(lv, 14, crc); historyWriteU32(lv, 18, data.length); historyWriteU32(lv, 22, data.length); historyWriteU16(lv, 26, name.length); historyWriteU16(lv, 28, 0); localParts.push(local, name, data);
+      const central = new Uint8Array(46), cv = new DataView(central.buffer); historyWriteU32(cv, 0, 0x02014B50); historyWriteU16(cv, 4, 20); historyWriteU16(cv, 6, 20); historyWriteU16(cv, 8, 0x0800); historyWriteU16(cv, 10, 0); historyWriteU16(cv, 12, stamp.time); historyWriteU16(cv, 14, stamp.date); historyWriteU32(cv, 16, crc); historyWriteU32(cv, 20, data.length); historyWriteU32(cv, 24, data.length); historyWriteU16(cv, 28, name.length); historyWriteU16(cv, 30, 0); historyWriteU16(cv, 32, 0); historyWriteU16(cv, 34, 0); historyWriteU16(cv, 36, 0); historyWriteU32(cv, 38, 0); historyWriteU32(cv, 42, localOffset); centralParts.push(central, name); localOffset += local.length + name.length + data.length;
+    });
+    const localBytes = historyConcatBytes(localParts), centralBytes = historyConcatBytes(centralParts), end = new Uint8Array(22), ev = new DataView(end.buffer); historyWriteU32(ev, 0, 0x06054B50); historyWriteU16(ev, 4, 0); historyWriteU16(ev, 6, 0); historyWriteU16(ev, 8, entries.length); historyWriteU16(ev, 10, entries.length); historyWriteU32(ev, 12, centralBytes.length); historyWriteU32(ev, 16, localBytes.length); historyWriteU16(ev, 20, 0); return historyConcatBytes([localBytes, centralBytes, end]);
+  }
+
+  function historyBuildWorkbook(rows, config, filterSummary = '') {
+    if (!rows.length) throw new Error('No hay datos para exportar.');
+    const encoder = new TextEncoder(), now = new Date(), generated = new Intl.DateTimeFormat('es-DO', { dateStyle: 'medium', timeStyle: 'short' }).format(now), columns = config.columns, lastColumn = historyExcelColumnName(columns.length), dataStart = 6, lastRow = dataStart + rows.length - 1, filterEnd = Math.max(5, lastRow);
+    const rowXml = rows.map((row, index) => { const r = dataStart + index, alternate = index % 2 === 1; return `<row r="${r}" ht="25" customHeight="1">${columns.map((column, i) => historyXlsxCell(i + 1, r, row[column.key], column.type || 'text', alternate)).join('')}</row>`; }).join('');
+    const widths = columns.map((column, index) => `<col min="${index + 1}" max="${index + 1}" width="${column.width || 18}" customWidth="1"/>`).join('');
+    const headers = columns.map((column, index) => `<c r="${historyExcelColumnName(index + 1)}5" t="inlineStr" s="3"><is><t>${historyXmlSafe(column.label)}</t></is></c>`).join('');
+    const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:${lastColumn}${filterEnd}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>${widths}</cols><sheetData><row r="1" ht="32" customHeight="1"><c r="A1" t="inlineStr" s="1"><is><t>${historyXmlSafe(config.title)}</t></is></c></row><row r="2" ht="22" customHeight="1"><c r="A2" t="inlineStr" s="2"><is><t>${historyXmlSafe(`Grupo Ortiz · ${rows.length} registro${rows.length === 1 ? '' : 's'} · Generado ${generated}`)}</t></is></c></row><row r="3" ht="22" customHeight="1"><c r="A3" t="inlineStr" s="2"><is><t>${historyXmlSafe(filterSummary || 'Sin filtros adicionales')}</t></is></c></row><row r="4" ht="8" customHeight="1"></row><row r="5" ht="26" customHeight="1">${headers}</row>${rowXml}</sheetData><autoFilter ref="A5:${lastColumn}${filterEnd}"/><mergeCells count="3"><mergeCell ref="A1:${lastColumn}1"/><mergeCell ref="A2:${lastColumn}2"/><mergeCell ref="A3:${lastColumn}3"/></mergeCells><pageMargins left="0.35" right="0.35" top="0.55" bottom="0.55" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+    const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="18"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><sz val="10"/><color rgb="FF547086"/><name val="Calibri"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF075F8F"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0B78AE"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF7FBFD"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9E6EE"/></left><right style="thin"><color rgb="FFD9E6EE"/></right><top style="thin"><color rgb="FFD9E6EE"/></top><bottom style="thin"><color rgb="FFD9E6EE"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="10"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="14" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="14" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+    const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${historyXmlSafe(config.sheetName)}" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+    const entries = [
+      { name: '[Content_Types].xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>` },
+      { name: '_rels/.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+      { name: 'xl/workbook.xml', data: workbook },
+      { name: 'xl/_rels/workbook.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+      { name: 'xl/styles.xml', data: styles }, { name: 'xl/worksheets/sheet1.xml', data: sheet }
+    ].map((entry) => ({ name: entry.name, data: encoder.encode(entry.data) }));
+    return historyZipStore(entries);
+  }
+
+  function historyDownloadBytes(bytes, filename) {
+    const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), url = URL.createObjectURL(blob), anchor = document.createElement('a');
+    anchor.href = url; anchor.download = filename; anchor.style.display = 'none'; document.body.appendChild(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function historyFilterSummary() {
+    const filters = historyFilterValues(), parts = [];
+    if (filters.search) parts.push(`Grupo: ${$('#golevg-history-search').value}`);
+    if (filters.from) parts.push(`Desde: ${formatDate(filters.from)}`);
+    if (filters.to) parts.push(`Hasta: ${formatDate(filters.to)}`);
+    if (filters.origin) parts.push(`Origen: ${historyOriginLabel(filters.origin)}`);
+    return parts.join(' · ') || 'Todos los grupos';
+  }
+
+  function exportHistorySummaryExcel() {
+    const rows = filteredHistoryGroupRows().map((row) => ({ group: `G-${row.code}`, from: row.latest?.fecha_desde || '', to: row.latest?.fecha_hasta || '', agencies: row.latest ? row.agencies : '', days: row.latest ? row.days : '', histories: row.totalHistories, origin: row.latest ? historyOriginLabel(row.latest.origen) : 'Nunca registrado' }));
+    if (!rows.length) return toast('No hay grupos para exportar con los filtros actuales.', 'error');
+    const bytes = historyBuildWorkbook(rows, { title: 'Historial de Levantamientos · Resumen por Grupo', sheetName: 'Resumen por grupo', columns: [{ key:'group',label:'Grupo',width:14 },{ key:'from',label:'Desde último levantamiento',width:22,type:'date' },{ key:'to',label:'Hasta último levantamiento',width:22,type:'date' },{ key:'agencies',label:'Agencias levantadas',width:20,type:'number' },{ key:'days',label:'Días desde finalización',width:22,type:'number' },{ key:'histories',label:'Cantidad de históricos',width:20,type:'number' },{ key:'origin',label:'Origen del último',width:20 }] }, historyFilterSummary());
+    historyDownloadBytes(bytes, `historial-levantamientos-resumen-${today()}.xlsx`); toast(`Excel resumen generado: ${rows.length} grupos.`, 'success');
+  }
+
+  function filteredHistoryExecutions() {
+    const filters = historyFilterValues(), groupSearch = filters.search;
+    return state.historyRows.filter((item) => historyMatchesPeriod(item, filters)).filter((item) => !groupSearch || normalize(`${item.grupo_codigo} ${item.grupo_nombre || ''}`).includes(groupSearch)).sort((a, b) => text(a.grupo_codigo).localeCompare(text(b.grupo_codigo), 'es', { numeric: true }) || text(b.fecha_hasta).localeCompare(text(a.fecha_hasta)));
+  }
+
+  function exportHistoryFullExcel() {
+    const executions = filteredHistoryExecutions();
+    const rows = executions.map((item) => ({ group:`G-${item.grupo_codigo}`, from:item.fecha_desde, to:item.fecha_hasta, duration:historyInclusiveDays(item.fecha_desde,item.fecha_hasta), agencies:historyCountFor(item.id), origin:historyOriginLabel(item.origen) }));
+    if (!rows.length) return toast('No hay históricos para exportar con los filtros actuales.', 'error');
+    const bytes = historyBuildWorkbook(rows, { title:'Historial de Levantamientos · Histórico Completo', sheetName:'Historial completo', columns:[{key:'group',label:'Grupo',width:14},{key:'from',label:'Desde',width:16,type:'date'},{key:'to',label:'Hasta',width:16,type:'date'},{key:'duration',label:'Duración (días)',width:18,type:'number'},{key:'agencies',label:'Agencias / Registros',width:20,type:'number'},{key:'origin',label:'Origen',width:16}] }, historyFilterSummary());
+    historyDownloadBytes(bytes, `historial-levantamientos-completo-${today()}.xlsx`); toast(`Excel histórico generado: ${rows.length} ejecuciones.`, 'success');
+  }
+
+  function historyAgencyExportRows(executions) {
+    const allowed = new Map(executions.map((item) => [item.id, item]));
+    return state.historyAgencyRows.filter((detail) => allowed.has(detail.historial_id)).map((detail) => { const item = allowed.get(detail.historial_id); return { group:`G-${item.grupo_codigo}`, from:item.fecha_desde, to:item.fecha_hasta, agency:detail.agencia_numero, name:detail.agencia_nombre || '' }; }).sort((a,b)=>a.group.localeCompare(b.group,'es',{numeric:true}) || text(b.to).localeCompare(text(a.to)) || a.agency.localeCompare(b.agency,'es',{numeric:true}));
+  }
+
+  function exportHistoryAgenciesExcel(execution = null) {
+    const executions = execution ? [execution] : filteredHistoryExecutions();
+    const rows = historyAgencyExportRows(executions);
+    if (!rows.length) return toast('No hay agencias para exportar.', 'error');
+    const title = execution ? `Agencias levantadas · Grupo ${execution.grupo_codigo}` : 'Historial de Levantamientos · Detalle de Agencias';
+    const bytes = historyBuildWorkbook(rows, { title, sheetName:'Detalle agencias', columns:[{key:'group',label:'Grupo',width:14},{key:'from',label:'Desde',width:16,type:'date'},{key:'to',label:'Hasta',width:16,type:'date'},{key:'agency',label:'Agencia',width:14},{key:'name',label:'Nombre agencia',width:42}] }, execution ? `${formatDate(execution.fecha_desde)} → ${formatDate(execution.fecha_hasta)} · ${historyOriginLabel(execution.origen)}` : historyFilterSummary());
+    historyDownloadBytes(bytes, execution ? `historial-G${execution.grupo_codigo}-agencias-${execution.fecha_hasta}.xlsx` : `historial-levantamientos-agencias-${today()}.xlsx`); toast(`Excel de agencias generado: ${rows.length} registros.`, 'success');
   }
 
   function printableHtml(report) {
@@ -1621,6 +2174,8 @@
     $(`#${id}`)?.classList.remove('open');
     if (id === 'golevg-jotform-modal') state.sourceContext = null;
     if (id === 'golevg-delete-modal') state.deleteContext = null;
+    if (id === 'golevg-history-agencies-modal') state.historySelectedExecution = null;
+    if (id === 'golevg-history-group-modal') state.historySelectedGroupCode = null;
   }
 
   function scheduleRealtimeRefresh() {
@@ -1640,6 +2195,8 @@
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.evidence }, scheduleRealtimeRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.reports }, scheduleRealtimeRefresh)
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.intakes }, scheduleRealtimeRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.historyGroups }, scheduleRealtimeRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: TABLES.historyAgencies }, scheduleRealtimeRefresh)
         .subscribe();
     } catch (_error) {}
   }
@@ -1651,6 +2208,12 @@
     $('#golevg-new').onclick = openCampaignModal;
     $('#golevg-copy-form').onclick = copyGeneralJotformLink;
     $('#golevg-save-campaign').onclick = createCampaign;
+    $('#golevg-history-new').onclick = () => openHistoryManualModal();
+    $('#golevg-history-manual-save').onclick = saveHistoryManual;
+    $('#golevg-history-export-summary').onclick = exportHistorySummaryExcel;
+    $('#golevg-history-export-full').onclick = exportHistoryFullExcel;
+    $('#golevg-history-export-agencies').onclick = () => exportHistoryAgenciesExcel();
+    $('#golevg-history-agencies-export').onclick = () => state.historySelectedExecution && exportHistoryAgenciesExcel(state.historySelectedExecution);
     $('#golevg-open-jotform').onclick = launchJotform;
     $('#golevg-save-report').onclick = saveReport;
     $('#golevg-link-save').onclick = linkIntake;
@@ -1668,6 +2231,18 @@
     for (const selector of ['#golevg-closed-group','#golevg-closed-date','#golevg-closed-sort']) $(selector).onchange = () => { state.closedPage = 0; loadCampaignList('CERRADO').catch((error) => toast(error.message, 'error')); };
     $('#golevg-open-clear').onclick = () => { $('#golevg-open-search').value=''; $('#golevg-open-group').value=''; $('#golevg-open-date').value=''; $('#golevg-open-sort').value='ULTIMA_ACTIVIDAD'; state.openPage=0; loadCampaignList('ABIERTO'); };
     $('#golevg-closed-clear').onclick = () => { $('#golevg-closed-search').value=''; $('#golevg-closed-group').value=''; $('#golevg-closed-date').value=''; $('#golevg-closed-sort').value='RECIENTES'; state.closedPage=0; loadCampaignList('CERRADO'); };
+
+    const delayedHistory = debounce(() => { renderHistory(); saveUiState(); }, 220);
+    $('#golevg-history-search').oninput = delayedHistory;
+    for (const selector of ['#golevg-history-from','#golevg-history-to','#golevg-history-origin','#golevg-history-sort']) $(selector).onchange = () => { renderHistory(); saveUiState(); };
+    $('#golevg-history-clear').onclick = () => { $('#golevg-history-search').value=''; $('#golevg-history-from').value=''; $('#golevg-history-to').value=''; $('#golevg-history-origin').value=''; $('#golevg-history-sort').value='NEVER_FIRST'; renderHistory(); saveUiState(); };
+    $('#golevg-history-manual-search').oninput = debounce(renderHistoryManualAgencies, 180);
+    $('#golevg-history-manual-group').onchange = () => { state.historyManualSelectedAgencyIds = new Set(); state.historyManualLockedSnapshots = []; state.historyManualShowAllAgencies = false; $('#golevg-history-manual-show-all').checked = false; renderHistoryManualAgencies(); };
+    $('#golevg-history-manual-show-all').onchange = (event) => { state.historyManualShowAllAgencies = !!event.target.checked; renderHistoryManualAgencies(); };
+    $('#golevg-history-manual-select-all').onclick = () => { historyManualAvailableAgencies().forEach((agency) => state.historyManualSelectedAgencyIds.add(agencyId(agency))); renderHistoryManualAgencies(); };
+    $('#golevg-history-manual-clear').onclick = () => { state.historyManualSelectedAgencyIds.clear(); renderHistoryManualAgencies(); };
+    $('#golevg-history-manual-from').onchange = updateHistoryManualSummary;
+    $('#golevg-history-manual-to').onchange = updateHistoryManualSummary;
 
     $$('[data-main]', $('#golevg-main-tabs')).forEach((button) => { button.onclick = () => switchMainTab(button.dataset.main); });
     $$('[data-close]', $('#vista-ops-levantamientos')).forEach((button) => { button.onclick = () => closeModal(button.dataset.close); });
@@ -1746,7 +2321,8 @@
     openCampaign: async (id) => { await open($('#navLevantamientos')); return openCampaign(id); },
     openFromMaintenance,
     openFromControl,
-    copyGeneralJotformLink
+    copyGeneralJotformLink,
+    openHistory: async () => { await open($('#navLevantamientos')); return switchMainTab('HISTORY'); }
   };
   global.GOLevantamientos = global.GOLevantamientosGrupos;
 })(window);
