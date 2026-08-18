@@ -59,3 +59,22 @@ test('no se agrega una segunda dependencia Excel', () => {
   assert.equal(Boolean(pkg.dependencies?.xlsx), false);
   assert.equal(Boolean(pkg.dependencies?.exceljs), false);
 });
+
+
+test('vista principal muestra solo grupos con historial registrado', () => {
+  assert.doesNotMatch(source, /Nunca registrados primero/);
+  assert.doesNotMatch(source, /<span class="golevg-badge warn">Nunca registrado<\/span>/);
+  assert.doesNotMatch(source, />Registrar<\/button><\/td><\/tr>`/);
+  assert.match(source, /state\.historyRows\.forEach\(\(history\) =>/);
+});
+
+test('orden por defecto del historial es más antiguo primero', () => {
+  assert.match(source, /id="golevg-history-sort"><option value="OLDEST">Más antiguo primero<\/option>/);
+  assert.match(source, /sort: text\(\$\('#golevg-history-sort'\)\?\.value\) \|\| 'OLDEST'/);
+});
+
+test('un mismo grupo puede acumular varios históricos y la vista conserva una sola fila por grupo', () => {
+  assert.match(source, /map\.get\(code\)\.histories\.push\(history\)/);
+  assert.match(source, /totalHistories: group\.histories\.length/);
+  assert.match(source, /Registrar nuevo/);
+});
