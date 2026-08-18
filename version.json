@@ -1,15 +1,13 @@
 {
-  "version": "2026-08-14-v808.38-levantamientos-historial-grupos",
-  "name": "v808.38 · Levantamientos · Historial por Grupo",
-  "released_at": "2026-08-14",
+  "version": "2026-08-18-v808.39-historial-grupos-lista-registrados",
+  "name": "v808.39 · Levantamientos · Historial solo registrado",
+  "released_at": "2026-08-18",
   "changes": [
-    "Añade Historial por Grupo como sexta pestaña del módulo actual de Levantamientos",
-    "Permite registrar y editar históricos manuales con Desde/Hasta y selección de agencias reales; una agencia única equivale a un registro",
-    "Conserva snapshots históricos de grupo/agencia y permite seleccionar agencias existentes de otros grupos para reconstrucciones manuales justificadas",
-    "Sincroniza de forma idempotente el histórico automático al cerrar una campaña mediante el RPC backend instalado",
-    "Muestra una fila por grupo, incluidos grupos nunca registrados, con antigüedad calculada desde fecha_hasta",
-    "Añade detalle por grupo y consulta simple de agencias sin duplicar fotos, hallazgos, PDF ni evidencias",
-    "Añade Excel XLSX profesional para resumen por grupo, histórico completo y detalle de agencias sin dependencias nuevas",
-    "Mantiene intactos Abiertos, Cerrados, Jotform sin vincular, Reportes, R2, hallazgos y el procesamiento existente de evidencias"
+    "La vista principal de Historial por Grupo muestra únicamente grupos que ya tienen al menos un histórico manual o automático",
+    "Elimina de la tabla principal los grupos Nunca registrado y los botones Registrar por fila",
+    "Mantiene el botón global Registrar levantamiento para agregar el primer histórico de un grupo o nuevos históricos del mismo grupo",
+    "Permite múltiples levantamientos históricos para un mismo grupo; la vista mantiene una fila por grupo y muestra el total de históricos",
+    "Cambia el orden predeterminado a Más antiguo primero para priorizar los grupos con más tiempo sin levantarse",
+    "Sustituye la tarjeta Nunca registrados por Levantamientos registrados sin alterar el flujo de creación manual ni el cierre automático"
   ]
 }
