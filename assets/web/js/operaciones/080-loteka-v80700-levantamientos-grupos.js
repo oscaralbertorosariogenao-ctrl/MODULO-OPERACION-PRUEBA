@@ -133,7 +133,7 @@
         from: $('#golevg-history-from')?.value || '',
         to: $('#golevg-history-to')?.value || '',
         origin: $('#golevg-history-origin')?.value || '',
-        sort: $('#golevg-history-sort')?.value || 'NEVER_FIRST'
+        sort: $('#golevg-history-sort')?.value || 'OLDEST'
       },
       globalSearch: $('#golevg-global-search')?.value || '',
       scrollY: Number.isFinite(Number(scrollOverride)) ? Number(scrollOverride) : Math.max(0, Number(global.scrollY || 0)),
@@ -164,7 +164,10 @@
     if ($('#golevg-history-from')) $('#golevg-history-from').value = text(history.from);
     if ($('#golevg-history-to')) $('#golevg-history-to').value = text(history.to);
     if ($('#golevg-history-origin')) $('#golevg-history-origin').value = text(history.origin);
-    if ($('#golevg-history-sort')) $('#golevg-history-sort').value = text(history.sort) || 'NEVER_FIRST';
+    if ($('#golevg-history-sort')) {
+      const storedHistorySort = text(history.sort);
+      $('#golevg-history-sort').value = storedHistorySort && storedHistorySort !== 'NEVER_FIRST' ? storedHistorySort : 'OLDEST';
+    }
     state.openPage = Math.max(0, Number(open.page || 0));
     state.closedPage = Math.max(0, Number(closed.page || 0));
     state.reportPage = Math.max(0, Number(saved.reports?.page || 0));
@@ -550,7 +553,7 @@
               <input class="golevg-input" id="golevg-history-from" type="date" aria-label="Desde">
               <input class="golevg-input" id="golevg-history-to" type="date" aria-label="Hasta">
               <select class="golevg-select" id="golevg-history-origin"><option value="">Todos los orígenes</option><option value="MANUAL">Manual</option><option value="AUTOMATICO">Automático</option></select>
-              <select class="golevg-select" id="golevg-history-sort"><option value="NEVER_FIRST">Nunca registrados primero</option><option value="OLDEST">Más antiguo primero</option><option value="RECENT">Más reciente primero</option><option value="GROUP">Grupo</option><option value="MOST_AGENCIES">Más agencias levantadas</option><option value="LEAST_AGENCIES">Menos agencias levantadas</option></select>
+              <select class="golevg-select" id="golevg-history-sort"><option value="OLDEST">Más antiguo primero</option><option value="RECENT">Más reciente primero</option><option value="GROUP">Grupo</option><option value="MOST_AGENCIES">Más agencias levantadas</option><option value="LEAST_AGENCIES">Menos agencias levantadas</option></select>
               <button class="golevg-btn" id="golevg-history-clear">Limpiar</button>
             </div>
             <div class="golevg-list-meta"><span id="golevg-history-count">0 grupos</span><span>Antigüedad calculada desde la fecha Hasta</span></div>
@@ -1352,7 +1355,7 @@
       from: text($('#golevg-history-from')?.value),
       to: text($('#golevg-history-to')?.value),
       origin: text($('#golevg-history-origin')?.value),
-      sort: text($('#golevg-history-sort')?.value) || 'NEVER_FIRST'
+      sort: text($('#golevg-history-sort')?.value) || 'OLDEST'
     };
   }
 
@@ -1373,15 +1376,19 @@
 
   function historyAllGroupRows() {
     const map = new Map();
-    groups().forEach((group) => {
-      const code = normalizeGroup(groupLabel(group));
-      if (!code) return;
-      map.set(code, { code, id: groupId(group) || null, name: text(group.nombre) || `Grupo ${code}`, current: true, histories: [] });
-    });
     state.historyRows.forEach((history) => {
       const code = normalizeGroup(history.grupo_codigo);
       if (!code) return;
-      if (!map.has(code)) map.set(code, { code, id: history.grupo_id || null, name: text(history.grupo_nombre) || `Grupo ${code}`, current: false, histories: [] });
+      if (!map.has(code)) {
+        const currentGroup = groups().find((group) => normalizeGroup(groupLabel(group)) === code);
+        map.set(code, {
+          code,
+          id: history.grupo_id || groupId(currentGroup) || null,
+          name: text(history.grupo_nombre) || text(currentGroup?.nombre) || `Grupo ${code}`,
+          current: Boolean(currentGroup),
+          histories: []
+        });
+      }
       map.get(code).histories.push(history);
     });
     map.forEach((group) => group.histories.sort((a, b) => text(b.fecha_hasta).localeCompare(text(a.fecha_hasta)) || text(b.creado_en).localeCompare(text(a.creado_en))));
@@ -1409,16 +1416,8 @@
     });
 
     rows.sort((a, b) => {
-      if (filters.sort === 'NEVER_FIRST') {
-        if (!a.latest && b.latest) return -1;
-        if (a.latest && !b.latest) return 1;
-        if (!a.latest && !b.latest) return a.code.localeCompare(b.code, 'es', { numeric: true });
-        return text(a.latest.fecha_hasta).localeCompare(text(b.latest.fecha_hasta)) || a.code.localeCompare(b.code, 'es', { numeric: true });
-      }
       if (filters.sort === 'OLDEST') {
-        if (!a.latest && b.latest) return -1;
-        if (a.latest && !b.latest) return 1;
-        return text(a.latest?.fecha_hasta).localeCompare(text(b.latest?.fecha_hasta));
+        return text(a.latest?.fecha_hasta).localeCompare(text(b.latest?.fecha_hasta)) || a.code.localeCompare(b.code, 'es', { numeric: true });
       }
       if (filters.sort === 'RECENT') return text(b.latest?.fecha_hasta).localeCompare(text(a.latest?.fecha_hasta));
       if (filters.sort === 'MOST_AGENCIES') return b.agencies - a.agencies || a.code.localeCompare(b.code, 'es', { numeric: true });
@@ -1429,15 +1428,14 @@
   }
 
   function renderHistoryStats() {
-    const all = historyAllGroupRows();
-    const registered = all.filter((row) => row.histories.length);
-    const never = all.filter((row) => !row.histories.length);
+    const registered = historyAllGroupRows();
+    const totalHistories = registered.reduce((total, row) => total + row.histories.length, 0);
     const oldest = registered.map((row) => ({ row, latest: row.histories[0], days: historyDaysSince(row.histories[0]?.fecha_hasta) })).sort((a, b) => (b.days ?? -1) - (a.days ?? -1))[0];
     const holder = $('#golevg-history-stats');
     if (!holder) return;
     holder.innerHTML = [
       ['Grupos con historial', registered.length],
-      ['Nunca registrados', never.length],
+      ['Levantamientos registrados', totalHistories],
       ['Más tiempo sin levantarse', oldest ? `G-${oldest.row.code} · ${oldest.days} días` : '—']
     ].map(([label, value]) => `<div class="golevg-stat"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('');
   }
@@ -1462,14 +1460,10 @@
     }
     holder.innerHTML = `<div class="golevg-table-wrap"><table class="golevg-table golevg-history-table"><thead><tr><th>Grupo</th><th>Último período</th><th>Agencias</th><th>Días sin levantamiento</th><th>Históricos</th><th>Origen último</th><th>Acción</th></tr></thead><tbody>${rows.map((row) => {
       const latest = row.latest;
-      return `<tr class="${latest ? '' : 'golevg-history-never'}"><td><b>G-${esc(row.code)}</b><br><small>${esc(row.name || '')}</small></td><td>${latest ? `<span class="golevg-history-period">${formatDate(latest.fecha_desde)} → ${formatDate(latest.fecha_hasta)}</span>` : '<span class="golevg-badge warn">Nunca registrado</span>'}</td><td>${latest ? `<b>${row.agencies}</b> agencias` : '—'}</td><td>${latest ? `<span class="golevg-history-days ${Number(row.days || 0) >= 180 ? 'is-old' : ''}">${row.days} días</span>` : '—'}</td><td>${row.totalHistories}</td><td class="golevg-history-origin">${latest ? `<span class="golevg-badge ${latest.origen === 'AUTOMATICO' ? 'run' : 'wait'}">${historyOriginLabel(latest.origen)}</span>` : '—'}</td><td><button class="golevg-btn small" data-history-group="${esc(row.code)}">${latest ? 'Ver historial' : 'Registrar'}</button></td></tr>`;
+      return `<tr><td><b>G-${esc(row.code)}</b><br><small>${esc(row.name || '')}</small></td><td><span class="golevg-history-period">${formatDate(latest.fecha_desde)} → ${formatDate(latest.fecha_hasta)}</span></td><td><b>${row.agencies}</b> agencias</td><td><span class="golevg-history-days ${Number(row.days || 0) >= 180 ? 'is-old' : ''}">${row.days} días</span></td><td>${row.totalHistories}</td><td class="golevg-history-origin"><span class="golevg-badge ${latest.origen === 'AUTOMATICO' ? 'run' : 'wait'}">${historyOriginLabel(latest.origen)}</span></td><td><button class="golevg-btn small" data-history-group="${esc(row.code)}">Ver historial</button></td></tr>`;
     }).join('')}</tbody></table></div>`;
     $$('[data-history-group]', holder).forEach((button) => {
-      button.onclick = () => {
-        const group = rows.find((item) => item.code === button.dataset.historyGroup);
-        if (!group?.histories.length && canManage()) return openHistoryManualModal({ groupCode: group.code });
-        openHistoryGroupModal(button.dataset.historyGroup);
-      };
+      button.onclick = () => openHistoryGroupModal(button.dataset.historyGroup);
     });
   }
 
@@ -2235,7 +2229,7 @@
     const delayedHistory = debounce(() => { renderHistory(); saveUiState(); }, 220);
     $('#golevg-history-search').oninput = delayedHistory;
     for (const selector of ['#golevg-history-from','#golevg-history-to','#golevg-history-origin','#golevg-history-sort']) $(selector).onchange = () => { renderHistory(); saveUiState(); };
-    $('#golevg-history-clear').onclick = () => { $('#golevg-history-search').value=''; $('#golevg-history-from').value=''; $('#golevg-history-to').value=''; $('#golevg-history-origin').value=''; $('#golevg-history-sort').value='NEVER_FIRST'; renderHistory(); saveUiState(); };
+    $('#golevg-history-clear').onclick = () => { $('#golevg-history-search').value=''; $('#golevg-history-from').value=''; $('#golevg-history-to').value=''; $('#golevg-history-origin').value=''; $('#golevg-history-sort').value='OLDEST'; renderHistory(); saveUiState(); };
     $('#golevg-history-manual-search').oninput = debounce(renderHistoryManualAgencies, 180);
     $('#golevg-history-manual-group').onchange = () => { state.historyManualSelectedAgencyIds = new Set(); state.historyManualLockedSnapshots = []; state.historyManualShowAllAgencies = false; $('#golevg-history-manual-show-all').checked = false; renderHistoryManualAgencies(); };
     $('#golevg-history-manual-show-all').onchange = (event) => { state.historyManualShowAllAgencies = !!event.target.checked; renderHistoryManualAgencies(); };
